@@ -3,9 +3,6 @@ on:
   pull_request:
     branches:
       - '*'
-  push:
-    branches:
-      - '*'
 env:
   OPENSEARCH_DASHBOARDS_VERSION: 'main'
   OPENSEARCH_VERSION: '3.1.0-SNAPSHOT'
@@ -29,6 +26,7 @@ jobs:
       CI: 1
       # avoid warnings like "tput: No value for $TERM and no -T specified"
       TERM: xterm
+    if: github.event.pull_request.draft == false
     steps:
       - name: Set up JDK
         uses: actions/setup-java@v1
