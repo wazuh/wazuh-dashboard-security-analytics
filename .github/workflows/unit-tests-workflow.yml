@@ -3,6 +3,7 @@ on:
   pull_request:
     branches:
       - "*"
+    types: [opened, synchronize, reopened, ready_for_review]
 env:
   OPENSEARCH_DASHBOARDS_VERSION: 'main'
 jobs:

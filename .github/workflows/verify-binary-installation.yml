@@ -1,6 +1,10 @@
 name: 'Install Dashboards with Plugin via Binary'
 
-on: [pull_request]
+on:
+  pull_request:
+    branches:
+      - "*"
+    types: [opened, synchronize, reopened, ready_for_review]
 env:
   OPENSEARCH_VERSION: '3.1.0'
   CI: 1

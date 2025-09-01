@@ -2,7 +2,8 @@ name: Cypress integration tests workflow
 on:
   pull_request:
     branches:
-      - '*'
+      - "*"
+    types: [opened, synchronize, reopened, ready_for_review]
 env:
   OPENSEARCH_DASHBOARDS_VERSION: 'main'
   OPENSEARCH_VERSION: '3.1.0-SNAPSHOT'
