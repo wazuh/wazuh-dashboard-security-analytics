@@ -492,8 +492,8 @@ main() {
   update_manual_build_workflow
 
   # Update docker/imposter/wazuh-config.yml
-  log "Updating docker/imposter/wazuh-config.yml..."
-  update_imposter_config "$VERSION"
+#   log "Updating docker/imposter/wazuh-config.yml..."
+#   update_imposter_config "$VERSION"  <------------ Commented because the imposter files don't exist yet
 
   log "File modifications completed."
   log "Repository bump completed successfully. Log file: $LOG_FILE"
