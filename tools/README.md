@@ -58,11 +58,9 @@ This script automates the process of updating the version and stage in the Wazuh
 
 ### Affected files
 
+- `CHANGELOG.md`
 - `VERSION.json`
 - `package.json`
-- `.github/workflows/5_builderpackage_security_analytics_plugin.yml`
-- `docker/imposter/wazuh-config.yml`
-- `docker/imposter/api-info/api_info.json`
 
 ### Log
 
