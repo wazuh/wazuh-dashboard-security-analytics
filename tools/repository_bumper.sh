@@ -47,16 +47,35 @@ usage() {
 
 # Function to perform portable sed in-place editing
 sed_inplace() {
-  local pattern="$1"
-  local file="$2"
+  local options=""
+  local pattern=""
+  local file=""
+
+  # Parse arguments to handle options like -E
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -E|-r)
+        options="$options $1"
+        shift
+        ;;
+      *)
+        if [ -z "$pattern" ]; then
+          pattern="$1"
+        elif [ -z "$file" ]; then
+          file="$1"
+        fi
+        shift
+        ;;
+    esac
+  done
 
   # Detect OS and use appropriate sed syntax
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS (BSD sed) requires empty string after -i
-    sed -i '' "$pattern" "$file"
+    sed -i '' $options "$pattern" "$file"
   else
     # Linux (GNU sed) doesn't require anything after -i
-    sed -i "$pattern" "$file"
+    sed -i $options "$pattern" "$file"
   fi
 }
 
@@ -157,14 +176,7 @@ update_changelog() {
     if [ -n "$STAGE" ]; then
       log "Changelog entry for this version and OpenSearch Dashboards version exists. Updating revision only."
       # Use sed to update only the revision number in the header
-      # sed_inplace -E "s|(${changelog_header_regex})|${changelog_header}${REVISION}|" "$changelog_file" &&
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' -E "s|(${changelog_header_regex})|## Wazuh dashboard v${VERSION} - OpenSearch Dashboards ${OPENSEARCH_VERSION} - Revision ${REVISION}|" "$changelog_file"
-      else
-        # Try -E first, fall back to -r if it fails
-        sed -i -E "s|(${changelog_header_regex})|## Wazuh dashboard v${VERSION} - OpenSearch Dashboards ${OPENSEARCH_VERSION} - Revision ${REVISION}|" "$changelog_file" 2>/dev/null ||
-          sed -i -r "s|(${changelog_header_regex})|## Wazuh dashboard v${VERSION} - OpenSearch Dashboards ${OPENSEARCH_VERSION} - Revision ${REVISION}|" "$changelog_file"
-      fi &&
+       sed_inplace -E "s|(${changelog_header_regex})|${changelog_header}${REVISION}|" "$changelog_file" &&
         log "CHANGELOG.md revision updated successfully." || {
         log "ERROR: Failed to update revision in $changelog_file"
         exit 1
@@ -544,7 +556,7 @@ main() {
   if [ -z "$VERSION" ]; then
     VERSION=$CURRENT_VERSION # If no version provided, use current version
   fi
-  
+
   # Compare versions and determine revision
   compare_versions_and_set_revision
 
