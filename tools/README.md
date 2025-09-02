@@ -2,7 +2,7 @@
 
 ## repository_bumper.sh
 
-This script automates the process of updating the version and stage in the Wazuh Security Dashboards plugin repository, using only shell commands.
+This script automates the process of updating the version and stage in the Wazuh Security Analytics Dashboard plugin repository, using only shell commands.
 
 ### Usage
 

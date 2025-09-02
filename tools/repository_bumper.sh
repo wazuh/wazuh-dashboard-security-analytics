@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Wazuh Security analytics Dashboard Plugin repository bumper (Pure Shell Version)
+# Wazuh Security Analytics Dashboard Plugin repository bumper (Pure Shell Version)
 # This script automates version and stage bumping across the repository using only shell commands.
 
 set -e
@@ -10,6 +10,7 @@ SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_PATH=$(git rev-parse --show-toplevel 2>/dev/null)
 DATE_TIME=$(date "+%Y-%m-%d_%H-%M-%S-%3N")
 LOG_FILE="${SCRIPT_PATH}/repository_bumper_${DATE_TIME}.log"
+PACKAGE_JSON="${REPO_PATH}/package.json"
 WAZUH_DASHBOARD_SECURITY_ANALYTICS_WORKFLOW_FILE="${REPO_PATH}/.github/workflows/5_builderpackage_security_analytics_plugin.yml"
 VERSION_FILE="${REPO_PATH}/VERSION.json"
 VERSION=""
@@ -121,6 +122,62 @@ update_json() {
       rm -f "${file}.tmp" # Clean up temp file on error
       exit 1
     }
+  fi
+}
+
+# Function to update CHANGELOG.md
+update_changelog() {
+  log "Updating CHANGELOG.md..."
+  local changelog_file="${REPO_PATH}/CHANGELOG.md"
+
+  # Extract OpenSearch Dashboards version from package.json
+  # Attempt to extract OpenSearch Dashboards version using sed (WARNING: Fragile!)
+  # This assumes "pluginPlatform": { ... "version": "x.y.z" ... } structure
+  # It looks for the block starting with "pluginPlatform": { and ending with }
+  # Within that block, it finds the line starting with "version": "..." and extracts the value.
+  # This is significantly less reliable than using jq.
+  log "Attempting to extract .version from $VERSION_FILE using sed (Note: This is fragile)"
+  # Extract OpenSearch Dashboards version from package.json (first occurrence of "version")
+  OPENSEARCH_VERSION=$(sed -n 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*$/\1/p' "$PACKAGE_JSON" | head -n 1)
+  if [ -z "$OPENSEARCH_VERSION" ] || [ "$OPENSEARCH_VERSION" == "null" ]; then
+    log "ERROR: Could not extract pluginPlatform.version from $PACKAGE_JSON for changelog"
+    exit 1
+  fi
+  log "Detected OpenSearch Dashboards version for changelog: $OPENSEARCH_VERSION"
+
+  # Construct the new changelog entry
+  # Note: Using printf for better handling of newlines and potential special characters
+  # Use the calculated REVISION variable here
+  # Prepare the header to search for
+  local changelog_header="## Wazuh dashboard v${VERSION} - OpenSearch Dashboards ${OPENSEARCH_VERSION} - Revision "
+  local changelog_header_regex="^${changelog_header}[0-9]+"
+
+  # Check if an entry for this version and OpenSearch version already exists
+  if grep -qE "$changelog_header_regex" "$changelog_file"; then
+    if [ -n "$STAGE" ]; then
+      log "Changelog entry for this version and OpenSearch Dashboards version exists. Updating revision only."
+      # Use sed to update only the revision number in the header
+      sed_inplace -E "s|(${changelog_header_regex})|${changelog_header}${REVISION}|" "$changelog_file" &&
+        log "CHANGELOG.md revision updated successfully." || {
+        log "ERROR: Failed to update revision in $changelog_file"
+        exit 1
+      }
+    fi
+  else
+    log "No existing changelog entry for this version and OpenSearch Dashboards version. Inserting new entry."
+
+   # Create the new entry directly in the changelog using sed
+    local temp_file=$(mktemp)
+    head -n 4 "$changelog_file" >"$temp_file"
+    printf "\n## Wazuh v%s - OpenSearch Dashboards %s - Revision %s\n\n### Added\n\n- Support for Wazuh %s\n\n" "$VERSION" "$OPENSEARCH_VERSION" "$REVISION" "$VERSION" >>"$temp_file"
+    tail -n +5 "$changelog_file" >>"$temp_file"
+
+    mv "$temp_file" "$changelog_file" || {
+      log "ERROR: Failed to update $changelog_file"
+      rm -f "$temp_file" # Clean up temp file on error
+      exit 1
+    }
+    log "CHANGELOG.md updated successfully."
   fi
 }
 
@@ -489,6 +546,7 @@ main() {
 
   update_root_version_json
   update_package_json
+  update_changelog
   update_manual_build_workflow
 
   # Update docker/imposter/wazuh-config.yml
