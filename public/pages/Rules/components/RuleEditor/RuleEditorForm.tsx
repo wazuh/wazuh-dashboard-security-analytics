@@ -45,6 +45,7 @@ import { getSeverityLabel } from '../../../Correlations/utils/constants';
 import { DataSourceContext } from '../../../../services/DataSourceContext';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { TopNavControlLinkData } from '../../../../../../../src/plugins/navigation/public';
+import { Rule } from '../../../../../types';
 
 export interface VisualRuleEditorProps {
   initialValue: RuleEditorFormModel;
@@ -127,10 +128,13 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   return (
     <Formik
       initialValues={initialValue}
-      validateOnMount={validateOnMount}
+      validateOnMount={(e) => {
+        console.log('validateOnMount d', e)
+        validateOnMount(e)
+      }}
       validate={(values) => {
         const errors: FormikErrors<RuleEditorFormModel> = {};
-
+        
         if (!values.name) {
           errors.name = 'Rule name is required';
         } else {
@@ -175,16 +179,21 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         if (!validateTags(values.tags)) {
           errors.tags = `Tags must start with '${TAGS_PREFIX}'`;
         }
-
+        console.log('validating', errors);
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
-        if (isDetectionInvalid) {
+        console.log('isDetectionInvalid.', isDetectionInvalid);
+        console.log('values------>.', values);
+        
+        if (isDetectionInvalid && selectedEditorType === 'visual') {
           return;
         }
 
-        setSubmitting(false);
-        submit(values);
+        // if()
+
+        // setSubmitting(false);
+        // submit(values);
       }}
     >
       {(props) => {
@@ -192,6 +201,9 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
           resetLogType.current = false;
           props.setFieldValue('logType', '');
         }
+
+        console.log('props///>>>>', props);
+        
 
         return (
           <Form>
@@ -237,7 +249,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     const formState = mapRuleToForm(e);
                     props.setValues(formState);
                   }}
-                ></YamlRuleEditorComponent>
+                />
               )}
               <FormSubmissionErrorToastNotification notifications={notifications} />
               {selectedEditorType === 'visual' && (
@@ -596,7 +608,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <EuiSmallButton
-                  onClick={() => props.handleSubmit()}
+                  onMouseDown={(e) => e.preventDefault()} // evita que Ace capture el mousedown
+                  onClick={props.handleSubmit}
                   data-test-subj={'submit_rule_form_button'}
                   fill
                 >

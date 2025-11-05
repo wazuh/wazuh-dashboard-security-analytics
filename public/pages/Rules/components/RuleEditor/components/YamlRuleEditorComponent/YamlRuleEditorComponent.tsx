@@ -1,9 +1,4 @@
-/*
- * Copyright OpenSearch Contributors
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { load } from 'js-yaml';
 import { EuiCompressedFormRow, EuiCodeEditor, EuiLink, EuiSpacer, EuiText, EuiCallOut } from '@elastic/eui';
 import FormFieldHeader from '../../../../../../components/FormFieldHeader';
@@ -19,6 +14,7 @@ export interface YamlRuleEditorComponentProps {
   change: React.Dispatch<Rule>;
   isInvalid: boolean;
   errors?: string[];
+  parseDebounceMs?: number;
 }
 
 export interface YamlEditorState {
@@ -31,6 +27,7 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
   change,
   isInvalid,
   errors,
+  parseDebounceMs = 500,
 }) => {
   const yamlObject = mapRuleToYamlObject(rule);
 
@@ -39,28 +36,69 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
     value: mapYamlObjectToYamlString(yamlObject),
   });
 
-  const onChange = (value: string) => {
-    setState((prevState) => ({ ...prevState, value }));
-  };
+  const timerRef = useRef<number | null>(null);
 
-  const onBlur = () => {
-    if (!state.value) {
-      setState((prevState) => ({ ...prevState, errors: ['Rule cannot be empty'] }));
+  // track whether the user currently has focus in the editor
+  const isFocusedRef = useRef(false);
+
+  // update local editor value when parent rule changes, BUT only if editor is NOT focused
+  useEffect(() => {
+    const newYaml = mapYamlObjectToYamlString(mapRuleToYamlObject(rule));
+    setState((s) => {
+      // if editor is focused, do not overwrite the user's in-progress edits
+      if (isFocusedRef.current) {
+        return s;
+      }
+      // only update if the external YAML truly differs from the current editor value
+      if (s.value === newYaml) {
+        return s;
+      }
+      return { ...s, value: newYaml };
+    });
+  }, [rule]);
+
+  const tryParseAndNotify = (value: string) => {
+    if (!value || value.trim() === '') {
+      setState((prev) => ({ ...prev, errors: ['Rule cannot be empty'] }));
       return;
     }
     try {
-      const yamlObject = load(state.value);
-
-      const rule = mapYamlObjectToRule(yamlObject);
-
-      change(rule);
-
-      setState((prevState) => ({ ...prevState, errors: null }));
-    } catch (error) {
-      setState((prevState) => ({ ...prevState, errors: ['Invalid YAML'] }));
-
-      console.warn('Security Analytics - Rule Eritor - Yaml load', error);
+      const yamlObject = load(value);
+      const parsedRule = mapYamlObjectToRule(yamlObject);
+      // notify parent with parsed rule
+      change(parsedRule);
+      setState((prev) => ({ ...prev, errors: null }));
+    } catch (err) {
+      setState((prev) => ({ ...prev, errors: ['Invalid YAML'] }));
+      console.warn('Yaml parse error', err);
     }
+  };
+
+  const onChange = (value: string) => {
+    setState((prev) => ({ ...prev, value }));
+    // debounce parse
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+    }
+    timerRef.current = window.setTimeout(() => {
+      tryParseAndNotify(value);
+    }, parseDebounceMs);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const onBlur = () => {
+    isFocusedRef.current = false;
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    tryParseAndNotify(state.value || '');
+  };
+
+  const onFocus = () => {
+    isFocusedRef.current = true;
   };
 
   const renderErrors = () => {
@@ -109,7 +147,8 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
             width="100%"
             value={state.value}
             onChange={onChange}
-            onBlur={onBlur}
+            // onBlur={onBlur}
+            onFocus={onFocus}
             data-test-subj={'rule_yaml_editor'}
           />
         </>
