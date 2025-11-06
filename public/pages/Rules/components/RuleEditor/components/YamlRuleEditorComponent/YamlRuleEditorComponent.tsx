@@ -73,7 +73,7 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
       setState((prev) => ({ ...prev, errors: null }));
     } catch (err) {
       setState((prev) => ({ ...prev, errors: ['Invalid YAML'] }));
-      console.warn('Yaml parse error', err);
+      console.warn('Security Analytics - Rule Editor - Yaml load', err);
     }
   };
 
