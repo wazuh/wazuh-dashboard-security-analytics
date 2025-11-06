@@ -58,13 +58,21 @@ export interface VisualRuleEditorProps {
   subtitleData?: { description: string; links?: TopNavControlLinkData };
 }
 
+export const EDITOR_TYPES = {
+  VISUAL: 'visual',
+  YAML: 'yaml',
+} as const;
+
+export type EditorType = typeof EDITOR_TYPES[keyof typeof EDITOR_TYPES];
+
+
 const editorTypes = [
   {
-    id: 'visual',
+    id: EDITOR_TYPES.VISUAL,
     label: 'Visual Editor',
   },
   {
-    id: 'yaml',
+    id: EDITOR_TYPES.YAML,
     label: 'YAML Editor',
   },
 ];
@@ -81,7 +89,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   validateOnMount,
   subtitleData,
 }) => {
-  const [selectedEditorType, setSelectedEditorType] = useState('visual');
+  const [selectedEditorType, setSelectedEditorType] = useState<EditorType>(EDITOR_TYPES.VISUAL);
   const [isDetectionInvalid, setIsDetectionInvalid] = useState(false);
   const resetLogType = useRef(false);
   const [logTypeOptions, setLogTypeOptions] = useState<any[]>([]);
@@ -92,7 +100,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   const firstUpdate = useRef(true);
 
   const onEditorTypeChange = (optionId: string) => {
-    setSelectedEditorType(optionId);
+    setSelectedEditorType(optionId as EditorType);
   };
 
   const refreshLogTypeOptions = useCallback(async () => {
@@ -179,7 +187,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
-        if (isDetectionInvalid && selectedEditorType === 'visual') {
+        if (isDetectionInvalid && selectedEditorType === EDITOR_TYPES.VISUAL) {
           return;
         }
         setSubmitting(false);
@@ -225,7 +233,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
 
               <EuiSpacer size="xl" />
 
-              {selectedEditorType === 'yaml' && (
+              {selectedEditorType === EDITOR_TYPES.YAML && (
                 <YamlRuleEditorComponent
                   rule={mapFormToRule(props.values)}
                   isInvalid={Object.keys(props.errors).length > 0}
@@ -239,7 +247,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                 />
               )}
               <FormSubmissionErrorToastNotification notifications={notifications} />
-              {selectedEditorType === 'visual' && (
+              {selectedEditorType === EDITOR_TYPES.VISUAL && (
                 <>
                   <EuiTitle>
                     <EuiText size="s">
