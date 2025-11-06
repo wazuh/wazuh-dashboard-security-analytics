@@ -1,7 +1,7 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 
 import React, { useEffect, useState, useRef } from 'react';
 import { load } from 'js-yaml';
