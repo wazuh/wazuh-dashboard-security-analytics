@@ -45,7 +45,6 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
   useEffect(() => {
     const newYaml = mapYamlObjectToYamlString(mapRuleToYamlObject(rule));
     setState((s) => {
-      // if editor is focused, do not overwrite the user's in-progress edits
       if (isFocusedRef.current) {
         return s;
       }
@@ -65,7 +64,6 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
     try {
       const yamlObject = load(value);
       const parsedRule = mapYamlObjectToRule(yamlObject);
-      // notify parent with parsed rule
       change(parsedRule);
       setState((prev) => ({ ...prev, errors: null }));
     } catch (err) {
@@ -90,12 +88,6 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
   }, []);
-
-  const onBlur = () => {
-    isFocusedRef.current = false;
-    if (timerRef.current) window.clearTimeout(timerRef.current);
-    tryParseAndNotify(state.value || '');
-  };
 
   const onFocus = () => {
     isFocusedRef.current = true;
@@ -147,7 +139,6 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
             width="100%"
             value={state.value}
             onChange={onChange}
-            // onBlur={onBlur}
             onFocus={onFocus}
             data-test-subj={'rule_yaml_editor'}
           />
