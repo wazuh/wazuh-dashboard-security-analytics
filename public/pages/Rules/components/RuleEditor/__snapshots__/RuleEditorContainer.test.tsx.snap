@@ -4032,11 +4032,13 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                     data-test-subj="submit_rule_form_button"
                     fill={true}
                     onClick={[Function]}
+                    onMouseDown={[Function]}
                   >
                     <EuiButton
                       data-test-subj="submit_rule_form_button"
                       fill={true}
                       onClick={[Function]}
+                      onMouseDown={[Function]}
                       size="s"
                     >
                       <EuiButtonDisplay
@@ -4047,6 +4049,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                         fill={true}
                         isDisabled={false}
                         onClick={[Function]}
+                        onMouseDown={[Function]}
                         size="s"
                         type="button"
                       >
@@ -4055,6 +4058,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                           data-test-subj="submit_rule_form_button"
                           disabled={false}
                           onClick={[Function]}
+                          onMouseDown={[Function]}
                           style={
                             Object {
                               "minWidth": undefined,
