@@ -19,7 +19,7 @@ export interface YamlRuleEditorComponentProps {
   change: React.Dispatch<Rule>;
   isInvalid: boolean;
   errors?: string[];
-  parseDebounceMs?: number;
+  parseDebounceMs?: number; // Wazuh modification: added onFocus to warning erros on real time typing
 }
 
 export interface YamlEditorState {
@@ -41,6 +41,7 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
     value: mapYamlObjectToYamlString(yamlObject),
   });
 
+  // Wazuh modification: display warning erros on real time typing
   const timerRef = useRef<number | null>(null);
 
   // track whether the user currently has focus in the editor
@@ -48,6 +49,7 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
 
   // update local editor value when parent rule changes, BUT only if editor is NOT focused
   useEffect(() => {
+    // Wazuh modification: display warning erros on real time typing
     const newYaml = mapYamlObjectToYamlString(mapRuleToYamlObject(rule));
     setState((s) => {
       if (isFocusedRef.current) {
@@ -144,7 +146,7 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
             width="100%"
             value={state.value}
             onChange={onChange}
-            onFocus={onFocus}
+            onFocus={onFocus} // Wazuh modification: display warning erros on real time typing
             data-test-subj={'rule_yaml_editor'}
           />
         </>

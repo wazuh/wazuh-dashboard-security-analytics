@@ -45,7 +45,6 @@ import { getSeverityLabel } from '../../../Correlations/utils/constants';
 import { DataSourceContext } from '../../../../services/DataSourceContext';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { TopNavControlLinkData } from '../../../../../../../src/plugins/navigation/public';
-import { Rule } from '../../../../../types';
 
 export interface VisualRuleEditorProps {
   initialValue: RuleEditorFormModel;
@@ -179,9 +178,11 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
+        // Wazuh modification: fixed to prevent submission when it's visual editor to yaml works correctly
         if (isDetectionInvalid && selectedEditorType === 'visual') {
           return;
         }
+
         setSubmitting(false);
         submit(values);
       }}
