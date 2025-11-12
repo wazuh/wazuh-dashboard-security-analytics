@@ -58,21 +58,13 @@ export interface VisualRuleEditorProps {
   subtitleData?: { description: string; links?: TopNavControlLinkData };
 }
 
-export const EDITOR_TYPES = {
-  VISUAL: 'visual',
-  YAML: 'yaml',
-} as const;
-
-export type EditorType = typeof EDITOR_TYPES[keyof typeof EDITOR_TYPES];
-
-
 const editorTypes = [
   {
-    id: EDITOR_TYPES.VISUAL,
+    id: 'visual',
     label: 'Visual Editor',
   },
   {
-    id: EDITOR_TYPES.YAML,
+    id: 'yaml',
     label: 'YAML Editor',
   },
 ];
@@ -89,7 +81,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   validateOnMount,
   subtitleData,
 }) => {
-  const [selectedEditorType, setSelectedEditorType] = useState<EditorType>(EDITOR_TYPES.VISUAL);
+  const [selectedEditorType, setSelectedEditorType] = useState('visual');
   const [isDetectionInvalid, setIsDetectionInvalid] = useState(false);
   const resetLogType = useRef(false);
   const [logTypeOptions, setLogTypeOptions] = useState<any[]>([]);
@@ -100,7 +92,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   const firstUpdate = useRef(true);
 
   const onEditorTypeChange = (optionId: string) => {
-    setSelectedEditorType(optionId as EditorType);
+    setSelectedEditorType(optionId);
   };
 
   const refreshLogTypeOptions = useCallback(async () => {
@@ -187,7 +179,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
-        if (isDetectionInvalid && selectedEditorType === EDITOR_TYPES.VISUAL) {
+        if (isDetectionInvalid && selectedEditorType === 'visual') {
           return;
         }
         setSubmitting(false);
@@ -233,7 +225,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
 
               <EuiSpacer size="xl" />
 
-              {selectedEditorType === EDITOR_TYPES.YAML && (
+              {selectedEditorType === 'yaml' && (
                 <YamlRuleEditorComponent
                   rule={mapFormToRule(props.values)}
                   isInvalid={Object.keys(props.errors).length > 0}
@@ -244,10 +236,10 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     const formState = mapRuleToForm(e);
                     props.setValues(formState);
                   }}
-                />
+                ></YamlRuleEditorComponent>
               )}
               <FormSubmissionErrorToastNotification notifications={notifications} />
-              {selectedEditorType === EDITOR_TYPES.VISUAL && (
+              {selectedEditorType === 'visual' && (
                 <>
                   <EuiTitle>
                     <EuiText size="s">
@@ -603,8 +595,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <EuiSmallButton
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={props.handleSubmit}
+                  onClick={() => props.handleSubmit()}
                   data-test-subj={'submit_rule_form_button'}
                   fill
                 >
