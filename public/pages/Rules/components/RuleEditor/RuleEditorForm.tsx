@@ -178,7 +178,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
-        // Wazuh modification: fixed to prevent submission when it's visual editor to yaml works correctly
+        // Wazuh: fixed to prevent submission when it's visual editor to yaml works correctly
         if (isDetectionInvalid && selectedEditorType === 'visual') {
           return;
         }
