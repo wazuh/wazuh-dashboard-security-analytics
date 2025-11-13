@@ -175,11 +175,11 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         if (!validateTags(values.tags)) {
           errors.tags = `Tags must start with '${TAGS_PREFIX}'`;
         }
-
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
-        if (isDetectionInvalid) {
+        // Wazuh: fixed to prevent submission when it's visual editor to yaml works correctly
+        if (isDetectionInvalid && selectedEditorType === 'visual') {
           return;
         }
 
