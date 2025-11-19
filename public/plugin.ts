@@ -127,8 +127,9 @@ export class SecurityAnalyticsPlugin
       order: 7000,
       category: {
         id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 2000,
+        label: 'Security analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -145,7 +146,8 @@ export class SecurityAnalyticsPlugin
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
-        order: 2000,
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -160,7 +162,8 @@ export class SecurityAnalyticsPlugin
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
-        order: 2000,
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -175,7 +178,8 @@ export class SecurityAnalyticsPlugin
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
-        order: 2000,
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -190,7 +194,8 @@ export class SecurityAnalyticsPlugin
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
-        order: 2000,
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -205,7 +210,8 @@ export class SecurityAnalyticsPlugin
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
-        order: 2000,
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -220,7 +226,8 @@ export class SecurityAnalyticsPlugin
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
-        order: 2000,
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -235,7 +242,8 @@ export class SecurityAnalyticsPlugin
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
-        order: 2000,
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -250,7 +258,8 @@ export class SecurityAnalyticsPlugin
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
-        order: 2000,
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
