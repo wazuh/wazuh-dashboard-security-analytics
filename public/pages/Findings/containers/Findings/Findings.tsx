@@ -586,29 +586,30 @@ class Findings extends Component<FindingsProps, FindingsState> {
           </>
         ),
       },
-      {
-        id: FindingTabId.ThreatIntel,
-        name: (
-          <span>
-            Threat intel{' '}
-            {this.state.selectedTabId === FindingTabId.ThreatIntel
-              ? `(${findingStateByTabId[FindingTabId.ThreatIntel].findings.length})`
-              : null}
-          </span>
-        ),
-        content: (
-          <>
-            <EuiSpacer size={'m'} />
-            {/*{this.getFindingsGraph(findings, loading)}*/}
-            {/*<EuiSpacer size={'m'} />*/}
-            <ContentPanel title={'Findings'}>
-              <ThreatIntelFindingsTable
-                findingItems={findingStateByTabId[FindingTabId.ThreatIntel].findings}
-              />
-            </ContentPanel>
-          </>
-        ),
-      },
+      // Threat intel tab is not used by Wazuh
+      // {
+      //   id: FindingTabId.ThreatIntel,
+      //   name: (
+      //     <span>
+      //       Threat intel{' '}
+      //       {this.state.selectedTabId === FindingTabId.ThreatIntel
+      //         ? `(${findingStateByTabId[FindingTabId.ThreatIntel].findings.length})`
+      //         : null}
+      //     </span>
+      //   ),
+      //   content: (
+      //     <>
+      //       <EuiSpacer size={'m'} />
+      //       {/*{this.getFindingsGraph(findings, loading)}*/}
+      //       {/*<EuiSpacer size={'m'} />*/}
+      //       <ContentPanel title={'Findings'}>
+      //         <ThreatIntelFindingsTable
+      //           findingItems={findingStateByTabId[FindingTabId.ThreatIntel].findings}
+      //         />
+      //       </ContentPanel>
+      //     </>
+      //   ),
+      // },
     ];
 
     const datePicker = (
