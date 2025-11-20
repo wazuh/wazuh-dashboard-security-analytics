@@ -37,7 +37,7 @@ import { setBreadcrumbs } from '../../../../utils/helpers';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { getOverviewStatsProps, getOverviewsCardsProps } from '../../utils/constants';
 import { getChrome, getUseUpdatedUx } from '../../../../services/utils/constants';
-import { RecentThreatIntelFindingsWidget } from '../../components/Widgets/RecentThreatIntelFindingsWidget';
+// import { RecentThreatIntelFindingsWidget } from '../../components/Widgets/RecentThreatIntelFindingsWidget';
 import { useObservable } from 'react-use';
 import { SECURITY_ANALYTICS_USE_CASE_ID } from '../../../../../../../src/core/public';
 
@@ -314,10 +314,11 @@ export const Overview: React.FC<OverviewProps> = (props) => {
           <RecentAlertsWidget items={state.overviewViewModel.alerts} loading={loading} />
           <RecentFindingsWidget items={state.overviewViewModel.findings} loading={loading} />
           {/*<TopRulesWidget findings={state.overviewViewModel.findings} loading={loading} />*/}
-          <RecentThreatIntelFindingsWidget
+          {/* RecentThreatIntelFindingsWidget is not used by Wazuh */}
+          {/* <RecentThreatIntelFindingsWidget
             items={state.overviewViewModel.threatIntelFindings}
             loading={loading}
-          />
+          /> */}
         </EuiFlexGrid>
       </EuiFlexItem>
     </EuiFlexGroup>
