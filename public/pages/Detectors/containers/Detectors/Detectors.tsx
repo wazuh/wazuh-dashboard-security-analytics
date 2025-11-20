@@ -247,7 +247,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
       {
         field: 'logType',
-        name: 'Log type',
+        name: 'Integration', // replace log type to integration by Wazuh
         sortable: true,
         dataType: 'string',
         render: (logType: string) => formatRuleType(logType),
