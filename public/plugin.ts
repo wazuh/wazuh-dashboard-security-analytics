@@ -171,21 +171,22 @@ export class SecurityAnalyticsPlugin
       },
     });
 
-    core.application.register({
-      id: THREAT_INTEL_NAV_ID,
-      title: 'Threat intelligence',
-      order: 7003,
-      category: {
-        id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 550,
-        euiIconType: 'securityAnalyticsApp',
-      },
-      updater$: this.appStateUpdater,
-      mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.THREAT_INTEL_OVERVIEW);
-      },
-    });
+    // Threat Intelligence is not used by Wazuh
+    // core.application.register({
+    //   id: THREAT_INTEL_NAV_ID,
+    //   title: 'Threat intelligence',
+    //   order: 7003,
+    //   category: {
+    //     id: 'security_analytics',
+    //     label: 'Security Analytics',
+    //     order: 550,
+    //     euiIconType: 'securityAnalyticsApp',
+    //   },
+    //   updater$: this.appStateUpdater,
+    //   mount: async (params: AppMountParameters) => {
+    //     return mountWrapper(params, ROUTES.THREAT_INTEL_OVERVIEW);
+    //   },
+    // });
 
     core.application.register({
       id: DETECTORS_NAV_ID,
@@ -278,7 +279,7 @@ export class SecurityAnalyticsPlugin
       const navlinks = [
         { id: OVERVIEW_NAV_ID, showInAllNavGroup: true },
         { id: GET_STARTED_NAV_ID, showInAllNavGroup: true },
-        { id: THREAT_ALERTS_NAV_ID, showInAllNavGroup: true },
+        // { id: THREAT_ALERTS_NAV_ID, showInAllNavGroup: true },
         { id: FINDINGS_NAV_ID, showInAllNavGroup: true },
         { id: CORRELATIONS_NAV_ID, showInAllNavGroup: true },
         {
