@@ -113,7 +113,7 @@ export const getRulesTableSearchConfig = (): Search => {
       {
         type: 'field_value_selection',
         field: 'category',
-        name: 'Log type',
+        name: 'Integration', // replace log type to integration by Wazuh
         compressed: true,
         multiSelect: 'or',
         options: getLogTypeFilterOptions(),
