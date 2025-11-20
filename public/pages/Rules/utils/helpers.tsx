@@ -70,7 +70,7 @@ export const getRulesTableColumns = (
     },
     category: {
       field: 'category',
-      name: 'Log type',
+      name: 'Integration', // replace log type to integration by Wazuh
       sortable: true,
       width: '10%',
       truncateText: true,
