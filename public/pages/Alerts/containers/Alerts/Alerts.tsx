@@ -436,7 +436,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
       },
       {
         field: 'correlation_rule_categories',
-        name: 'Log Types',
+        name: 'Integrations',
         sortable: false,
         dataType: 'string',
         render: (correlationRuleCategories: string[]) =>
@@ -1018,24 +1018,24 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
           </>
         ),
       },
-      {
-        id: 'threat-intel',
-        name: 'Threat intel',
-        content: (
-          <>
-            <EuiSpacer size="m" />
-            {/*{this.getAlertsGraph(alerts, loading)}*/}
-            {/*<EuiSpacer size="m" />*/}
-            <ContentPanel title={'Alerts'} actions={[this.getContelPanelActions()]}>
-              <ThreatIntelAlertsTable
-                alerts={alertsFiltered ? filteredThreatIntelAlerts : threatIntelAlerts}
-                onAlertStateChange={this.onThreatIntelAlertStateChange}
-                onSelectionChange={this.onThreatIntelAlertSelectionChange}
-              />
-            </ContentPanel>
-          </>
-        ),
-      },
+      // {
+      //   id: 'threat-intel',
+      //   name: 'Threat intel',
+      //   content: (
+      //     <>
+      //       <EuiSpacer size="m" />
+      //       {/*{this.getAlertsGraph(alerts, loading)}*/}
+      //       {/*<EuiSpacer size="m" />*/}
+      //       <ContentPanel title={'Alerts'} actions={[this.getContelPanelActions()]}>
+      //         <ThreatIntelAlertsTable
+      //           alerts={alertsFiltered ? filteredThreatIntelAlerts : threatIntelAlerts}
+      //           onAlertStateChange={this.onThreatIntelAlertStateChange}
+      //           onSelectionChange={this.onThreatIntelAlertSelectionChange}
+      //         />
+      //       </ContentPanel>
+      //     </>
+      //   ),
+      // },
       {
         id: 'correlations',
         name: (
