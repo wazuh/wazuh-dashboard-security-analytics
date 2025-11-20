@@ -436,7 +436,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
       },
       {
         field: 'correlation_rule_categories',
-        name: 'Integrations',
+        name: 'Integrations', // replace log types to integrations by Wazuh
         sortable: false,
         dataType: 'string',
         render: (correlationRuleCategories: string[]) =>

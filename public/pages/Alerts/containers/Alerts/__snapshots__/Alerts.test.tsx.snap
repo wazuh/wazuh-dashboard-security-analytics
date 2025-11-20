@@ -1166,7 +1166,7 @@ exports[`<Alerts /> spec renders the component 1`] = `
                               Object {
                                 "dataType": "string",
                                 "field": "correlation_rule_categories",
-                                "name": "Log Types",
+                                "name": "Integrations",
                                 "render": [Function],
                                 "sortable": false,
                               },
