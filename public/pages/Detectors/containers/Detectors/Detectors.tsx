@@ -356,7 +356,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         {
           type: 'field_value_selection',
           field: 'logType',
-          name: 'Log type',
+          name: 'Integration', // replace log type to integration by Wazuh
           compressed: true,
           options: getLogTypeFilterOptions(),
           multiSelect: 'or',
