@@ -86,8 +86,8 @@ enum Navigation {
   Alerts = 'Alerts',
   Correlations = 'Correlations',
   CorrelationRules = 'Correlation rules',
-  LogTypes = 'Log types',
-  // ThreatIntel = 'Threat Intelligence', // Threat Intelligence is not used by Wazuh
+  LogTypes = 'Integrations', // Replace Log Types to Integrations by Wazuh
+  ThreatIntel = 'Threat Intelligence',
 }
 
 /**
