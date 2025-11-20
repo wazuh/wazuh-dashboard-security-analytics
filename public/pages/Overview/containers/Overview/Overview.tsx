@@ -48,8 +48,8 @@ export const Overview: React.FC<OverviewProps> = (props) => {
       endTime: DEFAULT_DATE_RANGE.end,
     },
   } = props;
-
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  // Getting started section hidden by wazuh
+  // const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [initialLoadingFinished, setInitialLoadingFinished] = useState(false);
   const [state, setState] = useState<OverviewState>({
     groupBy: 'finding',
@@ -138,15 +138,15 @@ export const Overview: React.FC<OverviewProps> = (props) => {
     };
   }, [dateTimeFilter.startTime, dateTimeFilter.endTime]);
 
-  useEffect(() => {
-    if (
-      !props.getStartedDismissedOnce &&
-      initialLoadingFinished &&
-      state.overviewViewModel.detectors.length === 0
-    ) {
-      setIsPopoverOpen(true);
-    }
-  }, [initialLoadingFinished, state.overviewViewModel, props.getStartedDismissedOnce]);
+  // useEffect(() => {
+  //   if (
+  //     !props.getStartedDismissedOnce &&
+  //     initialLoadingFinished &&
+  //     state.overviewViewModel.detectors.length === 0
+  //   ) {
+  //     setIsPopoverOpen(true);
+  //   }
+  // }, [initialLoadingFinished, state.overviewViewModel, props.getStartedDismissedOnce]);
 
   const onTimeChange = async ({ start, end }: { start: string; end: string }) => {
     let usedRanges = recentlyUsedRanges.filter(
@@ -186,18 +186,18 @@ export const Overview: React.FC<OverviewProps> = (props) => {
     };
   }, [props.dataSource]);
 
-  const onButtonClick = () => setIsPopoverOpen((isPopoverOpen) => !isPopoverOpen);
+  // const onButtonClick = () => setIsPopoverOpen((isPopoverOpen) => !isPopoverOpen);
 
-  const closePopover = () => {
-    setIsPopoverOpen(false);
-    props.onGetStartedDismissed();
-  };
+  // const closePopover = () => {
+  //   setIsPopoverOpen(false);
+  //   props.onGetStartedDismissed();
+  // };
 
-  const button = (
-    <EuiSmallButtonEmpty iconType="cheer" onClick={onButtonClick}>
-      Getting started
-    </EuiSmallButtonEmpty>
-  );
+  // const button = (
+  //   <EuiSmallButtonEmpty iconType="cheer" onClick={onButtonClick}>
+  //     Getting started
+  //   </EuiSmallButtonEmpty>
+  // );
 
   const datePicker = (
     <EuiCompressedSuperDatePicker
@@ -229,16 +229,16 @@ export const Overview: React.FC<OverviewProps> = (props) => {
     </EuiSmallButton>
   );
 
-  const gettingStartedBadgeControl = (
-    <EuiPopover
-      button={button}
-      isOpen={isPopoverOpen}
-      anchorPosition="downRight"
-      closePopover={closePopover}
-    >
-      <GettingStartedContent onStepClicked={closePopover} history={props.history} />
-    </EuiPopover>
-  );
+  // const gettingStartedBadgeControl = (
+  //   <EuiPopover
+  //     button={button}
+  //     isOpen={isPopoverOpen}
+  //     anchorPosition="downRight"
+  //     closePopover={closePopover}
+  //   >
+  //     <GettingStartedContent onStepClicked={closePopover} history={props.history} />
+  //   </EuiPopover>
+  // );
 
   const overviewStats = {
     alerts: state.overviewViewModel.alerts.filter((a) => !a.acknowledged).length,
@@ -262,7 +262,7 @@ export const Overview: React.FC<OverviewProps> = (props) => {
                 <h1>Overview</h1>
               </EuiText>
             </EuiFlexItem>
-            <EuiFlexItem>{gettingStartedBadgeControl}</EuiFlexItem>
+            {/* <EuiFlexItem>{gettingStartedBadgeControl}</EuiFlexItem> */}
             <EuiFlexItem grow={false}>{datePicker}</EuiFlexItem>
             <EuiFlexItem grow={false}>{createDetectorAction}</EuiFlexItem>
           </EuiFlexGroup>
