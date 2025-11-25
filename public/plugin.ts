@@ -222,7 +222,7 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: LOG_TYPES_NAV_ID,
-      title: 'Log types',
+      title: 'Integrations',
       order: 7006,
       category: {
         id: 'security_analytics',
