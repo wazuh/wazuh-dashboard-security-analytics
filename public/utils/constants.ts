@@ -110,8 +110,8 @@ export const BREADCRUMBS = Object.freeze({
     text: `${action} correlation rule`,
     href: `#${ROUTES.CORRELATION_RULE_CREATE}`,
   }),
-  LOG_TYPES: { text: 'Log types', href: `#${ROUTES.LOG_TYPES}` },
-  LOG_TYPE_CREATE: { text: 'Create log type', href: `#${ROUTES.LOG_TYPES_CREATE}` },
+  LOG_TYPES: { text: 'Integrations', href: `#${ROUTES.LOG_TYPES}` }, // Replace Log Types with Integrations by Wazuh
+  LOG_TYPE_CREATE: { text: 'Create integration', href: `#${ROUTES.LOG_TYPES_CREATE}` }, // Replace Log Type with Integration by Wazuh
   THREAT_INTEL_OVERVIEW: { text: 'Threat intelligence', href: `#${ROUTES.THREAT_INTEL_OVERVIEW}` },
   THREAT_INTEL_ADD_CUSTOM_SOURCE: {
     text: 'Add threat intel source',
