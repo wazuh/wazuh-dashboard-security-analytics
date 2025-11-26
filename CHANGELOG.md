@@ -14,7 +14,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 
 ### Removed
 
-- Removed Threat Intelligence section entirely [11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11)
+- Removed Threat Intelligence section entirely [#11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11)
 
 ### Fixed
 
