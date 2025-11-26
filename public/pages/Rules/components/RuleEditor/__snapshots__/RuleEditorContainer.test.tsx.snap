@@ -817,7 +817,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                               onChange={[Function]}
                               onFocus={[Function]}
                               options={Array []}
-                              placeholder="Select a integration"
+                              placeholder="Select an integration"
                               selectedOptions={Array []}
                               singleSelection={
                                 Object {
@@ -850,7 +850,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                                   onFocus={[Function]}
                                   onOpenListClick={[Function]}
                                   onRemoveOption={[Function]}
-                                  placeholder="Select a integration"
+                                  placeholder="Select an integration"
                                   rootId={[Function]}
                                   searchValue=""
                                   selectedOptions={Array []}
@@ -893,7 +893,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                                           <p
                                             className="euiComboBoxPlaceholder"
                                           >
-                                            Select a integration
+                                            Select an integration
                                           </p>
                                           <AutosizeInput
                                             aria-controls=""

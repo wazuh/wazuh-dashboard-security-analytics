@@ -351,7 +351,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                           isInvalid={
                             (validateOnMount || props.touched.logType) && !!props.errors?.logType
                           }
-                          placeholder="Select a integration" // Replace Log type to Integration by Wazuh
+                          placeholder="Select an integration" // Replace Log type to Integration by Wazuh
                           data-test-subj={'rule_type_dropdown'}
                           options={logTypeOptions}
                           singleSelection={{ asPlainText: true }}
