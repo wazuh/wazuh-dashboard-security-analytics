@@ -1003,18 +1003,18 @@ exports[`<RuleEditorForm /> spec renders the component 1`] = `
                     }
                   >
                     <EuiSmallButton
-                      href="opensearch_security_analytics_dashboards#/log-types"
+                      href="sa_overview#/log-types"
                       target="_blank"
                     >
                       <EuiButton
-                        href="opensearch_security_analytics_dashboards#/log-types"
+                        href="sa_overview#/log-types"
                         size="s"
                         target="_blank"
                       >
                         <EuiButtonDisplay
                           baseClassName="euiButton"
                           element="a"
-                          href="opensearch_security_analytics_dashboards#/log-types"
+                          href="sa_overview#/log-types"
                           isDisabled={false}
                           rel="noopener noreferrer"
                           size="s"
@@ -1023,7 +1023,7 @@ exports[`<RuleEditorForm /> spec renders the component 1`] = `
                           <a
                             className="euiButton euiButton--primary euiButton--small"
                             disabled={false}
-                            href="opensearch_security_analytics_dashboards#/log-types"
+                            href="sa_overview#/log-types"
                             rel="noopener noreferrer"
                             style={
                               Object {

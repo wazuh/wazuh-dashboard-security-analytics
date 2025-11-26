@@ -9,6 +9,7 @@ import { RuleTableItem } from '../../Rules/utils/helpers';
 import { ContentPanel } from '../../../components/ContentPanel';
 import { EuiSmallButton, EuiFlexGroup, EuiFlexItem, EuiIcon, EuiSpacer, EuiText } from '@elastic/eui';
 import { RuleViewerFlyout } from '../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
+import { OVERVIEW_NAV_ID } from '../../../utils/constants'; // Wazuh
 
 export interface LogTypeDetectionRulesProps {
   rules: RuleTableItem[];
@@ -38,13 +39,13 @@ export const LogTypeDetectionRules: React.FC<LogTypeDetectionRulesProps> = ({
           <EuiFlexGroup justifyContent="center" alignItems="center" direction="column">
             <EuiFlexItem grow={false}>
               <EuiText color="subdued" size="s">
-                <p>There are no detection rules associated with this log type. </p>
+                <p>There are no detection rules associated with this integration. </p>
               </EuiText>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
               <EuiSmallButton
                 fill
-                href={`opensearch_security_analytics_dashboards#/create-rule`}
+                href={`${OVERVIEW_NAV_ID}#/create-rule`} // Wazuh
                 target="_blank"
               >
                 Create detection rule&nbsp;
