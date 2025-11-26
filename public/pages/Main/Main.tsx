@@ -140,7 +140,6 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   [ROUTES.DETECTORS]: Navigation.Detectors,
   [ROUTES.RULES]: Navigation.Rules,
   [ROUTES.LOG_TYPES]: Navigation.LogTypes,
-  // [ROUTES.THREAT_INTEL_OVERVIEW]: Navigation.ThreatIntel,
 };
 
 export default class Main extends Component<MainProps, MainState> {
@@ -257,7 +256,6 @@ export default class Main extends Component<MainProps, MainState> {
 
   updateSelectedNavItem() {
     const navItemId = this.getCurrentRouteId();
-    console.log('navItemId', navItemId);
     
     if (navItemId) {
       this.setState({ selectedNavItemId: navItemId });
