@@ -19,4 +19,3 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 ### Fixed
 
 - Fixed YAML Editor when creating or editing detection rules [#9](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/9)
-- Fixed redirect link to Integration section on buttons [#11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11)
