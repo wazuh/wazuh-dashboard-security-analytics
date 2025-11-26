@@ -8,12 +8,6 @@ import { render } from '@testing-library/react';
 import { RuleContentYamlViewer } from './RuleContentYamlViewer';
 import { DEFAULT_RULE_UUID } from '../../../../../common/constants';
 
-// This prevents runtime and test failures in our GHA caused by missing modules and keeps the plugin aligned with the current dashboard dependency graph (used by wazuh).
-jest.mock('prismjs', () => ({
-  highlight: (code: string) => code,
-  languages: { yaml: {} },
-}));
-
 describe('<RuleContentYamlViewer /> spec', () => {
   it('renders the component', () => {
     const { container } = render(
