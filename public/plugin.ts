@@ -105,21 +105,6 @@ export class SecurityAnalyticsPlugin
     };
 
     // <- Main menu Security Analytics created with sub-menus for each section
-    // core.application.register({
-    //   id: PLUGIN_NAME,
-    //   title: 'Security Analytics',
-    //   order: 7000,
-    //   category: {
-    //     id: 'security_analytics',
-    //     label: 'Security Analytics',
-    //     order: 2000,
-    //   },
-    //   mount: async (params: AppMountParameters) => {
-    //     const { renderApp } = await import('./security_analytics_app');
-    //     const [coreStart, depsStart] = await core.getStartServices();
-    //     return renderApp(coreStart, params, ROUTES.LANDING_PAGE, depsStart, dataSourceManagement);
-    //   },
-    // });
 
     core.application.register({
       id: OVERVIEW_NAV_ID,
