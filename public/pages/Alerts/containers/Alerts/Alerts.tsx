@@ -1018,6 +1018,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
           </>
         ),
       },
+      // disable threat intel tab for Wazuh
       // {
       //   id: 'threat-intel',
       //   name: 'Threat intel',
