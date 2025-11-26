@@ -87,7 +87,7 @@ enum Navigation {
   Correlations = 'Correlations',
   CorrelationRules = 'Correlation rules',
   LogTypes = 'Integrations', // Replace Log Types to Integrations by Wazuh
-  ThreatIntel = 'Threat Intelligence',
+  // Removed Threat Intel from side nav by Wazuh
 }
 
 /**
