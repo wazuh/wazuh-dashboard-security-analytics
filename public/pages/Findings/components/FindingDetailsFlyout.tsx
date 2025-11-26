@@ -291,7 +291,7 @@ export default class FindingDetailsFlyout extends Component<
 
                 <EuiFlexItem>
                   <EuiCompressedFormRow
-                    label={'Log type'}
+                    label={'Integration'} // Replace Log type with Integration by Wazuh
                     data-test-subj={'finding-details-flyout-rule-category'}
                   >
                     <EuiText>{getLogTypeLabel(fullRule.category) || DEFAULT_EMPTY_DATA}</EuiText>
