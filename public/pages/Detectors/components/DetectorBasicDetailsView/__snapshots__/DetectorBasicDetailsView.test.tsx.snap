@@ -209,7 +209,7 @@ Object {
                     class="euiFormLabel euiFormRow__label"
                     for="some_html_id"
                   >
-                    Log type
+                    Integration
                   </label>
                 </div>
                 <div
@@ -217,7 +217,7 @@ Object {
                 >
                   <div
                     class="euiText euiText--small"
-                    data-test-subj="text-details-group-content-log-type"
+                    data-test-subj="text-details-group-content-integration"
                     id="some_html_id"
                   >
                     Detector Type
@@ -250,7 +250,7 @@ Object {
                     data-test-subj="text-details-group-content-detector-dashboard"
                     id="some_html_id"
                   >
-                    Not available for this log type
+                    Not available for this integration
                   </div>
                 </div>
               </div>
@@ -594,7 +594,7 @@ Object {
                   class="euiFormLabel euiFormRow__label"
                   for="some_html_id"
                 >
-                  Log type
+                  Integration
                 </label>
               </div>
               <div
@@ -602,7 +602,7 @@ Object {
               >
                 <div
                   class="euiText euiText--small"
-                  data-test-subj="text-details-group-content-log-type"
+                  data-test-subj="text-details-group-content-integration"
                   id="some_html_id"
                 >
                   Detector Type
@@ -635,7 +635,7 @@ Object {
                   data-test-subj="text-details-group-content-detector-dashboard"
                   id="some_html_id"
                 >
-                  Not available for this log type
+                  Not available for this integration
                 </div>
               </div>
             </div>

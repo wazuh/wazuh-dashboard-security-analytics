@@ -147,9 +147,9 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         }
 
         if (!values.logType) {
-          errors.logType = 'Log type is required';
+          errors.logType = 'Integration is required'; // Replace Log type to Integration by Wazuh
         } else if (!ruleTypes.some((type) => type.value === values.logType)) {
-          errors.logType = `Invalid log type`;
+          errors.logType = `Invalid integration`; // Replace Log type to Integration by Wazuh
         }
 
         if (!values.detection) {
@@ -338,7 +338,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                       <EuiCompressedFormRow
                         label={
                           <EuiText size={'s'}>
-                            <strong>Log type</strong>
+                            {/* Replace Log type to Integration by Wazuh */}
+                            <strong>Integration</strong>
                           </EuiText>
                         }
                         isInvalid={
@@ -350,7 +351,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                           isInvalid={
                             (validateOnMount || props.touched.logType) && !!props.errors?.logType
                           }
-                          placeholder="Select a log type"
+                          placeholder="Select an integration" // Replace Log type to Integration by Wazuh
                           data-test-subj={'rule_type_dropdown'}
                           options={logTypeOptions}
                           singleSelection={{ asPlainText: true }}
@@ -374,7 +375,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     </EuiFlexItem>
                     <EuiFlexItem grow={false} style={{ marginTop: 36 }}>
                       <EuiSmallButton
-                        href={'opensearch_security_analytics_dashboards#/log-types'}
+                        href={`opensearch_security_analytics_dashboards#/log-types`}
                         target="_blank"
                       >
                         Manage <EuiIcon type={'popout'} />

@@ -86,7 +86,7 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
             </>
           ),
         },
-        { label: 'Log type', content: getLogTypeLabel(detector_type.toLowerCase()) },
+        { label: 'Integration', content: getLogTypeLabel(detector_type.toLowerCase()) }, // Changed Log Type to Integration by Wazuh
         {
           label: 'Detector dashboard',
           content: dashboardId ? (
@@ -95,7 +95,7 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
               <EuiIcon type={'popout'} />
             </EuiLink>
           ) : !logTypesWithDashboards.has(detector_type) ? (
-            'Not available for this log type'
+            'Not available for this integration' // Changed Log Type to Integration by Wazuh
           ) : (
             '-'
           ),
