@@ -12,6 +12,7 @@ import {
   DEFAULT_NAV_GROUPS,
   Plugin,
   PluginInitializerContext,
+  AppNavLinkStatus,
 } from '../../../src/core/public';
 import {
   CORRELATIONS_NAV_ID,
@@ -104,15 +105,18 @@ export class SecurityAnalyticsPlugin
       return renderApp(coreStart, params, redirect, depsStart, dataSourceManagement);
     };
 
+    // <- Main menu Security Analytics created with sub-menus for each section
     core.application.register({
       id: PLUGIN_NAME,
       title: 'Security Analytics',
       order: 7000,
       category: {
-        id: 'opensearch',
-        label: 'OpenSearch Plugins',
-        order: 2000,
+        id: 'security_analytics',
+        label: 'Security analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
       },
+      navLinkStatus: AppNavLinkStatus.hidden, // Hide the main menu item. It is used by wazuh to group sub-menus
       mount: async (params: AppMountParameters) => {
         const { renderApp } = await import('./security_analytics_app');
         const [coreStart, depsStart] = await core.getStartServices();
@@ -120,115 +124,155 @@ export class SecurityAnalyticsPlugin
       },
     });
 
+    core.application.register({
+      id: OVERVIEW_NAV_ID,
+      title: 'Overview',
+      order: 7000,
+      category: {
+        id: 'security_analytics',
+        label: 'Security analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        const { renderApp } = await import('./security_analytics_app');
+        const [coreStart, depsStart] = await core.getStartServices();
+        return renderApp(coreStart, params, ROUTES.LANDING_PAGE, depsStart, dataSourceManagement);
+      },
+    });
+
+    core.application.register({
+      id: FINDINGS_NAV_ID,
+      title: 'Findings',
+      order: 7001,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.FINDINGS);
+      },
+    });
+
+    core.application.register({
+      id: THREAT_ALERTS_NAV_ID,
+      title: 'Alerts',
+      order: 7002,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.ALERTS);
+      },
+    });
+
+    // Threat Intelligence is not used by Wazuh
+    // core.application.register({
+    //   id: THREAT_INTEL_NAV_ID,
+    //   title: 'Threat intelligence',
+    //   order: 7003,
+    //   category: {
+    //     id: 'security_analytics',
+    //     label: 'Security Analytics',
+    //     order: 550,
+    //     euiIconType: 'securityAnalyticsApp',
+    //   },
+    //   updater$: this.appStateUpdater,
+    //   mount: async (params: AppMountParameters) => {
+    //     return mountWrapper(params, ROUTES.THREAT_INTEL_OVERVIEW);
+    //   },
+    // });
+
+    core.application.register({
+      id: DETECTORS_NAV_ID,
+      title: 'Detectors',
+      order: 7004,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.DETECTORS);
+      },
+    });
+
+    core.application.register({
+      id: DETECTION_RULE_NAV_ID,
+      title: 'Detection rules',
+      order: 7005,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.RULES);
+      },
+    });
+
+    core.application.register({
+      id: LOG_TYPES_NAV_ID,
+      title: 'Integrations',
+      order: 7006,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.LOG_TYPES);
+      },
+    });
+
+    core.application.register({
+      id: CORRELATIONS_NAV_ID,
+      title: 'Correlations',
+      order: 7007,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.CORRELATIONS);
+      },
+    });
+
+    core.application.register({
+      id: CORRELATIONS_RULE_NAV_ID,
+      title: 'Correlation rules',
+      order: 7008,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.CORRELATION_RULES);
+      },
+    });
+    // Main menu Security Analytics created with sub-menus for each section ->
+
     if (core.chrome.navGroup.getNavGroupEnabled()) {
-      core.application.register({
-        id: OVERVIEW_NAV_ID,
-        title: 'Overview',
-        order: 0,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.LANDING_PAGE);
-        },
-      });
-
-      core.application.register({
-        id: GET_STARTED_NAV_ID,
-        title: 'Get started',
-        order: 1,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.GETTING_STARTED);
-        },
-      });
-
-      core.application.register({
-        id: THREAT_ALERTS_NAV_ID,
-        title: 'Threat alerts',
-        order: 300,
-        category: DEFAULT_APP_CATEGORIES.investigate,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.ALERTS);
-        },
-      });
-
-      core.application.register({
-        id: FINDINGS_NAV_ID,
-        title: 'Findings',
-        order: 400,
-        category: DEFAULT_APP_CATEGORIES.investigate,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.FINDINGS);
-        },
-      });
-
-      core.application.register({
-        id: CORRELATIONS_NAV_ID,
-        title: 'Correlations',
-        order: 500,
-        category: DEFAULT_APP_CATEGORIES.investigate,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.CORRELATIONS);
-        },
-      });
-
-      core.application.register({
-        id: DETECTORS_NAV_ID,
-        title: 'Threat detectors',
-        order: 600,
-        category: DEFAULT_APP_CATEGORIES.configure,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.DETECTORS);
-        },
-      });
-
-      core.application.register({
-        id: DETECTION_RULE_NAV_ID,
-        title: 'Detection rules',
-        order: 700,
-        category: DEFAULT_APP_CATEGORIES.configure,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.RULES);
-        },
-      });
-
-      core.application.register({
-        id: CORRELATIONS_RULE_NAV_ID,
-        title: 'Correlation rules',
-        order: 800,
-        category: DEFAULT_APP_CATEGORIES.configure,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.CORRELATION_RULES);
-        },
-      });
-
-      core.application.register({
-        id: THREAT_INTEL_NAV_ID,
-        title: 'Threat intelligence',
-        order: 900,
-        category: DEFAULT_APP_CATEGORIES.configure,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.THREAT_INTEL_OVERVIEW);
-        },
-      });
-
-      core.application.register({
-        id: LOG_TYPES_NAV_ID,
-        title: 'Log types',
-        order: 1000,
-        category: DEFAULT_APP_CATEGORIES.configure,
-        updater$: this.appStateUpdater,
-        mount: async (params: AppMountParameters) => {
-          return mountWrapper(params, ROUTES.LOG_TYPES);
-        },
-      });
-
       dataSourceObservable.subscribe((dataSourceOption) => {
         if (dataSourceOption) {
           this.appStateUpdater.next(this.updateDefaultRouteOfManagementApplications);
@@ -238,7 +282,7 @@ export class SecurityAnalyticsPlugin
       const navlinks = [
         { id: OVERVIEW_NAV_ID, showInAllNavGroup: true },
         { id: GET_STARTED_NAV_ID, showInAllNavGroup: true },
-        { id: THREAT_ALERTS_NAV_ID, showInAllNavGroup: true },
+        // { id: THREAT_ALERTS_NAV_ID, showInAllNavGroup: true },
         { id: FINDINGS_NAV_ID, showInAllNavGroup: true },
         { id: CORRELATIONS_NAV_ID, showInAllNavGroup: true },
         {

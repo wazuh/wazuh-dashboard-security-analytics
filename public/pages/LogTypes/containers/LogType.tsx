@@ -90,7 +90,7 @@ export const LogType: React.FC<LogTypeProps> = ({ notifications, history }) => {
       const details = await DataStore.logTypes.getLogType(logTypeId);
 
       if (!details) {
-        setInfoText('Log type not found!');
+        setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
         return;
       }
 
@@ -134,10 +134,10 @@ export const LogType: React.FC<LogTypeProps> = ({ notifications, history }) => {
   const deleteLogType = async () => {
     const deleteSucceeded = await DataStore.logTypes.deleteLogType(logTypeDetails!.id);
     if (deleteSucceeded) {
-      successNotificationToast(notifications, 'deleted', 'log type');
+      successNotificationToast(notifications, 'deleted', 'integration'); // Replace Log Type to Integration by Wazuh
       history.push(ROUTES.LOG_TYPES);
     } else {
-      errorNotificationToast(notifications, 'delete', 'log type');
+      errorNotificationToast(notifications, 'delete', 'integration'); // Replace Log Type to Integration by Wazuh
     }
   };
 

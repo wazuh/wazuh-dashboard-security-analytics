@@ -217,7 +217,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
       },
       {
         field: 'logType',
-        name: 'Log type',
+        name: 'Integration', // replace log types to integrations by Wazuh
         sortable: true,
         dataType: 'string',
         render: (logType: string) => formatRuleType(logType),
@@ -289,7 +289,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
         {
           type: 'field_value_selection',
           field: 'logType',
-          name: 'Log type',
+          name: 'Integration', // replace log types to integrations by Wazuh
           compressed: true,
           options: Array.from(logTypes).map((type) => ({
             value: type,

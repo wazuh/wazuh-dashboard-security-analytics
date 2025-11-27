@@ -86,8 +86,8 @@ enum Navigation {
   Alerts = 'Alerts',
   Correlations = 'Correlations',
   CorrelationRules = 'Correlation rules',
-  LogTypes = 'Log types',
-  ThreatIntel = 'Threat Intelligence',
+  LogTypes = 'Integrations', // Replace Log Types to Integrations by Wazuh
+  // Removed Threat Intel from side nav by Wazuh
 }
 
 /**
@@ -139,7 +139,7 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   [ROUTES.ALERTS]: Navigation.Alerts,
   [ROUTES.DETECTORS]: Navigation.Detectors,
   [ROUTES.RULES]: Navigation.Rules,
-  [ROUTES.THREAT_INTEL_OVERVIEW]: Navigation.ThreatIntel,
+  [ROUTES.LOG_TYPES]: Navigation.LogTypes,
 };
 
 export default class Main extends Component<MainProps, MainState> {
@@ -256,6 +256,7 @@ export default class Main extends Component<MainProps, MainState> {
 
   updateSelectedNavItem() {
     const navItemId = this.getCurrentRouteId();
+    
     if (navItemId) {
       this.setState({ selectedNavItemId: navItemId });
     }

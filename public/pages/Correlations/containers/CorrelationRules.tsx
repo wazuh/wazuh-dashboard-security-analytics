@@ -144,9 +144,10 @@ export const CorrelationRules: React.FC<CorrelationRulesProps> = (props: Correla
                 }
                 body={
                   <EuiText size="s">
+                    {/* Replace log types with integrations by Wazuh */}
                     <p>
                       Create a correlation rule based on specified fields to generate correlations
-                      across all findings between different log types.
+                      across all findings between different integrations.
                     </p>
                   </EuiText>
                 }
