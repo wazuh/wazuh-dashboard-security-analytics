@@ -45,7 +45,6 @@ import { getSeverityLabel } from '../../../Correlations/utils/constants';
 import { DataSourceContext } from '../../../../services/DataSourceContext';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { TopNavControlLinkData } from '../../../../../../../src/plugins/navigation/public';
-import { OVERVIEW_NAV_ID } from '../../../../utils/constants'; // Wazuh
 
 export interface VisualRuleEditorProps {
   initialValue: RuleEditorFormModel;
@@ -376,7 +375,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     </EuiFlexItem>
                     <EuiFlexItem grow={false} style={{ marginTop: 36 }}>
                       <EuiSmallButton
-                        href={`${OVERVIEW_NAV_ID}#/log-types`} // Wazuh
+                        href={`opensearch_security_analytics_dashboards#/log-types`}
                         target="_blank"
                       >
                         Manage <EuiIcon type={'popout'} />
