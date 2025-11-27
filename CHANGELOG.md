@@ -10,7 +10,8 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 
 ### Changed
 
-- Rename Log types to Integrations [#11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11)
+- Renamed Log types to Integrations [#11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11)
+- Restructured Security Analytics main menu navigation [#11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11)
 
 ### Removed
 
