@@ -12,6 +12,7 @@ import {
   DEFAULT_NAV_GROUPS,
   Plugin,
   PluginInitializerContext,
+  AppNavLinkStatus,
 } from '../../../src/core/public';
 import {
   CORRELATIONS_NAV_ID,
@@ -105,6 +106,23 @@ export class SecurityAnalyticsPlugin
     };
 
     // <- Main menu Security Analytics created with sub-menus for each section
+    core.application.register({
+      id: PLUGIN_NAME,
+      title: 'Security Analytics',
+      order: 7000,
+      category: {
+        id: 'security_analytics',
+        label: 'Security analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      navLinkStatus: AppNavLinkStatus.hidden, // Hide the main menu item. It is used by wazuh to group sub-menus
+      mount: async (params: AppMountParameters) => {
+        const { renderApp } = await import('./security_analytics_app');
+        const [coreStart, depsStart] = await core.getStartServices();
+        return renderApp(coreStart, params, ROUTES.LANDING_PAGE, depsStart, dataSourceManagement);
+      },
+    });
 
     core.application.register({
       id: OVERVIEW_NAV_ID,
