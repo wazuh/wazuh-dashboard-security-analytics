@@ -13,6 +13,7 @@ import {
   logTypesWithDashboards,
   ROUTES,
   THREAT_INTEL_NAV_ID,
+  THREAT_INTEL_ENABLED,
 } from '../../../../utils/constants';
 import { Detector } from '../../../../../types';
 import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
@@ -109,7 +110,7 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
       {createTextDetailsGroup([
         { label: 'Threat intelligence', content: threat_intel_enabled ? 'Enabled' : 'Disabled' },
       ])}
-      {threat_intel_enabled && (
+      {THREAT_INTEL_ENABLED && threat_intel_enabled && (
         <EuiCallOut
           size="s"
           title={
