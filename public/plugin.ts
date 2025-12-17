@@ -8,11 +8,9 @@ import {
   AppUpdater,
   CoreSetup,
   CoreStart,
-  DEFAULT_APP_CATEGORIES,
   DEFAULT_NAV_GROUPS,
   Plugin,
   PluginInitializerContext,
-  AppNavLinkStatus,
 } from '../../../src/core/public';
 import {
   CORRELATIONS_NAV_ID,
@@ -20,15 +18,15 @@ import {
   DETECTORS_NAV_ID,
   DETECTION_RULE_NAV_ID,
   FINDINGS_NAV_ID,
-  GET_STARTED_NAV_ID,
   LOG_TYPES_NAV_ID,
   OVERVIEW_NAV_ID,
   PLUGIN_NAME,
   ROUTES,
   THREAT_ALERTS_NAV_ID,
-  THREAT_INTEL_NAV_ID,
   dataSourceObservable,
   setDarkMode,
+  INSIGHTS_NAV_ID,
+  DETECTION_NAV_ID,
 } from './utils/constants';
 import { SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart } from './index';
 import { DataPublicPluginStart, DataPublicPluginSetup } from '../../../src/plugins/data/public';
@@ -116,7 +114,6 @@ export class SecurityAnalyticsPlugin
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
-      navLinkStatus: AppNavLinkStatus.hidden, // Hide the main menu item. It is used by wazuh to group sub-menus
       mount: async (params: AppMountParameters) => {
         const { renderApp } = await import('./security_analytics_app');
         const [coreStart, depsStart] = await core.getStartServices();
@@ -279,24 +276,48 @@ export class SecurityAnalyticsPlugin
         }
       });
 
+      core.application.register({
+        id: INSIGHTS_NAV_ID,
+        title: "Insights",
+        mount: async () => {
+          return () => {};
+        }
+      })
+
+      core.application.register({
+        id: DETECTION_NAV_ID,
+        title: "Detection",
+        mount: async () => {
+          return () => {};
+        }
+      })
+
       const navlinks = [
         { id: OVERVIEW_NAV_ID, showInAllNavGroup: true },
-        { id: GET_STARTED_NAV_ID, showInAllNavGroup: true },
-        // { id: THREAT_ALERTS_NAV_ID, showInAllNavGroup: true },
-        { id: FINDINGS_NAV_ID, showInAllNavGroup: true },
-        { id: CORRELATIONS_NAV_ID, showInAllNavGroup: true },
+        // Wazuh does not use Get Started page
+        // { id: GET_STARTED_NAV_ID, showInAllNavGroup: true },
         {
-          id: PLUGIN_NAME,
-          category: DEFAULT_APP_CATEGORIES.configure,
-          title: 'Threat detection',
+          id: INSIGHTS_NAV_ID,
+          title: "Insights",
           showInAllNavGroup: true,
-          order: 600,
+          order: 7001,
         },
-        { id: DETECTORS_NAV_ID, parentNavLinkId: PLUGIN_NAME, showInAllNavGroup: true },
-        { id: DETECTION_RULE_NAV_ID, parentNavLinkId: PLUGIN_NAME, showInAllNavGroup: true },
-        { id: CORRELATIONS_RULE_NAV_ID, showInAllNavGroup: true },
-        { id: THREAT_INTEL_NAV_ID, showInAllNavGroup: true },
-        { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true },
+        { id: THREAT_ALERTS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
+        { id: FINDINGS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
+        { id: CORRELATIONS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
+        { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7002 },
+        // order 7003 is reserved for Normalization
+        {
+          id: DETECTION_NAV_ID,
+          title: "Detection",
+          showInAllNavGroup: true,
+          order: 7004,
+        },
+        { id: DETECTORS_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
+        { id: DETECTION_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
+        { id: CORRELATIONS_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
+        // Wazuh does not use Threat Intelligence
+        // { id: THREAT_INTEL_NAV_ID, showInAllNavGroup: true },
       ];
 
       core.chrome.navGroup.addNavLinksToGroup(DEFAULT_NAV_GROUPS['security-analytics'], navlinks);

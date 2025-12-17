@@ -32,6 +32,8 @@ export const DETECTION_RULE_NAV_ID = `detection_rules`;
 export const CORRELATIONS_RULE_NAV_ID = `correlation_rules`;
 export const THREAT_INTEL_NAV_ID = `threat_intelligence`;
 export const LOG_TYPES_NAV_ID = `log_types`;
+export const INSIGHTS_NAV_ID = 'insights_nav';
+export const DETECTION_NAV_ID = 'detection_nav';
 
 export let isDarkMode: boolean = false;
 
