@@ -31,6 +31,7 @@ import {
   DEFAULT_EMPTY_DATA,
   FindingTabId,
   MAX_RECENTLY_USED_TIME_RANGES,
+  THREAT_INTEL_ENABLED,
 } from '../../../../utils/constants';
 import { getChartTimeUnit, TimeUnit } from '../../../Overview/utils/helpers';
 import {
@@ -142,11 +143,15 @@ class Findings extends Component<FindingsProps, FindingsState> {
     } = props;
     const timeUnits = getChartTimeUnit(dateTimeFilter.startTime, dateTimeFilter.endTime);
     const searchParams = new URLSearchParams(props.location.search);
+    const selectedTabFromUrl = searchParams.get('detectionType') as FindingTabId | null;
+    const selectedTabId =
+      selectedTabFromUrl === FindingTabId.ThreatIntel && !THREAT_INTEL_ENABLED
+        ? FindingTabId.DetectionRules
+        : selectedTabFromUrl ?? FindingTabId.DetectionRules;
     this.state = {
       loading: true,
       notificationChannels: [],
-      selectedTabId:
-        (searchParams.get('detectionType') as FindingTabId) ?? FindingTabId.DetectionRules,
+      selectedTabId,
       findingStateByTabId: {
         [FindingTabId.DetectionRules]: {
           findings: [],
@@ -233,7 +238,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
     await this.getNotificationChannels();
     if (this.state.selectedTabId === FindingTabId.DetectionRules) {
       await this.getDetectionRulesFindings();
-    } else if (this.state.selectedTabId === FindingTabId.ThreatIntel) {
+    } else if (this.state.selectedTabId === FindingTabId.ThreatIntel && THREAT_INTEL_ENABLED) {
       await this.getThreatIntelFindings();
     }
     // const data = this.generateVisualizationData();

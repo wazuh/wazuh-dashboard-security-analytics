@@ -277,7 +277,9 @@ export const Overview: React.FC<OverviewProps> = (props) => {
         <>
           <EuiFlexItem>
             <EuiFlexGroup gutterSize="m">
-              {getOverviewsCardsProps().map((p, idx) => (
+              {/* Wazuh hides overview cards */}
+              {/*
+               {getOverviewsCardsProps().map((p, idx) => (
                 <EuiFlexItem key={idx}>
                   <EuiCard
                     {...p}
@@ -287,7 +289,7 @@ export const Overview: React.FC<OverviewProps> = (props) => {
                     titleSize="s"
                   />
                 </EuiFlexItem>
-              ))}
+              ))} */}
             </EuiFlexGroup>
           </EuiFlexItem>
           <EuiFlexItem>

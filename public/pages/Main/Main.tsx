@@ -26,6 +26,7 @@ import {
   ROUTES,
   dataSourceObservable,
   OS_NOTIFICATION_PLUGIN,
+  THREAT_INTEL_ENABLED,
 } from "../../utils/constants";
 import { CoreServicesConsumer } from "../../components/core_services";
 import Findings from "../Findings";
@@ -350,6 +351,19 @@ export default class Main extends Component<MainProps, MainState> {
             },
             isSelected: selectedNavItemId === Navigation.Overview,
           },
+          ...(THREAT_INTEL_ENABLED
+          ? [
+              {
+                name: Navigation.ThreatIntel,
+                id: Navigation.ThreatIntel,
+                onClick: () => {
+                  this.setState({ selectedNavItemId: Navigation.ThreatIntel });
+                  history.push(ROUTES.THREAT_INTEL_OVERVIEW);
+                },
+                isSelected: selectedNavItemId === Navigation.ThreatIntel,
+              },
+            ]
+          : []),
           {
             name: Navigation.Insights,
             id: Navigation.Insights,
@@ -430,7 +444,7 @@ export default class Main extends Component<MainProps, MainState> {
             ],
           },
         ],
-      },
+      }
     ];
   };
 
@@ -973,81 +987,61 @@ export default class Main extends Component<MainProps, MainState> {
                                         );
                                       }}
                                     />
-                                    <Route
-                                      path={
-                                        ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE
-                                      }
-                                      render={(props) => {
-                                        return (
-                                          <AddThreatIntelSource
-                                            {...props}
-                                            threatIntelService={
-                                              services.threatIntelService
-                                            }
-                                          />
-                                        );
-                                      }}
-                                    />
-                                    <Route
-                                      path={ROUTES.THREAT_INTEL_OVERVIEW}
-                                      render={(props) => {
-                                        return (
-                                          <ThreatIntelOverview
-                                            {...props}
-                                            threatIntelService={
-                                              services.threatIntelService
-                                            }
-                                            dataSource={selectedDataSource}
-                                          />
-                                        );
-                                      }}
-                                    />
-                                    <Route
-                                      path={[
-                                        ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
-                                        ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
-                                      ]}
-                                      render={(
-                                        props: RouteComponentProps<
-                                          any,
-                                          any,
-                                          any
-                                        >
-                                      ) => {
-                                        return (
-                                          <ThreatIntelScanConfigForm
-                                            {...props}
-                                            notificationsService={
-                                              services.notificationsService
-                                            }
-                                            threatIntelService={
-                                              services.threatIntelService
-                                            }
-                                            notifications={core.notifications}
-                                          />
-                                        );
-                                      }}
-                                    />
-                                    <Route
-                                      path={`${ROUTES.THREAT_INTEL_SOURCE_DETAILS}/:id`}
-                                      render={(
-                                        props: RouteComponentProps<
-                                          any,
-                                          any,
-                                          any
-                                        >
-                                      ) => {
-                                        return (
-                                          <ThreatIntelSource
-                                            {...props}
-                                            threatIntelService={
-                                              services.threatIntelService
-                                            }
-                                            notifications={core.notifications}
-                                          />
-                                        );
-                                      }}
-                                    />
+                                    {THREAT_INTEL_ENABLED && (
+                                      <>
+                                        <Route
+                                          path={ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE}
+                                          render={(props) => {
+                                            return (
+                                              <AddThreatIntelSource
+                                                {...props}
+                                                threatIntelService={services.threatIntelService}
+                                              />
+                                            );
+                                          }}
+                                        />
+                                        <Route
+                                          path={ROUTES.THREAT_INTEL_OVERVIEW}
+                                          render={(props) => {
+                                            return (
+                                              <ThreatIntelOverview
+                                                {...props}
+                                                threatIntelService={services.threatIntelService}
+                                                dataSource={selectedDataSource}
+                                              />
+                                            );
+                                          }}
+                                        />
+                                        <Route
+                                          path={[
+                                            ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
+                                            ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
+                                          ]}
+                                          render={(props: RouteComponentProps<any, any, any>) => {
+                                            return (
+                                              <ThreatIntelScanConfigForm
+                                                {...props}
+                                                notificationsService={services.notificationsService}
+                                                threatIntelService={services.threatIntelService}
+                                                notifications={core.notifications}
+                                              />
+                                            );
+                                          }}
+                                        />
+                                        <Route
+                                          path={`${ROUTES.THREAT_INTEL_SOURCE_DETAILS}/:id`}
+                                          render={(props: RouteComponentProps<any, any, any>) => {
+                                            return (
+                                              <ThreatIntelSource
+                                                {...props}
+                                                threatIntelService={services.threatIntelService}
+                                                notifications={core.notifications}
+                                              />
+                                            );
+                                          }}
+                                        />
+                                      </>
+                                    )}
 
                                     <Redirect from={"/"} to={landingPage} />
                                   </Switch>

@@ -13,7 +13,6 @@ import {
   FINDINGS_NAV_ID,
   ROUTES,
   THREAT_ALERTS_NAV_ID,
-  THREAT_INTEL_NAV_ID,
   CORRELATIONS_RULE_NAV_ID,
 } from '../../../../utils/constants';
 import { RouteComponentProps } from 'react-router-dom';
@@ -69,7 +68,7 @@ export const GettingStartedContent: React.FC<GettingStartedPopupProps> = ({
           />
         ),
       },
-      {
+      /* {
         title: 'Set up threat intelligence analytics',
         children: (
           <GetStartedStep
@@ -87,7 +86,7 @@ export const GettingStartedContent: React.FC<GettingStartedPopupProps> = ({
             ]}
           />
         ),
-      },
+      }, */
       {
         title: 'Discover security findings',
         children: (
