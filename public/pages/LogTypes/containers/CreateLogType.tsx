@@ -28,7 +28,7 @@ export const CreateLogType: React.FC<CreateLogTypeProps> = ({ history, notificat
     if (getUseUpdatedUx()) {
       setBreadcrumbs([BREADCRUMBS.LOG_TYPES, BREADCRUMBS.LOG_TYPE_CREATE]);
     } else {
-      setBreadcrumbs([BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, BREADCRUMBS.LOG_TYPE_CREATE]);
+      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, BREADCRUMBS.LOG_TYPE_CREATE]);
     }
   }, [getUseUpdatedUx()]);
 

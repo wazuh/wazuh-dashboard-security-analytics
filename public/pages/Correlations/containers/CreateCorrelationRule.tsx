@@ -833,7 +833,7 @@ export const CreateCorrelationRule: React.FC<CreateCorrelationRuleProps> = (
 
   useEffect(() => {
     setBreadcrumbs([
-      BREADCRUMBS.CORRELATIONS,
+      BREADCRUMBS.DETECTION,
       BREADCRUMBS.CORRELATION_RULES,
       BREADCRUMBS.CORRELATIONS_RULE_CREATE(action),
     ]);
