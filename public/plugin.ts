@@ -11,6 +11,7 @@ import {
   DEFAULT_NAV_GROUPS,
   Plugin,
   PluginInitializerContext,
+  AppNavLinkStatus
 } from '../../../src/core/public';
 import {
   CORRELATIONS_NAV_ID,
@@ -114,6 +115,7 @@ export class SecurityAnalyticsPlugin
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
+      navLinkStatus: AppNavLinkStatus.hidden,
       mount: async (params: AppMountParameters) => {
         const { renderApp } = await import('./security_analytics_app');
         const [coreStart, depsStart] = await core.getStartServices();
