@@ -32,6 +32,8 @@ export const DETECTION_RULE_NAV_ID = `detection_rules`;
 export const CORRELATIONS_RULE_NAV_ID = `correlation_rules`;
 export const THREAT_INTEL_NAV_ID = `threat_intelligence`;
 export const LOG_TYPES_NAV_ID = `log_types`;
+// Wazuh: Threat intelligence app/endpoints are not available.
+export const THREAT_INTEL_ENABLED = false;
 
 export let isDarkMode: boolean = false;
 
