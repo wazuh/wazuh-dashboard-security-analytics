@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { Component } from 'react';
-import { Switch, Route, Redirect, RouteComponentProps } from 'react-router-dom';
+import React, { Component } from "react";
+import { Switch, Route, Redirect, RouteComponentProps } from "react-router-dom";
 import {
   EuiSideNav,
   EuiPage,
@@ -16,78 +16,86 @@ import {
   EuiGlobalToastList,
   EuiFlexGroup,
   EuiFlexItem,
-} from '@elastic/eui';
-import { Toast } from '@opensearch-project/oui/src/eui_components/toast/global_toast_list';
-import { AppMountParameters, CoreStart } from 'opensearch-dashboards/public';
-import { SaContextConsumer } from '../../services';
+} from "@elastic/eui";
+import { Toast } from "@opensearch-project/oui/src/eui_components/toast/global_toast_list";
+import { AppMountParameters, CoreStart } from "opensearch-dashboards/public";
+import { SaContextConsumer } from "../../services";
 import {
   DEFAULT_DATE_RANGE,
   DATE_TIME_FILTER_KEY,
   ROUTES,
   dataSourceObservable,
   OS_NOTIFICATION_PLUGIN,
-} from '../../utils/constants';
-import { CoreServicesConsumer } from '../../components/core_services';
-import Findings from '../Findings';
-import Detectors from '../Detectors';
-import Overview from '../Overview';
-import CreateDetector from '../CreateDetector/containers/CreateDetector';
-import Alerts from '../Alerts';
-import { DetectorDetails } from '../Detectors/containers/Detector/DetectorDetails';
-import { UpdateDetectorBasicDetails } from '../Detectors/components/UpdateBasicDetails/UpdateBasicDetails';
-import { UpdateDetectorRules } from '../Detectors/components/UpdateRules/UpdateRules';
-import UpdateFieldMappings from '../Detectors/components/UpdateFieldMappings/UpdateFieldMappings';
-import UpdateAlertConditions from '../Detectors/components/UpdateAlertConditions/UpdateAlertConditions';
-import { Rules } from '../Rules/containers/Rules/Rules';
-import { CreateRule } from '../Rules/containers/CreateRule/CreateRule';
-import { EditRule } from '../Rules/containers/EditRule/EditRule';
-import { ImportRule } from '../Rules/containers/ImportRule/ImportRule';
-import { DuplicateRule } from '../Rules/containers/DuplicateRule/DuplicateRule';
-import Callout, { ICalloutProps } from './components/Callout';
-import { DataStore } from '../../store/DataStore';
-import { CreateCorrelationRule } from '../Correlations/containers/CreateCorrelationRule';
-import { CorrelationRules } from '../Correlations/containers/CorrelationRules';
-import { Correlations } from '../Correlations/containers/CorrelationsContainer';
-import { LogTypes } from '../LogTypes/containers/LogTypes';
-import { LogType } from '../LogTypes/containers/LogType';
-import { CreateLogType } from '../LogTypes/containers/CreateLogType';
+} from "../../utils/constants";
+import { CoreServicesConsumer } from "../../components/core_services";
+import Findings from "../Findings";
+import Detectors from "../Detectors";
+import Overview from "../Overview";
+import CreateDetector from "../CreateDetector/containers/CreateDetector";
+import Alerts from "../Alerts";
+import { DetectorDetails } from "../Detectors/containers/Detector/DetectorDetails";
+import { UpdateDetectorBasicDetails } from "../Detectors/components/UpdateBasicDetails/UpdateBasicDetails";
+import { UpdateDetectorRules } from "../Detectors/components/UpdateRules/UpdateRules";
+import UpdateFieldMappings from "../Detectors/components/UpdateFieldMappings/UpdateFieldMappings";
+import UpdateAlertConditions from "../Detectors/components/UpdateAlertConditions/UpdateAlertConditions";
+import { Rules } from "../Rules/containers/Rules/Rules";
+import { CreateRule } from "../Rules/containers/CreateRule/CreateRule";
+import { EditRule } from "../Rules/containers/EditRule/EditRule";
+import { ImportRule } from "../Rules/containers/ImportRule/ImportRule";
+import { DuplicateRule } from "../Rules/containers/DuplicateRule/DuplicateRule";
+import Callout, { ICalloutProps } from "./components/Callout";
+import { DataStore } from "../../store/DataStore";
+import { CreateCorrelationRule } from "../Correlations/containers/CreateCorrelationRule";
+import { CorrelationRules } from "../Correlations/containers/CorrelationRules";
+import { Correlations } from "../Correlations/containers/CorrelationsContainer";
+import { LogTypes } from "../LogTypes/containers/LogTypes";
+import { LogType } from "../LogTypes/containers/LogType";
+import { CreateLogType } from "../LogTypes/containers/CreateLogType";
 import {
   DataSourceContextType,
   DateTimeFilter,
   ShowFlyoutDataType,
   SecurityAnalyticsContextType,
   FlyoutPropsType,
-} from '../../../types';
-import { DataSourceManagementPluginSetup } from '../../../../../src/plugins/data_source_management/public';
-import { DataSourceMenuWrapper } from '../../components/MDS/DataSourceMenuWrapper';
-import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
-import { DataSourceContext, DataSourceContextConsumer } from '../../services/DataSourceContext';
-import { dataSourceInfo, getUseUpdatedUx } from '../../services/utils/constants';
-import { ThreatIntelOverview } from '../ThreatIntel/containers/Overview/ThreatIntelOverview';
-import { AddThreatIntelSource } from '../ThreatIntel/containers/AddThreatIntelSource/AddThreatIntelSource';
-import { ThreatIntelScanConfigForm } from '../ThreatIntel/containers/ScanConfiguration/ThreatIntelScanConfigForm';
-import { ThreatIntelSource } from '../ThreatIntel/containers/ThreatIntelSource/ThreatIntelSource';
-import { parse } from 'query-string';
+} from "../../../types";
+import { DataSourceManagementPluginSetup } from "../../../../../src/plugins/data_source_management/public";
+import { DataSourceMenuWrapper } from "../../components/MDS/DataSourceMenuWrapper";
+import { DataSourceOption } from "src/plugins/data_source_management/public/components/data_source_menu/types";
+import {
+  DataSourceContext,
+  DataSourceContextConsumer,
+} from "../../services/DataSourceContext";
+import {
+  dataSourceInfo,
+  getUseUpdatedUx,
+} from "../../services/utils/constants";
+import { ThreatIntelOverview } from "../ThreatIntel/containers/Overview/ThreatIntelOverview";
+import { AddThreatIntelSource } from "../ThreatIntel/containers/AddThreatIntelSource/AddThreatIntelSource";
+import { ThreatIntelScanConfigForm } from "../ThreatIntel/containers/ScanConfiguration/ThreatIntelScanConfigForm";
+import { ThreatIntelSource } from "../ThreatIntel/containers/ThreatIntelSource/ThreatIntelSource";
+import { parse } from "query-string";
 import {
   dataSourceFilterFn,
   getPlugins,
   setIsNotificationPluginInstalled,
-} from '../../utils/helpers';
-import { GettingStartedContent } from '../Overview/components/GettingStarted/GettingStartedContent';
-import { BrowserServices } from '../../models/interfaces';
-import { CHANNEL_TYPES } from '../CreateDetector/components/ConfigureAlerts/utils/constants';
+} from "../../utils/helpers";
+import { GettingStartedContent } from "../Overview/components/GettingStarted/GettingStartedContent";
+import { BrowserServices } from "../../models/interfaces";
+import { CHANNEL_TYPES } from "../CreateDetector/components/ConfigureAlerts/utils/constants";
 
 enum Navigation {
-  SecurityAnalytics = 'Security Analytics',
-  Findings = 'Findings',
-  Detectors = 'Detectors',
-  Rules = 'Detection rules',
-  Overview = 'Overview',
-  Alerts = 'Alerts',
-  Correlations = 'Correlations',
-  CorrelationRules = 'Correlation rules',
-  LogTypes = 'Integrations', // Replace Log Types to Integrations by Wazuh
+  SecurityAnalytics = "Security Analytics",
+  Findings = "Findings",
+  Detectors = "Detectors",
+  Rules = "Detection rules",
+  Overview = "Overview",
+  Alerts = "Alerts",
+  Correlations = "Correlations",
+  CorrelationRules = "Correlation rules",
+  LogTypes = "Integrations", // Replace Log Types to Integrations by Wazuh
   // Removed Threat Intel from side nav by Wazuh
+  Insights = "Insights",
+  Detection = "Detection",
 }
 
 /**
@@ -112,7 +120,7 @@ const HIDDEN_NAV_ROUTES: string[] = [
 
 interface MainProps extends RouteComponentProps {
   landingPage: string;
-  setActionMenu: AppMountParameters['setHeaderActionMenu'];
+  setActionMenu: AppMountParameters["setHeaderActionMenu"];
   multiDataSourceEnabled: boolean;
   dataSourceManagement?: DataSourceManagementPluginSetup;
   services: BrowserServices;
@@ -152,8 +160,8 @@ export default class Main extends Component<MainProps, MainState> {
           startTime: DEFAULT_DATE_RANGE.start,
           endTime: DEFAULT_DATE_RANGE.end,
         };
-    let dataSourceId = '';
-    let dataSourceLabel = '';
+    let dataSourceId = "";
+    let dataSourceLabel = "";
     if (props.multiDataSourceEnabled) {
       const {
         dataSourceId: parsedDataSourceId,
@@ -163,7 +171,7 @@ export default class Main extends Component<MainProps, MainState> {
         dataSourceLabel: string;
       };
       dataSourceId = parsedDataSourceId;
-      dataSourceLabel = parsedDataSourceLabel || '';
+      dataSourceLabel = parsedDataSourceLabel || "";
     }
 
     this.state = {
@@ -176,7 +184,8 @@ export default class Main extends Component<MainProps, MainState> {
        * empty string: using the local cluster.
        * string: using the selected data source.
        */
-      dataSourceLoading: dataSourceId === undefined ? props.multiDataSourceEnabled : false,
+      dataSourceLoading:
+        dataSourceId === undefined ? props.multiDataSourceEnabled : false,
       selectedDataSource: { id: dataSourceId },
       dataSourceMenuReadOnly: false,
     };
@@ -211,11 +220,15 @@ export default class Main extends Component<MainProps, MainState> {
     prevState: Readonly<MainState>,
     snapshot?: any
   ): void {
-    const pathnameChanged = this.props.location.pathname !== prevProps.location.pathname;
+    const pathnameChanged =
+      this.props.location.pathname !== prevProps.location.pathname;
 
-    if (pathnameChanged || this.state.selectedDataSource.id !== prevState.selectedDataSource.id) {
+    if (
+      pathnameChanged ||
+      this.state.selectedDataSource.id !== prevState.selectedDataSource.id
+    ) {
       const searchParams = new URLSearchParams(this.props.location.search);
-      searchParams.set('dataSourceId', this.state.selectedDataSource.id);
+      searchParams.set("dataSourceId", this.state.selectedDataSource.id);
       this.props.history.replace(
         {
           ...this.props.location,
@@ -256,12 +269,12 @@ export default class Main extends Component<MainProps, MainState> {
 
   updateSelectedNavItem() {
     const navItemId = this.getCurrentRouteId();
-    
+
     if (navItemId) {
       this.setState({ selectedNavItemId: navItemId });
     }
 
-    if (this.props.location.pathname.includes('detector-details')) {
+    if (this.props.location.pathname.includes("detector-details")) {
       this.setState({ selectedNavItemId: navItemIdByRoute[ROUTES.DETECTORS] });
     }
   }
@@ -275,7 +288,8 @@ export default class Main extends Component<MainProps, MainState> {
     const { services } = this.props;
     if (
       sources[0] &&
-      (dataSource?.id !== sources[0].id || dataSource?.label !== sources[0].label)
+      (dataSource?.id !== sources[0].id ||
+        dataSource?.label !== sources[0].label)
     ) {
       dataSourceInfo.activeDataSource = sources[0];
       this.setState({
@@ -290,7 +304,9 @@ export default class Main extends Component<MainProps, MainState> {
       });
 
       getPlugins(services.opensearchService).then((plugins): void => {
-        setIsNotificationPluginInstalled(plugins.includes(OS_NOTIFICATION_PLUGIN));
+        setIsNotificationPluginInstalled(
+          plugins.includes(OS_NOTIFICATION_PLUGIN)
+        );
       });
 
       DataStore.logTypes.getLogTypes();
@@ -335,42 +351,62 @@ export default class Main extends Component<MainProps, MainState> {
             isSelected: selectedNavItemId === Navigation.Overview,
           },
           {
-            name: Navigation.Findings,
-            id: Navigation.Findings,
-            onClick: () => {
-              this.setState({ selectedNavItemId: Navigation.Findings });
-              history.push(ROUTES.FINDINGS);
-            },
-            isSelected: selectedNavItemId === Navigation.Findings,
-          },
-          {
-            name: Navigation.Alerts,
-            id: Navigation.Alerts,
-            onClick: () => {
-              this.setState({ selectedNavItemId: Navigation.Alerts });
-              history.push(ROUTES.ALERTS);
-            },
-            isSelected: selectedNavItemId === Navigation.Alerts,
-          },
-          {
-            name: Navigation.ThreatIntel,
-            id: Navigation.ThreatIntel,
-            onClick: () => {
-              this.setState({ selectedNavItemId: Navigation.ThreatIntel });
-              history.push(ROUTES.THREAT_INTEL_OVERVIEW);
-            },
-            isSelected: selectedNavItemId === Navigation.ThreatIntel,
-          },
-          {
-            name: Navigation.Detectors,
-            id: Navigation.Detectors,
-            onClick: () => {
-              this.setState({ selectedNavItemId: Navigation.Detectors });
-              history.push(ROUTES.DETECTORS);
-            },
+            name: Navigation.Insights,
+            id: Navigation.Insights,
             forceOpen: true,
-            isSelected: selectedNavItemId === Navigation.Detectors,
             items: [
+              {
+                name: Navigation.Findings,
+                id: Navigation.Findings,
+                onClick: () => {
+                  this.setState({ selectedNavItemId: Navigation.Findings });
+                  history.push(ROUTES.FINDINGS);
+                },
+                isSelected: selectedNavItemId === Navigation.Findings,
+              },
+              {
+                name: Navigation.Alerts,
+                id: Navigation.Alerts,
+                onClick: () => {
+                  this.setState({ selectedNavItemId: Navigation.Alerts });
+                  history.push(ROUTES.ALERTS);
+                },
+                isSelected: selectedNavItemId === Navigation.Alerts,
+              },
+              {
+                name: Navigation.Correlations,
+                id: Navigation.Correlations,
+                onClick: () => {
+                  this.setState({ selectedNavItemId: Navigation.Correlations });
+                  history.push(ROUTES.CORRELATIONS);
+                },
+                isSelected: selectedNavItemId === Navigation.Correlations,
+              },
+            ],
+          },
+          {
+            name: Navigation.LogTypes,
+            id: Navigation.LogTypes,
+            onClick: () => {
+              this.setState({ selectedNavItemId: Navigation.LogTypes });
+              history.push(ROUTES.LOG_TYPES);
+            },
+            isSelected: selectedNavItemId === Navigation.LogTypes,
+          },
+          {
+            name: Navigation.Detection,
+            id: Navigation.Detection,
+            forceOpen: true,
+            items: [
+              {
+                name: Navigation.Detectors,
+                id: Navigation.Detectors,
+                onClick: () => {
+                  this.setState({ selectedNavItemId: Navigation.Detectors });
+                  history.push(ROUTES.DETECTORS);
+                },
+                isSelected: selectedNavItemId === Navigation.Detectors,
+              },
               {
                 name: Navigation.Rules,
                 id: Navigation.Rules,
@@ -381,48 +417,12 @@ export default class Main extends Component<MainProps, MainState> {
                 isSelected: selectedNavItemId === Navigation.Rules,
               },
               {
-                name: Navigation.LogTypes,
-                id: Navigation.LogTypes,
-                onClick: () => {
-                  this.setState({ selectedNavItemId: Navigation.LogTypes });
-                  history.push(ROUTES.LOG_TYPES);
-                },
-                isSelected: selectedNavItemId === Navigation.LogTypes,
-              },
-            ],
-          },
-          {
-            name: Navigation.Correlations,
-            id: Navigation.Correlations,
-            onClick: () => {
-              this.setState({ selectedNavItemId: Navigation.Correlations });
-              history.push(ROUTES.CORRELATIONS);
-            },
-            renderItem: (props: any) => {
-              return (
-                <EuiFlexGroup alignItems="center" gutterSize="xs">
-                  <EuiFlexItem grow={false}>
-                    <span
-                      className={props.className}
-                      onClick={() => {
-                        this.setState({ selectedNavItemId: Navigation.Correlations });
-                        history.push(ROUTES.CORRELATIONS);
-                      }}
-                    >
-                      {props.children}
-                    </span>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              );
-            },
-            isSelected: selectedNavItemId === Navigation.Correlations,
-            forceOpen: true,
-            items: [
-              {
                 name: Navigation.CorrelationRules,
                 id: Navigation.CorrelationRules,
                 onClick: () => {
-                  this.setState({ selectedNavItemId: Navigation.CorrelationRules });
+                  this.setState({
+                    selectedNavItemId: Navigation.CorrelationRules,
+                  });
                   history.push(ROUTES.CORRELATION_RULES);
                 },
                 isSelected: selectedNavItemId === Navigation.CorrelationRules,
@@ -451,7 +451,8 @@ export default class Main extends Component<MainProps, MainState> {
       dataSourceLoading,
       dataSourceMenuReadOnly,
     } = this.state;
-    const sideNav: EuiSideNavItemType<{ style: any }>[] = this.getSideNavItems();
+    const sideNav: EuiSideNavItemType<{ style: any }>[] =
+      this.getSideNavItems();
     const dataSourceContextValue: DataSourceContextType = {
       dataSource: selectedDataSource,
       setDataSource: this.onDataSourceSelected,
@@ -484,12 +485,17 @@ export default class Main extends Component<MainProps, MainState> {
                               />
                             )}
                             {!dataSourceLoading && services && (
-                              <EuiPage restrictWidth={'100%'}>
+                              <EuiPage restrictWidth={"100%"}>
                                 {/* Hide side navigation bar when on any HIDDEN_NAV_ROUTES pages. */}
-                                {!HIDDEN_NAV_ROUTES.some((route) => pathname.match(route)) &&
+                                {!HIDDEN_NAV_ROUTES.some((route) =>
+                                  pathname.match(route)
+                                ) &&
                                   !core.chrome.navGroup.getNavGroupEnabled() && (
                                     <EuiPageSideBar style={{ minWidth: 200 }}>
-                                      <EuiSideNav style={{ width: 200 }} items={sideNav} />
+                                      <EuiSideNav
+                                        style={{ width: 200 }}
+                                        items={sideNav}
+                                      />
                                     </EuiPageSideBar>
                                   )}
                                 <EuiPageBody>
@@ -506,13 +512,27 @@ export default class Main extends Component<MainProps, MainState> {
                                       render={(props: RouteComponentProps) => (
                                         <Findings
                                           {...props}
-                                          setDateTimeFilter={this.setDateTimeFilter}
-                                          dateTimeFilter={this.state.dateTimeFilter}
-                                          correlationService={services.correlationsService}
-                                          opensearchService={services.opensearchService}
-                                          detectorService={services.detectorsService}
-                                          notificationsService={services.notificationsService}
-                                          indexPatternsService={services.indexPatternsService}
+                                          setDateTimeFilter={
+                                            this.setDateTimeFilter
+                                          }
+                                          dateTimeFilter={
+                                            this.state.dateTimeFilter
+                                          }
+                                          correlationService={
+                                            services.correlationsService
+                                          }
+                                          opensearchService={
+                                            services.opensearchService
+                                          }
+                                          detectorService={
+                                            services.detectorsService
+                                          }
+                                          notificationsService={
+                                            services.notificationsService
+                                          }
+                                          indexPatternsService={
+                                            services.indexPatternsService
+                                          }
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
                                         />
@@ -523,7 +543,9 @@ export default class Main extends Component<MainProps, MainState> {
                                       render={(props: RouteComponentProps) => (
                                         <Detectors
                                           {...props}
-                                          detectorService={services.detectorsService}
+                                          detectorService={
+                                            services.detectorsService
+                                          }
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
                                         />
@@ -540,8 +562,12 @@ export default class Main extends Component<MainProps, MainState> {
                                           history={props.history}
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
-                                          setDataSource={this.onDataSourceSelected}
-                                          setDataSourceMenuReadOnly={this.setDataSourceMenuReadOnly}
+                                          setDataSource={
+                                            this.onDataSourceSelected
+                                          }
+                                          setDataSourceMenuReadOnly={
+                                            this.setDataSourceMenuReadOnly
+                                          }
                                         />
                                       )}
                                     />
@@ -567,13 +593,21 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={ROUTES.RULES_EDIT}
-                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => {
                                         if (!props.location.state?.ruleItem) {
                                           props.history.replace(ROUTES.RULES);
                                           return (
                                             <Rules
                                               {...props}
-                                              notifications={core?.notifications}
+                                              notifications={
+                                                core?.notifications
+                                              }
                                               dataSource={selectedDataSource}
                                             />
                                           );
@@ -590,13 +624,21 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={ROUTES.RULES_DUPLICATE}
-                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => {
                                         if (!props.location.state?.ruleItem) {
                                           props.history.replace(ROUTES.RULES);
                                           return (
                                             <Rules
                                               {...props}
-                                              notifications={core?.notifications}
+                                              notifications={
+                                                core?.notifications
+                                              }
                                               dataSource={selectedDataSource}
                                             />
                                           );
@@ -626,12 +668,18 @@ export default class Main extends Component<MainProps, MainState> {
                                       render={(props: RouteComponentProps) => (
                                         <Overview
                                           {...props}
-                                          setDateTimeFilter={this.setDateTimeFilter}
-                                          dateTimeFilter={this.state.dateTimeFilter}
+                                          setDateTimeFilter={
+                                            this.setDateTimeFilter
+                                          }
+                                          dateTimeFilter={
+                                            this.state.dateTimeFilter
+                                          }
                                           getStartedDismissedOnce={
                                             this.state.getStartedDismissedOnce
                                           }
-                                          onGetStartedDismissed={this.setGetStartedDismissedOnce}
+                                          onGetStartedDismissed={
+                                            this.setGetStartedDismissedOnce
+                                          }
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
                                         />
@@ -640,7 +688,9 @@ export default class Main extends Component<MainProps, MainState> {
                                     {getUseUpdatedUx() && (
                                       <Route
                                         path={ROUTES.GETTING_STARTED}
-                                        render={(props: RouteComponentProps) => (
+                                        render={(
+                                          props: RouteComponentProps
+                                        ) => (
                                           <GettingStartedContent
                                             {...props}
                                             onStepClicked={() => {}}
@@ -653,26 +703,48 @@ export default class Main extends Component<MainProps, MainState> {
                                       render={(props: RouteComponentProps) => (
                                         <Alerts
                                           {...props}
-                                          setDateTimeFilter={this.setDateTimeFilter}
-                                          dateTimeFilter={this.state.dateTimeFilter}
+                                          setDateTimeFilter={
+                                            this.setDateTimeFilter
+                                          }
+                                          dateTimeFilter={
+                                            this.state.dateTimeFilter
+                                          }
                                           alertService={services.alertService}
-                                          detectorService={services.detectorsService}
-                                          findingService={services.findingsService}
+                                          detectorService={
+                                            services.detectorsService
+                                          }
+                                          findingService={
+                                            services.findingsService
+                                          }
                                           notifications={core?.notifications}
-                                          opensearchService={services.opensearchService}
-                                          indexPatternService={services.indexPatternsService}
-                                          correlationService={services.correlationsService}
+                                          opensearchService={
+                                            services.opensearchService
+                                          }
+                                          indexPatternService={
+                                            services.indexPatternsService
+                                          }
+                                          correlationService={
+                                            services.correlationsService
+                                          }
                                           dataSource={selectedDataSource}
                                         />
                                       )}
                                     />
                                     <Route
                                       path={`${ROUTES.DETECTOR_DETAILS}/:id`}
-                                      render={(props: RouteComponentProps<{}, any, any>) => (
+                                      render={(
+                                        props: RouteComponentProps<{}, any, any>
+                                      ) => (
                                         <DetectorDetails
-                                          detectorService={services.detectorsService}
-                                          savedObjectsService={services.savedObjectsService}
-                                          indexPatternsService={services.indexPatternsService}
+                                          detectorService={
+                                            services.detectorsService
+                                          }
+                                          savedObjectsService={
+                                            services.savedObjectsService
+                                          }
+                                          indexPatternsService={
+                                            services.indexPatternsService
+                                          }
                                           {...props}
                                           notifications={core?.notifications}
                                         />
@@ -680,7 +752,13 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.EDIT_DETECTOR_DETAILS}/:id`}
-                                      render={(props: RouteComponentProps<any, any, any>) => (
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => (
                                         <UpdateDetectorBasicDetails
                                           {...props}
                                           notifications={core?.notifications}
@@ -689,7 +767,13 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.EDIT_DETECTOR_RULES}/:id`}
-                                      render={(props: RouteComponentProps<any, any, any>) => (
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => (
                                         <UpdateDetectorRules
                                           {...props}
                                           notifications={core?.notifications}
@@ -698,30 +782,58 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.EDIT_FIELD_MAPPINGS}/:id`}
-                                      render={(props: RouteComponentProps<any, any, any>) => (
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => (
                                         <UpdateFieldMappings
                                           {...props}
-                                          fieldMappingService={services.fieldMappingService}
-                                          detectorService={services.detectorsService}
+                                          fieldMappingService={
+                                            services.fieldMappingService
+                                          }
+                                          detectorService={
+                                            services.detectorsService
+                                          }
                                           notifications={core?.notifications}
                                         />
                                       )}
                                     />
                                     <Route
                                       path={`${ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS}/:id`}
-                                      render={(props: RouteComponentProps<any, any, any>) => (
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => (
                                         <UpdateAlertConditions
                                           {...props}
-                                          detectorService={services.detectorsService}
-                                          notificationsService={services.notificationsService}
+                                          detectorService={
+                                            services.detectorsService
+                                          }
+                                          notificationsService={
+                                            services.notificationsService
+                                          }
                                           notifications={core?.notifications}
-                                          opensearchService={services.opensearchService}
+                                          opensearchService={
+                                            services.opensearchService
+                                          }
                                         />
                                       )}
                                     />
                                     <Route
                                       path={`${ROUTES.CORRELATION_RULES}`}
-                                      render={(props: RouteComponentProps<any, any, any>) => (
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => (
                                         <CorrelationRules
                                           {...props}
                                           dataSource={selectedDataSource}
@@ -730,46 +842,81 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.CORRELATION_RULE_CREATE}`}
-                                      render={(props: RouteComponentProps<any, any, any>) => (
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => (
                                         <CreateCorrelationRule
                                           {...props}
                                           indexService={services.indexService}
-                                          fieldMappingService={services.fieldMappingService}
+                                          fieldMappingService={
+                                            services.fieldMappingService
+                                          }
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
-                                          notificationsService={services?.notificationsService}
-                                          opensearchService={services?.opensearchService}
+                                          notificationsService={
+                                            services?.notificationsService
+                                          }
+                                          opensearchService={
+                                            services?.opensearchService
+                                          }
                                         />
                                       )}
                                     />
                                     <Route
                                       path={`${ROUTES.CORRELATION_RULE_EDIT}/:ruleId`}
-                                      render={(props: RouteComponentProps<any, any, any>) => (
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => (
                                         <CreateCorrelationRule
                                           {...props}
                                           indexService={services.indexService}
-                                          fieldMappingService={services.fieldMappingService}
+                                          fieldMappingService={
+                                            services.fieldMappingService
+                                          }
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
-                                          notificationsService={services?.notificationsService}
-                                          opensearchService={services?.opensearchService}
+                                          notificationsService={
+                                            services?.notificationsService
+                                          }
+                                          opensearchService={
+                                            services?.opensearchService
+                                          }
                                         />
                                       )}
                                     />
                                     <Route
                                       path={`${ROUTES.CORRELATIONS}`}
-                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => {
                                         return (
                                           <Correlations
                                             {...props}
                                             history={props.history}
                                             onMount={() =>
                                               this.setState({
-                                                selectedNavItemId: Navigation.Correlations,
+                                                selectedNavItemId:
+                                                  Navigation.Correlations,
                                               })
                                             }
-                                            dateTimeFilter={this.state.dateTimeFilter}
-                                            setDateTimeFilter={this.setDateTimeFilter}
+                                            dateTimeFilter={
+                                              this.state.dateTimeFilter
+                                            }
+                                            setDateTimeFilter={
+                                              this.setDateTimeFilter
+                                            }
                                             dataSource={selectedDataSource}
                                             notifications={core?.notifications}
                                           />
@@ -778,13 +925,28 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.LOG_TYPES}/:logTypeId`}
-                                      render={(props: RouteComponentProps<any, any, any>) => (
-                                        <LogType notifications={core?.notifications} {...props} />
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => (
+                                        <LogType
+                                          notifications={core?.notifications}
+                                          {...props}
+                                        />
                                       )}
                                     />
                                     <Route
                                       path={`${ROUTES.LOG_TYPES}`}
-                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => {
                                         return (
                                           <LogTypes
                                             notifications={core?.notifications}
@@ -796,7 +958,13 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={ROUTES.LOG_TYPES_CREATE}
-                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => {
                                         return (
                                           <CreateLogType
                                             notifications={core?.notifications}
@@ -806,12 +974,16 @@ export default class Main extends Component<MainProps, MainState> {
                                       }}
                                     />
                                     <Route
-                                      path={ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE}
+                                      path={
+                                        ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE
+                                      }
                                       render={(props) => {
                                         return (
                                           <AddThreatIntelSource
                                             {...props}
-                                            threatIntelService={services.threatIntelService}
+                                            threatIntelService={
+                                              services.threatIntelService
+                                            }
                                           />
                                         );
                                       }}
@@ -822,7 +994,9 @@ export default class Main extends Component<MainProps, MainState> {
                                         return (
                                           <ThreatIntelOverview
                                             {...props}
-                                            threatIntelService={services.threatIntelService}
+                                            threatIntelService={
+                                              services.threatIntelService
+                                            }
                                             dataSource={selectedDataSource}
                                           />
                                         );
@@ -833,12 +1007,22 @@ export default class Main extends Component<MainProps, MainState> {
                                         ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
                                         ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
                                       ]}
-                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => {
                                         return (
                                           <ThreatIntelScanConfigForm
                                             {...props}
-                                            notificationsService={services.notificationsService}
-                                            threatIntelService={services.threatIntelService}
+                                            notificationsService={
+                                              services.notificationsService
+                                            }
+                                            threatIntelService={
+                                              services.threatIntelService
+                                            }
                                             notifications={core.notifications}
                                           />
                                         );
@@ -846,18 +1030,26 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.THREAT_INTEL_SOURCE_DETAILS}/:id`}
-                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >
+                                      ) => {
                                         return (
                                           <ThreatIntelSource
                                             {...props}
-                                            threatIntelService={services.threatIntelService}
+                                            threatIntelService={
+                                              services.threatIntelService
+                                            }
                                             notifications={core.notifications}
                                           />
                                         );
                                       }}
                                     />
 
-                                    <Redirect from={'/'} to={landingPage} />
+                                    <Redirect from={"/"} to={landingPage} />
                                   </Switch>
                                 </EuiPageBody>
                                 <EuiGlobalToastList

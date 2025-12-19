@@ -221,7 +221,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
   }
 
   componentDidMount = async () => {
-    setBreadcrumbs([BREADCRUMBS.FINDINGS]);
+    setBreadcrumbs([BREADCRUMBS.INSIGHTS, BREADCRUMBS.FINDINGS]);
     this.onRefresh();
   };
 
@@ -625,7 +625,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
     );
 
     return (
-      <EuiFlexGroup direction="column" gutterSize={'m'}>
+      <EuiFlexGroup direction="column" gutterSize={'m'} grow={false}>
         <PageHeader
           appRightControls={[
             {

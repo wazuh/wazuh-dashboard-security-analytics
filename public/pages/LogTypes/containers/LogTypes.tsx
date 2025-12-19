@@ -53,7 +53,7 @@ export const LogTypes: React.FC<LogTypesProps> = ({ history, notifications, data
     if (getUseUpdatedUx()) {
       setBreadcrumbs([BREADCRUMBS.LOG_TYPES]);
     } else {
-      setBreadcrumbs([BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES]);
+      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES]);
     }
   }, [getUseUpdatedUx()]);
 

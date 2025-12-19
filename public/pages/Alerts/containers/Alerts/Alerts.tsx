@@ -535,7 +535,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
   }
 
   componentDidMount(): void {
-    setBreadcrumbs([BREADCRUMBS.ALERTS]);
+    setBreadcrumbs([BREADCRUMBS.INSIGHTS, BREADCRUMBS.ALERTS]);
     this.onRefresh();
   }
 
@@ -1108,7 +1108,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
               },
             ]}
           >
-            <EuiFlexItem>
+            <EuiFlexItem grow={false}>
               <EuiFlexGroup gutterSize={'s'} justifyContent={'spaceBetween'}>
                 <EuiFlexItem>
                   <EuiText size="s">

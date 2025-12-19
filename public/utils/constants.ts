@@ -85,7 +85,7 @@ export const BREADCRUMBS = Object.freeze({
   OVERVIEW: { text: 'Overview', href: `#${ROUTES.OVERVIEW}` },
   GETTING_STARTED: { text: 'Get started', href: `#${ROUTES.GETTING_STARTED}` },
   FINDINGS: { text: 'Findings', href: `#${ROUTES.FINDINGS}` },
-  DETECTORS: { text: 'Threat detectors', href: `#${ROUTES.DETECTORS}` },
+  DETECTORS: { text: 'Detectors', href: `#${ROUTES.DETECTORS}` },
   DETECTORS_CREATE: { text: 'Create detector', href: `#${ROUTES.DETECTORS_CREATE}` },
   EDIT_DETECTOR_DETAILS: { text: 'Edit detector details' },
   DETECTORS_DETAILS: (name: string, detectorId: string) => ({
@@ -97,7 +97,7 @@ export const BREADCRUMBS = Object.freeze({
     href: `#${ROUTES.EDIT_DETECTOR_DETAILS}/${detectorId}`,
   }),
   RULES: { text: 'Detection rules', href: `#${ROUTES.RULES}` },
-  ALERTS: { text: 'Threat alerts', href: `#${ROUTES.ALERTS}` },
+  ALERTS: { text: 'Alerts', href: `#${ROUTES.ALERTS}` },
   RULES_CREATE: { text: 'Create detection rule', href: `#${ROUTES.RULES_CREATE}` },
   RULES_EDIT: { text: 'Edit rule', href: `#${ROUTES.RULES_EDIT}` },
   RULE_EDIT_DETAILS: (name: string) => ({
@@ -131,6 +131,8 @@ export const BREADCRUMBS = Object.freeze({
     text: `${name}`,
     href: `#${ROUTES.THREAT_INTEL_SOURCE_DETAILS}/${id}`,
   }),
+  INSIGHTS: { text: 'Insights' },
+  DETECTION: { text: 'Detection' },
 });
 
 export enum SortDirection {

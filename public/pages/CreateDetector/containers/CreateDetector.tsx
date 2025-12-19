@@ -97,7 +97,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
   }
 
   componentDidMount(): void {
-    setBreadcrumbs([BREADCRUMBS.DETECTORS, BREADCRUMBS.DETECTORS_CREATE]);
+    setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.DETECTORS_CREATE]);
     if (!(this.props.history.location.state as any)?.detectorInput) {
       this.resetDependencies();
     }

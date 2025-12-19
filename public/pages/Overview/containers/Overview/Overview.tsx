@@ -104,11 +104,16 @@ export const Overview: React.FC<OverviewProps> = (props) => {
   const isSecurityAnalyticsUseCase = currentNavGroup?.id === SECURITY_ANALYTICS_USE_CASE_ID;
 
   useEffect(() => {
+    // Breadcrumbs set to 'Overview' for Wazuh
     setBreadcrumbs(
-      isSecurityAnalyticsUseCase
-        ? [BREADCRUMBS.OVERVIEW]
-        : [{ ...BREADCRUMBS.OVERVIEW, text: 'Security Analytics overview' }]
-    );
+      [BREADCRUMBS.OVERVIEW]
+    )
+
+    // setBreadcrumbs(
+    //   isSecurityAnalyticsUseCase
+    //     ? [BREADCRUMBS.OVERVIEW]
+    //     : [{ ...BREADCRUMBS.OVERVIEW, text: 'Security Analytics overview' }]
+    // );
     overviewViewModelActor.registerRefreshHandler(updateState, true /* allowPartialResults */);
     overviewViewModelActor.registerRefreshHandler(
       onLoadingComplete,
@@ -255,7 +260,7 @@ export const Overview: React.FC<OverviewProps> = (props) => {
           { renderComponent: createDetectorAction },
         ]}
       >
-        <EuiFlexItem>
+        <EuiFlexItem grow={false}>
           <EuiFlexGroup justifyContent="spaceBetween" gutterSize="s" alignItems="center">
             <EuiFlexItem grow={false}>
               <EuiText size="s">
