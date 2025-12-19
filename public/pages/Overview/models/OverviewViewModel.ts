@@ -11,6 +11,7 @@ import { errorNotificationToast, getDuration, isThreatIntelQuery } from '../../.
 import dateMath from '@elastic/datemath';
 import moment from 'moment';
 import { DataStore } from '../../../store/DataStore';
+import { THREAT_INTEL_ENABLED } from '../../../utils/constants';
 import {
   DetectorHit,
   Finding,
@@ -175,6 +176,11 @@ export class OverviewViewModelActor {
   }
 
   private async updateThreatIntelFindings(signal: AbortSignal) {
+    if (!THREAT_INTEL_ENABLED) {
+      this.overviewViewModel.threatIntelFindings = [];
+      return;
+    }
+
     let tIFindings: ThreatIntelFinding[] = [];
     const duration = getDuration({
       startTime: this.startTime,

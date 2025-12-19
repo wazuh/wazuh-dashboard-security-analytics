@@ -9,6 +9,7 @@ import {
   DETECTORS_NAV_ID,
   GET_STARTED_NAV_ID,
   THREAT_INTEL_NAV_ID,
+  THREAT_INTEL_ENABLED,
 } from '../../../utils/constants';
 import { getApplication } from '../../../services/utils/constants';
 
@@ -19,48 +20,55 @@ export const summaryGroupByOptions = [
 
 export const moreLink = 'https://opensearch.org/docs/latest/security-analytics/';
 
-export const getOverviewsCardsProps = (): EuiCardProps[] => [
-  {
-    icon: React.createElement(EuiIcon, { type: 'rocket', size: "l", color: "primary" }),
-    title: '',
-    description: 'Configure Security Analytics tools and components to get started.',
-    onClick: () => {
-      getApplication().navigateToApp(GET_STARTED_NAV_ID);
+export const getOverviewsCardsProps = (): EuiCardProps[] => {
+  const cards: EuiCardProps[] = [
+    {
+      icon: React.createElement(EuiIcon, { type: 'rocket', size: "l", color: "primary" }),
+      title: '',
+      description: 'Configure Security Analytics tools and components to get started.',
+      onClick: () => {
+        getApplication().navigateToApp(GET_STARTED_NAV_ID);
+      },
+      footer: React.createElement(EuiTextColor, { color: 'subdued' }, 'Get started guide'),
+      className: 'usecaseOverviewGettingStartedCard',
     },
-    footer: React.createElement(EuiTextColor, { color: 'subdued' }, 'Get started guide'),
-    className: 'usecaseOverviewGettingStartedCard',
-  },
-  {
-    icon: React.createElement(EuiIcon, { type: 'compass', size: "l", color: "primary" }),
-    title: '',
-    description: 'Explore data to uncover and discover insights.',
-    onClick: () => {
-      getApplication().navigateToApp('discover');
+    {
+      icon: React.createElement(EuiIcon, { type: 'compass', size: "l", color: "primary" }),
+      title: '',
+      description: 'Explore data to uncover and discover insights.',
+      onClick: () => {
+        getApplication().navigateToApp('discover');
+      },
+      footer: React.createElement(EuiTextColor, { color: 'subdued' }, 'Discover'),
+      className: 'usecaseOverviewGettingStartedCard',
     },
-    footer: React.createElement(EuiTextColor, { color: 'subdued' }, 'Discover'),
-    className: 'usecaseOverviewGettingStartedCard',
-  },
-  {
-    icon: React.createElement(EuiIcon, { type: 'pulse', size: "l", color: "primary" }),
-    title: '',
-    description: 'Identify security threats in your log data with detection rules.',
-    onClick: () => {
-      getApplication().navigateToApp(DETECTORS_NAV_ID);
+    {
+      icon: React.createElement(EuiIcon, { type: 'pulse', size: "l", color: "primary" }),
+      title: '',
+      description: 'Identify security threats in your log data with detection rules.',
+      onClick: () => {
+        getApplication().navigateToApp(DETECTORS_NAV_ID);
+      },
+      footer: React.createElement(EuiTextColor, { color: 'subdued' }, 'Threat detection'),
+      className: 'usecaseOverviewGettingStartedCard',
     },
-    footer: React.createElement(EuiTextColor, { color: 'subdued' }, 'Threat detection'),
-    className: 'usecaseOverviewGettingStartedCard',
-  },
-  {
-    icon: React.createElement(EuiIcon, { type: 'radar', size: "l", color: "primary" }),
-    title: '',
-    description: 'Scan your log data for malicious actors from known indicators of compromise.',
-    onClick: () => {
-      getApplication().navigateToApp(THREAT_INTEL_NAV_ID);
-    },
-    footer: React.createElement(EuiTextColor, { color: 'subdued' }, 'Threat intelligence'),
-    className: 'usecaseOverviewGettingStartedCard',
-  },
-];
+  ];
+
+  if (THREAT_INTEL_ENABLED) {
+    cards.push({
+      icon: React.createElement(EuiIcon, { type: 'radar', size: "l", color: "primary" }),
+      title: '',
+      description: 'Scan your log data for malicious actors from known indicators of compromise.',
+      onClick: () => {
+        getApplication().navigateToApp(THREAT_INTEL_NAV_ID);
+      },
+      footer: React.createElement(EuiTextColor, { color: 'subdued' }, 'Threat intelligence'),
+      className: 'usecaseOverviewGettingStartedCard',
+    });
+  }
+
+  return cards;
+};
 
 export const getOverviewStatsProps = ({
   alerts,
@@ -68,7 +76,7 @@ export const getOverviewStatsProps = ({
   ruleFindings,
   threatIntelFindings,
 }: any): EuiStatProps[] => {
-  return [
+  const stats: EuiStatProps[] = [
     {
       title: alerts,
       description: 'Total active threat alerts',
@@ -81,9 +89,14 @@ export const getOverviewStatsProps = ({
       title: ruleFindings,
       description: 'Detection rule findings',
     },
-    {
+  ];
+
+  if (THREAT_INTEL_ENABLED) {
+    stats.push({
       title: threatIntelFindings,
       description: 'Threat intel findings',
-    },
-  ];
+    });
+  }
+
+  return stats;
 };
