@@ -199,6 +199,7 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
       });
 
       setBreadcrumbs([
+        BREADCRUMBS.DETECTION,
         BREADCRUMBS.DETECTORS,
         BREADCRUMBS.DETECTORS_DETAILS(detector.name, PENDING_DETECTOR_ID),
       ]);

@@ -94,7 +94,7 @@ export const LogType: React.FC<LogTypeProps> = ({ notifications, history }) => {
         return;
       }
 
-      setBreadcrumbs([BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, { text: details.name }]);
+      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, { text: details.name }]);
       const logTypeItem = { ...details, detectionRulesCount: details.detectionRules.length };
       updateRules(logTypeItem, logTypeItem);
     };
