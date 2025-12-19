@@ -276,6 +276,7 @@ export class SecurityAnalyticsPlugin
         }
       });
 
+      // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
         id: INSIGHTS_NAV_ID,
         title: "Insights",
@@ -284,6 +285,7 @@ export class SecurityAnalyticsPlugin
         }
       })
 
+      // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
         id: DETECTION_NAV_ID,
         title: "Detection",
