@@ -72,6 +72,10 @@ export const ROUTES = Object.freeze({
   THREAT_INTEL_CREATE_SCAN_CONFIG: '/create-scan-config',
   THREAT_INTEL_EDIT_SCAN_CONFIG: '/edit-scan-config',
   THREAT_INTEL_SOURCE_DETAILS: '/threat-intel-source',
+  // Wazuh
+  NORMALIZATION: '/normalization',
+  DECODERS: '/decoders',
+  KVDBS: '/kvdbs',
 
   get LANDING_PAGE(): string {
     return this.OVERVIEW;

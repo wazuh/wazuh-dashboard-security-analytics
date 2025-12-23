@@ -68,6 +68,7 @@ import {
 } from "../../services/DataSourceContext";
 import {
   dataSourceInfo,
+  getApplication,
   getUseUpdatedUx,
 } from "../../services/utils/constants";
 import { ThreatIntelOverview } from "../ThreatIntel/containers/Overview/ThreatIntelOverview";
@@ -97,6 +98,11 @@ enum Navigation {
   // Removed Threat Intel from side nav by Wazuh
   Insights = "Insights",
   Detection = "Detection",
+  // Wazuh
+  Normalization = "Normalization",
+  NormalizationOverview = "NormalizationOverview",
+  Decoders = "Decoders",
+  KVDBS = "KVDBS",
 }
 
 /**
@@ -406,6 +412,61 @@ export default class Main extends Component<MainProps, MainState> {
               history.push(ROUTES.LOG_TYPES);
             },
             isSelected: selectedNavItemId === Navigation.LogTypes,
+          },
+          {
+            name: Navigation.Normalization,
+            id: Navigation.Normalization,
+            forceOpen: true,
+            items: [
+              {
+                name: 'Overview',
+                id: Navigation.NormalizationOverview,
+                onClick: () => {
+                  // this.setState({ selectedNavItemId: Navigation.NormalizationOverview });
+                  // history.push(ROUTES.NORMALIZATION);
+                  /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
+                  This view should be moved to this plugin.
+                  */
+                  getApplication().navigateToApp('normalization', {path: '/normalization/overview'});
+                },
+                isSelected: selectedNavItemId === Navigation.NormalizationOverview,
+              },
+              {
+                name: Navigation.Decoders,
+                id: Navigation.Decoders,
+                onClick: () => {
+                  // this.setState({ selectedNavItemId: Navigation.Decoders });
+                  // history.push(ROUTES.DECODERS);
+                  //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
+                  //   This view should be moved to this plugin.
+                  //   */
+                  getApplication().navigateToApp('normalization', {path: '/normalization/decoders'});
+                },
+                isSelected: selectedNavItemId === Navigation.Decoders,
+              },
+              {
+                name: Navigation.KVDBS,
+                id: Navigation.KVDBS,
+                onClick: () => {
+                  // this.setState({ selectedNavItemId: Navigation.KVDBS });
+                  // history.push(ROUTES.KVDBS);
+                  //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
+                  //   This view should be moved to this plugin.
+                  //   */
+                  getApplication().navigateToApp('normalization', {path: '/normalization/kvdbs'});
+                },
+                isSelected: selectedNavItemId === Navigation.KVDBS,
+              },
+            ]
+            // onClick: () => {
+            //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
+            //   This view should be moved to this plugin.
+            //   */
+              
+            //   // this.setState({ selectedNavItemId: Navigation.Normalization });
+            //   // history.push(ROUTES.NORMALIZATION);
+            // },
+            // isSelected: selectedNavItemId === Navigation.Normalization,
           },
           {
             name: Navigation.Detection,
