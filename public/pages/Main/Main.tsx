@@ -27,6 +27,13 @@ import {
   dataSourceObservable,
   OS_NOTIFICATION_PLUGIN,
   THREAT_INTEL_ENABLED,
+  FINDINGS_NAV_ID,
+  THREAT_ALERTS_NAV_ID,
+  CORRELATIONS_NAV_ID,
+  DETECTORS_NAV_ID,
+  DETECTION_RULE_NAV_ID,
+  CORRELATIONS_RULE_NAV_ID,
+  LOG_TYPES_NAV_ID,
 } from "../../utils/constants";
 import { CoreServicesConsumer } from "../../components/core_services";
 import Findings from "../Findings";
@@ -156,6 +163,9 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   [ROUTES.RULES]: Navigation.Rules,
   [ROUTES.LOG_TYPES]: Navigation.LogTypes,
 };
+
+// Wazuh
+const generateAppPath = (path: string) => `#${path}`;
 
 export default class Main extends Component<MainProps, MainState> {
   constructor(props: MainProps) {
@@ -379,8 +389,10 @@ export default class Main extends Component<MainProps, MainState> {
                 name: Navigation.Findings,
                 id: Navigation.Findings,
                 onClick: () => {
-                  this.setState({ selectedNavItemId: Navigation.Findings });
-                  history.push(ROUTES.FINDINGS);
+                  // this.setState({ selectedNavItemId: Navigation.Findings });
+                  // history.push(ROUTES.FINDINGS);
+                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+                  getApplication().navigateToApp(FINDINGS_NAV_ID, {path: generateAppPath(ROUTES.FINDINGS)});
                 },
                 isSelected: selectedNavItemId === Navigation.Findings,
               },
@@ -388,8 +400,10 @@ export default class Main extends Component<MainProps, MainState> {
                 name: Navigation.Alerts,
                 id: Navigation.Alerts,
                 onClick: () => {
-                  this.setState({ selectedNavItemId: Navigation.Alerts });
-                  history.push(ROUTES.ALERTS);
+                  // this.setState({ selectedNavItemId: Navigation.Alerts });
+                  // history.push(ROUTES.ALERTS);
+                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+                  getApplication().navigateToApp(THREAT_ALERTS_NAV_ID, {path: generateAppPath(ROUTES.ALERTS)});
                 },
                 isSelected: selectedNavItemId === Navigation.Alerts,
               },
@@ -397,8 +411,10 @@ export default class Main extends Component<MainProps, MainState> {
                 name: Navigation.Correlations,
                 id: Navigation.Correlations,
                 onClick: () => {
-                  this.setState({ selectedNavItemId: Navigation.Correlations });
-                  history.push(ROUTES.CORRELATIONS);
+                  // this.setState({ selectedNavItemId: Navigation.Correlations });
+                  // history.push(ROUTES.CORRELATIONS);
+                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+                  getApplication().navigateToApp(CORRELATIONS_NAV_ID, {path: generateAppPath(ROUTES.CORRELATIONS)});
                 },
                 isSelected: selectedNavItemId === Navigation.Correlations,
               },
@@ -408,8 +424,10 @@ export default class Main extends Component<MainProps, MainState> {
             name: Navigation.LogTypes,
             id: Navigation.LogTypes,
             onClick: () => {
-              this.setState({ selectedNavItemId: Navigation.LogTypes });
-              history.push(ROUTES.LOG_TYPES);
+              // this.setState({ selectedNavItemId: Navigation.LogTypes });
+              // history.push(ROUTES.LOG_TYPES);
+              // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+              getApplication().navigateToApp(LOG_TYPES_NAV_ID, {path: generateAppPath(ROUTES.LOG_TYPES)});
             },
             isSelected: selectedNavItemId === Navigation.LogTypes,
           },
@@ -427,7 +445,7 @@ export default class Main extends Component<MainProps, MainState> {
                   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
                   This view should be moved to this plugin.
                   */
-                  getApplication().navigateToApp('normalization', {path: '/normalization/overview'});
+                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/overview')});
                 },
                 isSelected: selectedNavItemId === Navigation.NormalizationOverview,
               },
@@ -440,7 +458,7 @@ export default class Main extends Component<MainProps, MainState> {
                   //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
                   //   This view should be moved to this plugin.
                   //   */
-                  getApplication().navigateToApp('normalization', {path: '/normalization/decoders'});
+                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/decoders')});
                 },
                 isSelected: selectedNavItemId === Navigation.Decoders,
               },
@@ -453,7 +471,7 @@ export default class Main extends Component<MainProps, MainState> {
                   //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
                   //   This view should be moved to this plugin.
                   //   */
-                  getApplication().navigateToApp('normalization', {path: '/normalization/kvdbs'});
+                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/kvdbs')});
                 },
                 isSelected: selectedNavItemId === Navigation.KVDBS,
               },
@@ -477,8 +495,10 @@ export default class Main extends Component<MainProps, MainState> {
                 name: Navigation.Detectors,
                 id: Navigation.Detectors,
                 onClick: () => {
-                  this.setState({ selectedNavItemId: Navigation.Detectors });
-                  history.push(ROUTES.DETECTORS);
+                  // this.setState({ selectedNavItemId: Navigation.Detectors });
+                  // history.push(ROUTES.DETECTORS);
+                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+                  getApplication().navigateToApp(DETECTORS_NAV_ID, {path: generateAppPath(ROUTES.DETECTORS)});
                 },
                 isSelected: selectedNavItemId === Navigation.Detectors,
               },
@@ -486,8 +506,10 @@ export default class Main extends Component<MainProps, MainState> {
                 name: Navigation.Rules,
                 id: Navigation.Rules,
                 onClick: () => {
-                  this.setState({ selectedNavItemId: Navigation.Rules });
-                  history.push(ROUTES.RULES);
+                  // this.setState({ selectedNavItemId: Navigation.Rules });
+                  // history.push(ROUTES.RULES);
+                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+                  getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {path: generateAppPath(ROUTES.RULES)});
                 },
                 isSelected: selectedNavItemId === Navigation.Rules,
               },
@@ -495,10 +517,12 @@ export default class Main extends Component<MainProps, MainState> {
                 name: Navigation.CorrelationRules,
                 id: Navigation.CorrelationRules,
                 onClick: () => {
-                  this.setState({
-                    selectedNavItemId: Navigation.CorrelationRules,
-                  });
-                  history.push(ROUTES.CORRELATION_RULES);
+                  // this.setState({
+                  //   selectedNavItemId: Navigation.CorrelationRules,
+                  // });
+                  // history.push(ROUTES.CORRELATION_RULES);
+                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+                  getApplication().navigateToApp(CORRELATIONS_RULE_NAV_ID, {path: generateAppPath(ROUTES.CORRELATION_RULES)});
                 },
                 isSelected: selectedNavItemId === Navigation.CorrelationRules,
               },
