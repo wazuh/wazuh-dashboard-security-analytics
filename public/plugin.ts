@@ -191,9 +191,42 @@ export class SecurityAnalyticsPlugin
     // });
 
     core.application.register({
+      id: CORRELATIONS_NAV_ID,
+      title: 'Correlations',
+      order: 7003,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.CORRELATIONS);
+      },
+    });
+
+    core.application.register({
+      id: LOG_TYPES_NAV_ID,
+      title: 'Integrations',
+      order: 7004,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.LOG_TYPES);
+      },
+    });
+
+
+    core.application.register({
       id: DETECTORS_NAV_ID,
       title: 'Detectors',
-      order: 7004,
+      order: 7009,
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
@@ -209,7 +242,7 @@ export class SecurityAnalyticsPlugin
     core.application.register({
       id: DETECTION_RULE_NAV_ID,
       title: 'Detection rules',
-      order: 7005,
+      order: 7010,
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
@@ -223,41 +256,9 @@ export class SecurityAnalyticsPlugin
     });
 
     core.application.register({
-      id: LOG_TYPES_NAV_ID,
-      title: 'Integrations',
-      order: 7006,
-      category: {
-        id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 550,
-        euiIconType: 'securityAnalyticsApp',
-      },
-      updater$: this.appStateUpdater,
-      mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.LOG_TYPES);
-      },
-    });
-
-    core.application.register({
-      id: CORRELATIONS_NAV_ID,
-      title: 'Correlations',
-      order: 7007,
-      category: {
-        id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 550,
-        euiIconType: 'securityAnalyticsApp',
-      },
-      updater$: this.appStateUpdater,
-      mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.CORRELATIONS);
-      },
-    });
-
-    core.application.register({
       id: CORRELATIONS_RULE_NAV_ID,
       title: 'Correlation rules',
-      order: 7008,
+      order: 7011,
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
@@ -309,13 +310,13 @@ export class SecurityAnalyticsPlugin
         { id: THREAT_ALERTS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
         { id: FINDINGS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
         { id: CORRELATIONS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
-        { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7002 },
+        { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7004 },
         // order 7003 is reserved for Normalization
         {
           id: DETECTION_NAV_ID,
           title: "Detection",
           showInAllNavGroup: true,
-          order: 7004,
+          order: 7009,
         },
         { id: DETECTORS_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
         { id: DETECTION_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
