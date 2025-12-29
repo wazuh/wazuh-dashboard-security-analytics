@@ -34,6 +34,7 @@ import {
   DETECTION_RULE_NAV_ID,
   CORRELATIONS_RULE_NAV_ID,
   LOG_TYPES_NAV_ID,
+  KVDBS_NAV_ID,
 } from "../../utils/constants";
 import { CoreServicesConsumer } from "../../components/core_services";
 import Findings from "../Findings";
@@ -59,6 +60,7 @@ import { Correlations } from "../Correlations/containers/CorrelationsContainer";
 import { LogTypes } from "../LogTypes/containers/LogTypes";
 import { LogType } from "../LogTypes/containers/LogType";
 import { CreateLogType } from "../LogTypes/containers/CreateLogType";
+import { KVDBs } from "../KVDBs/containers/KVDBs";
 import {
   DataSourceContextType,
   DateTimeFilter,
@@ -109,7 +111,7 @@ enum Navigation {
   Normalization = "Normalization",
   NormalizationOverview = "NormalizationOverview",
   Decoders = "Decoders",
-  KVDBS = "KVDBS",
+  KVDBS = "KVDBs",
 }
 
 /**
@@ -162,6 +164,7 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   [ROUTES.DETECTORS]: Navigation.Detectors,
   [ROUTES.RULES]: Navigation.Rules,
   [ROUTES.LOG_TYPES]: Navigation.LogTypes,
+  [ROUTES.KVDBS]: Navigation.KVDBS,
 };
 
 // Wazuh
@@ -471,7 +474,7 @@ export default class Main extends Component<MainProps, MainState> {
                   //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
                   //   This view should be moved to this plugin.
                   //   */
-                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/kvdbs')});
+                  getApplication().navigateToApp(KVDBS_NAV_ID, { path: generateAppPath(ROUTES.KVDBS) });
                 },
                 isSelected: selectedNavItemId === Navigation.KVDBS,
               },
@@ -1071,6 +1074,12 @@ export default class Main extends Component<MainProps, MainState> {
                                           />
                                         );
                                       }}
+                                    />
+                                    <Route
+                                      path={ROUTES.KVDBS}
+                                      render={(props: RouteComponentProps) => (
+                                        <KVDBs {...props} notifications={core?.notifications} />
+                                      )}
                                     />
                                     {THREAT_INTEL_ENABLED && (
                                       <>
