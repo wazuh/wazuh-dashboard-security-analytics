@@ -12,6 +12,7 @@ import {
   EuiFlexItem,
   EuiPanel,
   EuiSearchBar,
+  EuiSelect,
   EuiSmallButton,
   EuiSpacer,
   EuiText,
@@ -41,6 +42,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [searchQuery, setSearchQuery] = useState<any>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
+  const [stageFilter, setStageFilter] = useState<string>("");
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
@@ -54,8 +56,17 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       query = { match_all: {} };
     }
 
+    // Add stage filter if selected
+    if (stageFilter) {
+      query = {
+        bool: {
+          must: [query, { term: { "document.stage": stageFilter } }],
+        },
+      };
+    }
+
     return query;
-  }, [searchQuery]);
+  }, [searchQuery, stageFilter]);
 
   const fetchKVDBs = useCallback(async () => {
     setLoading(true);
@@ -170,11 +181,31 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       <EuiFlexGroup direction="column" gutterSize="m">
         <PageHeader>
           <EuiFlexItem>
-            <EuiFlexGroup gutterSize="s" justifyContent="spaceBetween">
+            <EuiFlexGroup
+              gutterSize="s"
+              justifyContent="spaceBetween"
+              alignItems="center"
+            >
               <EuiFlexItem>
                 <EuiText size="s">
                   <h1>KVDBs</h1>
                 </EuiText>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiSelect
+                  id="stage-filter"
+                  options={[
+                    { value: "", text: "All stages" },
+                    { value: "wazuh", text: "Wazuh" },
+                    { value: "custom", text: "Custom" },
+                  ]}
+                  value={stageFilter}
+                  onChange={(e) => {
+                    setStageFilter(e.target.value);
+                    setPageIndex(0);
+                  }}
+                  compressed
+                />
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
