@@ -71,20 +71,22 @@ export const getOverviewsCardsProps = (): EuiCardProps[] => {
 };
 
 export const getOverviewStatsProps = ({
-  alerts,
-  correlations,
+  // Wazuh: hide alerts and correlations from overview stats.
+  // alerts,
+  // correlations,
   ruleFindings,
   threatIntelFindings,
 }: any): EuiStatProps[] => {
   const stats: EuiStatProps[] = [
-    {
-      title: alerts,
-      description: 'Total active threat alerts',
-    },
-    {
-      title: correlations,
-      description: 'Correlations',
-    },
+    // Wazuh: hide alerts and correlations from overview stats.
+    // {
+    //   title: alerts,
+    //   description: 'Total active threat alerts',
+    // },
+    // {
+    //   title: correlations,
+    //   description: 'Correlations',
+    // },
     {
       title: ruleFindings,
       description: 'Detection rule findings',

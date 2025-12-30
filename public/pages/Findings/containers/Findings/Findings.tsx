@@ -20,11 +20,13 @@ import {
 import FindingsTable from '../../components/FindingsTable';
 import {
   DetectorsService,
-  NotificationsService,
   OpenSearchService,
   IndexPatternsService,
-  CorrelationService,
 } from '../../../../services';
+// Wazuh: hide correlations service usage in findings page.
+// import { CorrelationService } from '../../../../services';
+// Wazuh: hide alert-related channels and props from findings page.
+// import { NotificationsService } from '../../../../services';
 import {
   BREADCRUMBS,
   DEFAULT_DATE_RANGE,
@@ -34,25 +36,28 @@ import {
   THREAT_INTEL_ENABLED,
 } from '../../../../utils/constants';
 import { getChartTimeUnit, TimeUnit } from '../../../Overview/utils/helpers';
-import {
-  getNotificationChannels,
-  parseNotificationChannelsToOptions,
-} from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
+// Wazuh: hide alert-related channels and props from findings page.
+// import {
+//   getNotificationChannels,
+//   parseNotificationChannelsToOptions,
+// } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 import {
   createSelectComponent,
   errorNotificationToast,
   getDuration,
-  getIsNotificationPluginInstalled,
   setBreadcrumbs,
   isThreatIntelQuery,
 } from '../../../../utils/helpers';
+// Wazuh: hide alert-related channels and props from findings page.
+// import { getIsNotificationPluginInstalled } from '../../../../utils/helpers';
 import { RuleSource } from '../../../../../server/models/interfaces';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DataStore } from '../../../../store/DataStore';
 import { DurationRange } from '@elastic/eui/src/components/date_picker/types';
 import {
   DataSourceProps,
-  FeatureChannelList,
+  // Wazuh: hide alert-related channels and props from findings page.
+  // FeatureChannelList,
   DateTimeFilter,
   FindingItemType,
   DetectorHit,
@@ -66,8 +71,10 @@ import { RuleSeverityValue, RuleSeverityPriority } from '../../../Rules/utils/co
 
 interface FindingsProps extends RouteComponentProps, DataSourceProps {
   detectorService: DetectorsService;
-  correlationService: CorrelationService;
-  notificationsService: NotificationsService;
+  // Wazuh: hide correlations service usage in findings page.
+  // correlationService: CorrelationService;
+  // Wazuh: hide alert-related channels and props from findings page.
+  // notificationsService: NotificationsService;
   indexPatternsService: IndexPatternsService;
   opensearchService: OpenSearchService;
   notifications: NotificationsStart;
@@ -98,7 +105,8 @@ interface FindingsState {
     [FindingTabId.DetectionRules]: DetectionRulesFindingsState;
     [FindingTabId.ThreatIntel]: ThreatIntelFindingsState;
   };
-  notificationChannels: FeatureChannelList[];
+  // Wazuh: hide alert-related channels and props from findings page.
+  // notificationChannels: FeatureChannelList[];
   recentlyUsedRanges: DurationRange[];
   timeUnit: TimeUnit;
   dateFormat: string;
@@ -150,7 +158,8 @@ class Findings extends Component<FindingsProps, FindingsState> {
         : selectedTabFromUrl ?? FindingTabId.DetectionRules;
     this.state = {
       loading: true,
-      notificationChannels: [],
+      // Wazuh: hide alert-related channels and props from findings page.
+      // notificationChannels: [],
       selectedTabId,
       findingStateByTabId: {
         [FindingTabId.DetectionRules]: {
@@ -226,7 +235,9 @@ class Findings extends Component<FindingsProps, FindingsState> {
   }
 
   componentDidMount = async () => {
-    setBreadcrumbs([BREADCRUMBS.INSIGHTS, BREADCRUMBS.FINDINGS]);
+    setBreadcrumbs([BREADCRUMBS.FINDINGS]);
+    // Wazuh: remove Insights breadcrumb.
+    // setBreadcrumbs([BREADCRUMBS.INSIGHTS, BREADCRUMBS.FINDINGS]);
     this.onRefresh();
   };
 
@@ -235,14 +246,15 @@ class Findings extends Component<FindingsProps, FindingsState> {
   }
 
   onRefresh = async () => {
-    await this.getNotificationChannels();
+    // Wazuh: hide alert-related channels and props from findings page.
+    // await this.getNotificationChannels();
     if (this.state.selectedTabId === FindingTabId.DetectionRules) {
       await this.getDetectionRulesFindings();
     } else if (this.state.selectedTabId === FindingTabId.ThreatIntel && THREAT_INTEL_ENABLED) {
       await this.getThreatIntelFindings();
     }
-    // const data = this.generateVisualizationData();
-    // this.createStackedBarChart(data.visData, data.groupBy);
+  // const data = this.generateVisualizationData();
+  // this.createStackedBarChart(data.visData, data.groupBy);
   };
 
   setStateForTab<T extends FindingTabId, F extends keyof FindingsState['findingStateByTabId'][T]>(
@@ -395,10 +407,11 @@ class Findings extends Component<FindingsProps, FindingsState> {
     }
   };
 
-  getNotificationChannels = async () => {
-    const channels = await getNotificationChannels(this.props.notificationsService);
-    this.setState({ notificationChannels: channels });
-  };
+  // Wazuh: hide alert-related channels and props from findings page.
+  // getNotificationChannels = async () => {
+  //   const channels = await getNotificationChannels(this.props.notificationsService);
+  //   this.setState({ notificationChannels: channels });
+  // };
 
   onTimeChange = ({ start, end }: { start: string; end: string }) => {
     let { recentlyUsedRanges } = this.state;
@@ -513,7 +526,8 @@ class Findings extends Component<FindingsProps, FindingsState> {
   render() {
     const {
       loading,
-      notificationChannels,
+      // Wazuh: hide alert-related channels and props from findings page.
+      // notificationChannels,
       recentlyUsedRanges,
       selectedTabId,
       findingStateByTabId,
@@ -581,11 +595,12 @@ class Findings extends Component<FindingsProps, FindingsState> {
                 startTime={dateTimeFilter.startTime}
                 endTime={dateTimeFilter.endTime}
                 onRefresh={this.onRefresh}
-                notificationChannels={parseNotificationChannelsToOptions(notificationChannels)}
-                refreshNotificationChannels={this.getNotificationChannels}
+                // Wazuh: hide alert-related channels and props from findings page.
+                // notificationChannels={parseNotificationChannelsToOptions(notificationChannels)}
+                // refreshNotificationChannels={this.getNotificationChannels}
                 onFindingsFiltered={this.onFindingsFiltered}
-                hasNotificationsPlugin={getIsNotificationPluginInstalled()}
-                correlationService={this.props.correlationService}
+                // Wazuh: hide alert-related channels and props from findings page.
+                // hasNotificationsPlugin={getIsNotificationPluginInstalled()}
               />
             </ContentPanel>
           </>
