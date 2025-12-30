@@ -3,34 +3,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export const ALL_SPACES_VALUE = '__all__';
 export const KVDBS_PAGE_SIZE = 25;
-export const KVDBS_SORT_FIELD = 'document.title';
-export const SPACE_FIELD = 'space';
+export const KVDBS_SORT_FIELD = "document.title";
 
 export const KVDBS_SEARCH_SCHEMA = {
   strict: true,
   fields: {
-    'document.author': {
-      type: 'string',
+    "document.author": {
+      type: "string",
     },
-    'document.date': {
-      type: 'date',
+    "document.date": {
+      type: "date",
     },
-    'document.enabled': {
-      type: 'boolean',
+    "document.enabled": {
+      type: "boolean",
     },
-    'document.id': {
-      type: 'string',
+    "document.id": {
+      type: "string",
     },
-    'document.references': {
-      type: 'string',
+    "document.references": {
+      type: "string",
     },
-    'document.title': {
-      type: 'string',
-    },
-    space: {
-      type: 'string',
+    "document.title": {
+      type: "string",
     },
   },
 };

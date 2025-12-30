@@ -3,178 +3,118 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React from "react";
 import {
   EuiAccordion,
   EuiCodeBlock,
+  EuiFlexGrid,
+  EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiSpacer,
   EuiTabbedContent,
   EuiTitle,
-  EuiLink,
-} from '@elastic/eui';
-import { KVDBItem } from '../../../../types';
-import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
-import { DescriptionGroup } from '../../../components/Utility/DescriptionGroup';
-import { AssetViewer } from './AssetViewer';
+} from "@elastic/eui";
+import { get } from "lodash";
+import { KVDBItem } from "../../../../types";
+import { Metadata } from "./Metadata";
+import { AssetViewer } from "./AssetViewer";
 
 interface KVDBDetailsFlyoutProps {
   kvdb: KVDBItem;
   onClose: () => void;
 }
 
-const renderBoolean = (value?: boolean) => {
-  if (value === undefined || value === null) {
-    return DEFAULT_EMPTY_DATA;
-  }
-
-  return value ? 'Yes' : 'No';
+const detailsMapLabels: { [key: string]: string } = {
+  "document.id": "ID",
+  "document.name": "Name",
+  "integration.title": "Integration",
+  "document.title": "Title",
+  "document.author": "Author",
+  "document.enabled": "Enabled",
+  "document.metadata.author.url": "URL",
+  "document.references": "References",
+  "document.date": "Date",
+  space: "Space",
 };
 
-const formatPrimitive = (value: any): string => {
-  if (value === undefined || value === null || value === '') {
-    return DEFAULT_EMPTY_DATA;
-  }
+export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
+  kvdb,
+  onClose,
+}) => {
+  const document = kvdb.document ?? { id: "" };
 
-  if (typeof value === 'string') {
-    return value;
-  }
+  // Handle space field - it can be a string or an object with name property
+  const spaceValue =
+    typeof kvdb.space === "string"
+      ? kvdb.space
+      : kvdb.space && typeof kvdb.space === "object" && "name" in kvdb.space
+        ? kvdb.space.name || ""
+        : "";
 
-  if (typeof value === 'number') {
-    return `${value}`;
-  }
+  const kvdbData = {
+    "document.id": document.id || kvdb.id,
+    "integration.title": kvdb.integration?.title,
+    "document.title": document.title,
+    "document.date": document.date,
+    "document.author": document.author,
+    "document.enabled": document.enabled,
+    "document.references": document.references,
+    "document.metadata.author.url": document.metadata?.author?.url,
+    space: spaceValue,
+  };
 
-  if (typeof value === 'boolean') {
-    return renderBoolean(value);
-  }
-
-  if (Array.isArray(value)) {
-    const parts = value.map((entry) => formatPrimitive(entry)).filter((entry) => entry);
-    return parts.length ? parts.join(', ') : DEFAULT_EMPTY_DATA;
-  }
-
-  if (typeof value === 'object') {
-    if (value.name) {
-      return value.name;
-    }
-    if (value.title) {
-      return value.title;
-    }
-    if (value.url) {
-      return value.url;
-    }
-    try {
-      return JSON.stringify(value);
-    } catch (error) {
-      return DEFAULT_EMPTY_DATA;
-    }
-  }
-
-  return DEFAULT_EMPTY_DATA;
-};
-
-const renderUrl = (value?: string | { url?: string; name?: string }) => {
-  if (!value) {
-    return DEFAULT_EMPTY_DATA;
-  }
-
-  if (typeof value === 'string') {
-    return (
-      <EuiLink href={value} target="_blank" rel="noopener noreferrer">
-        {value}
-      </EuiLink>
-    );
-  }
-
-  const href = value.url;
-  if (!href) {
-    return formatPrimitive(value);
-  }
-
-  const label = value.name || href;
-  return (
-    <EuiLink href={href} target="_blank" rel="noopener noreferrer">
-      {label}
-    </EuiLink>
-  );
-};
-
-const renderReferences = (value?: any) => {
-  if (!value || (Array.isArray(value) && !value.length)) {
-    return DEFAULT_EMPTY_DATA;
-  }
-
-  const refs = Array.isArray(value) ? value : [value];
-
-  return (
-    <>
-      {refs.map((ref, index) => {
-        if (typeof ref === 'string') {
-          return (
-            <div key={`${ref}-${index}`}>
-              <EuiLink href={ref} target="_blank" rel="noopener noreferrer">
-                {ref}
-              </EuiLink>
-            </div>
-          );
-        }
-
-        if (ref && typeof ref === 'object' && ref.url) {
-          const label = ref.name || ref.url;
-          return (
-            <div key={`${ref.url}-${index}`}>
-              <EuiLink href={ref.url} target="_blank" rel="noopener noreferrer">
-                {label}
-              </EuiLink>
-            </div>
-          );
-        }
-
-        return <div key={`${index}`}>{formatPrimitive(ref)}</div>;
-      })}
-    </>
-  );
-};
-
-export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onClose }) => {
-  const integrationTitle = kvdb.integration?.title ?? DEFAULT_EMPTY_DATA;
-  const document = kvdb.document ?? { id: '' };
-
-  const detailsTab = (
+  const visualTab = (
     <>
       <EuiSpacer />
-      <DescriptionGroup
-        listItems={[
-          { title: 'ID', description: formatPrimitive(document.id || kvdb.id) },
-          { title: 'Title', description: formatPrimitive(document.title) },
-          { title: 'Integration', description: formatPrimitive(integrationTitle) },
-          { title: 'Space', description: formatPrimitive(kvdb.space) },
-        ]}
-      />
-      <EuiSpacer size="l" />
-      <DescriptionGroup
-        listItems={[
-          { title: 'Author', description: formatPrimitive(document.author) },
-          { title: 'Enabled', description: renderBoolean(document.enabled) },
-          { title: 'Date', description: formatPrimitive(document.date) },
-          { title: 'References', description: renderReferences(document.references) },
-        ]}
-      />
-      <EuiSpacer size="l" />
-      <DescriptionGroup
-        listItems={[
-          {
-            title: 'URL',
-            description: renderUrl(document.metadata?.author?.url),
-          },
-        ]}
-      />
+      <EuiFlexGrid columns={2}>
+        {[
+          "document.id",
+          "integration.title",
+          "document.title",
+          ["document.date", "date"],
+          "document.author",
+          ["document.enabled", "boolean_yesno"],
+          ["document.references", "url"],
+          "space",
+        ].map((item) => {
+          const [field, type] =
+            typeof item === "string" ? [item, "text"] : item;
+          return (
+            <EuiFlexItem key={field}>
+              <Metadata
+                label={detailsMapLabels[field]}
+                value={get(kvdbData, field)}
+                type={type as "text" | "date" | "boolean_yesno" | "url"}
+              />
+            </EuiFlexItem>
+          );
+        })}
+      </EuiFlexGrid>
+      {document.metadata?.author?.url && (
+        <>
+          <EuiSpacer />
+          <EuiFlexGrid columns={2}>
+            <EuiFlexItem>
+              <Metadata
+                label={detailsMapLabels["document.metadata.author.url"]}
+                value={document.metadata.author.url}
+                type="url"
+              />
+            </EuiFlexItem>
+          </EuiFlexGrid>
+        </>
+      )}
       {document.content && (
         <>
-          <EuiSpacer size="l" />
-          <EuiAccordion id="kvdb-content" buttonContent="Content" paddingSize="s" initialIsOpen>
+          <EuiSpacer />
+          <EuiAccordion
+            id="content"
+            buttonContent="Content"
+            paddingSize="s"
+            initialIsOpen={true}
+          >
             <AssetViewer content={document.content} />
           </EuiAccordion>
         </>
@@ -192,20 +132,24 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
     <EuiFlyout onClose={onClose} ownFocus size="l">
       <EuiFlyoutHeader hasBorder>
         <EuiTitle size="s">
-          <h2>{document.title ? `KVDB details - ${document.title}` : 'KVDB details'}</h2>
+          <h2>
+            {document.title
+              ? `KVDB details - ${document.title}`
+              : "KVDB details"}
+          </h2>
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
         <EuiTabbedContent
           tabs={[
             {
-              id: 'details',
-              name: 'Details',
-              content: detailsTab,
+              id: "visual",
+              name: "Visual",
+              content: visualTab,
             },
             {
-              id: 'json',
-              name: 'JSON',
+              id: "json",
+              name: "JSON",
               content: jsonTab,
             },
           ]}

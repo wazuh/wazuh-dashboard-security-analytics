@@ -24,7 +24,7 @@ export interface KVDBDocument {
 
 export interface KVDBSource {
   document: KVDBDocument;
-  space?: string;
+  space?: string | { name?: string };
 }
 
 export interface KVDBIntegrationSource {
@@ -48,7 +48,7 @@ export interface KVDBItem extends KVDBSource {
 export interface KVDBSearchRequest {
   from?: number;
   size?: number;
-  sort?: Array<Record<string, { order: 'asc' | 'desc' }>>;
+  sort?: Array<Record<string, { order: "asc" | "desc" }>>;
   query?: any;
   _source?: any;
   track_total_hits?: boolean;
@@ -71,8 +71,4 @@ export interface KVDBIntegrationsSearchResponse {
       _source: KVDBIntegrationSource;
     }[];
   };
-}
-
-export interface KVDBSpacesResponse {
-  spaces: string[];
 }

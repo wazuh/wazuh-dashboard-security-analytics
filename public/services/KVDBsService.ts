@@ -3,21 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { HttpSetup } from 'opensearch-dashboards/public';
+import { HttpSetup } from "opensearch-dashboards/public";
 import {
   KVDBIntegrationsSearchResponse,
   KVDBSearchRequest,
   KVDBSearchResponse,
-  KVDBSpacesResponse,
   ServerResponse,
-} from '../../types';
-import { API } from '../../server/utils/constants';
+} from "../../types";
+import { API } from "../../server/utils/constants";
 
 export default class KVDBsService {
   constructor(private httpClient: HttpSetup) {}
 
   searchKVDBs = async (
-    params: KVDBSearchRequest
+    params: KVDBSearchRequest,
   ): Promise<ServerResponse<KVDBSearchResponse>> => {
     const url = `..${API.KVDBS_BASE}/_search`;
     return (await this.httpClient.post(url, {
@@ -26,18 +25,11 @@ export default class KVDBsService {
   };
 
   searchIntegrations = async (
-    kvdbIds: string[]
+    kvdbIds: string[],
   ): Promise<ServerResponse<KVDBIntegrationsSearchResponse>> => {
     const url = `..${API.KVDBS_BASE}/_integrations`;
     return (await this.httpClient.post(url, {
       body: JSON.stringify({ kvdbIds }),
     })) as ServerResponse<KVDBIntegrationsSearchResponse>;
-  };
-
-  getSpaces = async (): Promise<ServerResponse<KVDBSpacesResponse>> => {
-    const url = `..${API.KVDBS_BASE}/_spaces`;
-    return (await this.httpClient.post(url, {
-      body: JSON.stringify({}),
-    })) as ServerResponse<KVDBSpacesResponse>;
   };
 }

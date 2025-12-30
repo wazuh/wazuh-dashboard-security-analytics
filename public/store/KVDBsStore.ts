@@ -3,47 +3,45 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { NotificationsStart } from 'opensearch-dashboards/public';
+import { NotificationsStart } from "opensearch-dashboards/public";
 import {
   KVDBIntegrationSummary,
   KVDBIntegrationsSearchResponse,
   KVDBItem,
   KVDBSearchRequest,
   KVDBSearchResponse,
-  KVDBSpacesResponse,
   ServerResponse,
-} from '../../types';
-import KVDBsService from '../services/KVDBsService';
-import { errorNotificationToast } from '../utils/helpers';
+} from "../../types";
+import KVDBsService from "../services/KVDBsService";
+import { errorNotificationToast } from "../utils/helpers";
 
 export class KVDBsStore {
-  constructor(private service: KVDBsService, private notifications: NotificationsStart) {}
-
-  public async getSpaces(): Promise<string[]> {
-    const response: ServerResponse<KVDBSpacesResponse> = await this.service.getSpaces();
-    if (!response.ok) {
-      errorNotificationToast(this.notifications, 'fetch', 'spaces', response.error);
-      return [];
-    }
-
-    return response.response.spaces ?? [];
-  }
+  constructor(
+    private service: KVDBsService,
+    private notifications: NotificationsStart,
+  ) {}
 
   public async searchKVDBs(
-    params: KVDBSearchRequest
+    params: KVDBSearchRequest,
   ): Promise<{ items: KVDBItem[]; total: number }> {
     try {
-      const response: ServerResponse<KVDBSearchResponse> = await this.service.searchKVDBs(params);
+      const response: ServerResponse<KVDBSearchResponse> =
+        await this.service.searchKVDBs(params);
       if (!response.ok) {
-        errorNotificationToast(this.notifications, 'fetch', 'KVDBs', response.error);
+        errorNotificationToast(
+          this.notifications,
+          "fetch",
+          "KVDBs",
+          response.error,
+        );
         return { items: [], total: 0 };
       }
 
       const hits = response.response.hits.hits ?? [];
       const total =
-        typeof response.response.hits.total === 'number'
+        typeof response.response.hits.total === "number"
           ? response.response.hits.total
-          : response.response.hits.total?.value ?? hits.length;
+          : (response.response.hits.total?.value ?? hits.length);
       const items: KVDBItem[] = hits.map((hit) => ({
         id: hit._id,
         ...hit._source,
@@ -51,36 +49,49 @@ export class KVDBsStore {
 
       const kvdbIds = Array.from(
         new Set(
-          items.map((item) => item.document?.id).filter((id): id is string => Boolean(id))
-        )
+          items
+            .map((item) => item.document?.id)
+            .filter((id): id is string => Boolean(id)),
+        ),
       );
 
       const integrationsMap = await this.getIntegrationsMap(kvdbIds);
 
       const itemsWithIntegration = items.map((item) => ({
         ...item,
-        integration: integrationsMap.get(item.document?.id ?? '') ?? undefined,
+        integration: integrationsMap.get(item.document?.id ?? "") ?? undefined,
       }));
 
       return { items: itemsWithIntegration, total };
     } catch (error: any) {
-      errorNotificationToast(this.notifications, 'fetch', 'KVDBs', error.message);
+      errorNotificationToast(
+        this.notifications,
+        "fetch",
+        "KVDBs",
+        error.message,
+      );
       return { items: [], total: 0 };
     }
   }
 
   public async getKVDB(id: string): Promise<KVDBItem | undefined> {
-    const response: ServerResponse<KVDBSearchResponse> = await this.service.searchKVDBs({
-      size: 1,
-      query: {
-        ids: {
-          values: [id],
+    const response: ServerResponse<KVDBSearchResponse> =
+      await this.service.searchKVDBs({
+        size: 1,
+        query: {
+          ids: {
+            values: [id],
+          },
         },
-      },
-    });
+      });
 
     if (!response.ok) {
-      errorNotificationToast(this.notifications, 'fetch', 'KVDB', response.error);
+      errorNotificationToast(
+        this.notifications,
+        "fetch",
+        "KVDB",
+        response.error,
+      );
       return undefined;
     }
 
@@ -95,17 +106,17 @@ export class KVDBsStore {
     };
 
     const integrationsMap = await this.getIntegrationsMap(
-      item.document?.id ? [item.document.id] : []
+      item.document?.id ? [item.document.id] : [],
     );
 
     return {
       ...item,
-      integration: integrationsMap.get(item.document?.id ?? '') ?? undefined,
+      integration: integrationsMap.get(item.document?.id ?? "") ?? undefined,
     };
   }
 
   private async getIntegrationsMap(
-    kvdbIds: string[]
+    kvdbIds: string[],
   ): Promise<Map<string, KVDBIntegrationSummary>> {
     if (!kvdbIds.length) {
       return new Map();
@@ -115,7 +126,12 @@ export class KVDBsStore {
       await this.service.searchIntegrations(kvdbIds);
 
     if (!response.ok) {
-      errorNotificationToast(this.notifications, 'fetch', 'integrations', response.error);
+      errorNotificationToast(
+        this.notifications,
+        "fetch",
+        "integrations",
+        response.error,
+      );
       return new Map();
     }
 
@@ -133,7 +149,10 @@ export class KVDBsStore {
         if (!kvdbId || integrationsMap.has(kvdbId)) {
           return;
         }
-        integrationsMap.set(kvdbId, { id: integrationId, title: integrationTitle });
+        integrationsMap.set(kvdbId, {
+          id: integrationId,
+          title: integrationTitle,
+        });
       });
     });
 
