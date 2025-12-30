@@ -238,7 +238,7 @@ export default class Main extends Component<MainProps, MainState> {
   componentDidUpdate(
     prevProps: Readonly<MainProps>,
     prevState: Readonly<MainState>,
-    snapshot?: any
+    snapshot?: any,
   ): void {
     const pathnameChanged =
       this.props.location.pathname !== prevProps.location.pathname;
@@ -254,7 +254,7 @@ export default class Main extends Component<MainProps, MainState> {
           ...this.props.location,
           search: searchParams.toString(),
         },
-        this.props.location.state
+        this.props.location.state,
       );
     }
 
@@ -325,7 +325,7 @@ export default class Main extends Component<MainProps, MainState> {
 
       getPlugins(services.opensearchService).then((plugins): void => {
         setIsNotificationPluginInstalled(
-          plugins.includes(OS_NOTIFICATION_PLUGIN)
+          plugins.includes(OS_NOTIFICATION_PLUGIN),
         );
       });
 
@@ -371,18 +371,20 @@ export default class Main extends Component<MainProps, MainState> {
             isSelected: selectedNavItemId === Navigation.Overview,
           },
           ...(THREAT_INTEL_ENABLED
-          ? [
-              {
-                name: Navigation.ThreatIntel,
-                id: Navigation.ThreatIntel,
-                onClick: () => {
-                  this.setState({ selectedNavItemId: Navigation.ThreatIntel });
-                  history.push(ROUTES.THREAT_INTEL_OVERVIEW);
+            ? [
+                {
+                  name: Navigation.ThreatIntel,
+                  id: Navigation.ThreatIntel,
+                  onClick: () => {
+                    this.setState({
+                      selectedNavItemId: Navigation.ThreatIntel,
+                    });
+                    history.push(ROUTES.THREAT_INTEL_OVERVIEW);
+                  },
+                  isSelected: selectedNavItemId === Navigation.ThreatIntel,
                 },
-                isSelected: selectedNavItemId === Navigation.ThreatIntel,
-              },
-            ]
-          : []),
+              ]
+            : []),
           {
             name: Navigation.Insights,
             id: Navigation.Insights,
@@ -395,7 +397,9 @@ export default class Main extends Component<MainProps, MainState> {
                   // this.setState({ selectedNavItemId: Navigation.Findings });
                   // history.push(ROUTES.FINDINGS);
                   // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(FINDINGS_NAV_ID, {path: generateAppPath(ROUTES.FINDINGS)});
+                  getApplication().navigateToApp(FINDINGS_NAV_ID, {
+                    path: generateAppPath(ROUTES.FINDINGS),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.Findings,
               },
@@ -406,7 +410,9 @@ export default class Main extends Component<MainProps, MainState> {
                   // this.setState({ selectedNavItemId: Navigation.Alerts });
                   // history.push(ROUTES.ALERTS);
                   // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(THREAT_ALERTS_NAV_ID, {path: generateAppPath(ROUTES.ALERTS)});
+                  getApplication().navigateToApp(THREAT_ALERTS_NAV_ID, {
+                    path: generateAppPath(ROUTES.ALERTS),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.Alerts,
               },
@@ -417,7 +423,9 @@ export default class Main extends Component<MainProps, MainState> {
                   // this.setState({ selectedNavItemId: Navigation.Correlations });
                   // history.push(ROUTES.CORRELATIONS);
                   // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(CORRELATIONS_NAV_ID, {path: generateAppPath(ROUTES.CORRELATIONS)});
+                  getApplication().navigateToApp(CORRELATIONS_NAV_ID, {
+                    path: generateAppPath(ROUTES.CORRELATIONS),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.Correlations,
               },
@@ -430,7 +438,9 @@ export default class Main extends Component<MainProps, MainState> {
               // this.setState({ selectedNavItemId: Navigation.LogTypes });
               // history.push(ROUTES.LOG_TYPES);
               // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-              getApplication().navigateToApp(LOG_TYPES_NAV_ID, {path: generateAppPath(ROUTES.LOG_TYPES)});
+              getApplication().navigateToApp(LOG_TYPES_NAV_ID, {
+                path: generateAppPath(ROUTES.LOG_TYPES),
+              });
             },
             isSelected: selectedNavItemId === Navigation.LogTypes,
           },
@@ -440,7 +450,7 @@ export default class Main extends Component<MainProps, MainState> {
             forceOpen: true,
             items: [
               {
-                name: 'Overview',
+                name: "Overview",
                 id: Navigation.NormalizationOverview,
                 onClick: () => {
                   // this.setState({ selectedNavItemId: Navigation.NormalizationOverview });
@@ -448,9 +458,12 @@ export default class Main extends Component<MainProps, MainState> {
                   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
                   This view should be moved to this plugin.
                   */
-                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/overview')});
+                  getApplication().navigateToApp("normalization", {
+                    path: generateAppPath("/normalization/overview"),
+                  });
                 },
-                isSelected: selectedNavItemId === Navigation.NormalizationOverview,
+                isSelected:
+                  selectedNavItemId === Navigation.NormalizationOverview,
               },
               {
                 name: Navigation.Decoders,
@@ -461,7 +474,9 @@ export default class Main extends Component<MainProps, MainState> {
                   //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
                   //   This view should be moved to this plugin.
                   //   */
-                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/decoders')});
+                  getApplication().navigateToApp("normalization", {
+                    path: generateAppPath("/normalization/decoders"),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.Decoders,
               },
@@ -471,19 +486,19 @@ export default class Main extends Component<MainProps, MainState> {
                 onClick: () => {
                   // this.setState({ selectedNavItemId: Navigation.KVDBS });
                   // history.push(ROUTES.KVDBS);
-                  //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
-                  //   This view should be moved to this plugin.
-                  //   */
-                  getApplication().navigateToApp(KVDBS_NAV_ID, { path: generateAppPath(ROUTES.KVDBS) });
+                  // Wazuh: navigate to app so this is highlighted in the sidebar menu
+                  getApplication().navigateToApp(KVDBS_NAV_ID, {
+                    path: generateAppPath(ROUTES.KVDBS),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.KVDBS,
               },
-            ]
+            ],
             // onClick: () => {
             //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
             //   This view should be moved to this plugin.
             //   */
-              
+
             //   // this.setState({ selectedNavItemId: Navigation.Normalization });
             //   // history.push(ROUTES.NORMALIZATION);
             // },
@@ -501,7 +516,9 @@ export default class Main extends Component<MainProps, MainState> {
                   // this.setState({ selectedNavItemId: Navigation.Detectors });
                   // history.push(ROUTES.DETECTORS);
                   // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(DETECTORS_NAV_ID, {path: generateAppPath(ROUTES.DETECTORS)});
+                  getApplication().navigateToApp(DETECTORS_NAV_ID, {
+                    path: generateAppPath(ROUTES.DETECTORS),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.Detectors,
               },
@@ -512,7 +529,9 @@ export default class Main extends Component<MainProps, MainState> {
                   // this.setState({ selectedNavItemId: Navigation.Rules });
                   // history.push(ROUTES.RULES);
                   // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {path: generateAppPath(ROUTES.RULES)});
+                  getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {
+                    path: generateAppPath(ROUTES.RULES),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.Rules,
               },
@@ -525,14 +544,16 @@ export default class Main extends Component<MainProps, MainState> {
                   // });
                   // history.push(ROUTES.CORRELATION_RULES);
                   // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(CORRELATIONS_RULE_NAV_ID, {path: generateAppPath(ROUTES.CORRELATION_RULES)});
+                  getApplication().navigateToApp(CORRELATIONS_RULE_NAV_ID, {
+                    path: generateAppPath(ROUTES.CORRELATION_RULES),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.CorrelationRules,
               },
             ],
           },
         ],
-      }
+      },
     ];
   };
 
@@ -590,7 +611,7 @@ export default class Main extends Component<MainProps, MainState> {
                               <EuiPage restrictWidth={"100%"}>
                                 {/* Hide side navigation bar when on any HIDDEN_NAV_ROUTES pages. */}
                                 {!HIDDEN_NAV_ROUTES.some((route) =>
-                                  pathname.match(route)
+                                  pathname.match(route),
                                 ) &&
                                   !core.chrome.navGroup.getNavGroupEnabled() && (
                                     <EuiPageSideBar style={{ minWidth: 200 }}>
@@ -700,7 +721,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => {
                                         if (!props.location.state?.ruleItem) {
                                           props.history.replace(ROUTES.RULES);
@@ -731,7 +752,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => {
                                         if (!props.location.state?.ruleItem) {
                                           props.history.replace(ROUTES.RULES);
@@ -791,7 +812,7 @@ export default class Main extends Component<MainProps, MainState> {
                                       <Route
                                         path={ROUTES.GETTING_STARTED}
                                         render={(
-                                          props: RouteComponentProps
+                                          props: RouteComponentProps,
                                         ) => (
                                           <GettingStartedContent
                                             {...props}
@@ -835,7 +856,11 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={`${ROUTES.DETECTOR_DETAILS}/:id`}
                                       render={(
-                                        props: RouteComponentProps<{}, any, any>
+                                        props: RouteComponentProps<
+                                          {},
+                                          any,
+                                          any
+                                        >,
                                       ) => (
                                         <DetectorDetails
                                           detectorService={
@@ -859,7 +884,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => (
                                         <UpdateDetectorBasicDetails
                                           {...props}
@@ -874,7 +899,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => (
                                         <UpdateDetectorRules
                                           {...props}
@@ -889,7 +914,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => (
                                         <UpdateFieldMappings
                                           {...props}
@@ -910,7 +935,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => (
                                         <UpdateAlertConditions
                                           {...props}
@@ -934,7 +959,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => (
                                         <CorrelationRules
                                           {...props}
@@ -949,7 +974,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => (
                                         <CreateCorrelationRule
                                           {...props}
@@ -975,7 +1000,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => (
                                         <CreateCorrelationRule
                                           {...props}
@@ -1001,7 +1026,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => {
                                         return (
                                           <Correlations
@@ -1032,7 +1057,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => (
                                         <LogType
                                           notifications={core?.notifications}
@@ -1047,7 +1072,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => {
                                         return (
                                           <LogTypes
@@ -1065,7 +1090,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           any,
                                           any,
                                           any
-                                        >
+                                        >,
                                       ) => {
                                         return (
                                           <CreateLogType
@@ -1078,18 +1103,25 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.KVDBS}
                                       render={(props: RouteComponentProps) => (
-                                        <KVDBs {...props} notifications={core?.notifications} />
+                                        <KVDBs
+                                          {...props}
+                                          notifications={core?.notifications}
+                                        />
                                       )}
                                     />
                                     {THREAT_INTEL_ENABLED && (
                                       <>
                                         <Route
-                                          path={ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE}
+                                          path={
+                                            ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE
+                                          }
                                           render={(props) => {
                                             return (
                                               <AddThreatIntelSource
                                                 {...props}
-                                                threatIntelService={services.threatIntelService}
+                                                threatIntelService={
+                                                  services.threatIntelService
+                                                }
                                               />
                                             );
                                           }}
@@ -1100,7 +1132,9 @@ export default class Main extends Component<MainProps, MainState> {
                                             return (
                                               <ThreatIntelOverview
                                                 {...props}
-                                                threatIntelService={services.threatIntelService}
+                                                threatIntelService={
+                                                  services.threatIntelService
+                                                }
                                                 dataSource={selectedDataSource}
                                               />
                                             );
@@ -1111,25 +1145,47 @@ export default class Main extends Component<MainProps, MainState> {
                                             ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
                                             ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
                                           ]}
-                                          render={(props: RouteComponentProps<any, any, any>) => {
+                                          render={(
+                                            props: RouteComponentProps<
+                                              any,
+                                              any,
+                                              any
+                                            >,
+                                          ) => {
                                             return (
                                               <ThreatIntelScanConfigForm
                                                 {...props}
-                                                notificationsService={services.notificationsService}
-                                                threatIntelService={services.threatIntelService}
-                                                notifications={core.notifications}
+                                                notificationsService={
+                                                  services.notificationsService
+                                                }
+                                                threatIntelService={
+                                                  services.threatIntelService
+                                                }
+                                                notifications={
+                                                  core.notifications
+                                                }
                                               />
                                             );
                                           }}
                                         />
                                         <Route
                                           path={`${ROUTES.THREAT_INTEL_SOURCE_DETAILS}/:id`}
-                                          render={(props: RouteComponentProps<any, any, any>) => {
+                                          render={(
+                                            props: RouteComponentProps<
+                                              any,
+                                              any,
+                                              any
+                                            >,
+                                          ) => {
                                             return (
                                               <ThreatIntelSource
                                                 {...props}
-                                                threatIntelService={services.threatIntelService}
-                                                notifications={core.notifications}
+                                                threatIntelService={
+                                                  services.threatIntelService
+                                                }
+                                                notifications={
+                                                  core.notifications
+                                                }
                                               />
                                             );
                                           }}
