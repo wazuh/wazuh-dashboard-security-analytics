@@ -17,6 +17,7 @@ import SavedObjectService from './SavedObjectService';
 import CorrelationService from './CorrelationService';
 import LogTypeService from './LogTypeService';
 import ThreatIntelService from './ThreatIntelService';
+import DecodersService from './DecodersService';
 
 export {
   SaContextConsumer,
@@ -33,5 +34,6 @@ export {
   IndexPatternsService,
   SavedObjectService,
   LogTypeService,
+  DecodersService,
   ThreatIntelService,
 };

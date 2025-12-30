@@ -34,6 +34,7 @@ import {
   DETECTION_RULE_NAV_ID,
   CORRELATIONS_RULE_NAV_ID,
   LOG_TYPES_NAV_ID,
+  DECODERS_NAV_ID,
 } from "../../utils/constants";
 import { CoreServicesConsumer } from "../../components/core_services";
 import Findings from "../Findings";
@@ -59,6 +60,7 @@ import { Correlations } from "../Correlations/containers/CorrelationsContainer";
 import { LogTypes } from "../LogTypes/containers/LogTypes";
 import { LogType } from "../LogTypes/containers/LogType";
 import { CreateLogType } from "../LogTypes/containers/CreateLogType";
+import Decoders from "../Decoders";
 import {
   DataSourceContextType,
   DateTimeFilter,
@@ -162,6 +164,7 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   [ROUTES.DETECTORS]: Navigation.Detectors,
   [ROUTES.RULES]: Navigation.Rules,
   [ROUTES.LOG_TYPES]: Navigation.LogTypes,
+  [ROUTES.DECODERS]: Navigation.Decoders,
 };
 
 // Wazuh
@@ -455,10 +458,9 @@ export default class Main extends Component<MainProps, MainState> {
                 onClick: () => {
                   // this.setState({ selectedNavItemId: Navigation.Decoders });
                   // history.push(ROUTES.DECODERS);
-                  //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
-                  //   This view should be moved to this plugin.
-                  //   */
-                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/decoders')});
+                  getApplication().navigateToApp(DECODERS_NAV_ID, {
+                    path: generateAppPath(ROUTES.DECODERS),
+                  });
                 },
                 isSelected: selectedNavItemId === Navigation.Decoders,
               },
@@ -552,6 +554,9 @@ export default class Main extends Component<MainProps, MainState> {
     } = this.state;
     const sideNav: EuiSideNavItemType<{ style: any }>[] =
       this.getSideNavItems();
+    const isDecodersRoute = !!pathname.match(new RegExp(`^${ROUTES.DECODERS}`));
+    const showDataSourceMenu = multiDataSourceEnabled && !isDecodersRoute;
+    const shouldBlockForDataSource = dataSourceLoading && !isDecodersRoute;
     const dataSourceContextValue: DataSourceContextType = {
       dataSource: selectedDataSource,
       setDataSource: this.onDataSourceSelected,
@@ -572,7 +577,7 @@ export default class Main extends Component<MainProps, MainState> {
                       {(_dataSource: DataSourceContextType | null) =>
                         _dataSource && (
                           <>
-                            {multiDataSourceEnabled && (
+                            {showDataSourceMenu && (
                               <DataSourceMenuWrapper
                                 {...this.props}
                                 dataSourceManagement={dataSourceManagement}
@@ -583,7 +588,7 @@ export default class Main extends Component<MainProps, MainState> {
                                 dataSourceFilterFn={dataSourceFilterFn}
                               />
                             )}
-                            {!dataSourceLoading && services && (
+                            {!shouldBlockForDataSource && services && (
                               <EuiPage restrictWidth={"100%"}>
                                 {/* Hide side navigation bar when on any HIDDEN_NAV_ROUTES pages. */}
                                 {!HIDDEN_NAV_ROUTES.some((route) =>
@@ -1071,6 +1076,12 @@ export default class Main extends Component<MainProps, MainState> {
                                           />
                                         );
                                       }}
+                                    />
+                                    <Route
+                                      path={ROUTES.DECODERS}
+                                      render={(props: RouteComponentProps) => (
+                                        <Decoders {...props} />
+                                      )}
                                     />
                                     {THREAT_INTEL_ENABLED && (
                                       <>
