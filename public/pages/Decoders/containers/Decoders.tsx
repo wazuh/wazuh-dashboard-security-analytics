@@ -24,6 +24,7 @@ import { DecoderItem } from '../../../../types';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { setBreadcrumbs } from '../../../utils/helpers';
+import { getApplication } from '../../../services/utils/constants';
 import { SpaceSelector } from '../components/SpaceSelector';
 import { buildDecodersSearchQuery } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
@@ -98,6 +99,25 @@ export const Decoders: React.FC = () => {
       return JSON.stringify(value);
     }
     return DEFAULT_EMPTY_DATA;
+  };
+
+  const buildOverviewQuery = (integration: string) => {
+    const trimmed = integration.trim();
+    if (!trimmed) {
+      return '';
+    }
+    const sanitized = trimmed.replace(/"/g, '\\"');
+    const needsQuotes = /\s|:|\//.test(sanitized);
+    const value = needsQuotes ? `"${sanitized}"` : sanitized;
+    return `document.title:${value}`;
+  };
+
+  const navigateToNormalizationOverview = (integration: string) => {
+    const query = buildOverviewQuery(integration);
+    const search = query ? `?query=${encodeURIComponent(query)}` : '';
+    getApplication().navigateToApp('normalization', {
+      path: `#/normalization/overview${search}`,
+    });
   };
 
   useEffect(() => {
@@ -210,9 +230,18 @@ export const Decoders: React.FC = () => {
           integrations.length ? (
             <EuiBadgeGroup>
               {integrations.map((integration, index) => (
-                <EuiBadge key={`${integration}-${index}`} color="hollow">
-                  {integration}
-                </EuiBadge>
+                <EuiToolTip
+                  key={`${integration}-${index}`}
+                  content={`Navigate to Overview filtering by ${integration} integration`}
+                >
+                  <EuiBadge
+                    color="hollow"
+                    onClick={() => navigateToNormalizationOverview(integration)}
+                    onClickAriaLabel={`Navigate to Overview filtered by ${integration}`}
+                  >
+                    {integration}
+                  </EuiBadge>
+                </EuiToolTip>
               ))}
             </EuiBadgeGroup>
           ) : (
