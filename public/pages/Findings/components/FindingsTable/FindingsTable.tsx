@@ -307,10 +307,6 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
               value: 'Detection rules',
               name: 'Detection rules',
             },
-            {
-              value: 'Threat intelligence',
-              name: 'Threat intelligence',
-            },
           ],
           multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
