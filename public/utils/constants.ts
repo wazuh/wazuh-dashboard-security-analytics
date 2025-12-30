@@ -34,8 +34,8 @@ export const THREAT_INTEL_NAV_ID = `threat_intelligence`;
 export const LOG_TYPES_NAV_ID = `log_types`;
 export const INSIGHTS_NAV_ID = 'insights_nav';
 export const DETECTION_NAV_ID = 'detection_nav';
-export const NORMALIZATION_NAV_ID = 'normalization_nav';
-export const DECODERS_NAV_ID = 'decoders2';
+export const NORMALIZATION_NAV_ID = 'normalization';
+export const DECODERS_NAV_ID = 'decoders';
 // Wazuh: Threat intelligence app/endpoints are not available.
 export const THREAT_INTEL_ENABLED = false;
 

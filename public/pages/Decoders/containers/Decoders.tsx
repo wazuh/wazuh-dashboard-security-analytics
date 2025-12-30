@@ -21,7 +21,7 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA, NORMALIZATION_NAV_ID } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { setBreadcrumbs } from '../../../utils/helpers';
 import { getApplication } from '../../../services/utils/constants';
@@ -115,7 +115,7 @@ export const Decoders: React.FC = () => {
   const navigateToNormalizationOverview = (integration: string) => {
     const query = buildOverviewQuery(integration);
     const search = query ? `?query=${encodeURIComponent(query)}` : '';
-    getApplication().navigateToApp('normalization', {
+    getApplication().navigateToApp(NORMALIZATION_NAV_ID, {
       path: `#/normalization/overview${search}`,
     });
   };

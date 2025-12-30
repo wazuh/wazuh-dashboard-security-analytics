@@ -35,6 +35,7 @@ import {
   CORRELATIONS_RULE_NAV_ID,
   LOG_TYPES_NAV_ID,
   DECODERS_NAV_ID,
+  NORMALIZATION_NAV_ID
 } from "../../utils/constants";
 import { CoreServicesConsumer } from "../../components/core_services";
 import Findings from "../Findings";
@@ -448,7 +449,7 @@ export default class Main extends Component<MainProps, MainState> {
                   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
                   This view should be moved to this plugin.
                   */
-                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/overview')});
+                  getApplication().navigateToApp(NORMALIZATION_NAV_ID, {path: generateAppPath('/normalization/overview')});
                 },
                 isSelected: selectedNavItemId === Navigation.NormalizationOverview,
               },
@@ -473,7 +474,7 @@ export default class Main extends Component<MainProps, MainState> {
                   //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
                   //   This view should be moved to this plugin.
                   //   */
-                  getApplication().navigateToApp('normalization', {path: generateAppPath('/normalization/kvdbs')});
+                  getApplication().navigateToApp(NORMALIZATION_NAV_ID, {path: generateAppPath('/normalization/kvdbs')});
                 },
                 isSelected: selectedNavItemId === Navigation.KVDBS,
               },

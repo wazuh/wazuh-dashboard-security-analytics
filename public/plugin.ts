@@ -314,15 +314,6 @@ export class SecurityAnalyticsPlugin
         }
       })
 
-      // Wazuh: register an empty app to allow the nested apps in the sidebar menu
-      core.application.register({
-        id: NORMALIZATION_NAV_ID,
-        title: "Normalization",
-        mount: async () => {
-          return () => {};
-        }
-      })
-
       const navlinks = [
         { id: OVERVIEW_NAV_ID, showInAllNavGroup: true },
         // Wazuh does not use Get Started page
