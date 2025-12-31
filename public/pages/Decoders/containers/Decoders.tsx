@@ -5,8 +5,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  EuiBadge,
-  EuiBadgeGroup,
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
@@ -32,15 +30,9 @@ import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
 const DEFAULT_PAGE_SIZE = 25;
 const SORT_FIELD_MAP: Record<string, string> = {
   'document.name': 'document.name.keyword',
-  'document.metadata.module': 'document.metadata.module.keyword',
-  'document.metadata.compatibility': 'document.metadata.compatibility.keyword',
-  space: 'space.keyword',
 };
 const SORT_UNMAPPED_TYPE: Record<string, string> = {
   'document.name.keyword': 'keyword',
-  'document.metadata.module.keyword': 'keyword',
-  'document.metadata.compatibility.keyword': 'keyword',
-  'space.keyword': 'keyword',
 };
 
 export const Decoders: React.FC = () => {
@@ -215,56 +207,29 @@ export const Decoders: React.FC = () => {
         field: 'document.name',
         name: 'Name',
         sortable: true,
-        render: (value: string, item: DecoderItem) => (
-          <EuiToolTip content="View decoder details">
-            <EuiLink onClick={() => setSelectedDecoder({ id: item.id, space: item.space })}>
-              {formatCellValue(value)}
-            </EuiLink>
-          </EuiToolTip>
-        ),
+        render: (value: string) => formatCellValue(value),
       },
       {
         field: 'integrations',
         name: 'Integration',
-        render: (integrations: string[] = []) =>
-          integrations.length ? (
-            <EuiBadgeGroup>
-              {integrations.map((integration, index) => (
-                <EuiToolTip
-                  key={`${integration}-${index}`}
-                  content={`Navigate to Overview filtering by ${integration} integration`}
-                >
-                  <EuiBadge
-                    color="hollow"
-                    onClick={() => navigateToNormalizationOverview(integration)}
-                    onClickAriaLabel={`Navigate to Overview filtered by ${integration}`}
-                  >
+        render: (integrations: string[] = []) => {
+          const integrationValues = integrations.filter(Boolean);
+          if (!integrationValues.length) {
+            return DEFAULT_EMPTY_DATA;
+          }
+          return (
+            <span>
+              {integrationValues.map((integration, index) => (
+                <React.Fragment key={`${integration}-${index}`}>
+                  <EuiLink onClick={() => navigateToNormalizationOverview(integration)}>
                     {integration}
-                  </EuiBadge>
-                </EuiToolTip>
+                  </EuiLink>
+                  {index < integrationValues.length - 1 ? ', ' : null}
+                </React.Fragment>
               ))}
-            </EuiBadgeGroup>
-          ) : (
-            DEFAULT_EMPTY_DATA
-          ),
-      },
-      {
-        field: 'document.metadata.module',
-        name: 'Module',
-        sortable: true,
-        render: (value?: unknown) => formatCellValue(value),
-      },
-      {
-        field: 'document.metadata.compatibility',
-        name: 'Compatibility',
-        sortable: true,
-        render: (value?: unknown) => formatCellValue(value),
-      },
-      {
-        field: 'space',
-        name: 'Space',
-        sortable: true,
-        render: (value?: unknown) => formatCellValue(value),
+            </span>
+          );
+        },
       },
       {
         name: 'Actions',
