@@ -221,9 +221,13 @@ export const Decoders: React.FC = () => {
             <span>
               {integrationValues.map((integration, index) => (
                 <React.Fragment key={`${integration}-${index}`}>
-                  <EuiLink onClick={() => navigateToNormalizationOverview(integration)}>
-                    {integration}
-                  </EuiLink>
+                  <EuiToolTip
+                    content={`Navigate to Overview filtering by ${integration} integration`}
+                  >
+                    <EuiLink onClick={() => navigateToNormalizationOverview(integration)}>
+                      {integration}
+                    </EuiLink>
+                  </EuiToolTip>
                   {index < integrationValues.length - 1 ? ', ' : null}
                 </React.Fragment>
               ))}
