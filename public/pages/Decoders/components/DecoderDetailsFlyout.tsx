@@ -18,7 +18,6 @@ import {
 } from '@elastic/eui';
 import { DecoderItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import { ContentPanel } from '../../../components/ContentPanel';
 import { createTextDetailsGroup } from '../../../utils/helpers';
 
 interface DecoderDetailsFlyoutProps {
@@ -121,55 +120,61 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
 
   const detailsContent = (
     <>
-      <ContentPanel title="Details" hideHeaderBorder>
-        {createTextDetailsGroup([
-          { label: 'Name', content: formatTextValue(decoder?.document?.name) },
-          { label: 'ID', content: formatTextValue(decoder?.document?.id) },
-          { label: 'Integration', content: integrations },
-          { label: 'Title', content: formatTextValue(decoder?.document?.metadata?.title) },
-          { label: 'Module', content: formatTextValue(decoder?.document?.metadata?.module) },
-          { label: 'Compatibility', content: formatTextValue(decoder?.document?.metadata?.compatibility) },
-          { label: 'Versions', content: formatTextValue(decoder?.document?.metadata?.versions) },
-          { label: 'Space', content: formatTextValue(decoder?.space) },
-        ])}
-      </ContentPanel>
-
+      {createTextDetailsGroup([
+        { label: 'ID', content: formatTextValue(decoder?.document?.id) },
+        { label: 'Integration', content: integrations },
+      ])}
+      {createTextDetailsGroup([
+        { label: 'Title', content: formatTextValue(decoder?.document?.metadata?.title) },
+        { label: 'Module', content: formatTextValue(decoder?.document?.metadata?.module) },
+      ])}
+      {createTextDetailsGroup([
+        {
+          label: 'Compatibility',
+          content: formatTextValue(decoder?.document?.metadata?.compatibility),
+        },
+        { label: 'Versions', content: formatTextValue(decoder?.document?.metadata?.versions) },
+      ])}
       {decoder?.document?.metadata?.author && (
         <>
-          <EuiSpacer size="m" />
-          <ContentPanel title="Author" hideHeaderBorder>
-            {createTextDetailsGroup([
-              {
-                label: 'Name',
-                content: formatTextValue(decoder.document.metadata.author.name),
-              },
-              {
-                label: 'Email',
-                content: formatTextValue(decoder.document.metadata.author.email),
-              },
-              {
-                label: 'URL',
-                content: formatTextValue(decoder.document.metadata.author.url),
-                url: decoder.document.metadata.author.url,
-                target: '_blank',
-              },
-              {
-                label: 'Date',
-                content: formatTextValue(decoder.document.metadata.author.date),
-              },
-            ])}
-          </ContentPanel>
+          <EuiTitle size="xs">
+            <h3>Author</h3>
+          </EuiTitle>
+          <EuiSpacer size="s" />
+          {createTextDetailsGroup([
+            {
+              label: 'Name',
+              content: formatTextValue(decoder.document.metadata.author.name),
+            },
+            {
+              label: 'Email',
+              content: formatTextValue(decoder.document.metadata.author.email),
+            },
+          ])}
+          {createTextDetailsGroup([
+            {
+              label: 'URL',
+              content: formatTextValue(decoder.document.metadata.author.url),
+              url: decoder.document.metadata.author.url,
+              target: '_blank',
+            },
+            {
+              label: 'Date',
+              content: formatTextValue(decoder.document.metadata.author.date),
+            },
+          ])}
         </>
       )}
 
       {formatTextValue(decoder?.document?.metadata?.description) && (
         <>
-          <EuiSpacer size="m" />
-          <ContentPanel title="Description" hideHeaderBorder>
-            <EuiText size="s">
-              <p>{formatTextValue(decoder.document.metadata.description)}</p>
-            </EuiText>
-          </ContentPanel>
+          <EuiTitle size="xs">
+            <h3>Description</h3>
+          </EuiTitle>
+          <EuiSpacer size="s" />
+          <EuiText size="s">
+            <p>{formatTextValue(decoder.document.metadata.description)}</p>
+          </EuiText>
         </>
       )}
     </>
