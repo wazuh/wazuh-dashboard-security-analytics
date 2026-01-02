@@ -211,29 +211,7 @@ export const Decoders: React.FC = () => {
       },
       {
         field: 'integrations',
-        name: 'Integration',
-        render: (integrations: string[] = []) => {
-          const integrationValues = integrations.filter(Boolean);
-          if (!integrationValues.length) {
-            return DEFAULT_EMPTY_DATA;
-          }
-          return (
-            <span>
-              {integrationValues.map((integration, index) => (
-                <React.Fragment key={`${integration}-${index}`}>
-                  <EuiToolTip
-                    content={`Navigate to Overview filtering by ${integration} integration`}
-                  >
-                    <EuiLink onClick={() => navigateToNormalizationOverview(integration)}>
-                      {integration}
-                    </EuiLink>
-                  </EuiToolTip>
-                  {index < integrationValues.length - 1 ? ', ' : null}
-                </React.Fragment>
-              ))}
-            </span>
-          );
-        },
+        name: 'Integration'
       },
       {
         name: 'Actions',
