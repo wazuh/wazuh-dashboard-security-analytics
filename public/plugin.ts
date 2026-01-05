@@ -14,19 +14,23 @@ import {
   AppNavLinkStatus
 } from '../../../src/core/public';
 import {
-  CORRELATIONS_NAV_ID,
-  CORRELATIONS_RULE_NAV_ID,
+  // Wazuh: hide Correlations app in Security Analytics nav.
+  // CORRELATIONS_NAV_ID,
+  // Wazuh: hide Correlation rules app in Security Analytics nav.
+  // CORRELATIONS_RULE_NAV_ID,
   DETECTORS_NAV_ID,
   DETECTION_RULE_NAV_ID,
   FINDINGS_NAV_ID,
+  // Wazuh: hide Insights category (keep Findings at root).
+  // INSIGHTS_NAV_ID,
   LOG_TYPES_NAV_ID,
   OVERVIEW_NAV_ID,
   PLUGIN_NAME,
   ROUTES,
-  THREAT_ALERTS_NAV_ID,
+  // Wazuh: hide Alerts app in Security Analytics nav.
+  // THREAT_ALERTS_NAV_ID,
   dataSourceObservable,
   setDarkMode,
-  INSIGHTS_NAV_ID,
   DETECTION_NAV_ID,
   NORMALIZATION_NAV_ID,
   DECODERS_NAV_ID,
@@ -50,7 +54,9 @@ import {
   setNotifications,
   setSavedObjectsClient,
 } from './services/utils/constants';
-import { initializeServices, registerThreatAlertsCard } from './utils/helpers';
+import { initializeServices } from './utils/helpers';
+// Wazuh: hide Threat Alerts overview card registration.
+// import { registerThreatAlertsCard } from './utils/helpers';
 import { BehaviorSubject } from 'rxjs';
 
 export interface SecurityAnalyticsPluginSetupDeps {
@@ -159,26 +165,27 @@ export class SecurityAnalyticsPlugin
       },
     });
 
-    core.application.register({
-      id: THREAT_ALERTS_NAV_ID,
-      title: 'Alerts',
-      order: 7002,
-      category: {
-        id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 550,
-        euiIconType: 'securityAnalyticsApp',
-      },
-      updater$: this.appStateUpdater,
-      mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.ALERTS);
-      },
-    });
-
-    // Threat Intelligence is not used by Wazuh
+    // Wazuh: hide Alerts app from the Security Analytics navigation.
     // core.application.register({
-    //   id: THREAT_INTEL_NAV_ID,
-    //   title: 'Threat intelligence',
+    //   id: THREAT_ALERTS_NAV_ID,
+    //   title: 'Alerts',
+    //   order: 7002,
+    //   category: {
+    //     id: 'security_analytics',
+    //     label: 'Security Analytics',
+    //     order: 550,
+    //     euiIconType: 'securityAnalyticsApp',
+    //   },
+    //   updater$: this.appStateUpdater,
+    //   mount: async (params: AppMountParameters) => {
+    //     return mountWrapper(params, ROUTES.ALERTS);
+    //   },
+    // });
+
+    // Wazuh: hide Correlations app from the Security Analytics navigation.
+    // core.application.register({
+    //   id: CORRELATIONS_NAV_ID,
+    //   title: 'Correlations',
     //   order: 7003,
     //   category: {
     //     id: 'security_analytics',
@@ -188,25 +195,9 @@ export class SecurityAnalyticsPlugin
     //   },
     //   updater$: this.appStateUpdater,
     //   mount: async (params: AppMountParameters) => {
-    //     return mountWrapper(params, ROUTES.THREAT_INTEL_OVERVIEW);
+    //     return mountWrapper(params, ROUTES.CORRELATIONS);
     //   },
     // });
-
-    core.application.register({
-      id: CORRELATIONS_NAV_ID,
-      title: 'Correlations',
-      order: 7003,
-      category: {
-        id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 550,
-        euiIconType: 'securityAnalyticsApp',
-      },
-      updater$: this.appStateUpdater,
-      mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.CORRELATIONS);
-      },
-    });
 
     core.application.register({
       id: LOG_TYPES_NAV_ID,
@@ -272,23 +263,24 @@ export class SecurityAnalyticsPlugin
       },
     });
 
-    core.application.register({
-      id: CORRELATIONS_RULE_NAV_ID,
-      title: 'Correlation rules',
-      order: 7011,
-      category: {
-        id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 550,
-        euiIconType: 'securityAnalyticsApp',
-      },
-      updater$: this.appStateUpdater,
-      mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.CORRELATION_RULES);
-      },
-    });
-    // Main menu Security Analytics created with sub-menus for each section ->
+    // Wazuh: hide Correlation rules app from the Security Analytics navigation.
+    // core.application.register({
+    //   id: CORRELATIONS_RULE_NAV_ID,
+    //   title: 'Correlation rules',
+    //   order: 7011,
+    //   category: {
+    //     id: 'security_analytics',
+    //     label: 'Security Analytics',
+    //     order: 550,
+    //     euiIconType: 'securityAnalyticsApp',
+    //   },
+    //   updater$: this.appStateUpdater,
+    //   mount: async (params: AppMountParameters) => {
+    //     return mountWrapper(params, ROUTES.CORRELATION_RULES);
+    //   },
+    // });
 
+    // Main menu Security Analytics created with sub-menus for each section ->
     if (core.chrome.navGroup.getNavGroupEnabled()) {
       dataSourceObservable.subscribe((dataSourceOption) => {
         if (dataSourceOption) {
@@ -296,14 +288,14 @@ export class SecurityAnalyticsPlugin
         }
       });
 
-      // Wazuh: register an empty app to allow the nested apps in the sidebar menu
-      core.application.register({
-        id: INSIGHTS_NAV_ID,
-        title: "Insights",
-        mount: async () => {
-          return () => {};
-        }
-      })
+      // Wazuh: hide Insights category and keep Findings at root.
+      // core.application.register({
+      //   id: INSIGHTS_NAV_ID,
+      //   title: "Insights",
+      //   mount: async () => {
+      //     return () => {};
+      //   }
+      // })
 
       // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
@@ -318,15 +310,17 @@ export class SecurityAnalyticsPlugin
         { id: OVERVIEW_NAV_ID, showInAllNavGroup: true },
         // Wazuh does not use Get Started page
         // { id: GET_STARTED_NAV_ID, showInAllNavGroup: true },
-        {
-          id: INSIGHTS_NAV_ID,
-          title: "Insights",
-          showInAllNavGroup: true,
-          order: 7001,
-        },
-        { id: THREAT_ALERTS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
-        { id: FINDINGS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
-        { id: CORRELATIONS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
+        // Wazuh: hide Insights category and its sub-items (Alerts/Correlations).
+        // {
+        //   id: INSIGHTS_NAV_ID,
+        //   title: "Insights",
+        //   showInAllNavGroup: true,
+        //   order: 7001,
+        // },
+        // { id: THREAT_ALERTS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
+        // { id: FINDINGS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
+        // { id: CORRELATIONS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
+        { id: FINDINGS_NAV_ID, showInAllNavGroup: true, order: 7001 },
         { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7004 },
         {
           id: NORMALIZATION_NAV_ID,
@@ -347,7 +341,8 @@ export class SecurityAnalyticsPlugin
         },
         { id: DETECTORS_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
         { id: DETECTION_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
-        { id: CORRELATIONS_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
+        // Wazuh: hide Correlation rules from Detection category.
+        // { id: CORRELATIONS_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
         // Wazuh does not use Threat Intelligence
         // { id: THREAT_INTEL_NAV_ID, showInAllNavGroup: true },
       ];
@@ -379,7 +374,8 @@ export class SecurityAnalyticsPlugin
     setNotifications(core.notifications);
     setSavedObjectsClient(core.savedObjects.client);
     initializeServices(core, data.indexPatterns, data.search);
-    registerThreatAlertsCard();
+    // Wazuh: hide Threat Alerts overview card.
+    // registerThreatAlertsCard();
 
     return {};
   }

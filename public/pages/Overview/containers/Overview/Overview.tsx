@@ -4,13 +4,10 @@
  */
 
 import {
-  EuiSmallButtonEmpty,
   EuiFlexGrid,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiPopover,
   EuiSmallButton,
-  EuiCard,
   EuiPanel,
   EuiStat,
   EuiText,
@@ -24,18 +21,19 @@ import {
   ROUTES,
 } from '../../../../utils/constants';
 import { CoreServicesContext } from '../../../../../public/components/core_services';
-import { RecentAlertsWidget } from '../../components/Widgets/RecentAlertsWidget';
+// Wazuh: hide Recent Alerts widget from Overview.
+// import { RecentAlertsWidget } from '../../components/Widgets/RecentAlertsWidget';
 import { RecentFindingsWidget } from '../../components/Widgets/RecentFindingsWidget';
 import { OverviewViewModelActor } from '../../models/OverviewViewModel';
 import { SecurityAnalyticsContext } from '../../../../services';
-import { Summary } from '../../components/Widgets/Summary';
-import { TopRulesWidget } from '../../components/Widgets/TopRulesWidget';
-import { GettingStartedContent } from '../../components/GettingStarted/GettingStartedContent';
-import { getChartTimeUnit, TimeUnit } from '../../utils/helpers';
+// Wazuh: hide Summary widget (alerts-focused).
+// import { Summary } from '../../components/Widgets/Summary';
 import { OverviewProps, OverviewState, OverviewViewModel } from '../../../../../types';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
-import { getOverviewStatsProps, getOverviewsCardsProps } from '../../utils/constants';
+import { getOverviewStatsProps } from '../../utils/constants';
+// Wazuh: hide overview getting started cards.
+// import { getOverviewsCardsProps } from '../../utils/constants';
 import { getChrome, getUseUpdatedUx } from '../../../../services/utils/constants';
 // import { RecentThreatIntelFindingsWidget } from '../../components/Widgets/RecentThreatIntelFindingsWidget';
 import { useObservable } from 'react-use';
@@ -56,17 +54,20 @@ export const Overview: React.FC<OverviewProps> = (props) => {
     overviewViewModel: {
       detectors: [],
       findings: [],
-      alerts: [],
+      // Wazuh: hide alerts and correlations from overview view model.
+      // alerts: [],
       threatIntelFindings: [],
-      correlations: 0,
+      // Wazuh: hide alerts and correlations from overview view model.
+      // correlations: 0,
     },
   });
 
   const [recentlyUsedRanges, setRecentlyUsedRanges] = useState([DEFAULT_DATE_RANGE]);
   const [loading, setLoading] = useState(true);
 
-  const timeUnits = getChartTimeUnit(dateTimeFilter.startTime, dateTimeFilter.endTime);
-  const [timeUnit, setTimeUnit] = useState<TimeUnit>(timeUnits.timeUnit);
+  // Wazuh: hide Summary widget (alerts-focused).
+  // const timeUnits = getChartTimeUnit(dateTimeFilter.startTime, dateTimeFilter.endTime);
+  // const [timeUnit, setTimeUnit] = useState<TimeUnit>(timeUnits.timeUnit);
 
   const context = useContext(CoreServicesContext);
   const saContext = useContext(SecurityAnalyticsContext);
@@ -162,13 +163,15 @@ export const Overview: React.FC<OverviewProps> = (props) => {
       usedRanges = usedRanges.slice(0, MAX_RECENTLY_USED_TIME_RANGES);
 
     const endTime = start === end ? DEFAULT_DATE_RANGE.end : end;
-    const timeUnits = getChartTimeUnit(start, endTime);
+    // Wazuh: hide Summary widget (alerts-focused).
+    // const timeUnits = getChartTimeUnit(start, endTime);
 
     props.setDateTimeFilter &&
       props.setDateTimeFilter({
         startTime: start,
         endTime: endTime,
       });
+      // Wazuh: hide Summary widget (alerts-focused).
     setTimeUnit(timeUnits.timeUnit);
     setRecentlyUsedRanges(usedRanges);
   };
@@ -246,8 +249,9 @@ export const Overview: React.FC<OverviewProps> = (props) => {
   // );
 
   const overviewStats = {
-    alerts: state.overviewViewModel.alerts.filter((a) => !a.acknowledged).length,
-    correlations: state.overviewViewModel.correlations,
+    // Wazuh: hide alerts and correlations from overview stats.
+    // alerts: state.overviewViewModel.alerts.filter((a) => !a.acknowledged).length,
+    // correlations: state.overviewViewModel.correlations,
     ruleFindings: state.overviewViewModel.findings.length,
     threatIntelFindings: state.overviewViewModel.threatIntelFindings.length,
   };
@@ -305,20 +309,21 @@ export const Overview: React.FC<OverviewProps> = (props) => {
           </EuiFlexItem>
         </>
       )}
-      {/*<EuiFlexItem>*/}
-      {/*  <Summary*/}
-      {/*    alerts={state.overviewViewModel.alerts}*/}
-      {/*    findings={state.overviewViewModel.findings}*/}
-      {/*    startTime={dateTimeFilter.startTime}*/}
-      {/*    endTime={dateTimeFilter.endTime}*/}
-      {/*    timeUnit={timeUnit}*/}
-      {/*    loading={loading}*/}
-      {/*  />*/}
-      {/*</EuiFlexItem>*/}
-
+      {/* Wazuh: hide Summary widget (alerts-focused). */}
+      {/* <EuiFlexItem>
+        <Summary
+          alerts={state.overviewViewModel.alerts}
+          findings={state.overviewViewModel.findings}
+          startTime={dateTimeFilter.startTime}
+          endTime={dateTimeFilter.endTime}
+          timeUnit={timeUnit}
+          loading={loading}
+        />
+      </EuiFlexItem> */}
       <EuiFlexItem>
         <EuiFlexGrid columns={2} gutterSize="m">
-          <RecentAlertsWidget items={state.overviewViewModel.alerts} loading={loading} />
+          {/* Wazuh: hide Recent Alerts widget from Overview. */}
+          {/* <RecentAlertsWidget items={state.overviewViewModel.alerts} loading={loading} /> */}
           <RecentFindingsWidget items={state.overviewViewModel.findings} loading={loading} />
           {/*<TopRulesWidget findings={state.overviewViewModel.findings} loading={loading} />*/}
           {/* RecentThreatIntelFindingsWidget is not used by Wazuh */}
