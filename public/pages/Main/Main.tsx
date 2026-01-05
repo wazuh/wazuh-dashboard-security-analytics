@@ -28,11 +28,14 @@ import {
   OS_NOTIFICATION_PLUGIN,
   THREAT_INTEL_ENABLED,
   FINDINGS_NAV_ID,
-  THREAT_ALERTS_NAV_ID,
-  CORRELATIONS_NAV_ID,
+  // Wazuh: hide Alerts app in navigation.
+  // THREAT_ALERTS_NAV_ID,
+  // Wazuh: hide Correlations app in navigation.
+  // CORRELATIONS_NAV_ID,
   DETECTORS_NAV_ID,
   DETECTION_RULE_NAV_ID,
-  CORRELATIONS_RULE_NAV_ID,
+  // Wazuh: hide Correlation rules app in navigation.
+  // CORRELATIONS_RULE_NAV_ID,
   LOG_TYPES_NAV_ID,
   KVDBS_NAV_ID,
 } from "../../utils/constants";
@@ -41,12 +44,14 @@ import Findings from "../Findings";
 import Detectors from "../Detectors";
 import Overview from "../Overview";
 import CreateDetector from "../CreateDetector/containers/CreateDetector";
-import Alerts from "../Alerts";
+// Wazuh: hide Alerts app and routes.
+// import Alerts from "../Alerts";
 import { DetectorDetails } from "../Detectors/containers/Detector/DetectorDetails";
 import { UpdateDetectorBasicDetails } from "../Detectors/components/UpdateBasicDetails/UpdateBasicDetails";
 import { UpdateDetectorRules } from "../Detectors/components/UpdateRules/UpdateRules";
 import UpdateFieldMappings from "../Detectors/components/UpdateFieldMappings/UpdateFieldMappings";
-import UpdateAlertConditions from "../Detectors/components/UpdateAlertConditions/UpdateAlertConditions";
+// Wazuh: hide Alert triggers edit route.
+// import UpdateAlertConditions from "../Detectors/components/UpdateAlertConditions/UpdateAlertConditions";
 import { Rules } from "../Rules/containers/Rules/Rules";
 import { CreateRule } from "../Rules/containers/CreateRule/CreateRule";
 import { EditRule } from "../Rules/containers/EditRule/EditRule";
@@ -54,9 +59,10 @@ import { ImportRule } from "../Rules/containers/ImportRule/ImportRule";
 import { DuplicateRule } from "../Rules/containers/DuplicateRule/DuplicateRule";
 import Callout, { ICalloutProps } from "./components/Callout";
 import { DataStore } from "../../store/DataStore";
-import { CreateCorrelationRule } from "../Correlations/containers/CreateCorrelationRule";
-import { CorrelationRules } from "../Correlations/containers/CorrelationRules";
-import { Correlations } from "../Correlations/containers/CorrelationsContainer";
+// Wazuh: hide Correlations and Correlation rules routes.
+// import { CreateCorrelationRule } from "../Correlations/containers/CreateCorrelationRule";
+// import { CorrelationRules } from "../Correlations/containers/CorrelationRules";
+// import { Correlations } from "../Correlations/containers/CorrelationsContainer";
 import { LogTypes } from "../LogTypes/containers/LogTypes";
 import { LogType } from "../LogTypes/containers/LogType";
 import { CreateLogType } from "../LogTypes/containers/CreateLogType";
@@ -100,12 +106,14 @@ enum Navigation {
   Detectors = "Detectors",
   Rules = "Detection rules",
   Overview = "Overview",
-  Alerts = "Alerts",
-  Correlations = "Correlations",
-  CorrelationRules = "Correlation rules",
+  // Wazuh: hide Alerts/Correlations navigation items.
+  // Alerts = "Alerts",
+  // Correlations = "Correlations",
+  // CorrelationRules = "Correlation rules",
   LogTypes = "Integrations", // Replace Log Types to Integrations by Wazuh
   // Removed Threat Intel from side nav by Wazuh
-  Insights = "Insights",
+  // Wazuh: hide Alerts/Correlations navigation items.
+  // Insights = "Insights",
   Detection = "Detection",
   // Wazuh
   Normalization = "Normalization",
@@ -126,7 +134,8 @@ const HIDDEN_NAV_ROUTES: string[] = [
   ROUTES.EDIT_DETECTOR_DETAILS,
   ROUTES.EDIT_DETECTOR_RULES,
   ROUTES.EDIT_FIELD_MAPPINGS,
-  ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS,
+  // Wazuh: hide Alert triggers edit route in nav.
+  // ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS,
   `${ROUTES.LOG_TYPES}/.+`,
   ROUTES.LOG_TYPES_CREATE,
   ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE,
@@ -160,7 +169,8 @@ interface MainState {
 const navItemIdByRoute: { [route: string]: Navigation } = {
   [ROUTES.OVERVIEW]: Navigation.Overview,
   [ROUTES.FINDINGS]: Navigation.Findings,
-  [ROUTES.ALERTS]: Navigation.Alerts,
+  // Wazuh: hide Alerts route mapping.
+  // [ROUTES.ALERTS]: Navigation.Alerts,
   [ROUTES.DETECTORS]: Navigation.Detectors,
   [ROUTES.RULES]: Navigation.Rules,
   [ROUTES.LOG_TYPES]: Navigation.LogTypes,
@@ -386,51 +396,57 @@ export default class Main extends Component<MainProps, MainState> {
               ]
             : []),
           {
-            name: Navigation.Insights,
-            id: Navigation.Insights,
-            forceOpen: true,
-            items: [
-              {
-                name: Navigation.Findings,
-                id: Navigation.Findings,
-                onClick: () => {
-                  // this.setState({ selectedNavItemId: Navigation.Findings });
-                  // history.push(ROUTES.FINDINGS);
-                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(FINDINGS_NAV_ID, {
-                    path: generateAppPath(ROUTES.FINDINGS),
-                  });
-                },
-                isSelected: selectedNavItemId === Navigation.Findings,
-              },
-              {
-                name: Navigation.Alerts,
-                id: Navigation.Alerts,
-                onClick: () => {
-                  // this.setState({ selectedNavItemId: Navigation.Alerts });
-                  // history.push(ROUTES.ALERTS);
-                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(THREAT_ALERTS_NAV_ID, {
-                    path: generateAppPath(ROUTES.ALERTS),
-                  });
-                },
-                isSelected: selectedNavItemId === Navigation.Alerts,
-              },
-              {
-                name: Navigation.Correlations,
-                id: Navigation.Correlations,
-                onClick: () => {
-                  // this.setState({ selectedNavItemId: Navigation.Correlations });
-                  // history.push(ROUTES.CORRELATIONS);
-                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(CORRELATIONS_NAV_ID, {
-                    path: generateAppPath(ROUTES.CORRELATIONS),
-                  });
-                },
-                isSelected: selectedNavItemId === Navigation.Correlations,
-              },
-            ],
+            name: Navigation.Findings,
+            id: Navigation.Findings,
+            onClick: () => {
+              // this.setState({ selectedNavItemId: Navigation.Findings });
+              // history.push(ROUTES.FINDINGS);
+              // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+              getApplication().navigateToApp(FINDINGS_NAV_ID, {path: generateAppPath(ROUTES.FINDINGS)});
+            },
+            isSelected: selectedNavItemId === Navigation.Findings,
           },
+          // Wazuh: hide Insights category and Alerts/Correlations nav items.
+          // {
+          //   name: Navigation.Insights,
+          //   id: Navigation.Insights,
+          //   forceOpen: true,
+          //   items: [
+          //     {
+          //       name: Navigation.Findings,
+          //       id: Navigation.Findings,
+          //       onClick: () => {
+          //         // this.setState({ selectedNavItemId: Navigation.Findings });
+          //         // history.push(ROUTES.FINDINGS);
+          //         // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+          //         getApplication().navigateToApp(FINDINGS_NAV_ID, {path: generateAppPath(ROUTES.FINDINGS)});
+          //       },
+          //       isSelected: selectedNavItemId === Navigation.Findings,
+          //     },
+          //     {
+          //       name: Navigation.Alerts,
+          //       id: Navigation.Alerts,
+          //       onClick: () => {
+          //         // this.setState({ selectedNavItemId: Navigation.Alerts });
+          //         // history.push(ROUTES.ALERTS);
+          //         // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+          //         getApplication().navigateToApp(THREAT_ALERTS_NAV_ID, {path: generateAppPath(ROUTES.ALERTS)});
+          //       },
+          //       isSelected: selectedNavItemId === Navigation.Alerts,
+          //     },
+          //     {
+          //       name: Navigation.Correlations,
+          //       id: Navigation.Correlations,
+          //       onClick: () => {
+          //         // this.setState({ selectedNavItemId: Navigation.Correlations });
+          //         // history.push(ROUTES.CORRELATIONS);
+          //         // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+          //         getApplication().navigateToApp(CORRELATIONS_NAV_ID, {path: generateAppPath(ROUTES.CORRELATIONS)});
+          //       },
+          //       isSelected: selectedNavItemId === Navigation.Correlations,
+          //     },
+          //   ],
+          // },
           {
             name: Navigation.LogTypes,
             id: Navigation.LogTypes,
@@ -535,21 +551,20 @@ export default class Main extends Component<MainProps, MainState> {
                 },
                 isSelected: selectedNavItemId === Navigation.Rules,
               },
-              {
-                name: Navigation.CorrelationRules,
-                id: Navigation.CorrelationRules,
-                onClick: () => {
-                  // this.setState({
-                  //   selectedNavItemId: Navigation.CorrelationRules,
-                  // });
-                  // history.push(ROUTES.CORRELATION_RULES);
-                  // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-                  getApplication().navigateToApp(CORRELATIONS_RULE_NAV_ID, {
-                    path: generateAppPath(ROUTES.CORRELATION_RULES),
-                  });
-                },
-                isSelected: selectedNavItemId === Navigation.CorrelationRules,
-              },
+              // Wazuh: hide Correlation rules nav item.
+              // {
+              //   name: Navigation.CorrelationRules,
+              //   id: Navigation.CorrelationRules,
+              //   onClick: () => {
+              //     // this.setState({
+              //     //   selectedNavItemId: Navigation.CorrelationRules,
+              //     // });
+              //     // history.push(ROUTES.CORRELATION_RULES);
+              //     // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+              //     getApplication().navigateToApp(CORRELATIONS_RULE_NAV_ID, {path: generateAppPath(ROUTES.CORRELATION_RULES)});
+              //   },
+              //   isSelected: selectedNavItemId === Navigation.CorrelationRules,
+              // },
             ],
           },
         ],
@@ -641,17 +656,11 @@ export default class Main extends Component<MainProps, MainState> {
                                           dateTimeFilter={
                                             this.state.dateTimeFilter
                                           }
-                                          correlationService={
-                                            services.correlationsService
-                                          }
                                           opensearchService={
                                             services.opensearchService
                                           }
                                           detectorService={
                                             services.detectorsService
-                                          }
-                                          notificationsService={
-                                            services.notificationsService
                                           }
                                           indexPatternsService={
                                             services.indexPatternsService
@@ -821,7 +830,8 @@ export default class Main extends Component<MainProps, MainState> {
                                         )}
                                       />
                                     )}
-                                    <Route
+                                    {/* Wazuh: hide Alerts route. */}
+                                    {/* <Route
                                       path={`${ROUTES.ALERTS}/:detectorId?`}
                                       render={(props: RouteComponentProps) => (
                                         <Alerts
@@ -852,7 +862,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           dataSource={selectedDataSource}
                                         />
                                       )}
-                                    />
+                                    /> */}
                                     <Route
                                       path={`${ROUTES.DETECTOR_DETAILS}/:id`}
                                       render={(
@@ -928,7 +938,8 @@ export default class Main extends Component<MainProps, MainState> {
                                         />
                                       )}
                                     />
-                                    <Route
+                                    {/* Wazuh: hide Alert triggers edit route. */}
+                                    {/* <Route
                                       path={`${ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS}/:id`}
                                       render={(
                                         props: RouteComponentProps<
@@ -951,8 +962,9 @@ export default class Main extends Component<MainProps, MainState> {
                                           }
                                         />
                                       )}
-                                    />
-                                    <Route
+                                    /> */}
+                                    {/* Wazuh: hide Correlations and Correlation rules routes. */}
+                                    {/* <Route
                                       path={`${ROUTES.CORRELATION_RULES}`}
                                       render={(
                                         props: RouteComponentProps<
@@ -1049,7 +1061,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           />
                                         );
                                       }}
-                                    />
+                                    /> */}
                                     <Route
                                       path={`${ROUTES.LOG_TYPES}/:logTypeId`}
                                       render={(

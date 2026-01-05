@@ -1178,66 +1178,6 @@ exports[`<DetectorDetailsView /> spec renders the component 1`] = `
                 className="euiSpacer euiSpacer--l"
               />
             </EuiSpacer>
-            <EuiCompressedFormRow
-              describedByIds={Array []}
-              display="rowCompressed"
-              fullWidth={true}
-              hasChildLabel={true}
-              hasEmptyLabelSpace={false}
-              label="Threat intelligence"
-              labelType="label"
-            >
-              <div
-                className="euiFormRow euiFormRow--fullWidth euiFormRow--compressed"
-                id="some_html_id-row"
-              >
-                <div
-                  className="euiFormRow__labelWrapper"
-                >
-                  <EuiFormLabel
-                    className="euiFormRow__label"
-                    htmlFor="some_html_id"
-                    isFocused={false}
-                    type="label"
-                  >
-                    <label
-                      className="euiFormLabel euiFormRow__label"
-                      htmlFor="some_html_id"
-                    >
-                      Threat intelligence
-                    </label>
-                  </EuiFormLabel>
-                </div>
-                <div
-                  className="euiFormRow__fieldWrapper"
-                >
-                  <EuiText
-                    data-test-subj="text-details-group-content-threat-intelligence"
-                    id="some_html_id"
-                    onBlur={[Function]}
-                    onFocus={[Function]}
-                    size="s"
-                  >
-                    <div
-                      className="euiText euiText--small"
-                      data-test-subj="text-details-group-content-threat-intelligence"
-                      id="some_html_id"
-                      onBlur={[Function]}
-                      onFocus={[Function]}
-                    >
-                      Disabled
-                    </div>
-                  </EuiText>
-                </div>
-              </div>
-            </EuiCompressedFormRow>
-            <EuiSpacer
-              size="l"
-            >
-              <div
-                className="euiSpacer euiSpacer--l"
-              />
-            </EuiSpacer>
           </div>
         </div>
       </EuiPanel>

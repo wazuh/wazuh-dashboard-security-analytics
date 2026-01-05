@@ -75,7 +75,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         className="euiText euiText--small"
                       >
                         <h1>
-                          Threat detectors
+                          Detectors
                         </h1>
                       </div>
                     </EuiText>
