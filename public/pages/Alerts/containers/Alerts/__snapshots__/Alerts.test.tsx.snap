@@ -298,9 +298,11 @@ exports[`<Alerts /> spec renders the component 1`] = `
             ]
           }
         >
-          <EuiFlexItem>
+          <EuiFlexItem
+            grow={false}
+          >
             <div
-              className="euiFlexItem"
+              className="euiFlexItem euiFlexItem--flexGrowZero"
             >
               <EuiFlexGroup
                 gutterSize="s"

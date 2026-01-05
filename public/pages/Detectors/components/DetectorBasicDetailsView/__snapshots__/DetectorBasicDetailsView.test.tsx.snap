@@ -356,35 +356,6 @@ Object {
           <div
             class="euiSpacer euiSpacer--l"
           />
-          <div
-            class="euiFormRow euiFormRow--fullWidth euiFormRow--compressed"
-            id="some_html_id-row"
-          >
-            <div
-              class="euiFormRow__labelWrapper"
-            >
-              <label
-                class="euiFormLabel euiFormRow__label"
-                for="some_html_id"
-              >
-                Threat intelligence
-              </label>
-            </div>
-            <div
-              class="euiFormRow__fieldWrapper"
-            >
-              <div
-                class="euiText euiText--small"
-                data-test-subj="text-details-group-content-threat-intelligence"
-                id="some_html_id"
-              >
-                Disabled
-              </div>
-            </div>
-          </div>
-          <div
-            class="euiSpacer euiSpacer--l"
-          />
         </div>
       </div>
     </div>
@@ -735,35 +706,6 @@ Object {
                   2023-01-25T10:05
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-        <div
-          class="euiSpacer euiSpacer--l"
-        />
-        <div
-          class="euiFormRow euiFormRow--fullWidth euiFormRow--compressed"
-          id="some_html_id-row"
-        >
-          <div
-            class="euiFormRow__labelWrapper"
-          >
-            <label
-              class="euiFormLabel euiFormRow__label"
-              for="some_html_id"
-            >
-              Threat intelligence
-            </label>
-          </div>
-          <div
-            class="euiFormRow__fieldWrapper"
-          >
-            <div
-              class="euiText euiText--small"
-              data-test-subj="text-details-group-content-threat-intelligence"
-              id="some_html_id"
-            >
-              Disabled
             </div>
           </div>
         </div>
