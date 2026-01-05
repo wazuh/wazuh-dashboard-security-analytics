@@ -15,7 +15,8 @@ import { THREAT_INTEL_ENABLED } from '../../../utils/constants';
 import {
   DetectorHit,
   Finding,
-  OverviewAlertItem,
+  // Wazuh: hide alerts and correlations in overview view model.
+  // OverviewAlertItem,
   OverviewFindingItem,
   OverviewViewModel,
   OverviewViewModelRefreshHandler,
@@ -26,9 +27,11 @@ export class OverviewViewModelActor {
   private overviewViewModel: OverviewViewModel = {
     detectors: [],
     findings: [],
-    alerts: [],
+    // Wazuh: hide alerts and correlations in overview view model.
+    // alerts: [],
     threatIntelFindings: [],
-    correlations: 0,
+    // Wazuh: hide alerts and correlations in overview view model.
+    // correlations: 0,
   };
   private partialUpdateHandlers: OverviewViewModelRefreshHandler[] = [];
   private fullUpdateHandlers: OverviewViewModelRefreshHandler[] = [];
@@ -142,38 +145,39 @@ export class OverviewViewModelActor {
     this.overviewViewModel.findings = this.filterChartDataByTime(findingItems);
   }
 
-  private async updateAlerts(signal: AbortSignal) {
-    let alertItems: OverviewAlertItem[] = [];
-    const duration = getDuration({
-      startTime: this.startTime,
-      endTime: this.endTime,
-    });
-
-    try {
-      for (let detector of this.overviewViewModel.detectors) {
-        const id = detector._id;
-        const detectorAlerts = await DataStore.alerts.getAlertsByDetector(
-          id,
-          detector._source.name,
-          signal,
-          duration
-        );
-        const detectorAlertItems: OverviewAlertItem[] = detectorAlerts.map((alert) => ({
-          id: alert.id,
-          severity: alert.severity,
-          time: alert.last_notification_time,
-          triggerName: alert.trigger_name,
-          logType: detector._source.detector_type,
-          acknowledged: !!alert.acknowledged_time,
-        }));
-        alertItems = alertItems.concat(detectorAlertItems);
-      }
-    } catch (e: any) {
-      errorNotificationToast(this.notifications, 'retrieve', 'alerts', e);
-    }
-
-    this.overviewViewModel.alerts = this.filterChartDataByTime(alertItems);
-  }
+  // Wazuh: hide alerts in overview view model.
+  // private async updateAlerts(signal: AbortSignal) {
+  //   let alertItems: OverviewAlertItem[] = [];
+  //   const duration = getDuration({
+  //     startTime: this.startTime,
+  //     endTime: this.endTime,
+  //   });
+  //
+  //   try {
+  //     for (let detector of this.overviewViewModel.detectors) {
+  //       const id = detector._id;
+  //       const detectorAlerts = await DataStore.alerts.getAlertsByDetector(
+  //         id,
+  //         detector._source.name,
+  //         signal,
+  //         duration
+  //       );
+  //       const detectorAlertItems: OverviewAlertItem[] = detectorAlerts.map((alert) => ({
+  //         id: alert.id,
+  //         severity: alert.severity,
+  //         time: alert.last_notification_time,
+  //         triggerName: alert.trigger_name,
+  //         logType: detector._source.detector_type,
+  //         acknowledged: !!alert.acknowledged_time,
+  //       }));
+  //       alertItems = alertItems.concat(detectorAlertItems);
+  //     }
+  //   } catch (e: any) {
+  //     errorNotificationToast(this.notifications, 'retrieve', 'alerts', e);
+  //   }
+  //
+  //   this.overviewViewModel.alerts = this.filterChartDataByTime(alertItems);
+  // }
 
   private async updateThreatIntelFindings(signal: AbortSignal) {
     if (!THREAT_INTEL_ENABLED) {
@@ -199,24 +203,25 @@ export class OverviewViewModelActor {
     );
   }
 
-  private async updateCorrelationsCount() {
-    let count = 0;
-    const duration = getDuration({
-      startTime: this.startTime,
-      endTime: this.endTime,
-    });
-
-    try {
-      count = await DataStore.correlations.getCorrelationsCountInWindow(
-        duration.startTime.toString(),
-        duration.endTime.toString()
-      );
-    } catch (e: any) {
-      errorNotificationToast(this.notifications, 'retrieve', 'correlation count', e);
-    }
-
-    this.overviewViewModel.correlations = count;
-  }
+  // Wazuh: hide correlations count in overview view model.
+  // private async updateCorrelationsCount() {
+  //   let count = 0;
+  //   const duration = getDuration({
+  //     startTime: this.startTime,
+  //     endTime: this.endTime,
+  //   });
+  //
+  //   try {
+  //     count = await DataStore.correlations.getCorrelationsCountInWindow(
+  //       duration.startTime.toString(),
+  //       duration.endTime.toString()
+  //     );
+  //   } catch (e: any) {
+  //     errorNotificationToast(this.notifications, 'retrieve', 'correlation count', e);
+  //   }
+  //
+  //   this.overviewViewModel.correlations = count;
+  // }
 
   public getOverviewViewModel() {
     return this.overviewViewModel;
@@ -254,18 +259,20 @@ export class OverviewViewModelActor {
           await this.updateFindings(signal);
           this.updateResults(this.partialUpdateHandlers, false);
         },
-        async (signal: AbortSignal) => {
-          await this.updateAlerts(signal);
-          this.updateResults(this.partialUpdateHandlers, false);
-        },
+        // Wazuh: hide alerts in overview refresh flow.
+        // async (signal: AbortSignal) => {
+        //   await this.updateAlerts(signal);
+        //   this.updateResults(this.partialUpdateHandlers, false);
+        // },
         async (signal: AbortSignal) => {
           await this.updateThreatIntelFindings(signal);
           this.updateResults(this.partialUpdateHandlers, false);
         },
-        async (_signal: AbortSignal) => {
-          await this.updateCorrelationsCount();
-          this.updateResults(this.partialUpdateHandlers, false);
-        },
+        // Wazuh: hide correlations in overview refresh flow.
+        // async (_signal: AbortSignal) => {
+        //   await this.updateCorrelationsCount();
+        //   this.updateResults(this.partialUpdateHandlers, false);
+        // },
       ],
       signal
     );

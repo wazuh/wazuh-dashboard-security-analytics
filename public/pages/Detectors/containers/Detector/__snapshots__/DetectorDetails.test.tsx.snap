@@ -279,14 +279,6 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
               items={
                 Array [
                   <EuiContextMenuItem
-                    data-test-subj="viewAlertsButton"
-                    disabled={false}
-                    icon="empty"
-                    onClick={[Function]}
-                  >
-                    View Alerts
-                  </EuiContextMenuItem>,
-                  <EuiContextMenuItem
                     data-test-subj="viewFindingsButton"
                     disabled={false}
                     icon="empty"
@@ -596,26 +588,6 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
             className="euiTab__content"
           >
             Field mappings
-          </span>
-        </button>
-      </EuiTab>
-      <EuiTab
-        isSelected={false}
-        key="2"
-        onClick={[Function]}
-      >
-        <button
-          aria-selected={false}
-          className="euiTab"
-          disabled={false}
-          onClick={[Function]}
-          role="tab"
-          type="button"
-        >
-          <span
-            className="euiTab__content"
-          >
-            Alert triggers
           </span>
         </button>
       </EuiTab>
@@ -2249,66 +2221,6 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                   </EuiFlexItem>
                 </div>
               </EuiFlexGroup>
-              <EuiSpacer
-                size="l"
-              >
-                <div
-                  className="euiSpacer euiSpacer--l"
-                />
-              </EuiSpacer>
-              <EuiCompressedFormRow
-                describedByIds={Array []}
-                display="rowCompressed"
-                fullWidth={true}
-                hasChildLabel={true}
-                hasEmptyLabelSpace={false}
-                label="Threat intelligence"
-                labelType="label"
-              >
-                <div
-                  className="euiFormRow euiFormRow--fullWidth euiFormRow--compressed"
-                  id="some_html_id-row"
-                >
-                  <div
-                    className="euiFormRow__labelWrapper"
-                  >
-                    <EuiFormLabel
-                      className="euiFormRow__label"
-                      htmlFor="some_html_id"
-                      isFocused={false}
-                      type="label"
-                    >
-                      <label
-                        className="euiFormLabel euiFormRow__label"
-                        htmlFor="some_html_id"
-                      >
-                        Threat intelligence
-                      </label>
-                    </EuiFormLabel>
-                  </div>
-                  <div
-                    className="euiFormRow__fieldWrapper"
-                  >
-                    <EuiText
-                      data-test-subj="text-details-group-content-threat-intelligence"
-                      id="some_html_id"
-                      onBlur={[Function]}
-                      onFocus={[Function]}
-                      size="s"
-                    >
-                      <div
-                        className="euiText euiText--small"
-                        data-test-subj="text-details-group-content-threat-intelligence"
-                        id="some_html_id"
-                        onBlur={[Function]}
-                        onFocus={[Function]}
-                      >
-                        Disabled
-                      </div>
-                    </EuiText>
-                  </div>
-                </div>
-              </EuiCompressedFormRow>
               <EuiSpacer
                 size="l"
               >
