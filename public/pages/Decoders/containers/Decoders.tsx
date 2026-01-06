@@ -93,25 +93,6 @@ export const Decoders: React.FC = () => {
     return DEFAULT_EMPTY_DATA;
   };
 
-  const buildOverviewQuery = (integration: string) => {
-    const trimmed = integration.trim();
-    if (!trimmed) {
-      return '';
-    }
-    const sanitized = trimmed.replace(/"/g, '\\"');
-    const needsQuotes = /\s|:|\//.test(sanitized);
-    const value = needsQuotes ? `"${sanitized}"` : sanitized;
-    return `document.title:${value}`;
-  };
-
-  const navigateToNormalizationOverview = (integration: string) => {
-    const query = buildOverviewQuery(integration);
-    const search = query ? `?query=${encodeURIComponent(query)}` : '';
-    getApplication().navigateToApp(NORMALIZATION_NAV_ID, {
-      path: `#/normalization/overview${search}`,
-    });
-  };
-
   useEffect(() => {
     return () => {
       isMountedRef.current = false;

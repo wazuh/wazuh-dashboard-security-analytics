@@ -19,28 +19,6 @@ export interface DecodersSearchParams {
 export class DecodersStore {
   constructor(private service: DecodersService, private notifications: NotificationsStart) {}
 
-  private normalizeSpace(space: unknown): string | undefined {
-    if (!space) {
-      return undefined;
-    }
-    if (typeof space === 'string') {
-      return space;
-    }
-    if (typeof space === 'object') {
-      const record = space as Record<string, unknown>;
-      if (typeof record.name === 'string') {
-        return record.name;
-      }
-      if (typeof record.id === 'string') {
-        return record.id;
-      }
-      if (typeof record.value === 'string') {
-        return record.value;
-      }
-    }
-    return undefined;
-  }
-
   public async searchDecoders(
     params: DecodersSearchParams,
     space?: string
@@ -59,7 +37,9 @@ export class DecodersStore {
 
     const items: DecoderItem[] = response.response.items.map((item) => ({
       ...item,
-      space: this.normalizeSpace(item.space) ?? this.normalizeSpace(item.document?.space),
+      space:
+        this.service.normalizeSpace(item.space) ??
+        this.service.normalizeSpace(item.document?.space),
     }));
 
     return { ...response.response, items };
@@ -85,7 +65,9 @@ export class DecodersStore {
 
     return {
       ...item,
-      space: this.normalizeSpace(item.space) ?? this.normalizeSpace(item.document?.space),
+      space:
+        this.service.normalizeSpace(item.space) ??
+        this.service.normalizeSpace(item.document?.space),
     };
   }
 

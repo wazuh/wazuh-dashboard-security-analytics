@@ -15,7 +15,7 @@ export default class DecodersService {
     this.httpClient = httpClient;
   }
 
-  private normalizeSpace(space?: unknown): string | undefined {
+  public normalizeSpace(space?: unknown): string | undefined {
     if (!space) {
       return undefined;
     }
