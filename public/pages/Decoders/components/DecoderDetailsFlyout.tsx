@@ -5,14 +5,18 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  EuiButtonGroup,
   EuiCallOut,
   EuiCodeBlock,
+  EuiFlexGroup,
+  EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiLoadingContent,
+  EuiModalBody,
+  EuiSmallButtonIcon,
   EuiSpacer,
-  EuiTabbedContent,
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
@@ -26,6 +30,21 @@ interface DecoderDetailsFlyoutProps {
   onClose: () => void;
 }
 
+const decoderViewOptions = [
+  {
+    id: 'visual',
+    label: 'Visual',
+  },
+  {
+    id: 'yaml',
+    label: 'YAML',
+  },
+  {
+    id: 'json',
+    label: 'JSON',
+  },
+];
+
 export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   decoderId,
   space,
@@ -34,6 +53,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   const [decoder, setDecoder] = useState<DecoderItem | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [selectedView, setSelectedView] = useState(decoderViewOptions[0].id);
 
   const formatTextValue = (value: unknown) => {
     if (value === null || value === undefined || value === '') {
@@ -192,27 +212,69 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
     </EuiCodeBlock>
   );
 
+  const renderContent = () => {
+    if (loading) {
+      return <EuiLoadingContent lines={4} />;
+    }
+    if (error) {
+      return <EuiCallOut color="danger" iconType="alert" title={error} />;
+    }
+    if (!decoder) {
+      return null;
+    }
+    if (selectedView === 'yaml') {
+      return yamlContent;
+    }
+    if (selectedView === 'json') {
+      return jsonContent;
+    }
+    return detailsContent;
+  };
+
   return (
-    <EuiFlyout onClose={onClose} size="m" data-test-subj="decoder-details-flyout">
+    <EuiFlyout
+      onClose={onClose}
+      hideCloseButton
+      ownFocus={true}
+      size="m"
+      data-test-subj="decoder-details-flyout"
+    >
       <EuiFlyoutHeader hasBorder>
-        <EuiTitle size="s">
-          <h2>{decoder?.document?.name ? `Decoder details - ${decoder.document.name}` : 'Decoder'}</h2>
-        </EuiTitle>
+        <EuiFlexGroup alignItems="center">
+          <EuiFlexItem>
+            <EuiText size="s">
+              <h2>
+                {decoder?.document?.name
+                  ? `Decoder details - ${decoder.document.name}`
+                  : 'Decoder'}
+              </h2>
+            </EuiText>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiSmallButtonIcon
+              aria-label="close"
+              iconType="cross"
+              display="empty"
+              iconSize="m"
+              onClick={onClose}
+              data-test-subj="close-decoder-details-flyout"
+            />
+          </EuiFlexItem>
+        </EuiFlexGroup>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        {loading && <EuiLoadingContent lines={4} />}
-        {!loading && error && (
-          <EuiCallOut color="danger" iconType="alert" title={error} />
-        )}
-        {!loading && !error && decoder && (
-          <EuiTabbedContent
-            tabs={[
-              { id: 'visual', name: 'Visual', content: detailsContent },
-              { id: 'yaml', name: 'YAML', content: yamlContent },
-              { id: 'json', name: 'JSON', content: jsonContent },
-            ]}
+        <EuiModalBody>
+          <EuiButtonGroup
+            data-test-subj="decoder-details-view-selector"
+            legend="Decoder view selector"
+            options={decoderViewOptions}
+            idSelected={selectedView}
+            onChange={(id) => setSelectedView(id)}
+            isDisabled={loading || !!error || !decoder}
           />
-        )}
+          <EuiSpacer size="xl" />
+          {renderContent()}
+        </EuiModalBody>
       </EuiFlyoutBody>
     </EuiFlyout>
   );
