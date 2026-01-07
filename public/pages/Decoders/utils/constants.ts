@@ -4,7 +4,7 @@
  */
 
 export const DECODER_SEARCH_FIELDS = [
-  'document.name^2',
+  'document.name',
   'document.metadata.title',
   'document.metadata.module',
   'document.metadata.description',
