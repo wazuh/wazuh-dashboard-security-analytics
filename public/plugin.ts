@@ -32,6 +32,8 @@ import {
   dataSourceObservable,
   setDarkMode,
   DETECTION_NAV_ID,
+  NORMALIZATION_NAV_ID,
+  DECODERS_NAV_ID,
 } from './utils/constants';
 import { SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart } from './index';
 import { DataPublicPluginStart, DataPublicPluginSetup } from '../../../src/plugins/data/public';
@@ -213,6 +215,21 @@ export class SecurityAnalyticsPlugin
       },
     });
 
+    core.application.register({
+      id: DECODERS_NAV_ID,
+      title: 'Decoders',
+      order: 7006,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.DECODERS);
+      },
+    });
+
 
     core.application.register({
       id: DETECTORS_NAV_ID,
@@ -305,7 +322,17 @@ export class SecurityAnalyticsPlugin
         // { id: CORRELATIONS_NAV_ID, parentNavLinkId: INSIGHTS_NAV_ID, showInAllNavGroup: true },
         { id: FINDINGS_NAV_ID, showInAllNavGroup: true, order: 7001 },
         { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7004 },
-        // order 7003 is reserved for Normalization
+        {
+          id: NORMALIZATION_NAV_ID,
+          title: "Normalization",
+          showInAllNavGroup: true,
+          order: 7003,
+        },
+        {
+          id: DECODERS_NAV_ID,
+          parentNavLinkId: NORMALIZATION_NAV_ID,
+          showInAllNavGroup: true,
+        },
         {
           id: DETECTION_NAV_ID,
           title: "Detection",
