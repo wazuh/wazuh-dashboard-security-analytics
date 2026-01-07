@@ -42,7 +42,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [searchQuery, setSearchQuery] = useState<any>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
-  const [stageFilter, setStageFilter] = useState<string>("");
+  const [stageFilter, setStageFilter] = useState<string>("wazuh");
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
@@ -195,7 +195,6 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                 <EuiSelect
                   id="stage-filter"
                   options={[
-                    { value: "", text: "All stages" },
                     { value: "wazuh", text: "Wazuh" },
                     { value: "custom", text: "Custom" },
                   ]}
