@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from "react";
+import React, { useState } from "react";
 import {
   EuiAccordion,
   EuiCodeBlock,
@@ -13,8 +13,10 @@ import {
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiSpacer,
-  EuiTabbedContent,
   EuiTitle,
+  EuiButtonGroup,
+  EuiModalBody,
+  EuiFormLabel,
 } from "@elastic/eui";
 import { get } from "lodash";
 import { KVDBItem } from "../../../../types";
@@ -43,6 +45,11 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
   kvdb,
   onClose,
 }) => {
+  const [selectedEditorType, setSelectedEditorType] = useState("visual");
+
+  const onEditorTypeChange = (optionId: string) => {
+    setSelectedEditorType(optionId);
+  };
   const document = kvdb.document ?? { id: "" };
 
   // Handle space field - it can be a string or an object with name property
@@ -67,7 +74,6 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
 
   const visualTab = (
     <>
-      <EuiSpacer />
       <EuiFlexGrid columns={2}>
         {[
           "document.id",
@@ -84,7 +90,7 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
           return (
             <EuiFlexItem key={field}>
               <Metadata
-                label={detailsMapLabels[field]}
+                label={<EuiFormLabel>{detailsMapLabels[field]}</EuiFormLabel>}
                 value={get(kvdbData, field)}
                 type={type as "text" | "date" | "boolean_yesno" | "url"}
               />
@@ -140,20 +146,26 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <EuiTabbedContent
-          tabs={[
-            {
-              id: "visual",
-              name: "Visual",
-              content: visualTab,
-            },
-            {
-              id: "json",
-              name: "JSON",
-              content: jsonTab,
-            },
-          ]}
-        />
+        <EuiModalBody>
+          <EuiButtonGroup
+            data-test-subj="change-editor-type"
+            legend="This is editor type selector"
+            options={[
+              {
+                id: "visual",
+                label: "Visual",
+              },
+              {
+                id: "json",
+                label: "JSON",
+              },
+            ]}
+            idSelected={selectedEditorType}
+            onChange={(id) => onEditorTypeChange(id)}
+          />
+          <EuiSpacer size="xl" />
+          {selectedEditorType === "visual" ? visualTab : jsonTab}
+        </EuiModalBody>
       </EuiFlyoutBody>
     </EuiFlyout>
   );
