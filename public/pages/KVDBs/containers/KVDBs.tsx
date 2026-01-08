@@ -12,11 +12,12 @@ import {
   EuiFlexItem,
   EuiPanel,
   EuiSearchBar,
-  EuiSelect,
   EuiSmallButton,
   EuiSpacer,
   EuiText,
   EuiToolTip,
+  EuiPopover,
+  EuiSmallButtonEmpty
 } from "@elastic/eui";
 import { RouteComponentProps } from "react-router-dom";
 import { KVDBItem } from "../../../../types";
@@ -43,6 +44,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [refreshTick, setRefreshTick] = useState(0);
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
   const [stageFilter, setStageFilter] = useState<string>("wazuh");
+  const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
@@ -192,19 +194,43 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiSelect
-                  id="stage-filter"
-                  options={[
-                    { value: "wazuh", text: "Wazuh" },
-                    { value: "custom", text: "Custom" },
-                  ]}
-                  value={stageFilter}
-                  onChange={(e) => {
-                    setStageFilter(e.target.value);
-                    setPageIndex(0);
-                  }}
-                  compressed
-                />
+                <EuiPopover
+                  button={
+                    <EuiSmallButton iconType="arrowDown" iconSide="right" onClick={() => setActionsPopoverOpen(!actionsPopoverOpen)}>
+                      {stageFilter === "wazuh" ? "Wazuh" : "Custom"}
+                    </EuiSmallButton>
+                  }
+                  isOpen={actionsPopoverOpen}
+                  closePopover={() => setActionsPopoverOpen(false)}
+                  anchorPosition="downLeft"
+                >
+                  <EuiFlexGroup direction="column">
+                    <EuiFlexItem>
+                      <EuiSmallButtonEmpty
+                        isSelected={stageFilter === "wazuh"}
+                        onClick={() => {
+                          setStageFilter("wazuh");
+                          setPageIndex(0);
+                          setActionsPopoverOpen(false);
+                        }}
+                      >
+                        Wazuh
+                      </EuiSmallButtonEmpty>
+                    </EuiFlexItem>
+                    <EuiFlexItem>
+                      <EuiSmallButtonEmpty
+                        isSelected={stageFilter === "custom"}
+                        onClick={() => {
+                          setStageFilter("custom");
+                          setPageIndex(0);
+                          setActionsPopoverOpen(false);
+                        }}
+                      >
+                        Custom
+                      </EuiSmallButtonEmpty>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
+                </EuiPopover>
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
