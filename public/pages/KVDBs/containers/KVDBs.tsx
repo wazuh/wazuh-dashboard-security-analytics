@@ -235,7 +235,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
             </EuiFlexGroup>
           </EuiFlexItem>
         </PageHeader>
-        <EuiFlexItem>
+        <EuiFlexItem style={{ minHeight: "70%"}}>
           <EuiPanel>
             <EuiFlexGroup alignItems="center" gutterSize="m">
               <EuiFlexItem>
