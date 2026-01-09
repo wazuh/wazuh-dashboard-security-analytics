@@ -35,6 +35,7 @@ export const API: SecurityAnalyticsApi = {
   UPDATE_ALIASES: `${BASE_API_PATH}/update_aliases`,
   CORRELATIONS: `${BASE_API_PATH}/correlations`,
   LOGTYPE_BASE: `${BASE_API_PATH}/logtype`,
+  KVDBS_BASE: `${BASE_API_PATH}/kvdbs`,
   METRICS: `/api/security_analytics/stats`,
   GET_CORRELATION_ALERTS: `${BASE_API_PATH}/correlationAlerts`,
   ACK_CORRELATION_ALERTS: `${BASE_API_PATH}/_acknowledge/correlationAlerts`,
