@@ -15,17 +15,21 @@ export const SpaceTypes = {
   STANDARD: {
     label: 'Standard',
     value: 'standard',
+    description: 'Default KVDBs provided by the system',
   },
   CUSTOM: {
     label: 'Custom',
     value: 'custom',
+    description: 'Independent space for custom or modified content',
   },
   TESTING: {
     label: 'Testing',
     value: 'testing',
+    description: 'Controlled environment for validation before production',
   },
   DRAFT: {
     label: 'Draft',
     value: 'draft',
+    description: 'Staging area for creating or editing resources before testing',
   },
 } as const;

@@ -17,7 +17,8 @@ import {
   EuiText,
   EuiToolTip,
   EuiPopover,
-  EuiSmallButtonEmpty
+  EuiButtonGroup,
+  EuiLink
 } from "@elastic/eui";
 import { RouteComponentProps } from "react-router-dom";
 import { KVDBItem } from "../../../../types";
@@ -46,6 +47,9 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
   const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
+  const [infoPopoverOpen, setInfoPopoverOpen] = useState<boolean>(false);
+
+  const SpaceTypesAvailable = useMemo(() => Object.values(SpaceTypes).filter((spaceType) => spaceType.value !== SpaceTypes.DRAFT.value), []);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
@@ -59,7 +63,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       query = { match_all: {} };
     }
 
-    // Add space filter if it is selected
+    // // Add space filter if it is selected
     if (spaceFilter) {
       query = {
         bool: {
@@ -195,43 +199,68 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiPopover
-                  button={
-                    <EuiSmallButton iconType="arrowDown" iconSide="right" onClick={() => setActionsPopoverOpen(!actionsPopoverOpen)}>
-                      {spaceFilter === SpaceTypes.STANDARD.value ? SpaceTypes.STANDARD.label : SpaceTypes.CUSTOM.label}
-                    </EuiSmallButton>
-                  }
-                  isOpen={actionsPopoverOpen}
-                  closePopover={() => setActionsPopoverOpen(false)}
-                  anchorPosition="downLeft"
-                >
-                  <EuiFlexGroup direction="column">
-                    <EuiFlexItem>
-                      <EuiSmallButtonEmpty
-                        isSelected={spaceFilter === SpaceTypes.STANDARD.value}
-                        onClick={() => {
-                          setSpaceFilter(SpaceTypes.STANDARD.value);
-                          setPageIndex(0);
-                          setActionsPopoverOpen(false);
-                        }}
-                      >
-                        {SpaceTypes.STANDARD.label}
-                      </EuiSmallButtonEmpty>
-                    </EuiFlexItem>
-                    <EuiFlexItem>
-                      <EuiSmallButtonEmpty
-                        isSelected={spaceFilter === SpaceTypes.CUSTOM.value}
-                        onClick={() => {
-                          setSpaceFilter(SpaceTypes.CUSTOM.value);
-                          setPageIndex(0);
-                          setActionsPopoverOpen(false);
-                        }}
-                      >
-                        {SpaceTypes.CUSTOM.label}
-                      </EuiSmallButtonEmpty>
-                    </EuiFlexItem>
-                  </EuiFlexGroup>
-                </EuiPopover>
+                <EuiFlexGroup gutterSize="s" alignItems="center">
+                  <EuiFlexItem grow={false}>
+                    <EuiButtonGroup
+                      data-test-subj="change-editor-type"
+                      legend="This is editor type selector"
+                      options={
+                        SpaceTypesAvailable.map((spaceType) => ({
+                          id: spaceType.value,
+                          label: spaceType.label,
+                        }))
+                      }
+                      idSelected={spaceFilter}
+                      onChange={(id) => {
+                        setSpaceFilter(id);
+                        setPageIndex(0);
+                      }}
+                    />
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiPopover
+                      button={
+                        <EuiButtonIcon
+                          iconType="iInCircle"
+                          aria-label="Spaces information"
+                          onClick={() => setInfoPopoverOpen(!infoPopoverOpen)}
+                          color="primary"
+                        />
+                      }
+                      isOpen={infoPopoverOpen}
+                      closePopover={() => setInfoPopoverOpen(false)}
+                      anchorPosition="downRight"
+                    >
+                      <div style={{ width: '300px' }}>
+                        <EuiText size="s">
+                          <strong>Spaces</strong>
+                        </EuiText>
+                        <EuiSpacer size="s" />
+                        {SpaceTypesAvailable.map((spaceType) => (
+                          <div key={spaceType.value} style={{ paddingLeft: '16px' }}>
+                            <EuiText size="xs">
+                              <p>
+                                <strong>{spaceType.label}:</strong> {spaceType.description}
+                              </p>
+                            </EuiText>
+                            <EuiSpacer size="s" />
+                          </div>
+                        ))}
+                        <p>
+                        <EuiLink 
+                          href="https://documentation.wazuh.com/current/user-manual/kvdbs/spaces.html" 
+                          target="_blank" 
+                          external
+                        >
+                          <EuiText size="s" className="eui-displayInline">
+                          Learn more in the documentation
+                        </EuiText>
+                        </EuiLink>
+                        </p>
+                      </div>
+                    </EuiPopover>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
