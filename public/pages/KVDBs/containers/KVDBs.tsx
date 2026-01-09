@@ -58,7 +58,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       query = { match_all: {} };
     }
 
-    // Add stage filter if selected
+    // // Add stage filter if selected
     if (stageFilter) {
       query = {
         bool: {
@@ -235,7 +235,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
             </EuiFlexGroup>
           </EuiFlexItem>
         </PageHeader>
-        <EuiFlexItem style={{ minHeight: "70%"}}>
+        <EuiFlexItem>
           <EuiPanel>
             <EuiFlexGroup alignItems="center" gutterSize="m">
               <EuiFlexItem>

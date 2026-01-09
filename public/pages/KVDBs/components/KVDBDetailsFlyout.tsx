@@ -17,6 +17,9 @@ import {
   EuiButtonGroup,
   EuiModalBody,
   EuiFormLabel,
+  EuiFlexGroup,
+  EuiText,
+  EuiSmallButtonIcon
 } from "@elastic/eui";
 import { get } from "lodash";
 import { KVDBItem } from "../../../../types";
@@ -135,15 +138,29 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
   );
 
   return (
-    <EuiFlyout onClose={onClose} ownFocus size="l">
+    <EuiFlyout onClose={onClose} hideCloseButton ownFocus size="l">
       <EuiFlyoutHeader hasBorder>
-        <EuiTitle size="s">
-          <h2>
-            {document.title
+          <EuiFlexGroup alignItems="center">
+          <EuiFlexItem>
+            <EuiText size="s">
+              <h2>
+                {document.title
               ? `KVDB details - ${document.title}`
               : "KVDB details"}
-          </h2>
-        </EuiTitle>
+              </h2>
+            </EuiText>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiSmallButtonIcon
+              aria-label="close"
+              iconType="cross"
+              display="empty"
+              iconSize="m"
+              onClick={onClose}
+              data-test-subj="close-decoder-details-flyout"
+            />
+          </EuiFlexItem>
+        </EuiFlexGroup>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
         <EuiModalBody>
