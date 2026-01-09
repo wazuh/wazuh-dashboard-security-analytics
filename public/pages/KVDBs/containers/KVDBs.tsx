@@ -31,6 +31,7 @@ import {
   KVDBS_SORT_FIELD,
 } from "../utils/constants";
 import { KVDBDetailsFlyout } from "../components/KVDBDetailsFlyout";
+import { SpaceTypes } from "../../../../common/constants";
 
 export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [items, setItems] = useState<KVDBItem[]>([]);
@@ -43,7 +44,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [searchQuery, setSearchQuery] = useState<any>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
-  const [stageFilter, setStageFilter] = useState<string>("wazuh");
+  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -58,17 +59,17 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       query = { match_all: {} };
     }
 
-    // // Add stage filter if selected
-    if (stageFilter) {
+    // Add space filter if it is selected
+    if (spaceFilter) {
       query = {
         bool: {
-          must: [query, { term: { "document.stage": stageFilter } }],
+          must: [query, { term: { "space.name": spaceFilter } }],
         },
       };
     }
 
     return query;
-  }, [searchQuery, stageFilter]);
+  }, [searchQuery, spaceFilter]);
 
   const fetchKVDBs = useCallback(async () => {
     setLoading(true);
@@ -197,7 +198,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                 <EuiPopover
                   button={
                     <EuiSmallButton iconType="arrowDown" iconSide="right" onClick={() => setActionsPopoverOpen(!actionsPopoverOpen)}>
-                      {stageFilter === "wazuh" ? "Wazuh" : "Custom"}
+                      {spaceFilter === SpaceTypes.STANDARD.value ? SpaceTypes.STANDARD.label : SpaceTypes.CUSTOM.label}
                     </EuiSmallButton>
                   }
                   isOpen={actionsPopoverOpen}
@@ -207,26 +208,26 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                   <EuiFlexGroup direction="column">
                     <EuiFlexItem>
                       <EuiSmallButtonEmpty
-                        isSelected={stageFilter === "wazuh"}
+                        isSelected={spaceFilter === SpaceTypes.STANDARD.value}
                         onClick={() => {
-                          setStageFilter("wazuh");
+                          setSpaceFilter(SpaceTypes.STANDARD.value);
                           setPageIndex(0);
                           setActionsPopoverOpen(false);
                         }}
                       >
-                        Wazuh
+                        {SpaceTypes.STANDARD.label}
                       </EuiSmallButtonEmpty>
                     </EuiFlexItem>
                     <EuiFlexItem>
                       <EuiSmallButtonEmpty
-                        isSelected={stageFilter === "custom"}
+                        isSelected={spaceFilter === SpaceTypes.CUSTOM.value}
                         onClick={() => {
-                          setStageFilter("custom");
+                          setSpaceFilter(SpaceTypes.CUSTOM.value);
                           setPageIndex(0);
                           setActionsPopoverOpen(false);
                         }}
                       >
-                        Custom
+                        {SpaceTypes.CUSTOM.label}
                       </EuiSmallButtonEmpty>
                     </EuiFlexItem>
                   </EuiFlexGroup>

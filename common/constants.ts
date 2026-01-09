@@ -10,3 +10,22 @@ export enum ThreatIntelIocSourceType {
   IOC_UPLOAD = 'IOC_UPLOAD',
   URL_DOWNLOAD = 'URL_DOWNLOAD',
 }
+
+export const SpaceTypes = {
+  STANDARD: {
+    label: 'Standard',
+    value: 'standard',
+  },
+  CUSTOM: {
+    label: 'Custom',
+    value: 'custom',
+  },
+  TESTING: {
+    label: 'Testing',
+    value: 'testing',
+  },
+  DRAFT: {
+    label: 'Draft',
+    value: 'draft',
+  },
+} as const;
