@@ -63,7 +63,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       query = { match_all: {} };
     }
 
-    // // Add space filter if it is selected
+    // Add space filter if it is selected
     if (spaceFilter) {
       query = {
         bool: {
@@ -178,131 +178,129 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   );
 
   return (
-    <>
+    <EuiFlexGroup direction="column" gutterSize="m">
       {selectedKVDB && (
         <KVDBDetailsFlyout
           kvdb={selectedKVDB}
           onClose={() => setSelectedKVDB(null)}
         />
       )}
-      <EuiFlexGroup direction="column" gutterSize="m">
-        <PageHeader>
+      <EuiFlexItem grow={false}>
+      <PageHeader>
+        <EuiFlexGroup
+          gutterSize="s"
+          justifyContent="spaceBetween"
+          alignItems="center"
+        >
           <EuiFlexItem>
-            <EuiFlexGroup
-              gutterSize="s"
-              justifyContent="spaceBetween"
-              alignItems="center"
-            >
-              <EuiFlexItem>
-                <EuiText size="s">
-                  <h1>KVDBs</h1>
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiFlexGroup gutterSize="s" alignItems="center">
-                  <EuiFlexItem grow={false}>
-                    <EuiButtonGroup
-                      data-test-subj="change-editor-type"
-                      legend="This is editor type selector"
-                      options={
-                        SpaceTypesAvailable.map((spaceType) => ({
-                          id: spaceType.value,
-                          label: spaceType.label,
-                        }))
-                      }
-                      idSelected={spaceFilter}
-                      onChange={(id) => {
-                        setSpaceFilter(id);
-                        setPageIndex(0);
-                      }}
-                    />
-                  </EuiFlexItem>
-                  <EuiFlexItem grow={false}>
-                    <EuiPopover
-                      button={
-                        <EuiButtonIcon
-                          iconType="iInCircle"
-                          aria-label="Spaces information"
-                          onClick={() => setInfoPopoverOpen(!infoPopoverOpen)}
-                          color="primary"
-                        />
-                      }
-                      isOpen={infoPopoverOpen}
-                      closePopover={() => setInfoPopoverOpen(false)}
-                      anchorPosition="downRight"
-                    >
-                      <div style={{ width: '300px' }}>
-                        <EuiText size="s">
-                          <strong>Spaces</strong>
-                        </EuiText>
-                        <EuiSpacer size="s" />
-                        {SpaceTypesAvailable.map((spaceType) => (
-                          <div key={spaceType.value} style={{ paddingLeft: '16px' }}>
-                            <EuiText size="xs">
-                              <p>
-                                <strong>{spaceType.label}:</strong> {spaceType.description}
-                              </p>
-                            </EuiText>
-                            <EuiSpacer size="s" />
-                          </div>
-                        ))}
-                        <p>
-                        <EuiLink 
-                          href="https://documentation.wazuh.com/current/user-manual/kvdbs/spaces.html" 
-                          target="_blank" 
-                          external
-                        >
-                          <EuiText size="s" className="eui-displayInline">
-                          Learn more in the documentation
-                        </EuiText>
-                        </EuiLink>
-                        </p>
-                      </div>
-                    </EuiPopover>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              </EuiFlexItem>
-            </EuiFlexGroup>
+            <EuiText size="s">
+              <h1>KVDBs</h1>
+            </EuiText>
           </EuiFlexItem>
-        </PageHeader>
-        <EuiFlexItem>
-          <EuiPanel>
-            <EuiFlexGroup alignItems="center" gutterSize="m">
-              <EuiFlexItem>
-                <EuiSearchBar
-                  box={{
-                    placeholder: "Search KVDBs",
-                    incremental: true,
-                    compressed: true,
-                    schema: true,
+          <EuiFlexItem grow={false}>
+            <EuiFlexGroup gutterSize="s" alignItems="center">
+              <EuiFlexItem grow={false}>
+                <EuiButtonGroup
+                  data-test-subj="change-editor-type"
+                  legend="This is editor type selector"
+                  options={
+                    SpaceTypesAvailable.map((spaceType) => ({
+                      id: spaceType.value,
+                      label: spaceType.label,
+                    }))
+                  }
+                  idSelected={spaceFilter}
+                  onChange={(id) => {
+                    setSpaceFilter(id);
+                    setPageIndex(0);
                   }}
-                  schema={KVDBS_SEARCH_SCHEMA}
-                  onChange={onSearchChange}
                 />
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiSmallButton
-                  iconType="refresh"
-                  onClick={() => setRefreshTick((t) => t + 1)}
+                <EuiPopover
+                  button={
+                    <EuiButtonIcon
+                      iconType="iInCircle"
+                      aria-label="Spaces information"
+                      onClick={() => setInfoPopoverOpen(!infoPopoverOpen)}
+                      color="primary"
+                    />
+                  }
+                  isOpen={infoPopoverOpen}
+                  closePopover={() => setInfoPopoverOpen(false)}
+                  anchorPosition="downRight"
                 >
-                  Refresh
-                </EuiSmallButton>
+                  <div style={{ width: '300px' }}>
+                    <EuiText size="s">
+                      <strong>Spaces</strong>
+                    </EuiText>
+                    <EuiSpacer size="s" />
+                    {SpaceTypesAvailable.map((spaceType) => (
+                      <div key={spaceType.value} style={{ paddingLeft: '16px' }}>
+                        <EuiText size="xs">
+                          <p>
+                            <strong>{spaceType.label}:</strong> {spaceType.description}
+                          </p>
+                        </EuiText>
+                        <EuiSpacer size="s" />
+                      </div>
+                    ))}
+                    <p>
+                    <EuiLink 
+                      href="https://documentation.wazuh.com/current/user-manual/kvdbs/spaces.html" 
+                      target="_blank" 
+                      external
+                    >
+                      <EuiText size="s" className="eui-displayInline">
+                      Learn more in the documentation
+                    </EuiText>
+                    </EuiLink>
+                    </p>
+                  </div>
+                </EuiPopover>
               </EuiFlexItem>
             </EuiFlexGroup>
-            <EuiSpacer size="m" />
-            <EuiBasicTable
-              items={items}
-              columns={columns}
-              loading={loading}
-              pagination={pagination}
-              sorting={sorting}
-              onChange={onTableChange}
-              itemId={(item) => item.document?.id || item.id}
-              noItemsMessage="No KVDBs to display"
-            />
-          </EuiPanel>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    </>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </PageHeader></EuiFlexItem>
+      <EuiSpacer size="xs" />
+      <EuiFlexItem>
+        <EuiPanel>
+          <EuiFlexGroup alignItems="center" gutterSize="m">
+            <EuiFlexItem>
+              <EuiSearchBar
+                box={{
+                  placeholder: "Search KVDBs",
+                  incremental: true,
+                  compressed: true,
+                  schema: true,
+                }}
+                schema={KVDBS_SEARCH_SCHEMA}
+                onChange={onSearchChange}
+              />
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiSmallButton
+                iconType="refresh"
+                onClick={() => setRefreshTick((t) => t + 1)}
+              >
+                Refresh
+              </EuiSmallButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+          <EuiSpacer size="m" />
+          <EuiBasicTable
+            items={items}
+            columns={columns}
+            loading={loading}
+            pagination={pagination}
+            sorting={sorting}
+            onChange={onTableChange}
+            itemId={(item) => item.document?.id || item.id}
+            noItemsMessage="No KVDBs to display"
+          />
+        </EuiPanel>
+      </EuiFlexItem>
+    </EuiFlexGroup>
   );
 };
