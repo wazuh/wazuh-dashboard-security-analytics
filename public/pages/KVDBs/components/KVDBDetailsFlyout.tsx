@@ -138,7 +138,7 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
   );
 
   return (
-    <EuiFlyout onClose={onClose} hideCloseButton ownFocus size="l">
+    <EuiFlyout onClose={onClose} hideCloseButton ownFocus size="m">
       <EuiFlyoutHeader hasBorder>
           <EuiFlexGroup alignItems="center">
           <EuiFlexItem>
