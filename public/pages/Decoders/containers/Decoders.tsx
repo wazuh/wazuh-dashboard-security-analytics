@@ -198,30 +198,31 @@ export const Decoders: React.FC = () => {
   );
 
   return (
-    <>
-      {selectedDecoder && (
-        <DecoderDetailsFlyout
-          decoderId={selectedDecoder.id}
-          space={spaceFilter}
-          onClose={() => setSelectedDecoder(null)}
-        />
-      )}
       <EuiFlexGroup direction="column" gutterSize="m">
-        <PageHeader>
-          <EuiFlexItem>
-            <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
-              <EuiFlexItem>
-                <EuiText size="s">
-                  <h1>Decoders</h1>
-                </EuiText>
-                <EuiText size="s" color="subdued">
-                  Decoders describe how security events are normalized.
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        </PageHeader>
+        {selectedDecoder && (
+          <DecoderDetailsFlyout
+            decoderId={selectedDecoder.id}
+            space={spaceFilter}
+            onClose={() => setSelectedDecoder(null)}
+          />
+        )}
+        <EuiFlexItem grow={false}>
+          <PageHeader>
+            <EuiFlexItem>
+              <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
+                <EuiFlexItem>
+                  <EuiText size="s">
+                    <h1>Decoders</h1>
+                  </EuiText>
+                  <EuiText size="s" color="subdued">
+                    Decoders describe how security events are normalized.
+                  </EuiText>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+          </PageHeader>
+        </EuiFlexItem>
         <EuiFlexItem>
           <EuiPanel>
             <EuiFlexGroup alignItems="center" gutterSize="m">
@@ -262,6 +263,5 @@ export const Decoders: React.FC = () => {
           </EuiPanel>
         </EuiFlexItem>
       </EuiFlexGroup>
-    </>
   );
 };
