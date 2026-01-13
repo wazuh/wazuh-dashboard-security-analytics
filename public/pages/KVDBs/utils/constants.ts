@@ -1,7 +1,7 @@
 /*
- * Copyright OpenSearch Contributors
- * SPDX-License-Identifier: Apache-2.0
- */
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+*/
 
 export const KVDBS_PAGE_SIZE = 25;
 export const KVDBS_SORT_FIELD = "document.title";
