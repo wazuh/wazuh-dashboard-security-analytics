@@ -70,20 +70,4 @@ export class DecodersStore {
         this.service.normalizeSpace(item.document?.space),
     };
   }
-
-  public async getSpaces(): Promise<string[]> {
-    const response = await this.service.getSpaces();
-    if (!response.ok) {
-      if (
-        response.error?.includes('index_not_found_exception') ||
-        response.error?.includes('no such index')
-      ) {
-        return [];
-      }
-      errorNotificationToast(this.notifications, 'retrieve', 'spaces', response.error);
-      return [];
-    }
-
-    return response.response.spaces || [];
-  }
 }

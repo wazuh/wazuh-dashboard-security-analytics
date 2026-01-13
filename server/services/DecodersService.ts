@@ -14,7 +14,6 @@ import {
 import { ServerResponse } from '../models/types';
 import {
   DecoderItem,
-  DecoderSpacesResponse,
   GetDecoderResponse,
   SearchDecodersResponse,
 } from '../../types';
@@ -299,77 +298,6 @@ export class DecodersService {
       });
     } catch (error: any) {
       console.error('Security Analytics - DecodersService - getDecoder:', error);
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: false,
-          error: error.message,
-        },
-      });
-    }
-  };
-
-  getSpaces = async (
-    context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest,
-    response: OpenSearchDashboardsResponseFactory
-  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<DecoderSpacesResponse> | ResponseError>> => {
-    try {
-      const client = this.getClient(request);
-      const { aggFields } = await this.getSpaceFieldCaps(client);
-      const fields = Array.from(new Set(aggFields));
-      if (!fields.length) {
-        return response.custom({
-          statusCode: 200,
-          body: {
-            ok: true,
-            response: {
-              spaces: [],
-            },
-          },
-        });
-      }
-
-      const aggs = fields.reduce((acc: Record<string, any>, field) => {
-        const aggName = field.replace(/[^\w]/g, '_');
-        acc[aggName] = {
-          terms: {
-            field,
-            size: 1000,
-          },
-        };
-        return acc;
-      }, {});
-
-      const searchResponse = await client('search', {
-        index: DECODERS_INDEX,
-        body: {
-          size: 0,
-          aggs,
-        },
-      });
-
-      const spaces = new Set<string>();
-      Object.values(searchResponse?.aggregations ?? {}).forEach((agg: any) => {
-        const buckets = agg?.buckets ?? [];
-        buckets.forEach((bucket: any) => {
-          if (bucket?.key) {
-            spaces.add(bucket.key);
-          }
-        });
-      });
-
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: true,
-          response: {
-            spaces: Array.from(spaces).sort(),
-          },
-        },
-      });
-    } catch (error: any) {
-      console.error('Security Analytics - DecodersService - getSpaces:', error);
       return response.custom({
         statusCode: 200,
         body: {

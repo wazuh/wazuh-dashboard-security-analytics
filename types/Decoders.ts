@@ -45,7 +45,3 @@ export interface SearchDecodersResponse {
 export interface GetDecoderResponse {
   item?: DecoderItem;
 }
-
-export interface DecoderSpacesResponse {
-  spaces: string[];
-}

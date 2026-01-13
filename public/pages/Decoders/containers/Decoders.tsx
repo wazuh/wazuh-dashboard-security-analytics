@@ -11,7 +11,6 @@ import {
   EuiFieldSearch,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiLink,
   EuiPanel,
   EuiSpacer,
   EuiText,
@@ -22,10 +21,10 @@ import { DecoderItem } from '../../../../types';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, NORMALIZATION_NAV_ID } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { setBreadcrumbs } from '../../../utils/helpers';
-import { getApplication } from '../../../services/utils/constants';
-import { SpaceSelector } from '../components/SpaceSelector';
 import { buildDecodersSearchQuery } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
+import { SpaceTypes } from '../../../../common/constants';
+import { SpaceSelector } from '../../../components/SpaceSelector';
 
 const DEFAULT_PAGE_SIZE = 25;
 const SORT_FIELD_MAP: Record<string, string> = {
@@ -46,16 +45,13 @@ export const Decoders: React.FC = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('document.name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [spaceOptions, setSpaceOptions] = useState<{ value: string; text: string }[]>([
-    { value: 'all', text: 'All spaces' },
-  ]);
-  const [selectedSpace, setSelectedSpace] = useState('all');
+  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [spacesLoading, setSpacesLoading] = useState(false);
   const [selectedDecoder, setSelectedDecoder] = useState<{
     id: string;
     space?: string;
   } | null>(null);
-
+  
   const formatCellValue = (value: unknown) => {
     if (value === null || value === undefined || value === '') {
       return DEFAULT_EMPTY_DATA;
@@ -104,26 +100,6 @@ export const Decoders: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setSpacesLoading(true);
-    DataStore.decoders
-      .getSpaces()
-      .then((spaces) => {
-        if (!isMountedRef.current) {
-          return;
-        }
-        const options = [{ value: 'all', text: 'All spaces' }].concat(
-          spaces.map((space) => ({ value: space, text: space }))
-        );
-        setSpaceOptions(options);
-      })
-      .finally(() => {
-        if (isMountedRef.current) {
-          setSpacesLoading(false);
-        }
-      });
-  }, []);
-
-  useEffect(() => {
     const timeout = setTimeout(() => {
       setAppliedSearch(searchText);
       setPageIndex(0);
@@ -134,7 +110,6 @@ export const Decoders: React.FC = () => {
 
   const loadDecoders = useCallback(async () => {
     setLoading(true);
-    const spaceFilter = selectedSpace !== 'all' ? selectedSpace : undefined;
     const query = buildDecodersSearchQuery(appliedSearch);
     const sortFieldName = SORT_FIELD_MAP[sortField] ?? sortField;
     const sort = sortFieldName
@@ -165,7 +140,7 @@ export const Decoders: React.FC = () => {
     setDecoders(response.items);
     setTotal(response.total);
     setLoading(false);
-  }, [appliedSearch, pageIndex, pageSize, selectedSpace, sortField, sortDirection]);
+  }, [appliedSearch, pageIndex, pageSize, spaceFilter, sortField, sortDirection]);
 
   useEffect(() => {
     loadDecoders();
@@ -210,16 +185,15 @@ export const Decoders: React.FC = () => {
     ],
     []
   );
-
+  
   const spaceSelector = (
     <SpaceSelector
-      options={spaceOptions}
-      value={selectedSpace}
-      onChange={(value) => {
-        setSelectedSpace(value);
+      selectedSpace={spaceFilter}
+      onSpaceChange={(id) => {
+        setSpaceFilter(id);
         setPageIndex(0);
       }}
-      isLoading={spacesLoading}
+      isDisabled={spacesLoading}
     />
   );
 
@@ -228,12 +202,12 @@ export const Decoders: React.FC = () => {
       {selectedDecoder && (
         <DecoderDetailsFlyout
           decoderId={selectedDecoder.id}
-          space={selectedSpace !== 'all' ? selectedSpace : selectedDecoder.space}
+          space={spaceFilter}
           onClose={() => setSelectedDecoder(null)}
         />
       )}
       <EuiFlexGroup direction="column" gutterSize="m">
-        <PageHeader appRightControls={[{ renderComponent: spaceSelector }]}>
+        <PageHeader>
           <EuiFlexItem>
             <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
               <EuiFlexItem>

@@ -6,7 +6,7 @@
 import { HttpSetup } from 'opensearch-dashboards/public';
 import { API } from '../../server/utils/constants';
 import { ServerResponse } from '../../server/models/types';
-import { DecoderSpacesResponse, GetDecoderResponse, SearchDecodersResponse } from '../../types';
+import { GetDecoderResponse, SearchDecodersResponse } from '../../types';
 
 export default class DecodersService {
   httpClient: HttpSetup;
@@ -57,10 +57,5 @@ export default class DecodersService {
     return (await this.httpClient.get(url, {
       query,
     })) as ServerResponse<GetDecoderResponse>;
-  };
-
-  getSpaces = async (): Promise<ServerResponse<DecoderSpacesResponse>> => {
-    const url = `..${API.DECODERS_BASE}/spaces`;
-    return (await this.httpClient.get(url)) as ServerResponse<DecoderSpacesResponse>;
   };
 }

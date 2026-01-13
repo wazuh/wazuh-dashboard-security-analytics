@@ -27,16 +27,6 @@ export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
 
   router.get(
     {
-      path: `${API.DECODERS_BASE}/spaces`,
-      validate: {
-        query: createQueryValidationSchema(),
-      },
-    },
-    decodersService.getSpaces
-  );
-
-  router.get(
-    {
       path: `${API.DECODERS_BASE}/{decoderId}`,
       validate: {
         params: schema.object({
