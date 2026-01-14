@@ -247,7 +247,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                     ))}
                     <p>
                     <EuiLink 
-                      href="https://documentation.wazuh.com/current/user-manual/kvdbs/spaces.html" 
+                      href="https://documentation.wazuh.com/5.0/user-manual/kvdbs/spaces.html" 
                       target="_blank" 
                       external
                     >
