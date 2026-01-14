@@ -32,7 +32,7 @@ import {
   KVDBS_SORT_FIELD,
 } from "../utils/constants";
 import { KVDBDetailsFlyout } from "../components/KVDBDetailsFlyout";
-import { SpaceTypes } from "../../../../common/constants";
+import { PLUGIN_VERSION_SHORT, SpaceTypes } from "../../../../common/constants";
 
 export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [items, setItems] = useState<KVDBItem[]>([]);
@@ -247,7 +247,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                     ))}
                     <p>
                     <EuiLink 
-                      href="https://documentation.wazuh.com/5.0/user-manual/kvdbs/spaces.html" 
+                      href={`https://documentation.wazuh.com/${PLUGIN_VERSION_SHORT}/user-manual/kvdbs/spaces.html`} 
                       target="_blank" 
                       external
                     >
