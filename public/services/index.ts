@@ -17,6 +17,7 @@ import SavedObjectService from './SavedObjectService';
 import CorrelationService from './CorrelationService';
 import LogTypeService from './LogTypeService';
 import ThreatIntelService from './ThreatIntelService';
+import KVDBsService from './KVDBsService';
 
 export {
   SaContextConsumer,
@@ -34,4 +35,5 @@ export {
   SavedObjectService,
   LogTypeService,
   ThreatIntelService,
+  KVDBsService,
 };

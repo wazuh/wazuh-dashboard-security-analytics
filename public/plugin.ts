@@ -32,6 +32,8 @@ import {
   dataSourceObservable,
   setDarkMode,
   DETECTION_NAV_ID,
+  NORMALIZATION_NAV_ID,
+  KVDBS_NAV_ID,
 } from './utils/constants';
 import { SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart } from './index';
 import { DataPublicPluginStart, DataPublicPluginSetup } from '../../../src/plugins/data/public';
@@ -213,6 +215,22 @@ export class SecurityAnalyticsPlugin
       },
     });
 
+    core.application.register({
+      id: KVDBS_NAV_ID,
+      title: 'KVDBs',
+      order: 7007,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.KVDBS);
+      },
+    });
+
 
     core.application.register({
       id: DETECTORS_NAV_ID,
@@ -289,6 +307,15 @@ export class SecurityAnalyticsPlugin
         }
       })
 
+      // Wazuh: register an empty app to allow the nested apps in the sidebar menu
+      core.application.register({
+        id: NORMALIZATION_NAV_ID,
+        title: "Normalization",
+        mount: async () => {
+          return () => {};
+        }
+      })
+
       const navlinks = [
         { id: OVERVIEW_NAV_ID, showInAllNavGroup: true },
         // Wazuh does not use Get Started page
@@ -306,6 +333,13 @@ export class SecurityAnalyticsPlugin
         { id: FINDINGS_NAV_ID, showInAllNavGroup: true, order: 7001 },
         { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7004 },
         // order 7003 is reserved for Normalization
+        { id: NORMALIZATION_NAV_ID, title: "Normalization", showInAllNavGroup: true, order: 7003 },
+        {
+          id: KVDBS_NAV_ID,
+          parentNavLinkId: NORMALIZATION_NAV_ID,
+          showInAllNavGroup: true,
+          order: 7007,
+        },
         {
           id: DETECTION_NAV_ID,
           title: "Detection",
