@@ -47,6 +47,7 @@ import {
   IndexPatternsService,
   IndexService,
   LogTypeService,
+  KVDBsService,
   NotificationsService,
   OpenSearchService,
 } from '../services';
@@ -676,6 +677,7 @@ export function initializeServices(
   const savedObjectsService = new SavedObjectService(savedObjects.client, indexService);
   const indexPatternsService = new IndexPatternsService(indexPattern);
   const logTypeService = new LogTypeService(http);
+  const kvdbsService = new KVDBsService(http);
   const metricsService = new MetricsService(http);
   const threatIntelService = new ThreatIntelService(http, coreStart.notifications);
 
@@ -692,6 +694,7 @@ export function initializeServices(
     savedObjectsService,
     indexPatternsService,
     logTypeService,
+    kvdbsService,
     metricsService,
     threatIntelService,
   };
