@@ -51,6 +51,7 @@ export const MetadataFieldDate: React.FC<{ value: string | number }> = ({
   if (!value) {
     return <>{DEFAULT_EMPTY_DATA}</>;
   }
+  // FIXME: This should use the format specified in the settings
   // Format date similar to formatUIDate: "MMM DD, YYYY @ HH:mm:ss.SSS"
   try {
     const date = moment(value);
