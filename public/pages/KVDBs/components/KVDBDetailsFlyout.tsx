@@ -52,14 +52,6 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
   };
   const document = kvdb.document ?? { id: '' };
 
-  // Handle space field - it can be a string or an object with name property
-  const spaceValue =
-    typeof kvdb.space === 'string'
-      ? kvdb.space
-      : kvdb.space && typeof kvdb.space === 'object' && 'name' in kvdb.space
-      ? kvdb.space.name || ''
-      : '';
-
   const kvdbData = {
     'document.id': document.id || kvdb.id,
     'integration.title': kvdb.integration?.title,
@@ -69,7 +61,7 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
     'document.enabled': document.enabled,
     'document.references': document.references,
     'document.metadata.author.url': document.metadata?.author?.url,
-    space: spaceValue,
+    space: kvdb?.space?.name,
   };
 
   const visualTab = (
