@@ -16,6 +16,7 @@ export * from './SavedObjectConfig';
 export * from './Correlations';
 export * from './Decoders';
 export * from './LogTypes';
+export * from './KVDBs';
 export * from './Metrics';
 export * from './SecurityAnalyticsContext';
 export * from './DataSourceContext';

@@ -14,3 +14,4 @@ export * from './NotificationsRoutes';
 export * from './LogTypeRoutes';
 export * from './RuleRoutes';
 export * from './DecodersRoutes';
+export * from './KVDBsRoutes';

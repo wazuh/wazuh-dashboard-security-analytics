@@ -18,6 +18,7 @@ import CorrelationService from './CorrelationService';
 import LogTypeService from './LogTypeService';
 import ThreatIntelService from './ThreatIntelService';
 import DecodersService from './DecodersService';
+import KVDBsService from './KVDBsService';
 
 export {
   SaContextConsumer,
@@ -36,4 +37,5 @@ export {
   LogTypeService,
   DecodersService,
   ThreatIntelService,
+  KVDBsService,
 };

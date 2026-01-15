@@ -36,6 +36,7 @@ export const INSIGHTS_NAV_ID = 'insights_nav';
 export const DETECTION_NAV_ID = 'detection_nav';
 export const NORMALIZATION_NAV_ID = 'normalization';
 export const DECODERS_NAV_ID = 'decoders';
+export const KVDBS_NAV_ID = 'kvdbs';
 // Wazuh: Threat intelligence app/endpoints are not available.
 export const THREAT_INTEL_ENABLED = false;
 
@@ -124,6 +125,7 @@ export const BREADCRUMBS = Object.freeze({
   LOG_TYPE_CREATE: { text: 'Create integration', href: `#${ROUTES.LOG_TYPES_CREATE}` }, // Replace Log Type with Integration by Wazuh
   NORMALIZATION: { text: 'Normalization' },
   DECODERS: { text: 'Decoders', href: `#${ROUTES.DECODERS}` },
+  KVDBS: { text: 'KVDBs', href: `#${ROUTES.KVDBS}` },
   THREAT_INTEL_OVERVIEW: { text: 'Threat intelligence', href: `#${ROUTES.THREAT_INTEL_OVERVIEW}` },
   THREAT_INTEL_ADD_CUSTOM_SOURCE: {
     text: 'Add threat intel source',
