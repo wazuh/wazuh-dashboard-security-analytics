@@ -16,9 +16,6 @@ import {
   EuiSpacer,
   EuiText,
   EuiToolTip,
-  EuiPopover,
-  EuiButtonGroup,
-  EuiLink
 } from "@elastic/eui";
 import { RouteComponentProps } from "react-router-dom";
 import { KVDBItem } from "../../../../types";
@@ -32,7 +29,8 @@ import {
   KVDBS_SORT_FIELD,
 } from "../utils/constants";
 import { KVDBDetailsFlyout } from "../components/KVDBDetailsFlyout";
-import { PLUGIN_VERSION_SHORT, SpaceTypes } from "../../../../common/constants";
+import { SpaceTypes } from "../../../../common/constants";
+import { SpaceSelector } from "../../../components/SpaceSelector/SpaceSelector";
 
 export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [items, setItems] = useState<KVDBItem[]>([]);
@@ -47,9 +45,6 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
   const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
-  const [infoPopoverOpen, setInfoPopoverOpen] = useState<boolean>(false);
-
-  const SpaceTypesAvailable = useMemo(() => Object.values(SpaceTypes).filter((spaceType) => spaceType.value !== SpaceTypes.DRAFT.value), []);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
@@ -198,68 +193,13 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
             </EuiText>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiFlexGroup gutterSize="s" alignItems="center">
-              <EuiFlexItem grow={false}>
-                <EuiButtonGroup
-                  data-test-subj="change-editor-type"
-                  legend="This is editor type selector"
-                  options={
-                    SpaceTypesAvailable.map((spaceType) => ({
-                      id: spaceType.value,
-                      label: spaceType.label,
-                    }))
-                  }
-                  idSelected={spaceFilter}
-                  onChange={(id) => {
-                    setSpaceFilter(id);
-                    setPageIndex(0);
-                  }}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiPopover
-                  button={
-                    <EuiButtonIcon
-                      iconType="iInCircle"
-                      aria-label="Spaces information"
-                      onClick={() => setInfoPopoverOpen(!infoPopoverOpen)}
-                      color="primary"
-                    />
-                  }
-                  isOpen={infoPopoverOpen}
-                  closePopover={() => setInfoPopoverOpen(false)}
-                  anchorPosition="downRight"
-                >
-                  <div style={{ width: '300px' }}>
-                    <EuiText size="s">
-                      <strong>Spaces</strong>
-                    </EuiText>
-                    <EuiSpacer size="s" />
-                    {SpaceTypesAvailable.map((spaceType) => (
-                      <div key={spaceType.value} style={{ paddingLeft: '16px' }}>
-                        <EuiText size="xs">
-                          <p>
-                            <strong>{spaceType.label}:</strong> {spaceType.description}
-                          </p>
-                        </EuiText>
-                        <EuiSpacer size="s" />
-                      </div>
-                    ))}
-                    <p>
-                    <EuiLink 
-                      href={`https://documentation.wazuh.com/${PLUGIN_VERSION_SHORT}/user-manual/kvdbs/spaces.html`} 
-                      target="_blank" 
-                      external
-                    >
-                      <EuiText size="s" className="eui-displayInline">
-                      Learn more in the documentation
-                    </EuiText>
-                    </EuiLink>
-                    </p>
-                  </div>
-                </EuiPopover>
-              </EuiFlexItem>
-            </EuiFlexGroup>
+            <SpaceSelector
+              selectedSpace={spaceFilter}
+              onSpaceChange={(id) => {
+                setSpaceFilter(id);
+                setPageIndex(0);
+              }}
+            />
           </EuiFlexItem>
         </EuiFlexGroup>
       </PageHeader></EuiFlexItem>

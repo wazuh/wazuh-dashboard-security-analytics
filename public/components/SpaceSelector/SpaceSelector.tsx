@@ -14,7 +14,7 @@ import {
   EuiSpacer,
   EuiText,
 } from '@elastic/eui';
-import { SpaceTypes } from '../../../common/constants';
+import { PLUGIN_VERSION_SHORT, SpaceTypes } from '../../../common/constants';
 
 interface SpaceSelectorProps {
   selectedSpace: string;
@@ -27,7 +27,7 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
   selectedSpace,
   onSpaceChange,
   isDisabled = false,
-  documentationUrl = 'https://documentation.wazuh.com/current/user-manual/kvdbs/spaces.html',
+  documentationUrl = `https://documentation.wazuh.com/${PLUGIN_VERSION_SHORT}/user-manual/kvdbs/spaces.html`,
 }) => {
   const [infoPopoverOpen, setInfoPopoverOpen] = useState<boolean>(false);
 
