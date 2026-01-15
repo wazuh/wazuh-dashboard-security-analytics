@@ -24,6 +24,7 @@ import {
   setupNotificationsRoutes,
   setupLogTypeRoutes,
   setupRulesRoutes,
+  setupDecodersRoutes,
   setupKVDBsRoutes,
 } from './routes';
 import { setupMetricsRoutes } from './routes/MetricsRoutes';
@@ -46,6 +47,7 @@ import { DataSourcePluginSetup } from 'src/plugins/data_source/server';
 import { securityAnalyticsPlugin } from './clusters/securityAnalyticsPlugin';
 import ThreatIntelService from './services/ThreatIntelService';
 import { setupThreatIntelRoutes } from './routes/ThreatIntel';
+import { DecodersService } from './services/DecodersService';
 
 export interface SecurityAnalyticsPluginDependencies {
   dataSource?: DataSourcePluginSetup;
@@ -83,6 +85,7 @@ export class SecurityAnalyticsPlugin
       kvdbsService: new KVDBsService(securityAnalyticsClient, false),
       metricsService: new MetricsService(),
       threatIntelService: new ThreatIntelService(securityAnalyticsClient, dataSourceEnabled),
+      decodersService: new DecodersService(securityAnalyticsClient),
     };
 
     // Create router
@@ -102,6 +105,7 @@ export class SecurityAnalyticsPlugin
     setupKVDBsRoutes(services, router);
     setupMetricsRoutes(services, router);
     setupThreatIntelRoutes(services, router);
+    setupDecodersRoutes(services, router);
 
     // @ts-ignore
     const config$ = this.initializerContext.config.create();

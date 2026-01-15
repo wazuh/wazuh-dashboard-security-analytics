@@ -17,6 +17,7 @@ import SavedObjectService from './SavedObjectService';
 import CorrelationService from './CorrelationService';
 import LogTypeService from './LogTypeService';
 import ThreatIntelService from './ThreatIntelService';
+import DecodersService from './DecodersService';
 import KVDBsService from './KVDBsService';
 
 export {
@@ -34,6 +35,7 @@ export {
   IndexPatternsService,
   SavedObjectService,
   LogTypeService,
+  DecodersService,
   ThreatIntelService,
   KVDBsService,
 };

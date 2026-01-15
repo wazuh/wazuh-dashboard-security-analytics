@@ -13,6 +13,7 @@ import {
   CorrelationService,
 } from '../../services';
 import AlertService from '../../services/AlertService';
+import { DecodersService } from '../../services/DecodersService';
 import { LogTypeService } from '../../services/LogTypeService';
 import MetricsService from '../../services/MetricsService';
 import RulesService from '../../services/RuleService';
@@ -45,6 +46,7 @@ export interface SecurityAnalyticsApi {
   readonly GET_CORRELATION_ALERTS: string;
   readonly ACK_CORRELATION_ALERTS: string;
   readonly THREAT_INTEL_BASE: string;
+  readonly DECODERS_BASE: string;
 }
 
 export interface NodeServices {
@@ -61,6 +63,7 @@ export interface NodeServices {
   kvdbsService: KVDBsService;
   metricsService: MetricsService;
   threatIntelService: ThreatIntelService;
+  decodersService: DecodersService;
 }
 
 export interface GetIndicesResponse {
