@@ -40,6 +40,7 @@ export const API: SecurityAnalyticsApi = {
   GET_CORRELATION_ALERTS: `${BASE_API_PATH}/correlationAlerts`,
   ACK_CORRELATION_ALERTS: `${BASE_API_PATH}/_acknowledge/correlationAlerts`,
   THREAT_INTEL_BASE: `${BASE_API_PATH}/threat_intel`,
+  DECODERS_BASE: `${BASE_API_PATH}/decoders`,
 };
 
 /**

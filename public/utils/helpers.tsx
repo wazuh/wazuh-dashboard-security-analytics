@@ -43,6 +43,7 @@ import {
 } from 'opensearch-dashboards/public';
 import {
   AlertsService,
+  DecodersService,
   FieldMappingService,
   IndexPatternsService,
   IndexService,
@@ -677,6 +678,7 @@ export function initializeServices(
   const savedObjectsService = new SavedObjectService(savedObjects.client, indexService);
   const indexPatternsService = new IndexPatternsService(indexPattern);
   const logTypeService = new LogTypeService(http);
+  const decodersService = new DecodersService(http);
   const kvdbsService = new KVDBsService(http);
   const metricsService = new MetricsService(http);
   const threatIntelService = new ThreatIntelService(http, coreStart.notifications);
@@ -694,6 +696,7 @@ export function initializeServices(
     savedObjectsService,
     indexPatternsService,
     logTypeService,
+    decodersService,
     kvdbsService,
     metricsService,
     threatIntelService,
