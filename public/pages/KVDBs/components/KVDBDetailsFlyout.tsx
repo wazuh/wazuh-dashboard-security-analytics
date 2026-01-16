@@ -13,7 +13,6 @@ import {
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiSpacer,
-  EuiTitle,
   EuiButtonGroup,
   EuiModalBody,
   EuiFormLabel,
@@ -116,7 +115,7 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
 
   const jsonTab = (
     <EuiCodeBlock language="json" isCopyable={true} paddingSize="m">
-      {JSON.stringify(kvdb, null, 2)}
+      {JSON.stringify(document, null, 2)}
     </EuiCodeBlock>
   );
 

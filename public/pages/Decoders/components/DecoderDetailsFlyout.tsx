@@ -130,7 +130,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
       return '';
     }
     try {
-      return JSON.stringify(decoder, null, 2);
+      return JSON.stringify(decoder?.document, null, 2);
     } catch (err) {
       return '';
     }

@@ -250,7 +250,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
               </EuiToolTip>
             ),
           },
-          {
+          // {
             // Wazuh: hide Create Alert action in findings table.
             // render: (finding) => (
             //   <EuiToolTip content={'Create alert'}>
@@ -261,7 +261,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
             //     />
             //   </EuiToolTip>
             // ),
-          },
+          // },
         ],
       },
     ];
