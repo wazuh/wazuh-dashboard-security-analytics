@@ -38,7 +38,6 @@ import {
   // CORRELATIONS_RULE_NAV_ID,
   LOG_TYPES_NAV_ID,
   DECODERS_NAV_ID,
-  NORMALIZATION_NAV_ID,
   KVDBS_NAV_ID,
 } from "../../utils/constants";
 import { CoreServicesConsumer } from "../../components/core_services";
@@ -120,7 +119,6 @@ enum Navigation {
   Detection = "Detection",
   // Wazuh
   Normalization = "Normalization",
-  NormalizationOverview = "NormalizationOverview",
   Decoders = "Decoders",
   KVDBS = "KVDBs",
 }
@@ -469,20 +467,6 @@ export default class Main extends Component<MainProps, MainState> {
             id: Navigation.Normalization,
             forceOpen: true,
             items: [
-              {
-                name: "Overview",
-                id: Navigation.NormalizationOverview,
-                onClick: () => {
-                  // this.setState({ selectedNavItemId: Navigation.NormalizationOverview });
-                  // history.push(ROUTES.NORMALIZATION);
-                  /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
-                  This view should be moved to this plugin.
-                  */
-                  getApplication().navigateToApp(NORMALIZATION_NAV_ID, {path: generateAppPath('/normalization/overview')});
-                },
-                isSelected:
-                  selectedNavItemId === Navigation.NormalizationOverview,
-              },
               {
                 name: Navigation.Decoders,
                 id: Navigation.Decoders,
