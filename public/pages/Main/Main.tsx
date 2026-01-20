@@ -27,6 +27,7 @@ import {
   dataSourceObservable,
   OS_NOTIFICATION_PLUGIN,
   THREAT_INTEL_ENABLED,
+  OVERVIEW_NAV_ID,
   FINDINGS_NAV_ID,
   // Wazuh: hide Alerts app in navigation.
   // THREAT_ALERTS_NAV_ID,
@@ -377,8 +378,12 @@ export default class Main extends Component<MainProps, MainState> {
             name: Navigation.Overview,
             id: Navigation.Overview,
             onClick: () => {
-              this.setState({ selectedNavItemId: Navigation.Overview });
-              history.push(ROUTES.OVERVIEW);
+              // this.setState({ selectedNavItemId: Navigation.Overview });
+              // history.push(ROUTES.OVERVIEW);
+              // Wazuh: navigate to app so this is highlighted in the sidebar menu
+              getApplication().navigateToApp(OVERVIEW_NAV_ID, {
+                path: generateAppPath(ROUTES.OVERVIEW),
+              });
             },
             isSelected: selectedNavItemId === Navigation.Overview,
           },

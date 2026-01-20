@@ -214,9 +214,6 @@ export const Decoders: React.FC = () => {
                   <EuiText size="s">
                     <h1>Decoders</h1>
                   </EuiText>
-                  <EuiText size="s" color="subdued">
-                    Decoders describe how security events are normalized.
-                  </EuiText>
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
               </EuiFlexGroup>
