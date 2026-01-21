@@ -129,8 +129,19 @@ export const Decoders: React.FC = () => {
         render: (value: string) => formatCellValue(value),
       },
       {
+        field: 'document.metadata.title',
+        name: 'Title',
+        render: (value: string) => formatCellValue(value),
+
+      },
+      {
         field: 'integrations',
         name: 'Integration'
+      },
+      {
+        field: 'document.metadata.author.name',
+        name: 'Author',
+        render: (value: string) => formatCellValue(value),
       },
       {
         name: 'Actions',
