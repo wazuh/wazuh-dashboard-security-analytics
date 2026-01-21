@@ -416,9 +416,9 @@ export async function getDataSources(
   notifications: any
 ): Promise<
   | {
-      ok: true;
-      dataSources: { label: string; options: { label: string; value: string; index?: string }[] }[];
-    }
+    ok: true;
+    dataSources: { label: string; options: { label: string; value: string; index?: string }[] }[];
+  }
   | { ok: false; error: string }
 > {
   const dataSourceOptions = [];
@@ -714,7 +714,7 @@ export const buildRouteUrl = (appId: string, route: string) => {
   }
 };
 
-/** Custom plugin helper function to format various value types into a display friendly string. */
+/** Wazuh custom plugin helper function to format various value types into a display friendly string. */
 export const formatCellValue = (value: unknown) => {
   if (value === null || value === undefined || value === '') {
     return DEFAULT_EMPTY_DATA;
