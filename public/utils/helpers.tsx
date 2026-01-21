@@ -416,9 +416,9 @@ export async function getDataSources(
   notifications: any
 ): Promise<
   | {
-      ok: true;
-      dataSources: { label: string; options: { label: string; value: string; index?: string }[] }[];
-    }
+    ok: true;
+    dataSources: { label: string; options: { label: string; value: string; index?: string }[] }[];
+  }
   | { ok: false; error: string }
 > {
   const dataSourceOptions = [];
@@ -712,4 +712,42 @@ export const buildRouteUrl = (appId: string, route: string) => {
   } else {
     return `#${route}`;
   }
+};
+
+/** Wazuh custom plugin helper function to format various value types into a display friendly string. */
+export const formatCellValue = (value: unknown) => {
+  if (value === null || value === undefined || value === '') {
+    return DEFAULT_EMPTY_DATA;
+  }
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    const formatted = value
+      .map((entry) => {
+        if (entry === null || entry === undefined) {
+          return '';
+        }
+        if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
+          return String(entry);
+        }
+        if (typeof entry === 'object' && 'name' in entry && typeof entry.name === 'string') {
+          return entry.name;
+        }
+        return JSON.stringify(entry);
+      })
+      .filter(Boolean)
+      .join(', ');
+    return formatted || DEFAULT_EMPTY_DATA;
+  }
+  if (typeof value === 'object') {
+    if ('name' in value && typeof value.name === 'string') {
+      return value.name;
+    }
+    if ('value' in value && typeof value.value === 'string') {
+      return value.value;
+    }
+    return JSON.stringify(value);
+  }
+  return DEFAULT_EMPTY_DATA;
 };

@@ -22,7 +22,7 @@ import { KVDBItem } from "../../../../types";
 import { DataStore } from "../../../store/DataStore";
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from "../../../utils/constants";
 import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import { setBreadcrumbs } from "../../../utils/helpers";
+import { formatCellValue, setBreadcrumbs } from "../../../utils/helpers";
 import {
   KVDBS_PAGE_SIZE,
   KVDBS_SEARCH_SCHEMA,
@@ -146,14 +146,19 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
         name: "Title",
         sortable: true,
         dataType: "string",
-        render: (_value: string, item: KVDBItem) =>
-          item.document?.title || DEFAULT_EMPTY_DATA,
+        render: (value: string) => formatCellValue(value),
       },
       {
         field: "integration.title",
         name: "Integration",
         dataType: "string",
-        render: (value: string) => value || DEFAULT_EMPTY_DATA,
+        render: (value: string) => formatCellValue(value),
+      },
+      {
+        field: 'document.author',
+        name: 'Author',
+        sortable: true,
+        render: (value: string) => formatCellValue(value),
       },
       {
         name: "Actions",

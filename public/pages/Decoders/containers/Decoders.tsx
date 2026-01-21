@@ -20,7 +20,7 @@ import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { setBreadcrumbs } from '../../../utils/helpers';
+import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
 import { SpaceTypes } from '../../../../common/constants';
@@ -51,43 +51,6 @@ export const Decoders: React.FC = () => {
     id: string;
     space?: string;
   } | null>(null);
-  
-  const formatCellValue = (value: unknown) => {
-    if (value === null || value === undefined || value === '') {
-      return DEFAULT_EMPTY_DATA;
-    }
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      return String(value);
-    }
-    if (Array.isArray(value)) {
-      const formatted = value
-        .map((entry) => {
-          if (entry === null || entry === undefined) {
-            return '';
-          }
-          if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
-            return String(entry);
-          }
-          if (typeof entry === 'object' && 'name' in entry && typeof entry.name === 'string') {
-            return entry.name;
-          }
-          return JSON.stringify(entry);
-        })
-        .filter(Boolean)
-        .join(', ');
-      return formatted || DEFAULT_EMPTY_DATA;
-    }
-    if (typeof value === 'object') {
-      if ('name' in value && typeof value.name === 'string') {
-        return value.name;
-      }
-      if ('value' in value && typeof value.value === 'string') {
-        return value.value;
-      }
-      return JSON.stringify(value);
-    }
-    return DEFAULT_EMPTY_DATA;
-  };
 
   useEffect(() => {
     return () => {
@@ -166,8 +129,20 @@ export const Decoders: React.FC = () => {
         render: (value: string) => formatCellValue(value),
       },
       {
+        field: 'document.metadata.title',
+        name: 'Title',
+        render: (value: string) => formatCellValue(value),
+
+      },
+      {
         field: 'integrations',
         name: 'Integration'
+      },
+      {
+        field: 'document.metadata.author.name',
+        name: 'Author',
+        sortable: true,
+        render: (value: string) => formatCellValue(value),
       },
       {
         name: 'Actions',
