@@ -141,6 +141,7 @@ export const Decoders: React.FC = () => {
       {
         field: 'document.metadata.author.name',
         name: 'Author',
+        sortable: true,
         render: (value: string) => formatCellValue(value),
       },
       {

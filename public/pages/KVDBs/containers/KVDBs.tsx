@@ -157,6 +157,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       {
         field: 'document.author',
         name: 'Author',
+        sortable: true,
         render: (value: string) => formatCellValue(value),
       },
       {
