@@ -714,7 +714,7 @@ export const buildRouteUrl = (appId: string, route: string) => {
   }
 };
 
-
+/** Custom plugin helper function to format various value types into a display friendly string. */
 export const formatCellValue = (value: unknown) => {
   if (value === null || value === undefined || value === '') {
     return DEFAULT_EMPTY_DATA;
