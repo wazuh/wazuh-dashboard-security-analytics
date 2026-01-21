@@ -18,7 +18,7 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, NORMALIZATION_NAV_ID } from '../../../utils/constants';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery } from '../utils/constants';
