@@ -1,0 +1,224 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import React from 'react';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { RouteComponentProps, useParams } from 'react-router-dom';
+import { IntegrationItem } from '../../../../types';
+import {
+  EuiSmallButtonIcon,
+  EuiDescriptionList,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiLoadingSpinner,
+  EuiPanel,
+  EuiSpacer,
+  EuiTab,
+  EuiTabs,
+  EuiTitle,
+  EuiToolTip,
+} from '@elastic/eui';
+import { DataStore } from '../../../store/DataStore';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { integrationDetailsTabs } from '../utils/constants';
+import { IntegrationDetails } from '../components/IntegrationDetails';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { IntegrationDetectionRules } from '../components/IntegrationDetectionRules';
+import { RuleTableItem } from '../../Rules/utils/helpers';
+import { useCallback } from 'react';
+import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
+import {
+  errorNotificationToast,
+  setBreadcrumbs,
+  successNotificationToast,
+} from '../../../utils/helpers';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+
+export interface IntegrationProps extends RouteComponentProps {
+  notifications: NotificationsStart;
+}
+
+export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
+  const { integrationId } = useParams<{ integrationId: string }>();
+  const [selectedTabId, setSelectedTabId] = useState('details');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [infoText, setInfoText] = useState<React.ReactNode | string>(
+    <>
+      Loading details &nbsp;
+      <EuiLoadingSpinner size="l" />
+    </>
+  );
+  const [integrationDetails, setIntegrationDetails] = useState<IntegrationItem | undefined>(undefined);
+  const [initialIntegrationDetails, setInitialIntegrationDetails] = useState<IntegrationItem | undefined>(
+    undefined
+  );
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [rules, setRules] = useState<RuleTableItem[]>([]);
+  const [loadingRules, setLoadingRules] = useState(true);
+
+  const updateRules = useCallback(async (details: IntegrationItem, intialDetails: IntegrationItem) => {
+    const rulesRes = await DataStore.rules.getAllRules({
+      'rule.category': [details.name.toLowerCase()],
+    });
+    const ruleItems = rulesRes.map((rule) => ({
+      title: rule._source.title,
+      level: rule._source.level,
+      category: rule._source.category,
+      description: rule._source.description,
+      source: rule.prePackaged ? 'Standard' : 'Custom',
+      ruleInfo: rule,
+      ruleId: rule._id,
+    }));
+    setRules(ruleItems);
+    setLoadingRules(false);
+    setIntegrationDetails({
+      ...details,
+      detectionRulesCount: ruleItems.length,
+    });
+    setInitialIntegrationDetails({
+      ...intialDetails,
+      detectionRulesCount: ruleItems.length,
+    });
+  }, []);
+
+  useEffect(() => {
+    const getIntegrationDetails = async () => {
+      const details = await DataStore.integrations.getIntegration(integrationId);
+
+      if (!details) {
+        setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
+        return;
+      }
+
+      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, { text: details.name }]);
+      const integrationItem = { ...details, detectionRulesCount: details.detectionRules.length };
+      updateRules(integrationItem, integrationItem);
+    };
+
+    getIntegrationDetails();
+  }, []);
+
+  const refreshRules = useCallback(() => {
+    updateRules(integrationDetails!, initialIntegrationDetails!);
+  }, [integrationDetails]);
+
+  const renderTabContent = () => {
+    switch (selectedTabId) {
+      case 'detection_rules':
+        return (
+          <IntegrationDetectionRules
+            loadingRules={loadingRules}
+            rules={rules}
+            refreshRules={refreshRules}
+          />
+        );
+      case 'details':
+      default:
+        return (
+          <IntegrationDetails
+            initialIntegrationDetails={initialIntegrationDetails!}
+            integrationDetails={integrationDetails!}
+            isEditMode={isEditMode}
+            notifications={notifications}
+            setIsEditMode={setIsEditMode}
+            setIntegrationDetails={setIntegrationDetails}
+          />
+        );
+    }
+  };
+
+  const deleteIntegration = async () => {
+    const deleteSucceeded = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
+    if (deleteSucceeded) {
+      successNotificationToast(notifications, 'deleted', 'integration'); // Replace Log Type to Integration by Wazuh
+      history.push(ROUTES.LOG_TYPES);
+    } else {
+      errorNotificationToast(notifications, 'delete', 'integration'); // Replace Log Type to Integration by Wazuh
+    }
+  };
+
+  const deleteAction = (
+    <EuiToolTip content="Delete" position="bottom">
+      <EuiSmallButtonIcon iconType={'trash'} color="danger" onClick={() => setShowDeleteModal(true)} />
+    </EuiToolTip>
+  );
+
+  return !integrationDetails ? (
+    <EuiTitle>
+      <h2>{infoText}</h2>
+    </EuiTitle>
+  ) : (
+    <>
+      {showDeleteModal && (
+        <DeleteIntegrationModal
+          integrationName={integrationDetails.name}
+          detectionRulesCount={integrationDetails.detectionRulesCount}
+          closeModal={() => setShowDeleteModal(false)}
+          onConfirm={deleteIntegration}
+        />
+      )}
+      <PageHeader appRightControls={[{ renderComponent: deleteAction }]}>
+        <EuiFlexGroup justifyContent="spaceBetween">
+          <EuiFlexItem>
+            <EuiTitle>
+              <h1>{integrationDetails.name}</h1>
+            </EuiTitle>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>{deleteAction}</EuiFlexItem>
+        </EuiFlexGroup>
+      </PageHeader>
+      <EuiSpacer />
+      <EuiPanel grow={false}>
+        <EuiDescriptionList
+          listItems={[{ title: 'Description', description: integrationDetails.description }]}
+        />
+        <EuiSpacer />
+        <EuiFlexGroup>
+          <EuiFlexItem>
+            <EuiDescriptionList listItems={[{ title: 'ID', description: integrationDetails.id }]} />
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiDescriptionList
+              listItems={[
+                { title: 'Detection rules', description: integrationDetails.detectionRulesCount },
+              ]}
+            />
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiDescriptionList
+              listItems={[
+                {
+                  title: 'Source',
+                  description:
+                    integrationDetails.source === 'Sigma' ? 'Standard' : integrationDetails.source,
+                },
+              ]}
+            />
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiPanel>
+      <EuiSpacer />
+      <EuiTabs size="s">
+        {integrationDetailsTabs.map((tab, index) => {
+          return (
+            <EuiTab
+              onClick={() => {
+                setSelectedTabId(tab.id);
+              }}
+              key={index}
+              isSelected={selectedTabId === tab.id}
+            >
+              {tab.name}
+            </EuiTab>
+          );
+        })}
+      </EuiTabs>
+      <EuiSpacer size="m" />
+      {renderTabContent()}
+    </>
+  );
+};

@@ -1,0 +1,157 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { Integration, IntegrationBase, IntegrationWithRules, RuleItemInfoBase } from '../../types';
+import IntegrationService from '../services/IntegrationService';
+import { errorNotificationToast } from '../utils/helpers';
+import { DataStore } from './DataStore';
+import { ruleTypes } from '../pages/Rules/utils/constants';
+import {
+  DATA_SOURCE_NOT_SET_ERROR,
+  logTypeCategories,
+  logTypesByCategories,
+} from '../utils/constants';
+import { getIntegrationLabel } from '../pages/Integrations/utils/helpers';
+
+export class IntegrationStore {
+  constructor(private service: IntegrationService, private notifications: NotificationsStart) {}
+
+  public async getIntegration(id: string): Promise<IntegrationWithRules | undefined> {
+    const integrationsRes = await this.service.searchIntegrations(id);
+    if (integrationsRes.ok) {
+      const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
+        return {
+          id: hit._id,
+          ...hit._source,
+        };
+      });
+
+      let detectionRules: RuleItemInfoBase[] = [];
+
+      if (integrations[0]) {
+        const integrationName = integrations[0].name.toLowerCase();
+        detectionRules = await DataStore.rules.getAllRules({
+          'rule.category': [integrationName],
+        });
+      }
+
+      return { ...integrations[0], detectionRules };
+    }
+
+    return undefined;
+  }
+
+  public async getIntegrations(): Promise<Integration[]> {
+    try {
+      const integrationsRes = await this.service.searchIntegrations();
+      if (integrationsRes.ok) {
+        const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
+          return {
+            id: hit._id,
+            ...hit._source,
+            source: hit._source.source.toLowerCase() === 'sigma' ? 'Standard' : hit._source.source,
+          };
+        });
+
+        ruleTypes.splice(
+          0,
+          ruleTypes.length,
+          ...integrations
+            .map(({ category, id, name, source }) => ({
+              label: getIntegrationLabel(name),
+              value: name,
+              id,
+              category,
+              isStandard: source === 'Standard',
+            }))
+            .sort((a, b) => {
+              return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+            })
+        );
+
+        // Set log category types
+        for (const key in logTypesByCategories) {
+          delete logTypesByCategories[key];
+        }
+        integrations.forEach((integration) => {
+          logTypesByCategories[integration.category] = logTypesByCategories[integration.category] || [];
+          logTypesByCategories[integration.category].push(integration);
+        });
+        logTypeCategories.splice(
+          0,
+          logTypeCategories.length,
+          ...Object.keys(logTypesByCategories).sort((a, b) => {
+            if (a === 'Other') {
+              return 1;
+            } else if (b === 'Other') {
+              return -1;
+            } else {
+              return a < b ? -1 : a > b ? 1 : 0;
+            }
+          })
+        );
+
+        return integrations;
+      }
+
+      return [];
+    } catch (error: any) {
+      if (error.message === DATA_SOURCE_NOT_SET_ERROR) {
+        errorNotificationToast(
+          this.notifications,
+          'Fetch',
+          'Log types',
+          'Select valid data source.'
+        );
+        return [];
+      }
+
+      throw error;
+    }
+  }
+
+  public async createIntegration(integration: IntegrationBase): Promise<boolean> {
+    const createRes = await this.service.createIntegration(integration);
+
+    if (!createRes.ok) {
+      errorNotificationToast(this.notifications, 'create', 'log type', createRes.error);
+    }
+
+    return createRes.ok;
+  }
+
+  public async updateIntegration({
+    category,
+    id,
+    name,
+    description,
+    source,
+    tags,
+  }: Integration): Promise<boolean> {
+    const updateRes = await this.service.updateIntegration(id, {
+      name,
+      description,
+      source,
+      tags,
+      category,
+    });
+
+    if (!updateRes.ok) {
+      errorNotificationToast(this.notifications, 'update', 'log type', updateRes.error);
+    }
+
+    return updateRes.ok;
+  }
+
+  public async deleteIntegration(id: string) {
+    const deleteRes = await this.service.deleteIntegration(id);
+    if (!deleteRes.ok) {
+      errorNotificationToast(this.notifications, 'delete', 'log type', deleteRes.error);
+    }
+
+    return deleteRes.ok;
+  }
+}

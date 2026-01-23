@@ -40,6 +40,7 @@ import {
   LOG_TYPES_NAV_ID,
   DECODERS_NAV_ID,
   KVDBS_NAV_ID,
+  INTEGRATIONS_NAV_ID,
 } from "../../utils/constants";
 import { CoreServicesConsumer } from "../../components/core_services";
 import Findings from "../Findings";
@@ -114,6 +115,7 @@ enum Navigation {
   // Correlations = "Correlations",
   // CorrelationRules = "Correlation rules",
   LogTypes = "Integrations", // Replace Log Types to Integrations by Wazuh
+  Integrations = "Integrations", // Integrations by Wazuh
   // Removed Threat Intel from side nav by Wazuh
   // Wazuh: hide Alerts/Correlations navigation items.
   // Insights = "Insights",
@@ -140,6 +142,7 @@ const HIDDEN_NAV_ROUTES: string[] = [
   // ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS,
   `${ROUTES.LOG_TYPES}/.+`,
   ROUTES.LOG_TYPES_CREATE,
+  ROUTES.INTEGRATIONS_CREATE,
   ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE,
   ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
   ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
@@ -175,7 +178,9 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   // [ROUTES.ALERTS]: Navigation.Alerts,
   [ROUTES.DETECTORS]: Navigation.Detectors,
   [ROUTES.RULES]: Navigation.Rules,
-  [ROUTES.LOG_TYPES]: Navigation.LogTypes,
+  // Wazuh: hide Log types and add Wazuh integrations route mapping.
+  // [ROUTES.LOG_TYPES]: Navigation.LogTypes,
+  [ROUTES.INTEGRATIONS]: Navigation.Integrations,
   [ROUTES.DECODERS]: Navigation.Decoders,
   [ROUTES.KVDBS]: Navigation.KVDBS,
 };
@@ -455,6 +460,20 @@ export default class Main extends Component<MainProps, MainState> {
           //   ],
           // },
           {
+            name: Navigation.Integrations,
+            id: Navigation.Integrations,
+            onClick: () => {
+              // this.setState({ selectedNavItemId: Navigation.Integrations });
+              // history.push(ROUTES.INTEGRATIONS);
+              // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+              getApplication().navigateToApp(INTEGRATIONS_NAV_ID, {
+                path: generateAppPath(ROUTES.INTEGRATIONS),
+              });
+            },
+            isSelected: selectedNavItemId === Navigation.Integrations,
+          },
+          /**** Wazuh Replace LogTypes entry for Wazuh integrations 
+          {
             name: Navigation.LogTypes,
             id: Navigation.LogTypes,
             onClick: () => {
@@ -467,6 +486,7 @@ export default class Main extends Component<MainProps, MainState> {
             },
             isSelected: selectedNavItemId === Navigation.LogTypes,
           },
+          */
           {
             name: Navigation.Normalization,
             id: Navigation.Normalization,

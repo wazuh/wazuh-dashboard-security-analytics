@@ -4,7 +4,7 @@
  */
 
 import { SimpleSavedObject } from 'opensearch-dashboards/public';
-import { Detector, LogType, ServerResponse } from '../../types';
+import { Detector, LogType, Integration, ServerResponse } from '../../types';
 import { DetectorInput, PeriodSchedule } from '../../models/interfaces';
 import { DetectorHit } from '../../server/models/interfaces';
 import _ from 'lodash';
@@ -31,6 +31,7 @@ export const DETECTORS_NAV_ID = `detectors`;
 export const DETECTION_RULE_NAV_ID = `detection_rules`;
 export const CORRELATIONS_RULE_NAV_ID = `correlation_rules`;
 export const THREAT_INTEL_NAV_ID = `threat_intelligence`;
+export const INTEGRATIONS_NAV_ID = `integrations`;
 export const LOG_TYPES_NAV_ID = `log_types`;
 export const INSIGHTS_NAV_ID = 'insights_nav';
 export const DETECTION_NAV_ID = 'detection_nav';
@@ -68,6 +69,8 @@ export const ROUTES = Object.freeze({
   CORRELATION_RULES: '/correlations/rules',
   CORRELATION_RULE_CREATE: '/correlations/create-rule',
   CORRELATION_RULE_EDIT: '/correlations/rule',
+  INTEGRATIONS: '/integrations',
+  INTEGRATIONS_CREATE: '/create-integration',
   LOG_TYPES: '/log-types',
   LOG_TYPES_CREATE: '/create-log-type',
   THREAT_INTEL_OVERVIEW: '/threat-intel',
@@ -121,6 +124,8 @@ export const BREADCRUMBS = Object.freeze({
     text: `${action} correlation rule`,
     href: `#${ROUTES.CORRELATION_RULE_CREATE}`,
   }),
+  INTEGRATIONS: { text: 'Integrations', href: `#${ROUTES.INTEGRATIONS}` }, // Replace Log Types with Integrations by Wazuh
+  INTEGRATIONS_CREATE: { text: 'Create integration', href: `#${ROUTES.INTEGRATIONS_CREATE}` }, // Replace Log Type with Integration by Wazuh
   LOG_TYPES: { text: 'Integrations', href: `#${ROUTES.LOG_TYPES}` }, // Replace Log Types with Integrations by Wazuh
   LOG_TYPE_CREATE: { text: 'Create integration', href: `#${ROUTES.LOG_TYPES_CREATE}` }, // Replace Log Type with Integration by Wazuh
   NORMALIZATION: { text: 'Normalization' },
