@@ -251,6 +251,10 @@ export const logTypeCategoryDescription: { name: string; description: string }[]
   { name: 'Other', description: 'Logs not covered in other categories' },
 ];
 
+/* Wazuh: Replaced log types with integrations categories. */
+export const integrationCategories: string[] = [];
+export const integrationsByCategories: { [category: string]: Integration[] } = {};
+
 export const logTypeCategories: string[] = [];
 export const logTypesByCategories: { [category: string]: LogType[] } = {};
 

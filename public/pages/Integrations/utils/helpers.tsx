@@ -17,8 +17,8 @@ export const getIntegrationsTableColumns = (
   deleteIntegration: (integration: Integration) => void
 ) => [
   {
-    field: 'name',
-    name: 'Name',
+    field: 'title',
+    name: 'Title',
     sortable: true,
     render: (name: string, item: Integration) => {
       return <EuiLink onClick={() => showDetails(item.id)}>{getIntegrationLabel(name)}</EuiLink>;
@@ -35,9 +35,9 @@ export const getIntegrationsTableColumns = (
     truncateText: false,
   },
   {
-    field: 'source',
-    name: 'Source',
-    render: (source: string) => capitalize(source),
+    field: 'space',
+    name: 'Space',
+    render: (spaceName: string) => capitalize(spaceName),
   },
   {
     name: 'Actions',
@@ -47,7 +47,7 @@ export const getIntegrationsTableColumns = (
           return (
             <EuiToolTip content="Delete">
               <EuiSmallButtonIcon
-                aria-label={'Delete log type'}
+                aria-label={'Delete integration'}
                 iconType={'trash'}
                 color="danger"
                 onClick={() => deleteIntegration(item)}
@@ -80,12 +80,12 @@ export const getIntegrationsTableSearchConfig = (): Search => {
       },
       {
         type: 'field_value_selection',
-        field: 'source',
-        name: 'Source',
+        field: 'space',
+        name: 'Space',
         compressed: true,
         multiSelect: 'or',
-        options: ruleSource.map((source: string) => ({
-          value: source,
+        options: ruleSource.map((spaceName: string) => ({
+          value: spaceName,
         })),
       },
     ],

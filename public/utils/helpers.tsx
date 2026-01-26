@@ -48,6 +48,7 @@ import {
   IndexPatternsService,
   IndexService,
   LogTypeService,
+  IntegrationService,
   KVDBsService,
   NotificationsService,
   OpenSearchService,
@@ -678,6 +679,7 @@ export function initializeServices(
   const savedObjectsService = new SavedObjectService(savedObjects.client, indexService);
   const indexPatternsService = new IndexPatternsService(indexPattern);
   const logTypeService = new LogTypeService(http);
+  const integrationService = new IntegrationService(http);
   const decodersService = new DecodersService(http);
   const kvdbsService = new KVDBsService(http);
   const metricsService = new MetricsService(http);
@@ -696,6 +698,7 @@ export function initializeServices(
     savedObjectsService,
     indexPatternsService,
     logTypeService,
+    integrationService,
     decodersService,
     kvdbsService,
     metricsService,

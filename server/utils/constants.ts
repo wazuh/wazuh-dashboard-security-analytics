@@ -94,7 +94,7 @@ export const METHOD_NAMES = {
   GET_FEATURES: 'getFeatures',
 
   // Integration methods
-  SEARCH_INTEGRATIONS: 'searchIntegrations',
+  SEARCH_INTEGRATIONS: 'search',
   CREATE_INTEGRATION: 'createIntegration',
   UPDATE_INTEGRATION: 'updateIntegration',
   DELETE_INTEGRATION: 'deleteIntegration',

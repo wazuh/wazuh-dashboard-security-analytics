@@ -11,8 +11,8 @@ import { DataStore } from './DataStore';
 import { ruleTypes } from '../pages/Rules/utils/constants';
 import {
   DATA_SOURCE_NOT_SET_ERROR,
-  logTypeCategories,
-  logTypesByCategories,
+  integrationCategories,
+  integrationsByCategories,
 } from '../utils/constants';
 import { getIntegrationLabel } from '../pages/Integrations/utils/helpers';
 
@@ -32,7 +32,7 @@ export class IntegrationStore {
       let detectionRules: RuleItemInfoBase[] = [];
 
       if (integrations[0]) {
-        const integrationName = integrations[0].name.toLowerCase();
+        const integrationName = integrations[0].document.title.toLowerCase();
         detectionRules = await DataStore.rules.getAllRules({
           'rule.category': [integrationName],
         });
@@ -51,8 +51,8 @@ export class IntegrationStore {
         const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
           return {
             id: hit._id,
-            ...hit._source,
-            source: hit._source.source.toLowerCase() === 'sigma' ? 'Standard' : hit._source.source,
+            ...hit._source.document,
+            space: hit._source.space.name,
           };
         });
 
@@ -60,30 +60,30 @@ export class IntegrationStore {
           0,
           ruleTypes.length,
           ...integrations
-            .map(({ category, id, name, source }) => ({
-              label: getIntegrationLabel(name),
-              value: name,
+            .map(({ category, id, title, space }) => ({
+              label: getIntegrationLabel(title),
+              value: title,
               id,
               category,
-              isStandard: source === 'Standard',
+              isStandard: space.name === 'Standard',
             }))
             .sort((a, b) => {
               return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
             })
         );
 
-        // Set log category types
-        for (const key in logTypesByCategories) {
-          delete logTypesByCategories[key];
+        // Set integration category types
+        for (const key in integrationsByCategories) {
+          delete integrationsByCategories[key];
         }
         integrations.forEach((integration) => {
-          logTypesByCategories[integration.category] = logTypesByCategories[integration.category] || [];
-          logTypesByCategories[integration.category].push(integration);
+          integrationsByCategories[integration.category] = integrationsByCategories[integration.category] || [];
+          integrationsByCategories[integration.category].push(integration);
         });
-        logTypeCategories.splice(
+        integrationCategories.splice(
           0,
-          logTypeCategories.length,
-          ...Object.keys(logTypesByCategories).sort((a, b) => {
+          integrationCategories.length,
+          ...Object.keys(integrationsByCategories).sort((a, b) => {
             if (a === 'Other') {
               return 1;
             } else if (b === 'Other') {
@@ -103,7 +103,7 @@ export class IntegrationStore {
         errorNotificationToast(
           this.notifications,
           'Fetch',
-          'Log types',
+          'Integrations',
           'Select valid data source.'
         );
         return [];
@@ -117,7 +117,7 @@ export class IntegrationStore {
     const createRes = await this.service.createIntegration(integration);
 
     if (!createRes.ok) {
-      errorNotificationToast(this.notifications, 'create', 'log type', createRes.error);
+      errorNotificationToast(this.notifications, 'create', 'integration', createRes.error);
     }
 
     return createRes.ok;
@@ -140,7 +140,7 @@ export class IntegrationStore {
     });
 
     if (!updateRes.ok) {
-      errorNotificationToast(this.notifications, 'update', 'log type', updateRes.error);
+      errorNotificationToast(this.notifications, 'update', 'integration', updateRes.error);
     }
 
     return updateRes.ok;
@@ -149,7 +149,7 @@ export class IntegrationStore {
   public async deleteIntegration(id: string) {
     const deleteRes = await this.service.deleteIntegration(id);
     if (!deleteRes.ok) {
-      errorNotificationToast(this.notifications, 'delete', 'log type', deleteRes.error);
+      errorNotificationToast(this.notifications, 'delete', 'integration', deleteRes.error);
     }
 
     return deleteRes.ok;

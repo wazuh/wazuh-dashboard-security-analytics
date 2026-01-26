@@ -57,11 +57,14 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
               <>
                 <EuiCompressedFormRow label="Name">
                   <EuiCompressedFieldText
-                    value={integrationDetails?.name}
+                    value={integrationDetails?.document.title}
                     onChange={(e) =>
                       setIntegrationDetails({
                         ...integrationDetails!,
-                        name: e.target.value,
+                        document: {
+                          ...integrationDetails.document,
+                          title: e.target.value,
+                        },
                       })
                     }
                     placeholder="Enter name for integration" // Replace Log type to Integration by Wazuh
@@ -71,11 +74,14 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
                 <EuiSpacer />
                 <EuiCompressedFormRow label="Description">
                   <EuiCompressedTextArea
-                    value={integrationDetails?.description}
+                    value={integrationDetails?.document.description}
                     onChange={(e) =>
                       setIntegrationDetails({
                         ...integrationDetails!,
-                        description: e.target.value,
+                        document: {
+                          ...integrationDetails.document,
+                          description: e.target.value,
+                        },
                       })
                     }
                     placeholder="Description of the integration" // Replace Log type to Integration by Wazuh

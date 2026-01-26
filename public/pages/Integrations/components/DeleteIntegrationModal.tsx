@@ -51,7 +51,7 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
   }
 
   const onConfirmClick = () => {
-    onConfirm();
+    // onConfirm();
     closeModal();
   };
 

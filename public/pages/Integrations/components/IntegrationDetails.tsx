@@ -33,7 +33,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
     const success = await DataStore.integrations.updateIntegration(integrationDetails);
     if (success) {
       // Replace Log Type to Integration by Wazuh
-      successNotificationToast(notifications, 'updated', `integration ${integrationDetails.name}`);
+      successNotificationToast(notifications, 'updated', `integration ${integrationDetails.document.title}`);
       setIsEditMode(false);
     }
   };
@@ -43,7 +43,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
       title="Details"
       actions={
         !isEditMode &&
-        integrationDetails.source.toLocaleLowerCase() !== 'standard' && [
+        integrationDetails.space.name.toLocaleLowerCase() !== 'standard' && [
           <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>,
         ]
       }

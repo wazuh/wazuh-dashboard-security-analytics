@@ -24,6 +24,8 @@ import {
 import { CLIENT_INTEGRATION_METHODS } from '../utils/constants';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 
+const INTEGRATIONS_INDEX = ".cti-integrations";
+
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
     context: RequestHandlerContext,
@@ -70,10 +72,13 @@ export class IntegrationService extends MDSEnabledClientService {
       const query = request.body;
       const client = this.getClient(request, context);
       const searchIntegrationsResponse: SearchIntegrationsResponse = await client(
-        CLIENT_INTEGRATION_METHODS.SEARCH_INTEGRATIONS,
+        // CLIENT_INTEGRATION_METHODS.SEARCH_INTEGRATIONS,
+        'search',
         {
+          index: INTEGRATIONS_INDEX,
           body: {
             size: 10000,
+            // query: query ?? {
             query: query ?? {
               match_all: {},
             },

@@ -43,7 +43,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
   const deleteIntegration = async (id: string) => {
     const deleteSucceeded = await DataStore.integrations.deleteIntegration(id);
     if (deleteSucceeded) {
-      // Replace Log Type to Integration by Wazuh
       successNotificationToast(notifications, 'deleted', 'integration');
       getIntegrations();
     }
@@ -51,9 +50,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
 
   useEffect(() => {
     if (getUseUpdatedUx()) {
-      setBreadcrumbs([BREADCRUMBS.LOG_TYPES]);
+      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
     } else {
-      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES]);
+      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.INTEGRATIONS]);
     }
   }, [getUseUpdatedUx()]);
 
@@ -62,7 +61,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
   }, [dataSource]);
 
   const showIntegrationDetails = useCallback((id: string) => {
-    history.push(`${ROUTES.LOG_TYPES}/${id}`);
+    history.push(`${ROUTES.INTEGRATIONS}/${id}`);
   }, []);
 
   const onDeleteClick = async (item: Integration) => {
@@ -73,9 +72,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
     setDeletionDetails({ detectionRulesCount: rules.length });
   };
 
-  // Replace Log Type to Integration by Wazuh
   const createIntegrationAction = (
-    <EuiSmallButton fill={true} onClick={() => history.push(ROUTES.LOG_TYPES_CREATE)}>
+    <EuiSmallButton fill={true} onClick={() => history.push(ROUTES.INTEGRATIONS_CREATE)}>
       Create integration
     </EuiSmallButton>
   );
@@ -98,7 +96,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
             <EuiFlexGroup gutterSize={'s'} justifyContent={'spaceBetween'}>
               <EuiFlexItem>
                 <EuiText size="s">
-                  {/* Replace Log Types to Integrations by Wazuh */}
                   <h1>Integrations</h1>
                 </EuiText>
                 <EuiText size="s" color="subdued">

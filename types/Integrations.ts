@@ -18,9 +18,9 @@ export interface Integration extends IntegrationBase {
 }
 
 export interface IntegrationBase {
-  name: string;
+  title: string;
   description: string;
-  source: string;
+  space: { name: string };
   category: string;
   tags: {
     correlation_id: number;

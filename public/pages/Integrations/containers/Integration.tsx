@@ -62,7 +62,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
 
   const updateRules = useCallback(async (details: IntegrationItem, intialDetails: IntegrationItem) => {
     const rulesRes = await DataStore.rules.getAllRules({
-      'rule.category': [details.name.toLowerCase()],
+      'rule.category': [details.document.title.toLowerCase()],
     });
     const ruleItems = rulesRes.map((rule) => ({
       title: rule._source.title,
@@ -94,7 +94,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         return;
       }
 
-      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, { text: details.name }]);
+      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, { text: details.document.title }]);
       const integrationItem = { ...details, detectionRulesCount: details.detectionRules.length };
       updateRules(integrationItem, integrationItem);
     };
@@ -155,7 +155,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     <>
       {showDeleteModal && (
         <DeleteIntegrationModal
-          integrationName={integrationDetails.name}
+          integrationName={integrationDetails.document.title}
           detectionRulesCount={integrationDetails.detectionRulesCount}
           closeModal={() => setShowDeleteModal(false)}
           onConfirm={deleteIntegration}
@@ -165,7 +165,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         <EuiFlexGroup justifyContent="spaceBetween">
           <EuiFlexItem>
             <EuiTitle>
-              <h1>{integrationDetails.name}</h1>
+              <h1>{integrationDetails.document.title}</h1>
             </EuiTitle>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>{deleteAction}</EuiFlexItem>
@@ -174,7 +174,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       <EuiSpacer />
       <EuiPanel grow={false}>
         <EuiDescriptionList
-          listItems={[{ title: 'Description', description: integrationDetails.description }]}
+          listItems={[{ title: 'Description', description: integrationDetails.document.description }]}
         />
         <EuiSpacer />
         <EuiFlexGroup>
@@ -192,9 +192,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Source',
+                  title: 'Space',
                   description:
-                    integrationDetails.source === 'Sigma' ? 'Standard' : integrationDetails.source,
+                    integrationDetails.space.name,
                 },
               ]}
             />

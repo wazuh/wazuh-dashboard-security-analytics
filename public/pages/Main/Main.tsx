@@ -66,9 +66,12 @@ import { DataStore } from "../../store/DataStore";
 // import { CreateCorrelationRule } from "../Correlations/containers/CreateCorrelationRule";
 // import { CorrelationRules } from "../Correlations/containers/CorrelationRules";
 // import { Correlations } from "../Correlations/containers/CorrelationsContainer";
-import { LogTypes } from "../LogTypes/containers/LogTypes";
-import { LogType } from "../LogTypes/containers/LogType";
-import { CreateLogType } from "../LogTypes/containers/CreateLogType";
+// import { LogTypes } from "../LogTypes/containers/LogTypes";
+// import { LogType } from "../LogTypes/containers/LogType";
+// import { CreateLogType } from "../LogTypes/containers/CreateLogType";
+import { Integrations } from "../Integrations/containers/Integrations";
+import { Integration } from "../Integrations/containers/Integration";
+import { CreateIntegration } from "../Integrations/containers/CreateIntegration";
 import Decoders from "../Decoders";
 import { KVDBs } from "../KVDBs/containers/KVDBs";
 import {
@@ -1073,6 +1076,8 @@ export default class Main extends Component<MainProps, MainState> {
                                         );
                                       }}
                                     /> */}
+                                    {/* Wazuh: hide Log Types routes. */}
+                                    {/*
                                     <Route
                                       path={`${ROUTES.LOG_TYPES}/:logTypeId`}
                                       render={(
@@ -1117,6 +1122,56 @@ export default class Main extends Component<MainProps, MainState> {
                                       ) => {
                                         return (
                                           <CreateLogType
+                                            notifications={core?.notifications}
+                                            {...props}
+                                          />
+                                        );
+                                      }}
+                                    /> */}
+                                    <Route
+                                      path={`${ROUTES.INTEGRATIONS}/:integrationId`}
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >,
+                                      ) => (
+                                        <Integration
+                                          notifications={core?.notifications}
+                                          {...props}
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={`${ROUTES.INTEGRATIONS}`}
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >,
+                                      ) => {
+                                        return (
+                                          <Integrations
+                                            notifications={core?.notifications}
+                                            {...props}
+                                            dataSource={selectedDataSource}
+                                          />
+                                        );
+                                      }}
+                                    />
+                                    <Route
+                                      path={ROUTES.INTEGRATIONS_CREATE}
+                                      render={(
+                                        props: RouteComponentProps<
+                                          any,
+                                          any,
+                                          any
+                                        >,
+                                      ) => {
+                                        return (
+                                          <CreateIntegration
                                             notifications={core?.notifications}
                                             {...props}
                                           />

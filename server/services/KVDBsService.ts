@@ -19,7 +19,7 @@ import {
 import { MDSEnabledClientService } from "./MDSEnabledClientService";
 
 const KVDBS_INDEX = ".cti-kvdbs";
-const INTEGRATIONS_INDEX = ".cti-integration-decoders";
+const INTEGRATIONS_INDEX = ".cti-integrations";
 
 export class KVDBsService extends MDSEnabledClientService {
   searchKVDBs = async (
