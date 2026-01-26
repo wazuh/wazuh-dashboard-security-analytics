@@ -15,10 +15,14 @@ import {
   EuiSpacer,
   EuiText,
   EuiToolTip,
+  EuiPopover,
+  EuiSmallButton,
+  EuiContextMenuPanel,
+  EuiContextMenuItem
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery } from '../utils/constants';
@@ -47,6 +51,7 @@ export const Decoders: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [spacesLoading, setSpacesLoading] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedDecoder, setSelectedDecoder] = useState<{
     id: string;
     space?: string;
@@ -172,6 +177,48 @@ export const Decoders: React.FC = () => {
     />
   );
 
+  const panels = [
+    <EuiContextMenuItem 
+      key="create"
+      icon="plusInCircle"
+      href={`#${ROUTES.DECODERS_CREATE}`}
+      disabled={spaceFilter === SpaceTypes.STANDARD.value}
+      toolTipContent={spaceFilter === SpaceTypes.STANDARD.value 
+        ? "Cannot create decoders in the Standard space." 
+        : undefined}
+      >
+      Create
+    </EuiContextMenuItem>,
+  ];
+  
+  const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
+
+  const actionsButton = (
+    <EuiPopover
+      id={"decodersActionsPopover"}
+      button={
+        <EuiSmallButton
+          iconType={"arrowDown"}
+          iconSide={"right"}
+          onClick={handlerShowActionsButton}
+          data-test-subj={"decodersActionsButton"}
+        >
+          Actions
+        </EuiSmallButton>
+      }
+      isOpen={isPopoverOpen}
+      closePopover={handlerShowActionsButton}
+      panelPaddingSize={"none"}
+      anchorPosition={"downLeft"}
+      data-test-subj={"decodersActionsPopover"}
+    >
+      <EuiContextMenuPanel
+        items={panels}
+        size="s"
+      />
+    </EuiPopover>
+  );
+
   return (
       <EuiFlexGroup direction="column" gutterSize="m">
         {selectedDecoder && (
@@ -191,6 +238,7 @@ export const Decoders: React.FC = () => {
                   </EuiText>
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
+                <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
               </EuiFlexGroup>
             </EuiFlexItem>
           </PageHeader>

@@ -17,6 +17,7 @@ import {
   GetDecoderResponse,
   SearchDecodersResponse,
 } from '../../types';
+import { CLIENT_DECODER_METHODS } from '../utils/constants';
 
 const DECODERS_INDEX = '.cti-decoders';
 const INTEGRATIONS_INDEX = '.cti-integration-decoders';
@@ -207,12 +208,12 @@ export class DecodersService {
       const searchResponse = await client('search', {
         index: DECODERS_INDEX,
         body: {
-          from,
-          size,
-          sort,
+        from,
+        size,
+        sort,
           track_total_hits: true,
           _source: _source === undefined ? { includes: ['document', 'space'] } : _source,
-          query: this.applySpaceFilter(query, space, searchFields),
+        query: this.applySpaceFilter(query, space, searchFields),
         },
       });
 
@@ -307,4 +308,55 @@ export class DecodersService {
       });
     }
   };
+
+  createDecoder = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<
+    IOpenSearchDashboardsResponse<ServerResponse<{ id: string }> | ResponseError>
+  > => {
+    try {
+      const body = (request.body as any) ?? {};
+      const space = (request.query as { space?: string })?.space;
+      const client = this.getClient(request);
+
+      const decoderDocument = body.document;
+      if (!decoderDocument) {
+        return response.custom({
+          statusCode: 200,
+          body: {
+            ok: false,
+            error: 'Decoder document is required',
+          },
+        });
+      }
+
+      const createBody = {
+        document: decoderDocument,
+        id: body.id,
+      };
+
+      const createResponse = await client(CLIENT_DECODER_METHODS.CREATE_DECODER, createBody);
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: {
+            id: createResponse._id || createResponse.id,
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error('Security Analytics - DecodersService - createDecoder:', error);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.message,
+        },
+      });
+    }
+  }
 }

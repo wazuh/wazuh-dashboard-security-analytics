@@ -78,6 +78,7 @@ export const ROUTES = Object.freeze({
   // Wazuh
   NORMALIZATION: '/normalization',
   DECODERS: '/decoders',
+  DECODERS_CREATE: '/create-decoder',
   KVDBS: '/kvdbs',
 
   get LANDING_PAGE(): string {
@@ -125,6 +126,7 @@ export const BREADCRUMBS = Object.freeze({
   LOG_TYPE_CREATE: { text: 'Create integration', href: `#${ROUTES.LOG_TYPES_CREATE}` }, // Replace Log Type with Integration by Wazuh
   NORMALIZATION: { text: 'Normalization' },
   DECODERS: { text: 'Decoders', href: `#${ROUTES.DECODERS}` },
+  DECODERS_CREATE: { text: 'Create decoder', href: `#${ROUTES.DECODERS_CREATE}` },
   KVDBS: { text: 'KVDBs', href: `#${ROUTES.KVDBS}` },
   THREAT_INTEL_OVERVIEW: { text: 'Threat intelligence', href: `#${ROUTES.THREAT_INTEL_OVERVIEW}` },
   THREAT_INTEL_ADD_CUSTOM_SOURCE: {
