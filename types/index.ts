@@ -15,6 +15,7 @@ export * from './services';
 export * from './SavedObjectConfig';
 export * from './Correlations';
 export * from './Decoders';
+export * from './Integrations';
 export * from './LogTypes';
 export * from './KVDBs';
 export * from './Metrics';

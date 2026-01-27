@@ -15,6 +15,7 @@ import {
   NotificationsService,
   IndexPatternsService,
   LogTypeService,
+  IntegrationService,
   DecodersService,
   KVDBsService,
 } from '../services';
@@ -34,6 +35,7 @@ export interface BrowserServices {
   notificationsService: NotificationsService;
   savedObjectsService: ISavedObjectsService;
   indexPatternsService: IndexPatternsService;
+  integrationService: IntegrationService;
   logTypeService: LogTypeService;
   decodersService: DecodersService;
   kvdbsService: KVDBsService;

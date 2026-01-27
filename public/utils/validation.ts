@@ -15,6 +15,12 @@ export const RULE_NAME_REGEX = new RegExp(/^.{1,256}$/);
 
 export const LOG_TYPE_NAME_REGEX = new RegExp(/^[a-z0-9_-]{2,50}$/);
 
+// Validates a date in the format YYYY-MM-DD.
+// Wazuh integration validation for date field.
+export const INTEGRATION_DATE_REGEX = new RegExp(
+  /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/
+);
+
 // This regex pattern support MIN to MAX character limit, capital and lowercase letters,
 // numbers 0-9, hyphens, dot, and underscores.
 export const DETECTION_NAME_REGEX = new RegExp(/^[a-zA-Z0-9_.-]{1,50}$/);

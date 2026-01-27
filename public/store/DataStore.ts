@@ -9,6 +9,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DetectorsStore } from './DetectorsStore';
 import { CorrelationsStore } from './CorrelationsStore';
 import { FindingsStore } from './FindingsStore';
+import { IntegrationStore } from './IntegrationStore';
 import { LogTypeStore } from './LogTypeStore';
 import { AlertsStore } from './AlertsStore';
 import { ThreatIntelStore } from './ThreatIntelStore';
@@ -22,6 +23,7 @@ export class DataStore {
   public static correlations: CorrelationsStore;
   public static findings: FindingsStore;
   public static logTypes: LogTypeStore;
+  public static integrations: IntegrationStore;
   public static decoders: DecodersStore;
   public static kvdbs: KVDBsStore;
   public static alerts: AlertsStore;
@@ -55,6 +57,7 @@ export class DataStore {
       rulesStore
     );
 
+    DataStore.integrations = new IntegrationStore(services.integrationService, notifications);
     DataStore.logTypes = new LogTypeStore(services.logTypeService, notifications);
     DataStore.decoders = new DecodersStore(services.decodersService, notifications);
 
