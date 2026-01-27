@@ -44,9 +44,9 @@ export class IntegrationStore {
     return undefined;
   }
 
-  public async getIntegrations(): Promise<Integration[]> {
+  public async getIntegrations(spaceFilter: string): Promise<Integration[]> {
     try {
-      const integrationsRes = await this.service.searchIntegrations();
+      const integrationsRes = await this.service.searchIntegrations(spaceFilter);
       if (integrationsRes.ok) {
         const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
           return {

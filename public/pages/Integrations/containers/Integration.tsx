@@ -94,7 +94,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         return;
       }
 
-      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, { text: details.document.title }]);
+      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.title }]);
       const integrationItem = { ...details, detectionRulesCount: details.detectionRules.length };
       updateRules(integrationItem, integrationItem);
     };
@@ -134,10 +134,10 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   const deleteIntegration = async () => {
     const deleteSucceeded = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
     if (deleteSucceeded) {
-      successNotificationToast(notifications, 'deleted', 'integration'); // Replace Log Type to Integration by Wazuh
-      history.push(ROUTES.LOG_TYPES);
+      successNotificationToast(notifications, 'deleted', 'integration');
+      history.push(ROUTES.INTEGRATIONS);
     } else {
-      errorNotificationToast(notifications, 'delete', 'integration'); // Replace Log Type to Integration by Wazuh
+      errorNotificationToast(notifications, 'delete', 'integration');
     }
   };
 

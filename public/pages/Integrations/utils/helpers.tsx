@@ -77,17 +77,7 @@ export const getIntegrationsTableSearchConfig = (): Search => {
         options: integrationCategories.map((category) => ({
           value: category,
         })),
-      },
-      {
-        type: 'field_value_selection',
-        field: 'space',
-        name: 'Space',
-        compressed: true,
-        multiSelect: 'or',
-        options: ruleSource.map((spaceName: string) => ({
-          value: spaceName,
-        })),
-      },
+      }
     ],
   };
 };

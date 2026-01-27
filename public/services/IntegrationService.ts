@@ -16,7 +16,7 @@ import { API } from '../../server/utils/constants';
 import { dataSourceInfo } from './utils/constants';
 
 export default class IntegrationService {
-  constructor(private httpClient: HttpSetup) {}
+  constructor(private httpClient: HttpSetup) { }
 
   createIntegration = async (integration: IntegrationBase) => {
     const url = `..${API.INTEGRATION_BASE}`;
@@ -30,22 +30,22 @@ export default class IntegrationService {
     return response;
   };
 
-  searchIntegrations = async (id?: string): Promise<ServerResponse<SearchIntegrationsResponse>> => {
+  searchIntegrations = async (spaceFilter: string, id?: string): Promise<ServerResponse<SearchIntegrationsResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/_search`;
     const query = id
       ? {
-          terms: { _id: [id] },
-        }
+        terms: { _id: [id] },
+      }
       : {
-          bool: {
-            must: {
-              query_string: {
-                query:
-                  '(source: Sigma and !(name: others*) and !(name: test*)) or (source: Custom)',
-              },
+        bool: {
+          must: {
+            query_string: {
+              query:
+                `space.name:${spaceFilter ? spaceFilter : '*'}`,
             },
           },
-        };
+        },
+      };
     const queryString = JSON.stringify(query);
     return (await this.httpClient.post(url, {
       body: queryString,

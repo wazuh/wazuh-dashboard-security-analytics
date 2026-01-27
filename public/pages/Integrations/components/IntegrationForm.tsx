@@ -17,10 +17,11 @@ import {
 } from '@elastic/eui';
 import { IntegrationItem } from '../../../../types';
 import React from 'react';
-import { LOG_TYPE_NAME_REGEX, validateName } from '../../../utils/validation';
+import { INTEGRATION_DATE_REGEX, LOG_TYPE_NAME_REGEX, validateName } from '../../../utils/validation';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { useState } from 'react';
 import { getLogTypeCategoryOptions } from '../../../utils/helpers';
+import { validate } from 'joi';
 
 export interface IntegrationFormProps {
   integrationDetails: IntegrationItem;
@@ -44,12 +45,18 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   const [nameError, setNameError] = useState('');
   const [categoryError, setCategoryError] = useState('');
   const [categoryTouched, setCategoryTouched] = useState(false);
+  const [dateError, setDateError] = useState('');
+  const [authorError, setAuthorError] = useState('');
 
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
-    const nameInvalid = !validateName(details.name, LOG_TYPE_NAME_REGEX, false /* shouldTrim */);
+    const nameInvalid = !validateName(details.document.title, LOG_TYPE_NAME_REGEX, false /* shouldTrim */);
+    const authorInvalid = !validateName(details.document.author, LOG_TYPE_NAME_REGEX, false /* shouldTrim */);
+    const dateInvalid = !validateName(details.document.date, INTEGRATION_DATE_REGEX, false /* shouldTrim */);
     const categoryInvalid = (categoryTouched || onSubmit) && !details.category;
     setNameError(nameInvalid ? 'Invalid name' : '');
     setCategoryError(categoryInvalid ? 'Select category to assign' : '');
+    setDateError(dateInvalid ? 'Invalid date' : '');
+    setAuthorError(authorInvalid ? 'Invalid author' : '');
 
     return { nameInvalid, categoryInvalid };
   };
@@ -80,11 +87,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         error={nameError}
       >
         <EuiCompressedFieldText
-          value={integrationDetails?.name}
+          value={integrationDetails?.document.title}
           onChange={(e) => {
             const newIntegration = {
               ...integrationDetails!,
-              name: e.target.value,
+              document: {
+                ...integrationDetails!.document,
+                title: e.target.value,
+              },
             };
             setIntegrationDetails(newIntegration);
             updateErrors(newIntegration);
@@ -103,11 +113,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         }
       >
         <EuiCompressedTextArea
-          value={integrationDetails?.description}
+          value={integrationDetails?.document?.description}
           onChange={(e) => {
             const newIntegration = {
               ...integrationDetails!,
-              description: e.target.value,
+              document: {
+                ...integrationDetails!.document,
+                description: e.target.value,
+              },
             };
             setIntegrationDetails(newIntegration);
             updateErrors(newIntegration);
@@ -118,16 +131,36 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       </EuiCompressedFormRow>
       <EuiSpacer />
       <EuiCompressedFormRow label="Category" isInvalid={!!categoryError} error={categoryError}>
-        <EuiCompressedSuperSelect
+        <EuiCompressedFieldText
+          value={integrationDetails?.document.category}
+          onChange={(e) => {
+            const newIntegration = {
+              ...integrationDetails!,
+              document: {
+                ...integrationDetails!.document,
+                category: e.target.value,
+              },
+            };
+            setCategoryTouched(true);
+            setIntegrationDetails(newIntegration);
+            updateErrors(newIntegration);
+          }}
+          readOnly={!isEditMode}
+          disabled={isEditMode && !!integrationDetails.detectionRulesCount}
+        />
+        {/* <EuiCompressedSuperSelect
           options={getLogTypeCategoryOptions().map((option) => ({
             ...option,
             disabled: !isEditMode || (isEditMode && !!integrationDetails.detectionRulesCount),
           }))}
-          valueOfSelected={integrationDetails?.category}
+          valueOfSelected={integrationDetails?.document.category}
           onChange={(value) => {
             const newIntegration = {
               ...integrationDetails,
-              category: value,
+              document: {
+                ...integrationDetails.document,
+                category: value,
+              },
             };
             setCategoryTouched(true);
             setIntegrationDetails(newIntegration);
@@ -135,7 +168,83 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
           }}
           hasDividers
           itemLayoutAlign="top"
-        ></EuiCompressedSuperSelect>
+        ></EuiCompressedSuperSelect> */}
+      </EuiCompressedFormRow>
+      <EuiCompressedFormRow
+        label="Author"
+        helpText={
+          isEditMode &&
+          'Must contain 2-50 characters.'
+        }
+        isInvalid={!!authorError}
+        error={authorError}
+      >
+        <EuiCompressedFieldText
+          value={integrationDetails?.document.author}
+          onChange={(e) => {
+            const newIntegration = {
+              ...integrationDetails!,
+              document: {
+                ...integrationDetails!.document,
+                author: e.target.value,
+              },
+            };
+            setIntegrationDetails(newIntegration);
+            updateErrors(newIntegration);
+          }}
+          readOnly={!isEditMode}
+          disabled={isEditMode && !!integrationDetails.detectionRulesCount}
+        />
+      </EuiCompressedFormRow>
+      <EuiCompressedFormRow
+        label="Date"
+        helpText={
+          isEditMode &&
+          'The format must be YEAR-MONTH-DAY. Example 2025-10-25'
+        }
+        isInvalid={!!dateError}
+        error={dateError}
+      >
+        <EuiCompressedFieldText
+          value={integrationDetails?.document.date}
+          onChange={(e) => {
+            const newIntegration = {
+              ...integrationDetails!,
+              document: {
+                ...integrationDetails!.document,
+                date: e.target.value,
+              },
+            };
+            setIntegrationDetails(newIntegration);
+            updateErrors(newIntegration);
+          }}
+          readOnly={!isEditMode}
+          disabled={isEditMode && !!integrationDetails.detectionRulesCount}
+        />
+      </EuiCompressedFormRow>
+      <EuiCompressedFormRow
+        label="Documentation"
+        helpText={
+          isEditMode &&
+          'Must contain 2-100 characters.'
+        }
+      >
+        <EuiCompressedFieldText
+          value={integrationDetails?.document.documentation}
+          onChange={(e) => {
+            const newIntegration = {
+              ...integrationDetails!,
+              document: {
+                ...integrationDetails!.document,
+                documentation: e.target.value,
+              },
+            };
+            setIntegrationDetails(newIntegration);
+            updateErrors(newIntegration);
+          }}
+          readOnly={!isEditMode}
+          disabled={isEditMode && !!integrationDetails.detectionRulesCount}
+        />
       </EuiCompressedFormRow>
       {isEditMode ? (
         <EuiBottomBar>

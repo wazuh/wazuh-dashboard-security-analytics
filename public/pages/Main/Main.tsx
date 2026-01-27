@@ -472,6 +472,10 @@ export default class Main extends Component<MainProps, MainState> {
               getApplication().navigateToApp(INTEGRATIONS_NAV_ID, {
                 path: generateAppPath(ROUTES.INTEGRATIONS),
               });
+              if(history.location.pathname !== ROUTES.INTEGRATIONS) 
+              {
+                history.push(ROUTES.INTEGRATIONS);
+              }
             },
             isSelected: selectedNavItemId === Navigation.Integrations,
           },

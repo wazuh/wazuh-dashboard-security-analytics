@@ -15,7 +15,6 @@ import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { EuiPanel, EuiSpacer, EuiText } from '@elastic/eui';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { getUseUpdatedUx } from '../../../services/utils/constants';
 
 export interface CreateIntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -24,13 +23,7 @@ export interface CreateIntegrationProps extends RouteComponentProps {
 export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, notifications }) => {
   const [integrationDetails, setIntegrationDetails] = useState<IntegrationBase>({ ...defaultIntegration });
 
-  useEffect(() => {
-    if (getUseUpdatedUx()) {
-      setBreadcrumbs([BREADCRUMBS.LOG_TYPES, BREADCRUMBS.LOG_TYPE_CREATE]);
-    } else {
-      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.LOG_TYPES, BREADCRUMBS.LOG_TYPE_CREATE]);
-    }
-  }, [getUseUpdatedUx()]);
+    setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, BREADCRUMBS.INTEGRATIONS_CREATE]);
 
   const description =
     'Create integration to categorize and identify detection rules for your data sources.'; // Replace Log Type is replaced with Integration by Wazuh
@@ -53,12 +46,12 @@ export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, n
         confirmButtonText={'Create integration'} // Replace Log Type to Integration by Wazuh
         notifications={notifications}
         setIntegrationDetails={setIntegrationDetails}
-        onCancel={() => history.push(ROUTES.LOG_TYPES)}
+        onCancel={() => history.push(ROUTES.INTEGRATIONS)}
         onConfirm={async () => {
           const success = await DataStore.integrations.createIntegration(integrationDetails);
           if (success) {
-            successNotificationToast(notifications, 'created', `integration ${integrationDetails.name}`); // Replace Log Type to Integration by Wazuh
-            history.push(ROUTES.LOG_TYPES);
+            successNotificationToast(notifications, 'created', `integration ${integrationDetails.document.title}`); // Replace Log Type to Integration by Wazuh
+            history.push(ROUTES.INTEGRATIONS);
           }
         }}
       />

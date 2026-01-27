@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   EuiSmallButton,
   EuiFlexGroup,
@@ -12,6 +12,9 @@ import {
   EuiPanel,
   EuiSpacer,
   EuiText,
+  EuiContextMenuItem,
+  EuiContextMenuPanel,
+  EuiPopover,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataSourceProps, Integration } from '../../../../types';
@@ -23,20 +26,25 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { getUseUpdatedUx } from '../../../services/utils/constants';
+import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
+import { SpaceTypes } from '../../../../common/constants';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
 }
 
 export const Integrations: React.FC<IntegrationsProps> = ({ history, notifications, dataSource }) => {
+  const isMountedRef = useRef(true);
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [integrationToDelete, setIntegrationItemToDelete] = useState<Integration | undefined>(undefined);
+  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [deletionDetails, setDeletionDetails] = useState<
     { detectionRulesCount: number } | undefined
   >(undefined);
   const getIntegrations = async () => {
-    const integrations = await DataStore.integrations.getIntegrations();
+    const integrations = await DataStore.integrations.getIntegrations(spaceFilter);
     setIntegrations(integrations);
   };
 
@@ -49,16 +57,86 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
   };
 
   useEffect(() => {
-    if (getUseUpdatedUx()) {
-      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
-    } else {
-      setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.INTEGRATIONS]);
-    }
-  }, [getUseUpdatedUx()]);
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
+
+  const spaceSelector = (
+    <SpaceSelector
+      selectedSpace={spaceFilter}
+      onSpaceChange={(id) => {
+        setSpaceFilter(id);
+      }}
+    />
+  );
+
+  const panels = [
+    <EuiContextMenuItem
+      key="create"
+      icon="plusInCircle"
+      href={`#${ROUTES.INTEGRATIONS_CREATE}`}
+      disabled={spaceFilter === SpaceTypes.STANDARD.value}
+      toolTipContent={
+        spaceFilter === SpaceTypes.STANDARD.value
+          ? 'Cannot create integrations in the Standard space.'
+          : undefined
+      }
+    >
+      Create
+    </EuiContextMenuItem>,
+  ];
+
+  const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
+
+  const actionsButton = (
+    <EuiPopover
+      id={'integrationsActionsPopover'}
+      button={
+        <EuiSmallButton
+          iconType={'arrowDown'}
+          iconSide={'right'}
+          onClick={handlerShowActionsButton}
+          data-test-subj={'integrationsActionsButton'}
+        >
+          Actions
+        </EuiSmallButton>
+      }
+      isOpen={isPopoverOpen}
+      closePopover={handlerShowActionsButton}
+      panelPaddingSize={'none'}
+      anchorPosition={'downLeft'}
+      data-test-subj={'integrationsActionsPopover'}
+    >
+      <EuiContextMenuPanel items={panels} size="s" />
+    </EuiPopover>
+  );
 
   useEffect(() => {
     getIntegrations();
   }, [dataSource]);
+
+
+  const loadIntegrations = useCallback(async () => {
+    setLoading(true);
+
+    const response = await DataStore.integrations.getIntegrations(
+      spaceFilter
+    );
+
+    if (!isMountedRef.current) {
+      return;
+    }
+    setIntegrations(response);
+    setLoading(false);
+  }, [spaceFilter]);
+
+  useEffect(() => {
+    loadIntegrations();
+  }, [loadIntegrations]);
+
 
   const showIntegrationDetails = useCallback((id: string) => {
     history.push(`${ROUTES.INTEGRATIONS}/${id}`);
@@ -82,7 +160,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
     <>
       {integrationToDelete && (
         <DeleteIntegrationModal
-          integrationName={integrationToDelete.name}
+          integrationName={integrationToDelete.document.title}
           detectionRulesCount={deletionDetails?.detectionRulesCount || 0}
           loading={!deletionDetails}
           closeModal={() => setIntegrationItemToDelete(undefined)}
@@ -90,24 +168,26 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
         />
       )}
 
+      <PageHeader appRightControls={[{ renderComponent: createIntegrationAction }]}>
+        <EuiFlexItem>
+          <EuiFlexGroup alignItems="center" justifyContent={'spaceBetween'}>
+            <EuiFlexItem>
+              <EuiText size="s">
+                <h1>Integrations</h1>
+              </EuiText>
+              <EuiText size="s" color="subdued">
+                Integrations describe the data sources to which the detection rules are meant to be
+                applied.
+              </EuiText>
+            </EuiFlexItem>
+            {/* <EuiFlexItem grow={false}>{createIntegrationAction}</EuiFlexItem> */}
+            <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
+            <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
+          </EuiFlexGroup>
+          <EuiSpacer size={'m'} />
+        </EuiFlexItem>
+      </PageHeader>
       <EuiPanel>
-        <PageHeader appRightControls={[{ renderComponent: createIntegrationAction }]}>
-          <EuiFlexItem>
-            <EuiFlexGroup gutterSize={'s'} justifyContent={'spaceBetween'}>
-              <EuiFlexItem>
-                <EuiText size="s">
-                  <h1>Integrations</h1>
-                </EuiText>
-                <EuiText size="s" color="subdued">
-                  Integrations describe the data sources to which the detection rules are meant to be
-                  applied.
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>{createIntegrationAction}</EuiFlexItem>
-            </EuiFlexGroup>
-            <EuiSpacer size={'m'} />
-          </EuiFlexItem>
-        </PageHeader>
         <EuiInMemoryTable
           items={integrations}
           columns={getIntegrationsTableColumns(showIntegrationDetails, onDeleteClick)}
@@ -116,6 +196,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
           }}
           search={getIntegrationsTableSearchConfig()}
           sorting={true}
+          loading={loading}
         />
       </EuiPanel>
     </>
