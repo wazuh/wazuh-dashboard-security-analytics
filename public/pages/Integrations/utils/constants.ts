@@ -17,11 +17,13 @@ export const integrationDetailsTabs = [
 ];
 
 export const defaultIntegration: IntegrationBase = {
-  name: '',
-  description: '',
-  source: 'Custom',
-  tags: null,
-  category: '',
+  document: {
+    name: '',
+    description: '',
+    source: 'Custom',
+    tags: null,
+    category: '',
+  }
 };
 
 export const integrationLabels: { [value: string]: string } = {

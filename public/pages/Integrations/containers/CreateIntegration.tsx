@@ -9,7 +9,6 @@ import { IntegrationBase } from '../../../../types';
 import { defaultIntegration } from '../utils/constants';
 import { RouteComponentProps } from 'react-router-dom';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { useEffect } from 'react';
 import { DataStore } from '../../../store/DataStore';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';

@@ -30,7 +30,7 @@ export default class IntegrationService {
     return response;
   };
 
-  searchIntegrations = async (spaceFilter: string, id?: string): Promise<ServerResponse<SearchIntegrationsResponse>> => {
+  searchIntegrations = async ({spaceFilter, id}: {spaceFilter?: string, id?: string}): Promise<ServerResponse<SearchIntegrationsResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/_search`;
     const query = id
       ? {

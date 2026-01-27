@@ -20,7 +20,7 @@ export class IntegrationStore {
   constructor(private service: IntegrationService, private notifications: NotificationsStart) {}
 
   public async getIntegration(id: string): Promise<IntegrationWithRules | undefined> {
-    const integrationsRes = await this.service.searchIntegrations(id);
+    const integrationsRes = await this.service.searchIntegrations({id});
     if (integrationsRes.ok) {
       const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
         return {
@@ -46,7 +46,7 @@ export class IntegrationStore {
 
   public async getIntegrations(spaceFilter: string): Promise<Integration[]> {
     try {
-      const integrationsRes = await this.service.searchIntegrations(spaceFilter);
+      const integrationsRes = await this.service.searchIntegrations({spaceFilter});
       if (integrationsRes.ok) {
         const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
           return {

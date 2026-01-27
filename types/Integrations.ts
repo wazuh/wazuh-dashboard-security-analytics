@@ -13,18 +13,24 @@ export interface IntegrationItem extends Integration {
   detectionRulesCount: number;
 }
 
-export interface Integration extends IntegrationBase {
-  id: string;
+export interface Integration extends Omit<IntegrationBase, 'document'> {
+  document: IntegrationBase['document'] & {
+    id: string;
+  };
 }
 
 export interface IntegrationBase {
-  title: string;
-  description: string;
-  space: { name: string };
-  category: string;
-  tags: {
-    correlation_id: number;
-  } | null;
+  document: {
+    title: string;
+    author: string;
+    date: string;
+    description: string;
+    space: { name: string };
+    category: string;
+    tags: {
+      correlation_id: number;
+    } | null;
+  }
 }
 
 export interface SearchIntegrationsResponse {
@@ -36,7 +42,7 @@ export interface SearchIntegrationsResponse {
   };
 }
 
-export interface CreateIntegrationRequestBody extends IntegrationBase {}
+export interface CreateIntegrationRequestBody extends IntegrationBase { }
 
 export interface CreateIntegrationResponse {
   _id: string;
@@ -57,4 +63,4 @@ export interface DeleteIntegrationParams {
   integrationId: string;
 }
 
-export interface DeleteIntegrationResponse {}
+export interface DeleteIntegrationResponse { }
