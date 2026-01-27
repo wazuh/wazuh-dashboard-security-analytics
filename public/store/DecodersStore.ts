@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DecoderItem, SearchDecodersResponse } from '../../types';
@@ -69,5 +69,54 @@ export class DecodersStore {
         this.service.normalizeSpace(item.space) ??
         this.service.normalizeSpace(item.document?.space),
     };
+  }
+
+  createDecoder = async (body: {
+    document: any;
+    integrationId: string;
+  }): Promise<DecoderItem | undefined> => {
+    const response = await this.service.createDecoder(body);
+    if (!response.ok) {
+      errorNotificationToast(this.notifications, 'create', 'decoder', response.error);
+      return undefined;
+    }
+
+    const item = response.response.item;
+    if (!item) {
+      return undefined;
+    }
+
+    return {
+      ...item,
+    };
+  };
+
+  updateDecoder = async (
+    decoderId: string,
+    body: { document: any }
+  ): Promise<DecoderItem | undefined> => {
+    const response = await this.service.updateDecoder(decoderId, body);
+    if (!response.ok) {
+      errorNotificationToast(this.notifications, 'update', 'decoder', response.error);
+      return undefined;
+    }
+
+    const item = response.response.item;
+    if (!item) {
+      return undefined;
+    }
+
+    return {
+      ...item,
+    };
+  };
+
+  public async deleteDecoder(decoderId: string): Promise<boolean> {
+    const response = await this.service.deleteDecoder(decoderId);
+    if (!response.ok) {
+      errorNotificationToast(this.notifications, 'delete', 'decoder', response.error);
+      return false;
+    }
+    return true;
   }
 }

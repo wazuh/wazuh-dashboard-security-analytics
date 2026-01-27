@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -18,7 +18,7 @@ import {
   EuiPopover,
   EuiSmallButton,
   EuiContextMenuPanel,
-  EuiContextMenuItem
+  EuiContextMenuItem,
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
@@ -125,6 +125,15 @@ export const Decoders: React.FC = () => {
     }
   };
 
+  const deleteDecoder = async (decoderId: string) => {
+    setLoading(true);
+    await DataStore.decoders.deleteDecoder(decoderId);
+    if (!isMountedRef.current) {
+      return;
+    }
+    await loadDecoders();
+  };
+
   const columns: Array<EuiBasicTableColumn<DecoderItem>> = useMemo(
     () => [
       {
@@ -137,11 +146,10 @@ export const Decoders: React.FC = () => {
         field: 'document.metadata.title',
         name: 'Title',
         render: (value: string) => formatCellValue(value),
-
       },
       {
         field: 'integrations',
-        name: 'Integration'
+        name: 'Integration',
       },
       {
         field: 'document.metadata.author.name',
@@ -157,15 +165,33 @@ export const Decoders: React.FC = () => {
             description: 'View decoder details',
             type: 'icon',
             icon: 'inspect',
-            onClick: (item: DecoderItem) =>
-              setSelectedDecoder({ id: item.id, space: item.space }),
+            onClick: (item: DecoderItem) => setSelectedDecoder({ id: item.id, space: item.space }),
+          },
+          {
+            name: 'Edit',
+            description: 'Edit decoder',
+            type: 'icon',
+            icon: 'pencil',
+            // href: (item: DecoderItem) => `#${ROUTES.DECODERS_EDIT}/${item.id}`,
+            onClick: (item: DecoderItem) => setSelectedDecoder({ id: item.id, space: item.space }),
+            available: () => spaceFilter !== SpaceTypes.STANDARD.value,
+          },
+          {
+            name: 'Delete',
+            description: 'Delete decoder',
+            type: 'icon',
+            icon: 'trash',
+            onClick: (item: DecoderItem) => {
+              deleteDecoder(item.id);
+            },
+            available: () => spaceFilter !== SpaceTypes.STANDARD.value,
           },
         ],
       },
     ],
-    []
+    [spaceFilter, deleteDecoder]
   );
-  
+
   const spaceSelector = (
     <SpaceSelector
       selectedSpace={spaceFilter}
@@ -178,110 +204,109 @@ export const Decoders: React.FC = () => {
   );
 
   const panels = [
-    <EuiContextMenuItem 
+    <EuiContextMenuItem
       key="create"
       icon="plusInCircle"
       href={`#${ROUTES.DECODERS_CREATE}`}
       disabled={spaceFilter === SpaceTypes.STANDARD.value}
-      toolTipContent={spaceFilter === SpaceTypes.STANDARD.value 
-        ? "Cannot create decoders in the Standard space." 
-        : undefined}
-      >
+      toolTipContent={
+        spaceFilter === SpaceTypes.STANDARD.value
+          ? 'Cannot create decoders in the Standard space.'
+          : undefined
+      }
+    >
       Create
     </EuiContextMenuItem>,
   ];
-  
+
   const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
 
   const actionsButton = (
     <EuiPopover
-      id={"decodersActionsPopover"}
+      id={'decodersActionsPopover'}
       button={
         <EuiSmallButton
-          iconType={"arrowDown"}
-          iconSide={"right"}
+          iconType={'arrowDown'}
+          iconSide={'right'}
           onClick={handlerShowActionsButton}
-          data-test-subj={"decodersActionsButton"}
+          data-test-subj={'decodersActionsButton'}
         >
           Actions
         </EuiSmallButton>
       }
       isOpen={isPopoverOpen}
       closePopover={handlerShowActionsButton}
-      panelPaddingSize={"none"}
-      anchorPosition={"downLeft"}
-      data-test-subj={"decodersActionsPopover"}
+      panelPaddingSize={'none'}
+      anchorPosition={'downLeft'}
+      data-test-subj={'decodersActionsPopover'}
     >
-      <EuiContextMenuPanel
-        items={panels}
-        size="s"
-      />
+      <EuiContextMenuPanel items={panels} size="s" />
     </EuiPopover>
   );
 
   return (
-      <EuiFlexGroup direction="column" gutterSize="m">
-        {selectedDecoder && (
-          <DecoderDetailsFlyout
-            decoderId={selectedDecoder.id}
-            space={spaceFilter}
-            onClose={() => setSelectedDecoder(null)}
-          />
-        )}
-        <EuiFlexItem grow={false}>
-          <PageHeader>
-            <EuiFlexItem>
-              <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
-                <EuiFlexItem>
-                  <EuiText size="s">
-                    <h1>Decoders</h1>
-                  </EuiText>
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-                <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
-              </EuiFlexGroup>
-            </EuiFlexItem>
-          </PageHeader>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiPanel>
-            <EuiFlexGroup alignItems="center" gutterSize="m">
+    <EuiFlexGroup direction="column" gutterSize="m">
+      {selectedDecoder && (
+        <DecoderDetailsFlyout
+          decoderId={selectedDecoder.id}
+          space={spaceFilter}
+          onClose={() => setSelectedDecoder(null)}
+        />
+      )}
+      <EuiFlexItem grow={false}>
+        <PageHeader>
+          <EuiFlexItem>
+            <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
               <EuiFlexItem>
-                <EuiFieldSearch
-                  fullWidth
-                  placeholder="Search decoders"
-                  value={searchText}
-                  onChange={(event) => setSearchText(event.target.value)}
-                  isClearable
-                  aria-label="Search decoders"
-                />
+                <EuiText size="s">
+                  <h1>Decoders</h1>
+                </EuiText>
               </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiToolTip content="Refresh">
-                  <EuiButtonIcon
-                    iconType="refresh"
-                    aria-label="Refresh decoders"
-                    onClick={() => loadDecoders()}
-                  />
-                </EuiToolTip>
-              </EuiFlexItem>
+              <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
+              <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
             </EuiFlexGroup>
-            <EuiSpacer size="m" />
-            <EuiBasicTable
-              items={decoders}
-              columns={columns}
-              loading={loading}
-              pagination={{
-                pageIndex,
-                pageSize,
-                totalItemCount: total,
-                pageSizeOptions: [10, 25, 50],
-              }}
-              sorting={{ sort: { field: sortField, direction: sortDirection } }}
-              onChange={onTableChange}
-            />
-          </EuiPanel>
-        </EuiFlexItem>
-      </EuiFlexGroup>
+          </EuiFlexItem>
+        </PageHeader>
+      </EuiFlexItem>
+      <EuiFlexItem>
+        <EuiPanel>
+          <EuiFlexGroup alignItems="center" gutterSize="m">
+            <EuiFlexItem>
+              <EuiFieldSearch
+                fullWidth
+                placeholder="Search decoders"
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
+                isClearable
+                aria-label="Search decoders"
+              />
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiToolTip content="Refresh">
+                <EuiButtonIcon
+                  iconType="refresh"
+                  aria-label="Refresh decoders"
+                  onClick={() => loadDecoders()}
+                />
+              </EuiToolTip>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+          <EuiSpacer size="m" />
+          <EuiBasicTable
+            items={decoders}
+            columns={columns}
+            loading={loading}
+            pagination={{
+              pageIndex,
+              pageSize,
+              totalItemCount: total,
+              pageSizeOptions: [10, 25, 50],
+            }}
+            sorting={{ sort: { field: sortField, direction: sortDirection } }}
+            onChange={onTableChange}
+          />
+        </EuiPanel>
+      </EuiFlexItem>
+    </EuiFlexGroup>
   );
 };

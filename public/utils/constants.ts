@@ -79,6 +79,7 @@ export const ROUTES = Object.freeze({
   NORMALIZATION: '/normalization',
   DECODERS: '/decoders',
   DECODERS_CREATE: '/create-decoder',
+  DECODERS_EDIT: '/edit-decoder',
   KVDBS: '/kvdbs',
 
   get LANDING_PAGE(): string {

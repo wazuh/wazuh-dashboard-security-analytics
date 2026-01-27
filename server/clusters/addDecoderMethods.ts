@@ -15,4 +15,29 @@ export function addDecoderMethods(securityAnalytics: any, createAction: any): vo
     needBody: true,
     method: 'POST',
   });
+
+  securityAnalytics[METHOD_NAMES.UPDATE_DECODER] = createAction({
+    url: {
+      fmt: `${CONTENT_MANAGER_BASE_PATH}/decoders/<%=decoderId%>`,
+      req: {
+        decoderId: {
+          type: 'string',
+        },
+      },
+    },
+    needBody: true,
+    method: 'PUT',
+  });
+
+  securityAnalytics[METHOD_NAMES.DELETE_DECODER] = createAction({
+    url: {
+      fmt: `${CONTENT_MANAGER_BASE_PATH}/decoders/<%=decoderId%>`,
+      req: {
+        decoderId: {
+          type: 'string',
+        },
+      },
+    },
+    method: 'DELETE',
+  });
 }
