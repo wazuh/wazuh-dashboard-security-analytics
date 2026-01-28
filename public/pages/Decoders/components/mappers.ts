@@ -1,9 +1,23 @@
-import { dump } from 'js-yaml';
-import { DecoderDocument } from '../../../../types/Decoders';
+import { dump } from "js-yaml";
+import { DecoderDocument } from "../../../../types/Decoders";
 
 export interface DecoderFormModel {
   id?: string;
   name: string;
+  enabled?: boolean;
+  metadata?: {
+    author?: {
+      date?: string;
+      name?: string;
+    };
+    compatibility?: string;
+    description?: string;
+    module?: string;
+    references?: string[];
+    title?: string;
+    versions?: string[];
+  };
+  normalize?: any[];
   description?: string;
   source?: string;
   program_name?: string;
@@ -16,92 +30,75 @@ export interface DecoderFormModel {
 }
 
 export const decoderFormDefaultValue: DecoderFormModel = {
-  name: '',
-  description: '',
-  source: '',
-  program_name: '',
-  order: 0,
-  fields: {},
+  name: "change_me",
 };
 
-export const mapFormToDecoder = (formState: DecoderFormModel): DecoderDocument => {
-  return {
-    id: formState.id,
-    name: formState.name,
-    description: formState.description,
-    source: formState.source,
-    program_name: formState.program_name,
-    order: formState.order,
-    fields: formState.fields,
-    parent: formState.parent,
-    regex: formState.regex,
-    prematch: formState.prematch,
-    decoder: formState.decoder,
-  } as DecoderDocument;
-};
-
-export const mapDecoderToForm = (decoder: DecoderFormModel): DecoderFormModel => {
-  return {
-    id: decoder.id,
-    name: decoder.name || '',
-    description: decoder.description,
-    source: decoder.source,
-    program_name: decoder.program_name,
-    order: decoder.order,
-    fields: decoder.fields,
-    parent: decoder.parent,
-    regex: decoder.regex,
-    prematch: decoder.prematch,
-    decoder: decoder.decoder,
+// Convierte del DecoderDocument (API) al DecoderFormModel (formulario)
+export const mapDecoderToForm = (decoder: any): DecoderFormModel => {
+  const result: any = {
+    name: decoder.name || "",
   };
+
+  if (decoder.id !== undefined) result.id = decoder.id;
+  if (decoder.enabled !== undefined) result.enabled = decoder.enabled;
+  if (decoder.metadata !== undefined) result.metadata = decoder.metadata;
+  if (decoder.normalize !== undefined) result.normalize = decoder.normalize;
+  if (decoder.description !== undefined)
+    result.description = decoder.description;
+  if (decoder.source !== undefined) result.source = decoder.source;
+  if (decoder.program_name !== undefined)
+    result.program_name = decoder.program_name;
+  if (decoder.order !== undefined) result.order = decoder.order;
+  if (decoder.fields !== undefined) result.fields = decoder.fields;
+  if (decoder.parent !== undefined) result.parent = decoder.parent;
+  if (decoder.regex !== undefined) result.regex = decoder.regex;
+  if (decoder.prematch !== undefined) result.prematch = decoder.prematch;
+  if (decoder.decoder !== undefined) result.decoder = decoder.decoder;
+
+  return result as DecoderFormModel;
 };
 
-export const mapYamlObjectToYamlString = (decoder: DecoderFormModel): string => {
-  try {
-    if (!decoder.decoder) {
-      const { decoder: decoderField, ...decoderWithoutDecoder } = decoder;
-      return dump(decoderWithoutDecoder);
-    } else {
-      return dump(decoder);
-    }
-  } catch (error: any) {
-    console.warn('Security Analytics - Decoder Editor - Yaml dump', error);
-    return '';
-  }
+// Convierte del DecoderFormModel (formulario) al DecoderDocument (API)
+export const mapFormToDecoder = (
+  formState: DecoderFormModel,
+): DecoderDocument => {
+  const result: any = {};
+
+  if (formState.id !== undefined) result.id = formState.id;
+  if (formState.name !== undefined) result.name = formState.name;
+  if (formState.enabled !== undefined) result.enabled = formState.enabled;
+  if (formState.metadata !== undefined) result.metadata = formState.metadata;
+  if (formState.normalize !== undefined) result.normalize = formState.normalize;
+  if (formState.description !== undefined)
+    result.description = formState.description;
+  if (formState.source !== undefined) result.source = formState.source;
+  if (formState.program_name !== undefined)
+    result.program_name = formState.program_name;
+  if (formState.order !== undefined) result.order = formState.order;
+  if (formState.fields !== undefined) result.fields = formState.fields;
+  if (formState.parent !== undefined) result.parent = formState.parent;
+  if (formState.regex !== undefined) result.regex = formState.regex;
+  if (formState.prematch !== undefined) result.prematch = formState.prematch;
+  if (formState.decoder !== undefined) result.decoder = formState.decoder;
+
+  return result as DecoderDocument;
 };
 
 export const mapDecoderToYamlObject = (decoder: DecoderFormModel): any => {
-  const yamlObject: any = {
-    id: decoder?.id || '',
-    name: decoder?.name || '',
-    description: decoder?.description || '',
-    source: decoder?.source || '',
-    program_name: decoder?.program_name || '',
-    order: decoder?.order || 0,
-    fields: decoder?.fields || {},
-    parent: decoder?.parent || '',
-    regex: decoder?.regex || '',
-    prematch: decoder?.prematch || '',
-    decoder: decoder?.decoder || '',
-  };
+  return decoder;
+};
 
-  return yamlObject;
+export const mapYamlObjectToYamlString = (
+  decoder: DecoderFormModel,
+): string => {
+  try {
+    return dump(decoder);
+  } catch (error: any) {
+    console.warn("Security Analytics - Decoder Editor - Yaml dump", error);
+    return "";
+  }
 };
 
 export const mapYamlObjectToDecoder = (obj: any): DecoderFormModel => {
-  const decoderForm: DecoderFormModel = {
-    id: obj.id,
-    name: obj.name,
-    description: obj.description,
-    source: obj.source,
-    program_name: obj.program_name,
-    order: obj.order,
-    fields: obj.fields,
-    parent: obj.parent,
-    regex: obj.regex,
-    prematch: obj.prematch,
-    decoder: obj.decoder,
-  };
-
-  return decoderForm;
+  return mapDecoderToForm(obj);
 };

@@ -3,8 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { RouteComponentProps } from "react-router-dom";
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
@@ -20,27 +26,27 @@ import {
   EuiSmallButton,
   EuiContextMenuPanel,
   EuiContextMenuItem,
-} from '@elastic/eui';
-import { DataStore } from '../../../store/DataStore';
-import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
-import { buildDecodersSearchQuery } from '../utils/constants';
-import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
-import { SpaceTypes } from '../../../../common/constants';
-import { SpaceSelector } from '../../../components/SpaceSelector';
+} from "@elastic/eui";
+import { DataStore } from "../../../store/DataStore";
+import { DecoderDocument, DecoderItem } from "../../../../types";
+import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
+import { PageHeader } from "../../../components/PageHeader/PageHeader";
+import { formatCellValue, setBreadcrumbs } from "../../../utils/helpers";
+import { buildDecodersSearchQuery } from "../utils/constants";
+import { DecoderDetailsFlyout } from "../components/DecoderDetailsFlyout";
+import { SpaceTypes } from "../../../../common/constants";
+import { SpaceSelector } from "../../../components/SpaceSelector";
 
 const DEFAULT_PAGE_SIZE = 25;
 const SORT_FIELD_MAP: Record<string, string> = {
-  'document.name': 'document.name.keyword',
+  "document.name": "document.name.keyword",
 };
 const SORT_UNMAPPED_TYPE: Record<string, string> = {
-  'document.name.keyword': 'keyword',
+  "document.name.keyword": "keyword",
 };
 
 interface DecodersProps {
-  history: RouteComponentProps['history'];
+  history: RouteComponentProps["history"];
 }
 
 export const Decoders: React.FC<DecodersProps> = ({ history }) => {
@@ -48,13 +54,15 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState('');
+  const [searchText, setSearchText] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [sortField, setSortField] = useState<string>('document.name');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
+  const [sortField, setSortField] = useState<string>("document.name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [spaceFilter, setSpaceFilter] = useState<string>(
+    SpaceTypes.STANDARD.value,
+  );
   const [spacesLoading, setSpacesLoading] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedDecoder, setSelectedDecoder] = useState<{
@@ -87,13 +95,13 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
     const sortFieldName = SORT_FIELD_MAP[sortField] ?? sortField;
     const sort = sortFieldName
       ? [
-        {
-          [sortFieldName]: {
-            order: sortDirection,
-            unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? 'keyword',
+          {
+            [sortFieldName]: {
+              order: sortDirection,
+              unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? "keyword",
+            },
           },
-        },
-      ]
+        ]
       : undefined;
 
     const response = await DataStore.decoders.searchDecoders(
@@ -102,9 +110,9 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
         size: pageSize,
         sort,
         query,
-        _source: { includes: ['document', 'space'] },
+        _source: { includes: ["document", "space"] },
       },
-      spaceFilter
+      spaceFilter,
     );
 
     if (!isMountedRef.current) {
@@ -113,7 +121,14 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
     setDecoders(response.items);
     setTotal(response.total);
     setLoading(false);
-  }, [appliedSearch, pageIndex, pageSize, spaceFilter, sortField, sortDirection]);
+  }, [
+    appliedSearch,
+    pageIndex,
+    pageSize,
+    spaceFilter,
+    sortField,
+    sortDirection,
+  ]);
 
   useEffect(() => {
     loadDecoders();
@@ -142,59 +157,60 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
   const columns: Array<EuiBasicTableColumn<DecoderItem>> = useMemo(
     () => [
       {
-        field: 'document.name',
-        name: 'Name',
+        field: "document.name",
+        name: "Name",
         sortable: true,
         render: (value: string) => formatCellValue(value),
       },
       {
-        field: 'document.metadata.title',
-        name: 'Title',
+        field: "document.metadata.title",
+        name: "Title",
         render: (value: string) => formatCellValue(value),
       },
       {
-        field: 'integrations',
-        name: 'Integration',
+        field: "integrations",
+        name: "Integration",
       },
       {
-        field: 'document.metadata.author.name',
-        name: 'Author',
+        field: "document.metadata.author.name",
+        name: "Author",
         sortable: true,
         render: (value: string) => formatCellValue(value),
       },
       {
-        name: 'Actions',
+        name: "Actions",
         actions: [
           {
-            name: 'View',
-            description: 'View decoder details',
-            type: 'icon',
-            icon: 'inspect',
-            onClick: (item: DecoderItem) => setSelectedDecoder({ id: item.id, space: item.space }),
+            name: "View",
+            description: "View decoder details",
+            type: "icon",
+            icon: "inspect",
+            onClick: (item: DecoderItem) =>
+              setSelectedDecoder({ id: item.id, space: item.space }),
           },
           {
-            name: 'Edit',
-            description: 'Edit decoder',
-            type: 'icon',
-            icon: 'pencil',
-            // href: (item: DecoderItem) => `#${ROUTES.DECODERS_EDIT}/${item.id}`,
-            onClick: (item: DecoderItem) => history.push(`#${ROUTES.DECODERS_EDIT}/${item.id}`),
-            // available: () => spaceFilter !== SpaceTypes.STANDARD.value,
+            name: "Edit",
+            description: "Edit decoder",
+            type: "icon",
+            icon: "pencil",
+            onClick: (item: DecoderDocument) =>
+              history.push(`${ROUTES.DECODERS_EDIT}/${item.id}`),
+            available: () => spaceFilter === SpaceTypes.DRAFT.value,
           },
           {
-            name: 'Delete',
-            description: 'Delete decoder',
-            type: 'icon',
-            icon: 'trash',
+            name: "Delete",
+            description: "Delete decoder",
+            type: "icon",
+            icon: "trash",
             onClick: (item: DecoderItem) => {
               deleteDecoder(item.id);
             },
-            // available: () => spaceFilter !== SpaceTypes.STANDARD.value,
+            available: () => spaceFilter === SpaceTypes.DRAFT.value,
           },
         ],
       },
     ],
-    [spaceFilter, deleteDecoder]
+    [spaceFilter, deleteDecoder],
   );
 
   const spaceSelector = (
@@ -216,7 +232,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
       disabled={spaceFilter !== SpaceTypes.DRAFT.value}
       toolTipContent={
         spaceFilter === SpaceTypes.STANDARD.value
-          ? 'Cannot create decoders in the Standard space.'
+          ? "Cannot create decoders in the Standard space."
           : undefined
       }
     >
@@ -224,26 +240,27 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
     </EuiContextMenuItem>,
   ];
 
-  const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
+  const handlerShowActionsButton = () =>
+    setIsPopoverOpen((prevState) => !prevState);
 
   const actionsButton = (
     <EuiPopover
-      id={'decodersActionsPopover'}
+      id={"decodersActionsPopover"}
       button={
         <EuiSmallButton
-          iconType={'arrowDown'}
-          iconSide={'right'}
+          iconType={"arrowDown"}
+          iconSide={"right"}
           onClick={handlerShowActionsButton}
-          data-test-subj={'decodersActionsButton'}
+          data-test-subj={"decodersActionsButton"}
         >
           Actions
         </EuiSmallButton>
       }
       isOpen={isPopoverOpen}
       closePopover={handlerShowActionsButton}
-      panelPaddingSize={'none'}
-      anchorPosition={'downLeft'}
-      data-test-subj={'decodersActionsPopover'}
+      panelPaddingSize={"none"}
+      anchorPosition={"downLeft"}
+      data-test-subj={"decodersActionsPopover"}
     >
       <EuiContextMenuPanel items={panels} size="s" />
     </EuiPopover>

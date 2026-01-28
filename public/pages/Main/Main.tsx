@@ -145,6 +145,7 @@ const HIDDEN_NAV_ROUTES: string[] = [
   ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
   ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
   ROUTES.DECODERS_CREATE,
+  ROUTES.DECODERS_EDIT,
 ];
 
 interface MainProps extends RouteComponentProps {
@@ -1110,16 +1111,30 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.DECODERS}
                                       render={(props: RouteComponentProps) => (
-                                        <Decoders {...props}/>
+                                        <Decoders {...props} />
                                       )}
                                     />
                                     <Route
                                       path={ROUTES.DECODERS_CREATE}
-                                      render={(props) => (
-                                        <CreateDecoders 
+                                      render={(props: RouteComponentProps) => (
+                                        <CreateDecoders
                                           {...props}
                                           notifications={core?.notifications}
                                           action="create"
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={`${ROUTES.DECODERS_EDIT}/:id`}
+                                      render={(
+                                        props: RouteComponentProps<{
+                                          id: string;
+                                        }>,
+                                      ) => (
+                                        <CreateDecoders
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="edit"
                                         />
                                       )}
                                     />
