@@ -1110,13 +1110,17 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.DECODERS}
                                       render={(props: RouteComponentProps) => (
-                                        <Decoders {...props} />
+                                        <Decoders {...props}/>
                                       )}
                                     />
                                     <Route
                                       path={ROUTES.DECODERS_CREATE}
                                       render={(props) => (
-                                        <CreateDecoders {...props} />
+                                        <CreateDecoders 
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="create"
+                                        />
                                       )}
                                     />
                                     <Route

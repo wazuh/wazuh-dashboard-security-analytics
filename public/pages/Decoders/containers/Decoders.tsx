@@ -4,6 +4,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
@@ -38,7 +39,11 @@ const SORT_UNMAPPED_TYPE: Record<string, string> = {
   'document.name.keyword': 'keyword',
 };
 
-export const Decoders: React.FC = () => {
+interface DecodersProps {
+  history: RouteComponentProps['history'];
+}
+
+export const Decoders: React.FC<DecodersProps> = ({ history }) => {
   const isMountedRef = useRef(true);
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -173,8 +178,8 @@ export const Decoders: React.FC = () => {
             type: 'icon',
             icon: 'pencil',
             // href: (item: DecoderItem) => `#${ROUTES.DECODERS_EDIT}/${item.id}`,
-            onClick: (item: DecoderItem) => setSelectedDecoder({ id: item.id, space: item.space }),
-            available: () => spaceFilter !== SpaceTypes.STANDARD.value,
+            onClick: (item: DecoderItem) => history.push(`#${ROUTES.DECODERS_EDIT}/${item.id}`),
+            // available: () => spaceFilter !== SpaceTypes.STANDARD.value,
           },
           {
             name: 'Delete',
@@ -184,7 +189,7 @@ export const Decoders: React.FC = () => {
             onClick: (item: DecoderItem) => {
               deleteDecoder(item.id);
             },
-            available: () => spaceFilter !== SpaceTypes.STANDARD.value,
+            // available: () => spaceFilter !== SpaceTypes.STANDARD.value,
           },
         ],
       },
