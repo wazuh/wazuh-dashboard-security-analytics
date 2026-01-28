@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   EuiButtonGroup,
   EuiButtonIcon,
@@ -31,18 +31,13 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
 }) => {
   const [infoPopoverOpen, setInfoPopoverOpen] = useState<boolean>(false);
 
-  const SpaceTypesAvailable = useMemo(
-    () => Object.values(SpaceTypes).filter((spaceType) => spaceType.value !== SpaceTypes.DRAFT.value),
-    []
-  );
-
   return (
     <EuiFlexGroup gutterSize="s" alignItems="center">
       <EuiFlexItem grow={false}>
         <EuiButtonGroup
           data-test-subj="space-selector"
           legend="Space selector"
-          options={SpaceTypesAvailable.map((spaceType) => ({
+          options={Object.values(SpaceTypes).map((spaceType) => ({
             id: spaceType.value,
             label: spaceType.label,
           }))}
@@ -70,7 +65,7 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
               <strong>Spaces</strong>
             </EuiText>
             <EuiSpacer size="s" />
-            {SpaceTypesAvailable.map((spaceType) => (
+            {Object.values(SpaceTypes).map((spaceType) => (
               <div key={spaceType.value} style={{ paddingLeft: '16px' }}>
                 <EuiText size="xs">
                   <p>

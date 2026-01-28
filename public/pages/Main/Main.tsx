@@ -102,6 +102,7 @@ import {
 import { GettingStartedContent } from "../Overview/components/GettingStarted/GettingStartedContent";
 import { BrowserServices } from "../../models/interfaces";
 import { CHANNEL_TYPES } from "../CreateDetector/components/ConfigureAlerts/utils/constants";
+import { CreateDecoders } from "../Decoders/containers/CreateDecoders";
 
 enum Navigation {
   SecurityAnalytics = "Security Analytics",
@@ -143,6 +144,8 @@ const HIDDEN_NAV_ROUTES: string[] = [
   ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE,
   ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
   ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
+  ROUTES.DECODERS_CREATE,
+  ROUTES.DECODERS_EDIT,
 ];
 
 interface MainProps extends RouteComponentProps {
@@ -409,7 +412,9 @@ export default class Main extends Component<MainProps, MainState> {
               // this.setState({ selectedNavItemId: Navigation.Findings });
               // history.push(ROUTES.FINDINGS);
               // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-              getApplication().navigateToApp(FINDINGS_NAV_ID, {path: generateAppPath(ROUTES.FINDINGS)});
+              getApplication().navigateToApp(FINDINGS_NAV_ID, {
+                path: generateAppPath(ROUTES.FINDINGS),
+              });
             },
             isSelected: selectedNavItemId === Navigation.Findings,
           },
@@ -1107,6 +1112,30 @@ export default class Main extends Component<MainProps, MainState> {
                                       path={ROUTES.DECODERS}
                                       render={(props: RouteComponentProps) => (
                                         <Decoders {...props} />
+                                      )}
+                                    />
+                                    <Route
+                                      path={ROUTES.DECODERS_CREATE}
+                                      render={(props: RouteComponentProps) => (
+                                        <CreateDecoders
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="create"
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={`${ROUTES.DECODERS_EDIT}/:id`}
+                                      render={(
+                                        props: RouteComponentProps<{
+                                          id: string;
+                                        }>,
+                                      ) => (
+                                        <CreateDecoders
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="edit"
+                                        />
                                       )}
                                     />
                                     <Route

@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import { HttpSetup } from 'opensearch-dashboards/public';
 import { API } from '../../server/utils/constants';
@@ -50,12 +50,33 @@ export default class DecodersService {
     })) as ServerResponse<SearchDecodersResponse>;
   };
 
-  getDecoder = async (decoderId: string, space?: string): Promise<ServerResponse<GetDecoderResponse>> => {
+  getDecoder = async (decoderId: string): Promise<ServerResponse<GetDecoderResponse>> => {
     const url = `..${API.DECODERS_BASE}/${decoderId}`;
-    const normalizedSpace = this.normalizeSpace(space);
-    const query = normalizedSpace ? { space: normalizedSpace } : {};
-    return (await this.httpClient.get(url, {
-      query,
+    return (await this.httpClient.get(url, {})) as ServerResponse<GetDecoderResponse>;
+  };
+
+  createDecoder = async (body: {
+    document: any;
+    integrationId: string;
+  }): Promise<ServerResponse<GetDecoderResponse>> => {
+    const url = `..${API.DECODERS_BASE}`;
+    return (await this.httpClient.post(url, {
+      body: JSON.stringify(body),
     })) as ServerResponse<GetDecoderResponse>;
+  };
+
+  updateDecoder = async (
+    decoderId: string,
+    body: { document: any }
+  ): Promise<ServerResponse<GetDecoderResponse>> => {
+    const url = `..${API.DECODERS_BASE}/${decoderId}`;
+    return (await this.httpClient.put(url, {
+      body: JSON.stringify(body),
+    })) as ServerResponse<GetDecoderResponse>;
+  };
+
+  deleteDecoder = async (decoderId: string): Promise<ServerResponse<null>> => {
+    const url = `..${API.DECODERS_BASE}/${decoderId}`;
+    return (await this.httpClient.delete(url, {})) as ServerResponse<null>;
   };
 }
