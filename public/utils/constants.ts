@@ -37,6 +37,7 @@ export const DETECTION_NAV_ID = 'detection_nav';
 export const NORMALIZATION_NAV_ID = 'normalization';
 export const DECODERS_NAV_ID = 'decoders';
 export const KVDBS_NAV_ID = 'kvdbs';
+export const LOG_TEST_NAV_ID = 'log_test';
 // Wazuh: Threat intelligence app/endpoints are not available.
 export const THREAT_INTEL_ENABLED = false;
 
@@ -79,6 +80,7 @@ export const ROUTES = Object.freeze({
   NORMALIZATION: '/normalization',
   DECODERS: '/decoders',
   KVDBS: '/kvdbs',
+  LOG_TEST: '/log-test',
 
   get LANDING_PAGE(): string {
     return this.OVERVIEW;
@@ -126,6 +128,7 @@ export const BREADCRUMBS = Object.freeze({
   NORMALIZATION: { text: 'Normalization' },
   DECODERS: { text: 'Decoders', href: `#${ROUTES.DECODERS}` },
   KVDBS: { text: 'KVDBs', href: `#${ROUTES.KVDBS}` },
+  LOG_TEST: { text: 'Log test', href: `#${ROUTES.LOG_TEST}` },
   THREAT_INTEL_OVERVIEW: { text: 'Threat intelligence', href: `#${ROUTES.THREAT_INTEL_OVERVIEW}` },
   THREAT_INTEL_ADD_CUSTOM_SOURCE: {
     text: 'Add threat intel source',

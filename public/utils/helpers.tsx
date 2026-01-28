@@ -83,6 +83,7 @@ import * as pluginManifest from '../../opensearch_dashboards.json';
 import { DataSourceThreatAlertsCard } from '../components/DataSourceThreatAlertsCard/DataSourceThreatAlertsCard';
 import { DataSourceAttributes } from '../../../../src/plugins/data_source/common/data_sources';
 import { ISearchStart } from '../../../../src/plugins/data/public';
+import LogTestService from '../services/LogTestService';
 
 export const parseStringsToOptions = (strings: string[]) => {
   return strings.map((str) => ({ id: str, label: str }));
@@ -680,6 +681,7 @@ export function initializeServices(
   const logTypeService = new LogTypeService(http);
   const decodersService = new DecodersService(http);
   const kvdbsService = new KVDBsService(http);
+  const logTestService = new LogTestService(http);
   const metricsService = new MetricsService(http);
   const threatIntelService = new ThreatIntelService(http, coreStart.notifications);
 
@@ -698,6 +700,7 @@ export function initializeServices(
     logTypeService,
     decodersService,
     kvdbsService,
+    logTestService,
     metricsService,
     threatIntelService,
   };
