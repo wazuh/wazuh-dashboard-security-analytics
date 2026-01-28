@@ -22,7 +22,7 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery } from '../utils/constants';
@@ -82,13 +82,13 @@ export const Decoders: React.FC = () => {
     const sortFieldName = SORT_FIELD_MAP[sortField] ?? sortField;
     const sort = sortFieldName
       ? [
-          {
-            [sortFieldName]: {
-              order: sortDirection,
-              unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? 'keyword',
-            },
+        {
+          [sortFieldName]: {
+            order: sortDirection,
+            unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? 'keyword',
           },
-        ]
+        },
+      ]
       : undefined;
 
     const response = await DataStore.decoders.searchDecoders(
@@ -208,7 +208,7 @@ export const Decoders: React.FC = () => {
       key="create"
       icon="plusInCircle"
       href={`#${ROUTES.DECODERS_CREATE}`}
-      disabled={spaceFilter === SpaceTypes.STANDARD.value}
+      disabled={spaceFilter !== SpaceTypes.DRAFT.value}
       toolTipContent={
         spaceFilter === SpaceTypes.STANDARD.value
           ? 'Cannot create decoders in the Standard space.'
