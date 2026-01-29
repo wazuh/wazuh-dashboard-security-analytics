@@ -14,8 +14,6 @@ import {
   EuiTitle,
   EuiSpacer,
   EuiGlobalToastList,
-  EuiFlexGroup,
-  EuiFlexItem,
 } from "@elastic/eui";
 import { Toast } from "@opensearch-project/oui/src/eui_components/toast/global_toast_list";
 import { AppMountParameters, CoreStart } from "opensearch-dashboards/public";
@@ -102,7 +100,7 @@ import {
 import { GettingStartedContent } from "../Overview/components/GettingStarted/GettingStartedContent";
 import { BrowserServices } from "../../models/interfaces";
 import { CHANNEL_TYPES } from "../CreateDetector/components/ConfigureAlerts/utils/constants";
-import { CreateDecoders } from "../Decoders/containers/CreateDecoders";
+import { DecoderFormPage } from "../Decoders/containers/CreateDecoders";
 
 enum Navigation {
   SecurityAnalytics = "Security Analytics",
@@ -193,9 +191,9 @@ export default class Main extends Component<MainProps, MainState> {
     const defaultDateTimeFilter = cachedDateTimeFilter
       ? JSON.parse(cachedDateTimeFilter)
       : {
-          startTime: DEFAULT_DATE_RANGE.start,
-          endTime: DEFAULT_DATE_RANGE.end,
-        };
+        startTime: DEFAULT_DATE_RANGE.start,
+        endTime: DEFAULT_DATE_RANGE.end,
+      };
     let dataSourceId = "";
     let dataSourceLabel = "";
     if (props.multiDataSourceEnabled) {
@@ -392,18 +390,18 @@ export default class Main extends Component<MainProps, MainState> {
           },
           ...(THREAT_INTEL_ENABLED
             ? [
-                {
-                  name: Navigation.ThreatIntel,
-                  id: Navigation.ThreatIntel,
-                  onClick: () => {
-                    this.setState({
-                      selectedNavItemId: Navigation.ThreatIntel,
-                    });
-                    history.push(ROUTES.THREAT_INTEL_OVERVIEW);
-                  },
-                  isSelected: selectedNavItemId === Navigation.ThreatIntel,
+              {
+                name: Navigation.ThreatIntel,
+                id: Navigation.ThreatIntel,
+                onClick: () => {
+                  this.setState({
+                    selectedNavItemId: Navigation.ThreatIntel,
+                  });
+                  history.push(ROUTES.THREAT_INTEL_OVERVIEW);
                 },
-              ]
+                isSelected: selectedNavItemId === Navigation.ThreatIntel,
+              },
+            ]
             : []),
           {
             name: Navigation.Findings,
@@ -821,7 +819,7 @@ export default class Main extends Component<MainProps, MainState> {
                                         ) => (
                                           <GettingStartedContent
                                             {...props}
-                                            onStepClicked={() => {}}
+                                            onStepClicked={() => { }}
                                           />
                                         )}
                                       />
@@ -1117,7 +1115,7 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.DECODERS_CREATE}
                                       render={(props: RouteComponentProps) => (
-                                        <CreateDecoders
+                                        <DecoderFormPage
                                           {...props}
                                           notifications={core?.notifications}
                                           action="create"
@@ -1131,7 +1129,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           id: string;
                                         }>,
                                       ) => (
-                                        <CreateDecoders
+                                        <DecoderFormPage
                                           {...props}
                                           notifications={core?.notifications}
                                           action="edit"

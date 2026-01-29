@@ -40,7 +40,7 @@ const editorTypes = [
   },
 ];
 
-type DecoderFormPageProps = {
+type FormDecodersProps = {
   notifications: NotificationsStart;
   action: "create" | "edit";
   id?: string;
@@ -52,7 +52,7 @@ const actionLabels: Record<string, string> = {
   edit: "Edit",
 };
 
-export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
+export const CreateDecoders: React.FC<FormDecodersProps> = (props) => {
   const { notifications, action } = props;
   const idDecoder = props.match.params.id;
   const [isLoading, setIsLoading] = useState(false);

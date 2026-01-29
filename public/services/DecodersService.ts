@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { HttpSetup } from 'opensearch-dashboards/public';
-import { API } from '../../server/utils/constants';
-import { ServerResponse } from '../../server/models/types';
-import { GetDecoderResponse, SearchDecodersResponse } from '../../types';
+import { HttpSetup } from "opensearch-dashboards/public";
+import { API } from "../../server/utils/constants";
+import { ServerResponse } from "../../server/models/types";
+import { GetDecoderResponse, SearchDecodersResponse } from "../../types";
 
 export default class DecodersService {
-  httpClient: HttpSetup;
+  private readonly httpClient: HttpSetup;
+  private readonly baseUrl: string = `..${API.DECODERS_BASE}`;
 
   constructor(httpClient: HttpSetup) {
     this.httpClient = httpClient;
@@ -19,18 +20,18 @@ export default class DecodersService {
     if (!space) {
       return undefined;
     }
-    if (typeof space === 'string') {
+    if (typeof space === "string") {
       return space;
     }
-    if (typeof space === 'object') {
+    if (typeof space === "object") {
       const record = space as Record<string, unknown>;
-      if (typeof record.name === 'string') {
+      if (typeof record.name === "string") {
         return record.name;
       }
-      if (typeof record.id === 'string') {
+      if (typeof record.id === "string") {
         return record.id;
       }
-      if (typeof record.value === 'string') {
+      if (typeof record.value === "string") {
         return record.value;
       }
     }
@@ -39,44 +40,49 @@ export default class DecodersService {
 
   searchDecoders = async (
     body: any,
-    space?: string
+    space?: string,
   ): Promise<ServerResponse<SearchDecodersResponse>> => {
-    const url = `..${API.DECODERS_BASE}/_search`;
+    const url = `${this.baseUrl}/_search`;
     const normalizedSpace = this.normalizeSpace(space);
     const query = normalizedSpace ? { space: normalizedSpace } : {};
-    return (await this.httpClient.post(url, {
+    return await this.httpClient.post(url, {
       query,
       body: JSON.stringify(body),
-    })) as ServerResponse<SearchDecodersResponse>;
+    });
   };
 
-  getDecoder = async (decoderId: string): Promise<ServerResponse<GetDecoderResponse>> => {
-    const url = `..${API.DECODERS_BASE}/${decoderId}`;
-    return (await this.httpClient.get(url, {})) as ServerResponse<GetDecoderResponse>;
+  getDecoder = async (
+    decoderId: string,
+  ): Promise<ServerResponse<GetDecoderResponse>> => {
+    const url = `${this.baseUrl}/${decoderId}`;
+    return (await this.httpClient.get(
+      url,
+      {},
+    )) as ServerResponse<GetDecoderResponse>;
   };
 
   createDecoder = async (body: {
     document: any;
     integrationId: string;
   }): Promise<ServerResponse<GetDecoderResponse>> => {
-    const url = `..${API.DECODERS_BASE}`;
-    return (await this.httpClient.post(url, {
+    const url = `${this.baseUrl}`;
+    return await this.httpClient.post(url, {
       body: JSON.stringify(body),
-    })) as ServerResponse<GetDecoderResponse>;
+    });
   };
 
   updateDecoder = async (
     decoderId: string,
-    body: { document: any }
+    body: { document: any },
   ): Promise<ServerResponse<GetDecoderResponse>> => {
-    const url = `..${API.DECODERS_BASE}/${decoderId}`;
-    return (await this.httpClient.put(url, {
+    const url = `${this.baseUrl}/${decoderId}`;
+    return await this.httpClient.put(url, {
       body: JSON.stringify(body),
-    })) as ServerResponse<GetDecoderResponse>;
+    });
   };
 
   deleteDecoder = async (decoderId: string): Promise<ServerResponse<null>> => {
-    const url = `..${API.DECODERS_BASE}/${decoderId}`;
-    return (await this.httpClient.delete(url, {})) as ServerResponse<null>;
+    const url = `${this.baseUrl}/${decoderId}`;
+    return await this.httpClient.delete(url, {});
   };
 }
