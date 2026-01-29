@@ -1,6 +1,6 @@
 /*
- * Copyright OpenSearch Contributors
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import { METHOD_NAMES, CONTENT_MANAGER_BASE_PATH } from '../utils/constants';
