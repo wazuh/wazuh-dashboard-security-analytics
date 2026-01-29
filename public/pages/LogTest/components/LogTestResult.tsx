@@ -1,0 +1,161 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import React, { useMemo, useState } from 'react';
+import {
+    EuiText,
+    EuiCodeBlock,
+    EuiSpacer,
+    EuiAccordion,
+    EuiBadge,
+    EuiFlexGroup,
+    EuiFlexItem,
+    EuiPanel,
+    EuiButtonGroup,
+    EuiCallOut,
+} from '@elastic/eui';
+import { LogTestResponse, LogTestAssetTrace } from '../../../../types';
+
+export interface LogTestResultProps {
+    result: LogTestResponse;
+}
+
+type ViewMode = 'formatted' | 'raw';
+
+const viewModeOptions = [
+    { id: 'formatted', label: 'Formatted' },
+    { id: 'raw', label: 'Raw' },
+];
+
+const AssetTraceItem: React.FC<{ trace: LogTestAssetTrace; index: number }> = ({
+    trace,
+    index,
+}) => {
+    return (
+        <EuiAccordion
+            id={`asset-trace-${index}`}
+            buttonContent={
+                <EuiFlexGroup alignItems="center" gutterSize="s">
+                    <EuiFlexItem grow={false}>
+                        <EuiBadge color={trace.success ? 'success' : 'danger'}>
+                            {trace.success ? 'Success' : 'Failed'}
+                        </EuiBadge>
+                    </EuiFlexItem>
+                    <EuiFlexItem>
+                        <EuiText size="s">
+                            <code>{trace.asset}</code>
+                        </EuiText>
+                    </EuiFlexItem>
+                </EuiFlexGroup>
+            }
+            paddingSize="s"
+        >
+            {trace.traces && trace.traces.length > 0 ? (
+                <EuiCodeBlock
+                    language="text"
+                    paddingSize="s"
+                    fontSize="s"
+                    isCopyable
+                >
+                    {trace.traces.join('\n')}
+                </EuiCodeBlock>
+            ) : (
+                <EuiText size="s" color="subdued">
+                    No trace details available
+                </EuiText>
+            )}
+        </EuiAccordion>
+    );
+};
+
+export const LogTestResult: React.FC<LogTestResultProps> = ({ result }) => {
+    const [viewMode, setViewMode] = useState<ViewMode>('formatted');
+
+    const parsedOutput = useMemo(() => {
+        if (!result.result?.output) return null;
+        try {
+            return JSON.parse(result.result.output);
+        } catch {
+            return null;
+        }
+    }, [result.result?.output]);
+
+    const formattedOutput = useMemo(() => {
+        if (parsedOutput) {
+            return JSON.stringify(parsedOutput, null, 2);
+        }
+        return result.result?.output || '';
+    }, [parsedOutput, result.result?.output]);
+
+    const hasAssetTraces =
+        result.result?.asset_traces && result.result.asset_traces.length > 0;
+
+    return (
+        <>
+            <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
+                <EuiFlexItem grow={false}>
+                    <EuiText size="s">
+                        <h3>Test Result</h3>
+                    </EuiText>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                    <EuiFlexGroup alignItems="center" gutterSize="m">
+                        <EuiFlexItem grow={false}>
+                            <EuiBadge color={result.status === 'OK' ? 'success' : 'warning'}>
+                                {result.status}
+                            </EuiBadge>
+                        </EuiFlexItem>
+                        <EuiFlexItem grow={false}>
+                            <EuiButtonGroup
+                                legend="View mode"
+                                options={viewModeOptions}
+                                idSelected={viewMode}
+                                onChange={(id) => setViewMode(id as ViewMode)}
+                                buttonSize="compressed"
+                            />
+                        </EuiFlexItem>
+                    </EuiFlexGroup>
+                </EuiFlexItem>
+            </EuiFlexGroup>
+
+            <EuiSpacer size="m" />
+
+            {result.result?.output ? (
+                <EuiPanel paddingSize="none">
+                    <EuiCodeBlock
+                        language="json"
+                        paddingSize="m"
+                        isCopyable
+                        overflowHeight={400}
+                    >
+                        {viewMode === 'formatted' ? formattedOutput : result.result.output}
+                    </EuiCodeBlock>
+                </EuiPanel>
+            ) : (
+                <EuiCallOut title="No output" color="warning" iconType="alert">
+                    <p>The logtest did not return any output.</p>
+                </EuiCallOut>
+            )}
+
+            {hasAssetTraces && (
+                <>
+                    <EuiSpacer size="l" />
+                    <EuiText size="s">
+                        <h4>Asset Traces</h4>
+                    </EuiText>
+                    <EuiSpacer size="s" />
+                    <EuiPanel paddingSize="m">
+                        {result.result.asset_traces!.map((trace, index) => (
+                            <React.Fragment key={`trace-${index}`}>
+                                {index > 0 && <EuiSpacer size="s" />}
+                                <AssetTraceItem trace={trace} index={index} />
+                            </React.Fragment>
+                        ))}
+                    </EuiPanel>
+                </>
+            )}
+        </>
+    );
+};

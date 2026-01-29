@@ -1,112 +1,169 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     EuiFlexGroup,
     EuiFlexItem,
     EuiPanel,
     EuiSpacer,
     EuiText,
-    EuiCodeBlock,
-    EuiFormRow,
-    EuiFieldText,
-    EuiFieldNumber,
-    EuiTextArea,
-    EuiButton
-} from "@elastic/eui";
-import { RouteComponentProps } from "react-router-dom";
-import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import { setBreadcrumbs } from "../../../utils/helpers";
-import { BREADCRUMBS } from "../../../utils/constants";
+    EuiButton,
+    EuiHorizontalRule,
+} from '@elastic/eui';
+import { RouteComponentProps } from 'react-router-dom';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { setBreadcrumbs } from '../../../utils/helpers';
+import { BREADCRUMBS } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
+import { LogTestResponse } from '../../../../types';
+import {
+    LogTestForm,
+    LogTestFormData,
+    LogTestFormErrors,
+} from '../components/LogTestForm';
+import { LogTestResult } from '../components/LogTestResult';
+
+const INITIAL_FORM_DATA: LogTestFormData = {
+    queue: undefined,
+    location: '',
+    event: '',
+    traceLevel: 'NONE',
+    agentMetadata: {
+        groups: '',
+        hostArchitecture: '',
+        hostHostname: '',
+        hostOsName: '',
+        hostOsPlatform: '',
+        hostOsType: '',
+        hostOsVersion: '',
+        id: '',
+        name: '',
+        version: '',
+    },
+};
+
+const INITIAL_ERRORS: LogTestFormErrors = {};
 
 export const LogTest: React.FC<RouteComponentProps> = () => {
-
-
-    const handleExecuteLogTest = async () => {
-        // await DataStore.logTests.logTest({
-        //     document: {
-        //         queue: queue,
-        //         location: location,
-        //         agent_metadata: {
-        //             "agent.groups": agentGroups,
-        //             "agent.host.architecture": agentHostArchitecture,
-        //             "agent.host.hostname": agentHostHostname,
-        //             "agent.host.os.name": agentHostOsName,
-        //             "agent.host.os.platform": agentHostOsPlatform,
-        //             "agent.host.os.type": agentHostOsType,
-        //             "agent.host.os.version": agentHostOsVersion,
-        //             "agent.id": agentId,
-        //             "agent.name": agentName,
-        //             "agent.version": agentVersion
-        //         },
-        //         event: logInput,
-        //         trace_level: "info"
-        //     },
-        //     integrationId: "" 
-        // });
-    }
-
-
-    const [agentGroups, setAgentGroups] = useState("");
-    const [agentHostArchitecture, setAgentHostArchitecture] = useState("");
-    const [agentHostHostname, setAgentHostHostname] = useState("");
-    const [agentHostOsName, setAgentHostOsName] = useState("");
-    const [agentHostOsPlatform, setAgentHostOsPlatform] = useState("");
-    const [agentHostOsType, setAgentHostOsType] = useState("");
-    const [agentHostOsVersion, setAgentHostOsVersion] = useState("");
-    const [agentId, setAgentId] = useState("");
-    const [agentName, setAgentName] = useState("");
-    const [agentVersion, setAgentVersion] = useState("");
-    const [queue, setQueue] = useState<number | undefined>(undefined);
-    const [location, setLocation] = useState("");
-    const [logInput, setLogInput] = useState("");
-    const [testResult, setTestResult] = useState("");
+    const [formData, setFormData] = useState<LogTestFormData>(INITIAL_FORM_DATA);
+    const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
+    const [isLoading, setIsLoading] = useState(false);
+    const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
 
     useEffect(() => {
         setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.LOG_TEST]);
     }, []);
 
-    const handleTest = () => {
+    const validateForm = useCallback((): boolean => {
+        const newErrors: LogTestFormErrors = {};
 
-        handleExecuteLogTest();
+        if (formData.queue === undefined || formData.queue < 0) {
+            newErrors.queue = 'Queue is required and must be a non negative number';
+        }
 
-        // Mock result for now
-        const mockResult = {
-            status: "success",
-            parsed_log: {
-                timestamp: new Date().toISOString(),
-                agent: {
-                    id: agentId,
-                    name: agentName,
-                    version: agentVersion
-                },
-                message: logInput,
-                queue: queue
+        if (!formData.location.trim()) {
+            newErrors.location = 'Location is required';
+        }
+
+        if (!formData.event.trim()) {
+            newErrors.event = 'Log event is required';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    }, [formData]);
+
+    const buildAgentMetadata = useCallback((): Record<string, string> => {
+        const metadata: Record<string, string> = {};
+        const { agentMetadata } = formData;
+
+        if (agentMetadata.groups) metadata['groups'] = agentMetadata.groups;
+        if (agentMetadata.hostArchitecture)
+            metadata['agent.host.architecture'] = agentMetadata.hostArchitecture;
+        if (agentMetadata.hostHostname)
+            metadata['agent.host.hostname'] = agentMetadata.hostHostname;
+        if (agentMetadata.hostOsName)
+            metadata['agent.host.os.name'] = agentMetadata.hostOsName;
+        if (agentMetadata.hostOsPlatform)
+            metadata['agent.host.os.platform'] = agentMetadata.hostOsPlatform;
+        if (agentMetadata.hostOsType)
+            metadata['agent.host.os.type'] = agentMetadata.hostOsType;
+        if (agentMetadata.hostOsVersion)
+            metadata['agent.host.os.version'] = agentMetadata.hostOsVersion;
+        if (agentMetadata.id) metadata['agent.id'] = agentMetadata.id;
+        if (agentMetadata.name) metadata['agent.name'] = agentMetadata.name;
+        if (agentMetadata.version) metadata['agent.version'] = agentMetadata.version;
+
+        return metadata;
+    }, [formData]);
+
+    const handleExecuteLogTest = async () => {
+        if (!validateForm()) {
+            return;
+        }
+
+        setIsLoading(true);
+        setTestResult(null);
+
+        const agentMetadata = buildAgentMetadata();
+
+        const result = await DataStore.logTests.executeLogTest({
+            document: {
+                queue: formData.queue!,
+                location: formData.location.trim(),
+                event: formData.event.trim(),
+                trace_level: formData.traceLevel,
+                ...(Object.keys(agentMetadata).length > 0 && {
+                    agent_metadata: agentMetadata,
+                }),
+            },
+            integrationId: '',
+        });
+
+        setIsLoading(false);
+
+        if (result.success && result.data) {
+            setTestResult(result.data);
+        }
+    };
+
+    const handleFormChange = useCallback(
+        (field: keyof LogTestFormData, value: any) => {
+            setFormData((prev) => ({ ...prev, [field]: value }));
+
+            // clears error when user starts typing
+            if (errors[field as keyof LogTestFormErrors]) {
+                setErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[field as keyof LogTestFormErrors];
+                    return newErrors;
+                });
             }
-        };
-        setTestResult(JSON.stringify(mockResult, null, 2));
-    };
+        },
+        [errors]
+    );
 
-    const handleClearSession = () => {
-        setAgentGroups("");
-        setAgentHostArchitecture("");
-        setAgentHostHostname("");
-        setAgentHostOsName("");
-        setAgentHostOsPlatform("");
-        setAgentHostOsType("");
-        setAgentHostOsVersion("");
-        setAgentId("");
-        setAgentName("");
-        setAgentVersion("");
-        setQueue(undefined);
-        setLocation("");
-        setLogInput("");
-        setTestResult("");
-    };
+    const handleAgentMetadataChange = useCallback(
+        (field: keyof LogTestFormData['agentMetadata'], value: string) => {
+            setFormData((prev) => ({
+                ...prev,
+                agentMetadata: {
+                    ...prev.agentMetadata,
+                    [field]: value,
+                },
+            }));
+        },
+        []
+    );
+
+    const handleClearSession = useCallback(() => {
+        setFormData(INITIAL_FORM_DATA);
+        setErrors(INITIAL_ERRORS);
+        setTestResult(null);
+    }, []);
 
     return (
         <EuiFlexGroup direction="column" gutterSize="m">
@@ -122,164 +179,26 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
 
             <EuiFlexItem>
                 <EuiPanel>
-                    <EuiText size="s">
-                        <h3>Agent Metadata (Optional)</h3>
-                    </EuiText>
-                    <EuiSpacer size="m" />
-
-                    <EuiFlexGroup gutterSize="m" wrap>
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.groups" fullWidth>
-                                <EuiFieldText
-                                    value={agentGroups}
-                                    onChange={(e) => setAgentGroups(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.host.architecture" fullWidth>
-                                <EuiFieldText
-                                    value={agentHostArchitecture}
-                                    onChange={(e) => setAgentHostArchitecture(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.host.hostname" fullWidth>
-                                <EuiFieldText
-                                    value={agentHostHostname}
-                                    onChange={(e) => setAgentHostHostname(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.host.os.name" fullWidth>
-                                <EuiFieldText
-                                    value={agentHostOsName}
-                                    onChange={(e) => setAgentHostOsName(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.host.os.platform" fullWidth>
-                                <EuiFieldText
-                                    value={agentHostOsPlatform}
-                                    onChange={(e) => setAgentHostOsPlatform(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.host.os.type" fullWidth>
-                                <EuiFieldText
-                                    value={agentHostOsType}
-                                    onChange={(e) => setAgentHostOsType(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.host.os.version" fullWidth>
-                                <EuiFieldText
-                                    value={agentHostOsVersion}
-                                    onChange={(e) => setAgentHostOsVersion(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.id" fullWidth>
-                                <EuiFieldText
-                                    value={agentId}
-                                    onChange={(e) => setAgentId(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.name" fullWidth>
-                                <EuiFieldText
-                                    value={agentName}
-                                    onChange={(e) => setAgentName(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="agent.version" fullWidth>
-                                <EuiFieldText
-                                    value={agentVersion}
-                                    onChange={(e) => setAgentVersion(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-                    </EuiFlexGroup>
+                    <LogTestForm
+                        formData={formData}
+                        errors={errors}
+                        onFormChange={handleFormChange}
+                        onAgentMetadataChange={handleAgentMetadataChange}
+                        disabled={isLoading}
+                    />
 
                     <EuiSpacer size="l" />
-
-                    <EuiText size="s">
-                        <h3>Additional Fields</h3>
-                    </EuiText>
-                    <EuiSpacer size="m" />
-
-                    <EuiFlexGroup gutterSize="m" wrap>
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="queue" fullWidth>
-                                <EuiFieldNumber
-                                    value={queue}
-                                    onChange={(e) => setQueue(e.target.value ? Number(e.target.value) : undefined)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-
-                        <EuiFlexItem style={{ minWidth: "300px" }}>
-                            <EuiFormRow label="location" fullWidth>
-                                <EuiFieldText
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    fullWidth
-                                />
-                            </EuiFormRow>
-                        </EuiFlexItem>
-                    </EuiFlexGroup>
-
-                    <EuiSpacer size="l" />
-
-                    <EuiFormRow label="Log Input" fullWidth>
-                        <EuiTextArea
-                            placeholder="Enter log data to test..."
-                            value={logInput}
-                            onChange={(e) => setLogInput(e.target.value)}
-                            rows={6}
-                            fullWidth
-                        />
-                    </EuiFormRow>
-
-                    <EuiSpacer size="m" />
 
                     <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
                         <EuiFlexItem grow={false}>
                             <EuiButton
                                 fill
                                 iconType="play"
-                                onClick={handleTest}
+                                onClick={handleExecuteLogTest}
+                                isLoading={isLoading}
+                                disabled={isLoading}
                             >
-                                Test
+                                {isLoading ? 'Testing...' : 'Test'}
                             </EuiButton>
                         </EuiFlexItem>
 
@@ -287,6 +206,7 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
                             <EuiButton
                                 iconType="broom"
                                 onClick={handleClearSession}
+                                disabled={isLoading}
                             >
                                 Clear session
                             </EuiButton>
@@ -295,14 +215,8 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
 
                     {testResult && (
                         <>
-                            <EuiSpacer size="l" />
-                            <EuiText size="s">
-                                <h3>Test Result</h3>
-                            </EuiText>
-                            <EuiSpacer size="m" />
-                            <EuiCodeBlock language="json" paddingSize="m" isCopyable>
-                                {testResult}
-                            </EuiCodeBlock>
+                            <EuiHorizontalRule margin="l" />
+                            <LogTestResult result={testResult} />
                         </>
                     )}
                 </EuiPanel>
