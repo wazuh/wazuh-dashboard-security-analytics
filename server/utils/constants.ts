@@ -36,7 +36,7 @@ export const API: SecurityAnalyticsApi = {
   CORRELATIONS: `${BASE_API_PATH}/correlations`,
   LOGTYPE_BASE: `${BASE_API_PATH}/logtype`,
   KVDBS_BASE: `${BASE_API_PATH}/kvdbs`,
-  LOG_TEST_BASE: `${BASE_API_PATH}/logtest`, //TODO: CHECK IF THIS MATCHES
+  LOG_TEST_BASE: `${BASE_API_PATH}/logtest`,
   METRICS: `/api/security_analytics/stats`,
   GET_CORRELATION_ALERTS: `${BASE_API_PATH}/correlationAlerts`,
   ACK_CORRELATION_ALERTS: `${BASE_API_PATH}/_acknowledge/correlationAlerts`,
@@ -210,3 +210,5 @@ export const DEFAULT_METRICS_COUNTER: MetricsCounter = {
     [CreateDetectorSteps.createClicked]: 0,
   },
 };
+
+export const CONTENT_MANAGER_BASE_PATH = '/_plugins/content-manager';

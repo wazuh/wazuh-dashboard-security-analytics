@@ -24,7 +24,13 @@ export function setupLogTestRoutes(services: NodeServices, router: IRouter) {
                             schema.recordOf(schema.string(), schema.string())
                         ),
                         event: schema.string(),
-                        trace_level: schema.string(),
+                        trace_level: schema.maybe(
+                            schema.oneOf([
+                                schema.literal('NONE'),
+                                schema.literal('BASIC'),
+                                schema.literal('FULL'),
+                            ])
+                        ),
                     }),
                     integrationId: schema.string(),
                 }),
