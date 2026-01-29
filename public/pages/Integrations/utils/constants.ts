@@ -14,6 +14,14 @@ export const integrationDetailsTabs = [
     id: 'detection_rules',
     name: 'Detection rules',
   },
+  {
+    id: 'decoders',
+    name: 'Decoders',
+  },
+  {
+    id: 'kvdbs',
+    name: 'KVDBs',
+  },
 ];
 
 export const defaultIntegration: IntegrationBase = {

@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React from 'react';
-import { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RouteComponentProps, useParams } from 'react-router-dom';
 import { IntegrationItem } from '../../../../types';
 import {
@@ -27,8 +25,9 @@ import { integrationDetailsTabs } from '../utils/constants';
 import { IntegrationDetails } from '../components/IntegrationDetails';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { IntegrationDetectionRules } from '../components/IntegrationDetectionRules';
+import { IntegrationDecoders } from '../components/IntegrationDecoders';
+import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
 import { RuleTableItem } from '../../Rules/utils/helpers';
-import { useCallback } from 'react';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import {
   errorNotificationToast,
@@ -36,6 +35,8 @@ import {
   successNotificationToast,
 } from '../../../utils/helpers';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
+import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
 
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -106,8 +107,45 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     updateRules(integrationDetails!, initialIntegrationDetails!);
   }, [integrationDetails]);
 
+  const decoderIds = useMemo(
+    () => integrationDetails?.document.decoders ?? [],
+    [integrationDetails]
+  );
+  const {
+    items: decoderItems,
+    loading: loadingDecoders,
+    refresh: refreshDecoders,
+  } = useIntegrationDecoders({ decoderIds, space: integrationDetails?.space?.name ?? '' });
+
+  const kvdbIds = useMemo(
+    () => integrationDetails?.document.kvdbs ?? [],
+    [integrationDetails]
+  );
+  const {
+    items: kvdbItems,
+    loading: loadingKvdbs,
+    refresh: refreshKvdbs,
+  } = useIntegrationKVDBs({ kvdbIds });
+
   const renderTabContent = () => {
     switch (selectedTabId) {
+      case 'decoders':
+        return (
+          <IntegrationDecoders
+            decoders={decoderItems}
+            loading={loadingDecoders}
+            space={integrationDetails?.space?.name ?? ''}
+            onRefresh={refreshDecoders}
+          />
+        );
+      case 'kvdbs':
+        return (
+          <IntegrationKVDBs
+            kvdbs={kvdbItems}
+            loading={loadingKvdbs}
+            onRefresh={refreshKvdbs}
+          />
+        );
       case 'detection_rules':
         return (
           <IntegrationDetectionRules

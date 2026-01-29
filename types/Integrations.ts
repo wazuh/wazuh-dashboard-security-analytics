@@ -30,6 +30,8 @@ export interface IntegrationBase {
     tags: {
       correlation_id: number;
     } | null;
+    decoders?: string[];
+    kvdbs?: string[];
   }
 }
 
