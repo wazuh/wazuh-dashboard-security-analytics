@@ -14,6 +14,7 @@ import {
 } from '../../services';
 import AlertService from '../../services/AlertService';
 import { DecodersService } from '../../services/DecodersService';
+import { PoliciesService } from '../../services/PoliciesService';
 import { IntegrationService } from '../../services/IntegrationService';
 import { LogTypeService } from '../../services/LogTypeService';
 import MetricsService from '../../services/MetricsService';
@@ -43,6 +44,7 @@ export interface SecurityAnalyticsApi {
   readonly CORRELATIONS: string;
   readonly LOGTYPE_BASE: string;
   readonly INTEGRATION_BASE: string;
+  readonly POLICIES_BASE: string;
   readonly KVDBS_BASE: string;
   readonly METRICS: string;
   readonly GET_CORRELATION_ALERTS: string;
@@ -61,6 +63,7 @@ export interface NodeServices {
   alertService: AlertService;
   rulesService: RulesService;
   notificationsService: NotificationsService;
+  policiesService: PoliciesService;
   integrationService: IntegrationService;
   logTypeService: LogTypeService;
   kvdbsService: KVDBsService;

@@ -45,6 +45,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
   >(undefined);
   const getIntegrations = async () => {
     const integrations = await DataStore.integrations.getIntegrations(spaceFilter);
+    const policies = await DataStore.policies.searchPolicies(spaceFilter);
     setIntegrations(integrations);
   };
 

@@ -13,6 +13,7 @@ export * from './AlertRoutes';
 export * from './NotificationsRoutes';
 export * from './LogTypeRoutes';
 export * from './IntegrationRoutes';
+export * from './PoliciesRoutes';
 export * from './RuleRoutes';
 export * from './DecodersRoutes';
 export * from './KVDBsRoutes';

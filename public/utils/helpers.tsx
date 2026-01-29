@@ -49,6 +49,7 @@ import {
   IndexService,
   LogTypeService,
   IntegrationService,
+  PoliciesService,
   KVDBsService,
   NotificationsService,
   OpenSearchService,
@@ -680,6 +681,7 @@ export function initializeServices(
   const indexPatternsService = new IndexPatternsService(indexPattern);
   const logTypeService = new LogTypeService(http);
   const integrationService = new IntegrationService(http);
+  const policiesService = new PoliciesService(http);
   const decodersService = new DecodersService(http);
   const kvdbsService = new KVDBsService(http);
   const metricsService = new MetricsService(http);
@@ -699,6 +701,7 @@ export function initializeServices(
     indexPatternsService,
     logTypeService,
     integrationService,
+    policiesService,
     decodersService,
     kvdbsService,
     metricsService,

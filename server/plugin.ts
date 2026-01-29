@@ -24,6 +24,7 @@ import {
   setupNotificationsRoutes,
   setupLogTypeRoutes,
   setupIntegrationRoutes,
+  setupPoliciesRoutes,
   setupRulesRoutes,
   setupDecodersRoutes,
   setupKVDBsRoutes,
@@ -41,6 +42,7 @@ import {
   CorrelationService,
 } from './services';
 import { IntegrationService } from './services/IntegrationService';
+import { PoliciesService } from './services/PoliciesService';
 import { LogTypeService } from './services/LogTypeService';
 import { KVDBsService } from './services/KVDBsService';
 import MetricsService from './services/MetricsService';
@@ -85,6 +87,7 @@ export class SecurityAnalyticsPlugin
       notificationsService: new NotificationsService(securityAnalyticsClient, dataSourceEnabled),
       logTypeService: new LogTypeService(securityAnalyticsClient, dataSourceEnabled),
       integrationService: new IntegrationService(securityAnalyticsClient, dataSourceEnabled),
+      policiesService: new PoliciesService(securityAnalyticsClient, dataSourceEnabled),
       kvdbsService: new KVDBsService(securityAnalyticsClient, false),
       metricsService: new MetricsService(),
       threatIntelService: new ThreatIntelService(securityAnalyticsClient, dataSourceEnabled),
@@ -106,6 +109,7 @@ export class SecurityAnalyticsPlugin
     setupNotificationsRoutes(services, router);
     setupLogTypeRoutes(services, router);
     setupIntegrationRoutes(services, router);
+    setupPoliciesRoutes(services, router);
     setupKVDBsRoutes(services, router);
     setupMetricsRoutes(services, router);
     setupThreatIntelRoutes(services, router);

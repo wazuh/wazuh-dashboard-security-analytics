@@ -16,6 +16,7 @@ import {
   IndexPatternsService,
   LogTypeService,
   IntegrationService,
+  PoliciesService,
   DecodersService,
   KVDBsService,
 } from '../services';
@@ -36,6 +37,7 @@ export interface BrowserServices {
   savedObjectsService: ISavedObjectsService;
   indexPatternsService: IndexPatternsService;
   integrationService: IntegrationService;
+  policiesService: PoliciesService;
   logTypeService: LogTypeService;
   decodersService: DecodersService;
   kvdbsService: KVDBsService;

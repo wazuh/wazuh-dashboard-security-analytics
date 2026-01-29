@@ -42,6 +42,7 @@ export const API: SecurityAnalyticsApi = {
   ACK_CORRELATION_ALERTS: `${BASE_API_PATH}/_acknowledge/correlationAlerts`,
   THREAT_INTEL_BASE: `${BASE_API_PATH}/threat_intel`,
   DECODERS_BASE: `${BASE_API_PATH}/decoders`,
+  POLICIES_BASE: `${BASE_API_PATH}/policies`,
 };
 
 /**

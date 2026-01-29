@@ -1,0 +1,48 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+
+export interface PolicySpace {
+  name: string,
+  hash: PolicyHash
+}
+
+export interface PolicyHash {
+    sha256: string
+  }
+
+export interface PolicyDocument {
+  author: string,
+    date: string,
+    description: string,
+    documentation: string,
+    id: string,
+    integrations: string[],
+    modified: string,
+    references: [
+      string
+    ],
+    root_decoder: string,
+    title: string
+}
+
+export interface PolicySource {
+  document: PolicyDocument;
+  hash?: PolicyHash;
+  space?: PolicySpace;
+}
+
+export interface PolicyItem extends PolicySource {
+  id: string;
+  integrations?: string[];
+}
+
+export interface SearchPoliciesResponse {
+  total: number;
+  items: PolicyItem[];
+}
+
+export interface GetPolicyResponse {
+  item?: PolicyItem;
+}
