@@ -95,13 +95,13 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
     const sortFieldName = SORT_FIELD_MAP[sortField] ?? sortField;
     const sort = sortFieldName
       ? [
-        {
-          [sortFieldName]: {
-            order: sortDirection,
-            unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? "keyword",
+          {
+            [sortFieldName]: {
+              order: sortDirection,
+              unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? "keyword",
+            },
           },
-        },
-      ]
+        ]
       : undefined;
 
     const response = await DataStore.decoders.searchDecoders(
@@ -145,22 +145,25 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
     }
   };
 
-  const deleteDecoder = useCallback(async (decoderId: string) => {
-    setLoading(true);
-    try {
-      await DataStore.decoders.deleteDecoder(decoderId);
-      if (!isMountedRef.current) {
-        return;
+  const deleteDecoder = useCallback(
+    async (decoderId: string) => {
+      setLoading(true);
+      try {
+        await DataStore.decoders.deleteDecoder(decoderId);
+        if (!isMountedRef.current) {
+          return;
+        }
+        await loadDecoders();
+      } catch (error) {
+        console.error("Error deleting decoder:", error);
+      } finally {
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
-      await loadDecoders();
-    } catch (error) {
-      console.error('Error deleting decoder:', error);
-    } finally {
-      if (isMountedRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [loadDecoders]);
+    },
+    [loadDecoders],
+  );
 
   const columns: Array<EuiBasicTableColumn<DecoderItem>> = useMemo(
     () => [
@@ -239,8 +242,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
       href={`#${ROUTES.DECODERS_CREATE}`}
       disabled={spaceFilter !== SpaceTypes.DRAFT.value}
       toolTipContent={
-        spaceFilter === SpaceTypes.STANDARD.value
-          ? "Cannot create decoders in the Standard space."
+        spaceFilter !== SpaceTypes.DRAFT.value
+          ? `Cannot create decoders in the ${spaceFilter} space.`
           : undefined
       }
     >
