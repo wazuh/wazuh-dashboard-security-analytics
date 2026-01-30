@@ -10,6 +10,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { NotificationsStart } from "opensearch-dashboards/public";
 import { RouteComponentProps } from "react-router-dom";
 import {
   EuiBasicTable,
@@ -32,7 +33,12 @@ import { DataStore } from "../../../store/DataStore";
 import { DecoderDocument, DecoderItem } from "../../../../types";
 import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
 import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import { formatCellValue, setBreadcrumbs } from "../../../utils/helpers";
+import {
+  errorNotificationToast,
+  formatCellValue,
+  setBreadcrumbs,
+  successNotificationToast,
+} from "../../../utils/helpers";
 import { buildDecodersSearchQuery } from "../utils/constants";
 import { DecoderDetailsFlyout } from "../components/DecoderDetailsFlyout";
 import { SpaceTypes } from "../../../../common/constants";
@@ -48,9 +54,13 @@ const SORT_UNMAPPED_TYPE: Record<string, string> = {
 
 interface DecodersProps {
   history: RouteComponentProps["history"];
+  notifications: NotificationsStart;
 }
 
-export const Decoders: React.FC<DecodersProps> = ({ history }) => {
+export const Decoders: React.FC<DecodersProps> = ({
+  history,
+  notifications,
+}) => {
   const isMountedRef = useRef(true);
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -72,6 +82,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
   } | null>(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [decoderToDelete, setDecoderToDelete] = useState<string | null>(null);
+  const [selectedItems, setSelectedItems] = useState<DecoderItem[]>([]);
 
   useEffect(() => {
     return () => {
@@ -149,27 +160,54 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
   };
 
   const confirmDeleteDecoder = useCallback(async () => {
-    if (!decoderToDelete) return;
+    if (!decoderToDelete && selectedItems.length === 0) return;
     setLoading(true);
     setIsDeleteModalVisible(false);
     try {
-      await DataStore.decoders.deleteDecoder(decoderToDelete);
+      if (decoderToDelete) {
+        await DataStore.decoders.deleteDecoder(decoderToDelete);
+      } else {
+        await Promise.all(
+          selectedItems.map((item) =>
+            DataStore.decoders.deleteDecoder(item.id),
+          ),
+        );
+      }
       if (!isMountedRef.current) {
         return;
       }
+      setSelectedItems([]);
+      successNotificationToast(
+        notifications,
+        "delete",
+        decoderToDelete ? "Decoder deleted" : "Decoders deleted",
+        decoderToDelete
+          ? "The decoder has been deleted successfully."
+          : "The selected decoders have been deleted successfully.",
+      );
       await loadDecoders();
     } catch (error) {
-      console.error("Error deleting decoder:", error);
+      errorNotificationToast(
+        notifications,
+        "retrieve",
+        "Error deleting decoder(s)",
+        "An error occurred while deleting the decoder(s). Please try again.",
+      );
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
         setDecoderToDelete(null);
       }
     }
-  }, [decoderToDelete, loadDecoders]);
+  }, [decoderToDelete, selectedItems, loadDecoders]);
 
   const deleteDecoder = useCallback((decoderId: string) => {
     setDecoderToDelete(decoderId);
+    setIsDeleteModalVisible(true);
+  }, []);
+
+  const deleteSelectedDecoders = useCallback(() => {
+    setDecoderToDelete(null);
     setIsDeleteModalVisible(true);
   }, []);
 
@@ -257,6 +295,26 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
     >
       Create
     </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="delete"
+      icon="trash"
+      onClick={() => {
+        deleteSelectedDecoders();
+        setIsPopoverOpen(false);
+      }}
+      disabled={
+        selectedItems.length === 0 || spaceFilter !== SpaceTypes.STANDARD.value
+      }
+      toolTipContent={
+        spaceFilter !== SpaceTypes.DRAFT.value
+          ? `Cannot delete decoders in the ${spaceFilter} space.`
+          : selectedItems.length === 0
+            ? "Select decoders to delete"
+            : undefined
+      }
+    >
+      Delete selected ({selectedItems.length})
+    </EuiContextMenuItem>,
   ];
 
   const handlerShowActionsButton = () =>
@@ -296,7 +354,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
       )}
       {isDeleteModalVisible && (
         <EuiConfirmModal
-          title="Delete decoder"
+          title={
+            decoderToDelete
+              ? "Delete decoder"
+              : `Delete ${selectedItems.length} decoder${selectedItems.length !== 1 ? "s" : ""}`
+          }
           onCancel={() => {
             setIsDeleteModalVisible(false);
             setDecoderToDelete(null);
@@ -308,8 +370,9 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
           defaultFocusedButton="cancel"
         >
           <p>
-            Are you sure you want to delete this decoder? This action cannot be
-            undone.
+            {decoderToDelete
+              ? "Are you sure you want to delete this decoder? This action cannot be undone."
+              : `Are you sure you want to delete ${selectedItems.length} decoder${selectedItems.length !== 1 ? "s" : ""}? This action cannot be undone.`}
           </p>
         </EuiConfirmModal>
       )}
@@ -364,6 +427,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
             }}
             sorting={{ sort: { field: sortField, direction: sortDirection } }}
             onChange={onTableChange}
+            itemId="id"
+            selection={{
+              selectable: () => true,
+              onSelectionChange: setSelectedItems,
+            }}
           />
         </EuiPanel>
       </EuiFlexItem>

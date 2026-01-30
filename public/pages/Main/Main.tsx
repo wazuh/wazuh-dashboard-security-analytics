@@ -191,9 +191,9 @@ export default class Main extends Component<MainProps, MainState> {
     const defaultDateTimeFilter = cachedDateTimeFilter
       ? JSON.parse(cachedDateTimeFilter)
       : {
-        startTime: DEFAULT_DATE_RANGE.start,
-        endTime: DEFAULT_DATE_RANGE.end,
-      };
+          startTime: DEFAULT_DATE_RANGE.start,
+          endTime: DEFAULT_DATE_RANGE.end,
+        };
     let dataSourceId = "";
     let dataSourceLabel = "";
     if (props.multiDataSourceEnabled) {
@@ -390,18 +390,18 @@ export default class Main extends Component<MainProps, MainState> {
           },
           ...(THREAT_INTEL_ENABLED
             ? [
-              {
-                name: Navigation.ThreatIntel,
-                id: Navigation.ThreatIntel,
-                onClick: () => {
-                  this.setState({
-                    selectedNavItemId: Navigation.ThreatIntel,
-                  });
-                  history.push(ROUTES.THREAT_INTEL_OVERVIEW);
+                {
+                  name: Navigation.ThreatIntel,
+                  id: Navigation.ThreatIntel,
+                  onClick: () => {
+                    this.setState({
+                      selectedNavItemId: Navigation.ThreatIntel,
+                    });
+                    history.push(ROUTES.THREAT_INTEL_OVERVIEW);
+                  },
+                  isSelected: selectedNavItemId === Navigation.ThreatIntel,
                 },
-                isSelected: selectedNavItemId === Navigation.ThreatIntel,
-              },
-            ]
+              ]
             : []),
           {
             name: Navigation.Findings,
@@ -819,7 +819,7 @@ export default class Main extends Component<MainProps, MainState> {
                                         ) => (
                                           <GettingStartedContent
                                             {...props}
-                                            onStepClicked={() => { }}
+                                            onStepClicked={() => {}}
                                           />
                                         )}
                                       />
@@ -1109,7 +1109,10 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.DECODERS}
                                       render={(props: RouteComponentProps) => (
-                                        <Decoders {...props} />
+                                        <Decoders
+                                          {...props}
+                                          notifications={core?.notifications}
+                                        />
                                       )}
                                     />
                                     <Route
