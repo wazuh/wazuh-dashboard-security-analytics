@@ -6,6 +6,7 @@
 import React from 'react';
 import { EuiSmallButtonIcon, EuiLink, EuiToolTip } from '@elastic/eui';
 import { Integration } from '../../../../types';
+import { SpaceTypes } from '../../../../common/constants';
 import { capitalize, startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { ruleSource } from '../../Rules/utils/constants';
@@ -14,7 +15,8 @@ import { integrationLabels } from './constants';
 
 export const getIntegrationsTableColumns = (
   showDetails: (id: string) => void,
-  deleteIntegration: (integration: Integration) => void
+  deleteIntegration: (integration: Integration) => void,
+  promoteIntegration: (integration: Integration) => void
 ) => [
   {
     field: 'title',
@@ -40,19 +42,47 @@ export const getIntegrationsTableColumns = (
     render: (spaceName: string) => capitalize(spaceName),
   },
   {
+    field: 'decoders.length',
+    name: 'Decoders',
+    sortable: true,
+    render: (decodersLength: number) => decodersLength,
+  },
+  {
+    field: 'kvdbs.length',
+    name: 'KVDBs',
+    sortable: true,
+    render: (kvdbsLength: number) => kvdbsLength,
+  },
+  {
+    field: 'rules.length',
+    name: 'Rules',
+    sortable: true,
+    render: (rulesLength: number) => rulesLength,
+  },
+  {
     name: 'Actions',
     actions: [
       {
         render: (item: Integration) => {
-          return (
+          return (<>
+            {![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(item.space)?<EuiToolTip content="Promote">
+              <EuiSmallButtonIcon
+                aria-label={'Promote integration'}
+                iconType={'share'}
+                color="primary"
+                onClick={() => promoteIntegration(item)}
+              />
+            </EuiToolTip>:<></>}
             <EuiToolTip content="Delete">
               <EuiSmallButtonIcon
                 aria-label={'Delete integration'}
                 iconType={'trash'}
                 color="danger"
+                disabled={![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(item.space)}
                 onClick={() => deleteIntegration(item)}
               />
             </EuiToolTip>
+            </>
           );
         },
       },

@@ -8,6 +8,7 @@ import {
   CreateIntegrationResponse,
   DeleteIntegrationResponse,
   IntegrationBase,
+  PromoteIntegrationResponse,
   SearchIntegrationsResponse,
   ServerResponse,
   UpdateIntegrationResponse,
@@ -78,4 +79,14 @@ export default class IntegrationService {
       },
     })) as ServerResponse<DeleteIntegrationResponse>;
   };
+
+  promoteIntegration = async (integrationId: string): Promise<ServerResponse<PromoteIntegrationResponse>> => {
+    const url = `..${API.INTEGRATION_BASE}/${integrationId}`;
+    return (await this.httpClient.post(url, {
+      query: {
+        dataSourceId: dataSourceInfo.activeDataSource.id,
+      },
+    })) as ServerResponse<PromoteIntegrationResponse>;
+  };
+  
 }

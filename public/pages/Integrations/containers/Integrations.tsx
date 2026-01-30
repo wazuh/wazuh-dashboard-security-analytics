@@ -39,6 +39,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
   const [integrationToDelete, setIntegrationItemToDelete] = useState<Integration | undefined>(undefined);
   const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [loading, setLoading] = useState<boolean>(false);
+  const [selectedItems, setSelectedItems] = useState<Integration[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [deletionDetails, setDeletionDetails] = useState<
     { detectionRulesCount: number } | undefined
@@ -79,14 +80,27 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
       key="create"
       icon="plusInCircle"
       href={`#${ROUTES.INTEGRATIONS_CREATE}`}
-      disabled={spaceFilter === SpaceTypes.STANDARD.value}
+      disabled={spaceFilter !== SpaceTypes.DRAFT.value}
       toolTipContent={
-        spaceFilter === SpaceTypes.STANDARD.value
-          ? 'Cannot create integrations in the Standard space.'
+        spaceFilter !== SpaceTypes.DRAFT.value
+          ? 'Integration can only be created in the draft space.'
           : undefined
       }
     >
       Create
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="promote"
+      icon="share"
+      onClick={() => {}}
+      disabled={![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(spaceFilter)}
+      toolTipContent={
+        ![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(spaceFilter)
+          ? 'Integration can only be promoted in the draft or testing space.'
+          : undefined
+      }
+    >
+      Promote
     </EuiContextMenuItem>,
   ];
 
@@ -139,6 +153,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
   }, [loadIntegrations]);
 
 
+  const onSelectionChange = (selectedItems: Integration[]) => {
+    setSelectedItems(selectedItems);
+  };
+
   const showIntegrationDetails = useCallback((id: string) => {
     history.push(`${ROUTES.INTEGRATIONS}/${id}`);
   }, []);
@@ -148,6 +166,12 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
     const rules = await DataStore.rules.getAllRules({
       'rule.category': [item.id],
     });
+    setDeletionDetails({ detectionRulesCount: rules.length });
+  };
+
+  const onPromoteClick = async (item: Integration) => {
+    setIntegrationItemToDelete(item);
+    const rules = await DataStore.integrations.promoteIntegration(item.id);
     setDeletionDetails({ detectionRulesCount: rules.length });
   };
 
@@ -191,11 +215,13 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
       <EuiPanel>
         <EuiInMemoryTable
           items={integrations}
-          columns={getIntegrationsTableColumns(showIntegrationDetails, onDeleteClick)}
+          columns={getIntegrationsTableColumns(showIntegrationDetails, onDeleteClick, onPromoteClick)}
           pagination={{
             initialPageSize: 25,
           }}
           search={getIntegrationsTableSearchConfig()}
+          selection={{ onSelectionChange: onSelectionChange }}
+          isSelectable={true}
           sorting={true}
           loading={loading}
         />

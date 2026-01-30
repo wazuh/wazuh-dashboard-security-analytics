@@ -66,3 +66,5 @@ export interface DeleteIntegrationParams {
 }
 
 export interface DeleteIntegrationResponse { }
+
+export interface PromoteIntegrationResponse { }

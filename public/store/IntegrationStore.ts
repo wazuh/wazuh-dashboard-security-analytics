@@ -154,4 +154,13 @@ export class IntegrationStore {
 
     return deleteRes.ok;
   }
+
+  public async promoteIntegration(id: string) {
+    const promoteRes = await this.service.promoteIntegration(id);
+    if (!promoteRes.ok) {
+      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
+    }
+
+    return promoteRes.ok;
+  }
 }
