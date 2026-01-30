@@ -40,7 +40,7 @@ const editorTypes = [
   },
 ];
 
-type FormDecodersProps = {
+type DecoderFormPageProps = {
   notifications: NotificationsStart;
   action: "create" | "edit";
   id?: string;
@@ -52,7 +52,7 @@ const actionLabels: Record<string, string> = {
   edit: "Edit",
 };
 
-export const CreateDecoders: React.FC<FormDecodersProps> = (props) => {
+export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const { notifications, action } = props;
   const idDecoder = props.match.params.id;
   const [isLoading, setIsLoading] = useState(false);
@@ -132,46 +132,55 @@ export const CreateDecoders: React.FC<FormDecodersProps> = (props) => {
     setIntegrationType(e[0]?.value || "");
   }, []);
 
-  const createDecoder = useCallback((values: DecoderFormModel) => {
-    if (!values || !integrationType) {
-      errorNotificationToast(
-        notifications,
-        "retrieve",
-        "decoder",
-        "Decoder or integration type is missing",
-      );
-      return;
-    }
+  const createDecoder = useCallback(
+    (values: DecoderFormModel) => {
+      if (!values || !integrationType) {
+        errorNotificationToast(
+          notifications,
+          "retrieve",
+          "decoder",
+          "Decoder or integration type is missing",
+        );
+        return;
+      }
 
-    DataStore.decoders.createDecoder({
-      document: values,
-      integrationId: integrationType,
-    });
-  }, [integrationType, notifications]);
+      DataStore.decoders.createDecoder({
+        document: values,
+        integrationId: integrationType,
+      });
+    },
+    [integrationType, notifications],
+  );
 
-  const updateDecoder = useCallback((values: DecoderFormModel) => {
-    if (!values) {
-      errorNotificationToast(
-        notifications,
-        "retrieve",
-        "decoder",
-        "No decoder to update",
-      );
-      return;
-    }
+  const updateDecoder = useCallback(
+    (values: DecoderFormModel) => {
+      if (!values) {
+        errorNotificationToast(
+          notifications,
+          "retrieve",
+          "decoder",
+          "No decoder to update",
+        );
+        return;
+      }
 
-    DataStore.decoders.updateDecoder(values!.id, {
-      document: values,
-    });
-  }, [notifications]);
+      DataStore.decoders.updateDecoder(values!.id, {
+        document: values,
+      });
+    },
+    [notifications],
+  );
 
-  const handleOnClick = useCallback((values: DecoderFormModel) => {
-    if (action === "create") {
-      createDecoder(values);
-    } else if (action === "edit") {
-      updateDecoder(values);
-    }
-  }, [action, createDecoder, updateDecoder]);
+  const handleOnClick = useCallback(
+    (values: DecoderFormModel) => {
+      if (action === "create") {
+        createDecoder(values);
+      } else if (action === "edit") {
+        updateDecoder(values);
+      }
+    },
+    [action, createDecoder, updateDecoder],
+  );
 
   return (
     <>
@@ -252,11 +261,11 @@ export const CreateDecoders: React.FC<FormDecodersProps> = (props) => {
                     selectedOptions={
                       integrationType
                         ? [
-                          {
-                            value: integrationType,
-                            label: getLogTypeLabel(integrationType),
-                          },
-                        ]
+                            {
+                              value: integrationType,
+                              label: getLogTypeLabel(integrationType),
+                            },
+                          ]
                         : []
                     }
                   />
@@ -308,8 +317,7 @@ export const CreateDecoders: React.FC<FormDecodersProps> = (props) => {
                   >
                     <EuiSmallButton
                       disabled={
-                        !integrationType ||
-                        Object.keys(props.errors).length > 0
+                        !integrationType || Object.keys(props.errors).length > 0
                       }
                       onClick={() => props.handleSubmit()}
                       fill
@@ -321,7 +329,7 @@ export const CreateDecoders: React.FC<FormDecodersProps> = (props) => {
               </EuiFlexGroup>
             </Form>
           )}
-        </Formik >
+        </Formik>
       )}
     </>
   );

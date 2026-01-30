@@ -100,7 +100,7 @@ import {
 import { GettingStartedContent } from "../Overview/components/GettingStarted/GettingStartedContent";
 import { BrowserServices } from "../../models/interfaces";
 import { CHANNEL_TYPES } from "../CreateDetector/components/ConfigureAlerts/utils/constants";
-import { DecoderFormPage } from "../Decoders/containers/CreateDecoders";
+import { DecoderFormPage } from "../Decoders/containers/DecoderFormPage";
 
 enum Navigation {
   SecurityAnalytics = "Security Analytics",
