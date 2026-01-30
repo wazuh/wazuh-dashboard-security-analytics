@@ -68,6 +68,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   const search = {
     box: {
       schema: true,
+      compressed: true,
     },
   };
 
@@ -102,6 +103,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
             pagination={{ initialPageSize: 10, pageSizeOptions: [10, 25, 50] }}
             sorting={{ sort: { field: "document.title", direction: "asc" } }}
             message="No KVDBs found."
+
           />
         )}
       </ContentPanel>
