@@ -26,6 +26,7 @@ import {
   EuiSmallButton,
   EuiContextMenuPanel,
   EuiContextMenuItem,
+  EuiConfirmModal,
 } from "@elastic/eui";
 import { DataStore } from "../../../store/DataStore";
 import { DecoderDocument, DecoderItem } from "../../../../types";
@@ -69,6 +70,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
     id: string;
     space?: string;
   } | null>(null);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [decoderToDelete, setDecoderToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -145,25 +148,30 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
     }
   };
 
-  const deleteDecoder = useCallback(
-    async (decoderId: string) => {
-      setLoading(true);
-      try {
-        await DataStore.decoders.deleteDecoder(decoderId);
-        if (!isMountedRef.current) {
-          return;
-        }
-        await loadDecoders();
-      } catch (error) {
-        console.error("Error deleting decoder:", error);
-      } finally {
-        if (isMountedRef.current) {
-          setLoading(false);
-        }
+  const confirmDeleteDecoder = useCallback(async () => {
+    if (!decoderToDelete) return;
+    setLoading(true);
+    setIsDeleteModalVisible(false);
+    try {
+      await DataStore.decoders.deleteDecoder(decoderToDelete);
+      if (!isMountedRef.current) {
+        return;
       }
-    },
-    [loadDecoders],
-  );
+      await loadDecoders();
+    } catch (error) {
+      console.error("Error deleting decoder:", error);
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+        setDecoderToDelete(null);
+      }
+    }
+  }, [decoderToDelete, loadDecoders]);
+
+  const deleteDecoder = useCallback((decoderId: string) => {
+    setDecoderToDelete(decoderId);
+    setIsDeleteModalVisible(true);
+  }, []);
 
   const columns: Array<EuiBasicTableColumn<DecoderItem>> = useMemo(
     () => [
@@ -285,6 +293,25 @@ export const Decoders: React.FC<DecodersProps> = ({ history }) => {
           space={spaceFilter}
           onClose={() => setSelectedDecoder(null)}
         />
+      )}
+      {isDeleteModalVisible && (
+        <EuiConfirmModal
+          title="Delete decoder"
+          onCancel={() => {
+            setIsDeleteModalVisible(false);
+            setDecoderToDelete(null);
+          }}
+          onConfirm={confirmDeleteDecoder}
+          cancelButtonText="Cancel"
+          confirmButtonText="Delete"
+          buttonColor="danger"
+          defaultFocusedButton="cancel"
+        >
+          <p>
+            Are you sure you want to delete this decoder? This action cannot be
+            undone.
+          </p>
+        </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
         <PageHeader>
