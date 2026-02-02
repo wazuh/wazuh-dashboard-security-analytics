@@ -13,21 +13,15 @@ import {
     EuiFlexGroup,
     EuiFlexItem,
     EuiPanel,
-    EuiButtonGroup,
     EuiCallOut,
 } from '@elastic/eui';
-import { LogTestResponse, LogTestAssetTrace } from '../../../../types';
+import { LogTestResponse, LogTestAssetTrace, LogTestResult as LogTestResultType } from '../../../../types';
 
 export interface LogTestResultProps {
     result: LogTestResponse;
 }
 
-type ViewMode = 'formatted' | 'raw';
 
-const viewModeOptions = [
-    { id: 'formatted', label: 'Formatted' },
-    { id: 'raw', label: 'Raw' },
-];
 
 const AssetTraceItem: React.FC<{ trace: LogTestAssetTrace; index: number }> = ({
     trace,

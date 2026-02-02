@@ -27,8 +27,8 @@ export function setupLogTestRoutes(services: NodeServices, router: IRouter) {
                         trace_level: schema.maybe(
                             schema.oneOf([
                                 schema.literal('NONE'),
-                                schema.literal('BASIC'),
-                                schema.literal('FULL'),
+                                schema.literal('ASSET_ONLY'),
+                                schema.literal('ALL'),
                             ])
                         ),
                     }),

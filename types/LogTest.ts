@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export type LogTestTraceLevel = 'NONE' | 'BASIC' | 'FULL';
+export type LogTestTraceLevel = 'NONE' | 'ASSET_ONLY' | 'ALL';
 
 export interface LogTestRequestBody {
     queue: number;
@@ -26,7 +26,7 @@ export interface LogTestResult {
 
 export interface LogTestResponse {
     status: string;
-    result: LogTestResult;
+    message: string;
 }
 
 export interface LogTestApiRequest {
