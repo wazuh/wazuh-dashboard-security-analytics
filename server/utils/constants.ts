@@ -211,4 +211,4 @@ export const DEFAULT_METRICS_COUNTER: MetricsCounter = {
   },
 };
 
-export const CONTENT_MANAGER_BASE_PATH = '/_plugins/content-manager';
+export const CONTENT_MANAGER_BASE_PATH = '/_plugins/_content_manager';
