@@ -60,8 +60,8 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
     const validateForm = useCallback((): boolean => {
         const newErrors: LogTestFormErrors = {};
 
-        if (formData.queue === undefined || formData.queue < 0) {
-            newErrors.queue = 'Queue is required and must be a non negative number';
+        if (formData.queue === undefined || formData.queue < 1 || formData.queue > 255) {
+            newErrors.queue = 'Queue is required and must be a number between 1 and 255';
         }
 
         if (!formData.location.trim()) {
@@ -106,7 +106,6 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
         }
 
         setIsLoading(true);
-        setTestResult(null);
 
         const agentMetadata = buildAgentMetadata();
 
@@ -116,7 +115,7 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
                 location: formData.location.trim(),
                 event: formData.event.trim(),
                 trace_level: formData.traceLevel,
-                ...(Object.keys(agentMetadata).length > 0 && {
+                ...({
                     agent_metadata: agentMetadata,
                 }),
             },

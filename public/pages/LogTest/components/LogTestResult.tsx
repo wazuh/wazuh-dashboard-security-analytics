@@ -65,26 +65,28 @@ const AssetTraceItem: React.FC<{ trace: LogTestAssetTrace; index: number }> = ({
 };
 
 export const LogTestResult: React.FC<LogTestResultProps> = ({ result }) => {
-    const [viewMode, setViewMode] = useState<ViewMode>('formatted');
 
-    const parsedOutput = useMemo(() => {
-        if (!result.result?.output) return null;
+    const parsedMessage: LogTestResultType = useMemo(() => {
+        if (!result?.message) return null;
         try {
-            return JSON.parse(result.result.output);
+            const parsed = JSON.parse(result.message);
+            const output = JSON.parse(parsed.output);
+            return { ...parsed, output };
         } catch {
             return null;
         }
-    }, [result.result?.output]);
+    }, [result?.message]);
 
     const formattedOutput = useMemo(() => {
-        if (parsedOutput) {
-            return JSON.stringify(parsedOutput, null, 2);
+        if (parsedMessage?.output) {
+            return JSON.stringify(parsedMessage.output, null, 2);
         }
-        return result.result?.output || '';
-    }, [parsedOutput, result.result?.output]);
+        return null;
+    }, [parsedMessage?.output]);
 
-    const hasAssetTraces =
-        result.result?.asset_traces && result.result.asset_traces.length > 0;
+
+    const hasAssetTraces = parsedMessage?.asset_traces?.length > 0;
+
 
     return (
         <>
@@ -97,18 +99,9 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result }) => {
                 <EuiFlexItem grow={false}>
                     <EuiFlexGroup alignItems="center" gutterSize="m">
                         <EuiFlexItem grow={false}>
-                            <EuiBadge color={result.status === 'OK' ? 'success' : 'warning'}>
-                                {result.status}
+                            <EuiBadge color={result?.status === 'OK' ? 'success' : 'warning'}>
+                                {result?.status}
                             </EuiBadge>
-                        </EuiFlexItem>
-                        <EuiFlexItem grow={false}>
-                            <EuiButtonGroup
-                                legend="View mode"
-                                options={viewModeOptions}
-                                idSelected={viewMode}
-                                onChange={(id) => setViewMode(id as ViewMode)}
-                                buttonSize="compressed"
-                            />
                         </EuiFlexItem>
                     </EuiFlexGroup>
                 </EuiFlexItem>
@@ -116,7 +109,7 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result }) => {
 
             <EuiSpacer size="m" />
 
-            {result.result?.output ? (
+            {formattedOutput ? (
                 <EuiPanel paddingSize="none">
                     <EuiCodeBlock
                         language="json"
@@ -124,7 +117,7 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result }) => {
                         isCopyable
                         overflowHeight={400}
                     >
-                        {viewMode === 'formatted' ? formattedOutput : result.result.output}
+                        {formattedOutput}
                     </EuiCodeBlock>
                 </EuiPanel>
             ) : (
@@ -141,8 +134,8 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result }) => {
                     </EuiText>
                     <EuiSpacer size="s" />
                     <EuiPanel paddingSize="m">
-                        {result.result.asset_traces!.map((trace, index) => (
-                            <React.Fragment key={`trace-${index}`}>
+                        {parsedMessage.asset_traces!.map((trace, index) => (
+                            <React.Fragment key={`${trace.asset}-${index}`}>
                                 {index > 0 && <EuiSpacer size="s" />}
                                 <AssetTraceItem trace={trace} index={index} />
                             </React.Fragment>

@@ -19,8 +19,8 @@ import { LogTestTraceLevel } from '../../../../types';
 
 const TRACE_LEVEL_OPTIONS: Array<{ value: LogTestTraceLevel; text: string }> = [
     { value: 'NONE', text: 'None' },
-    { value: 'BASIC', text: 'Basic' },
-    { value: 'FULL', text: 'Full' },
+    { value: 'ASSET_ONLY', text: 'Asset only' },
+    { value: 'ALL', text: 'All' },
 ];
 
 export interface LogTestFormData {
@@ -81,7 +81,8 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                                     e.target.value ? Number(e.target.value) : undefined
                                 )
                             }
-                            min={0}
+                            min={1}
+                            max={255}
                             isInvalid={!!errors.queue}
                             disabled={disabled}
                             fullWidth
