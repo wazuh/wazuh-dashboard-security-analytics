@@ -20,7 +20,7 @@ import {
 import { CLIENT_DECODER_METHODS } from "../utils/constants";
 
 const DECODERS_INDEX = ".cti-decoders";
-const INTEGRATIONS_INDEX = ".cti-integration-decoders";
+const INTEGRATIONS_INDEX = ".cti-integrations";
 const SPACE_FIELD_CANDIDATES = [
   "space.keyword",
   "space",
@@ -372,13 +372,13 @@ export class DecodersService {
 
       const createBody = {
         type: "decoder",
-        document: decoderDocument,
-        id: integrationId,
+        resource: decoderDocument,
+        integration: integrationId,
       };
 
       const createResponse = await client(
         CLIENT_DECODER_METHODS.CREATE_DECODER,
-        createBody,
+        { body: createBody },
       );
 
       return response.custom({
@@ -399,7 +399,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: error.body.message || error.message,
         },
       });
     }

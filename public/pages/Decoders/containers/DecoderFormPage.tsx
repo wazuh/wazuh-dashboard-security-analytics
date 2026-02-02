@@ -8,11 +8,7 @@ import {
   mapYamlObjectToDecoder,
 } from "../components/mappers";
 import { YamlForm } from "../components/YamlForm";
-import {
-  errorNotificationToast,
-  getLogTypeOptions,
-  setBreadcrumbs,
-} from "../../../utils/helpers";
+import { errorNotificationToast, setBreadcrumbs } from "../../../utils/helpers";
 import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
 import {
   EuiPanel,
@@ -102,6 +98,15 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     }
   }, [action, idDecoder, notifications]);
 
+  const getIntegrationOptions = async () => {
+    const options = await DataStore.logTypes.getLogTypes();
+    return options.map((option) => ({
+      value: option.name,
+      label: option.name,
+      id: option.id,
+    }));
+  };
+
   useEffect(() => {
     if (action === "create") {
       setBreadcrumbs([
@@ -113,7 +118,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
 
     const fetchIntegrationTypes = async () => {
       try {
-        const options = await getLogTypeOptions();
+        const options = await getIntegrationOptions();
         setIntegrationTypeOptions(options);
       } catch (error) {
         errorNotificationToast(
@@ -129,7 +134,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   }, [action, notifications]);
 
   const onChange = useCallback((e) => {
-    setIntegrationType(e[0]?.value || "");
+    setIntegrationType(e[0]?.id || "");
   }, []);
 
   const createDecoder = useCallback(
@@ -262,8 +267,15 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                       integrationType
                         ? [
                             {
-                              value: integrationType,
-                              label: getLogTypeLabel(integrationType),
+                              value:
+                                integrationTypeOptions.find(
+                                  (option) => option.id === integrationType,
+                                )?.value || "",
+                              label: getLogTypeLabel(
+                                integrationTypeOptions.find(
+                                  (option) => option.id === integrationType,
+                                )?.value || "",
+                              ),
                             },
                           ]
                         : []
