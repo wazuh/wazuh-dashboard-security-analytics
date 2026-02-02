@@ -371,14 +371,16 @@ export class DecodersService {
       }
 
       const createBody = {
-        type: "decoder",
-        resource: decoderDocument,
-        integration: integrationId,
+        body: {
+          type: "decoder",
+          resource: decoderDocument,
+          integration: integrationId,
+        },
       };
 
       const createResponse = await client(
         CLIENT_DECODER_METHODS.CREATE_DECODER,
-        { body: createBody },
+        createBody,
       );
 
       return response.custom({
@@ -429,12 +431,15 @@ export class DecodersService {
       }
 
       const updateBody = {
-        type: "decoder",
+        body: {
+          type: "decoder",
+          resource: decoderDocument,
+        },
         decoderId: decoderId,
-        document: decoderDocument,
       };
 
       await client(CLIENT_DECODER_METHODS.UPDATE_DECODER, updateBody);
+
       return response.custom({
         statusCode: 200,
         body: {
@@ -451,7 +456,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: error.body.message || error.message,
         },
       });
     }
@@ -468,7 +473,7 @@ export class DecodersService {
       const { decoderId } = request.params;
       const client = this.getClient(request);
 
-      const deleteBody = { type: "decoder", decoderId };
+      const deleteBody = { body: { type: "decoder" }, decoderId };
 
       await client(CLIENT_DECODER_METHODS.DELETE_DECODER, deleteBody);
       return response.custom({
