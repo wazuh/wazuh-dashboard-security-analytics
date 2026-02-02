@@ -823,7 +823,7 @@ export class DetectionVisualEditor extends React.Component<
             mode="yaml"
             width="600px"
             height="50px"
-            value={this.state.detectionObj.condition}
+            value={String(this.state.detectionObj.condition)}
             onChange={(value) => this.updateCondition(value)}
             onBlur={(e) => {
               this.updateCondition(this.state.detectionObj.condition);
