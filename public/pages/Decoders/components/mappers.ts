@@ -31,6 +31,13 @@ export interface DecoderFormModel {
 
 export const decoderFormDefaultValue: DecoderFormModel = {
   name: "change_me",
+  enabled: true,
+  metadata: {
+    title: "Placeholder Decoder",
+    description:
+      "This is a placeholder decoder. Please update the fields accordingly.",
+    author: { name: "User" },
+  },
 };
 
 // Convierte del DecoderDocument (API) al DecoderFormModel (formulario)
