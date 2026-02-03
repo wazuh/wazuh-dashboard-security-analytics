@@ -40,10 +40,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
   const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<Integration[]>([]);
+  const [itemForAction, setItemForAction] = useState<{item: Integration, action: 'edit' | 'delete' | 'promote'} | null>(null)
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [deletionDetails, setDeletionDetails] = useState<
-    { detectionRulesCount: number } | undefined
-  >(undefined);
   const getIntegrations = async () => {
     const integrations = await DataStore.integrations.getIntegrations(spaceFilter);
     const policies = await DataStore.policies.searchPolicies(spaceFilter);
@@ -161,18 +159,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
     history.push(`${ROUTES.INTEGRATIONS}/${id}`);
   }, []);
 
-  const onDeleteClick = async (item: Integration) => {
-    setIntegrationItemToDelete(item);
-    const rules = await DataStore.rules.getAllRules({
-      'rule.category': [item.id],
-    });
-    setDeletionDetails({ detectionRulesCount: rules.length });
-  };
-
   const onPromoteClick = async (item: Integration) => {
     setIntegrationItemToDelete(item);
     const rules = await DataStore.integrations.promoteIntegration(item.id);
-    setDeletionDetails({ detectionRulesCount: rules.length });
   };
 
   const createIntegrationAction = (
@@ -183,14 +172,17 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
 
   return (
     <>
-      {integrationToDelete && (
-        <DeleteIntegrationModal
-          integrationName={integrationToDelete.document.title}
-          detectionRulesCount={deletionDetails?.detectionRulesCount || 0}
-          loading={!deletionDetails}
-          closeModal={() => setIntegrationItemToDelete(undefined)}
-          onConfirm={() => deleteIntegration(integrationToDelete.id)}
-        />
+      {itemForAction && (
+        <>
+          { itemForAction.action === 'delete' && (
+              <DeleteIntegrationModal
+                integrationName={itemForAction.item.title}
+                closeModal={() => setItemForAction(null)}
+                onConfirm={() => deleteIntegration(itemForAction.item.id)}
+              />
+            )
+          }
+        </>
       )}
 
       <PageHeader appRightControls={[{ renderComponent: createIntegrationAction }]}>
@@ -214,13 +206,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({ history, notificatio
       </PageHeader>
       <EuiPanel>
         <EuiInMemoryTable
+          itemId={'id'}
           items={integrations}
-          columns={getIntegrationsTableColumns(showIntegrationDetails, onDeleteClick, onPromoteClick)}
+          columns={getIntegrationsTableColumns({showDetails: showIntegrationDetails, setItemForAction})}
           pagination={{
             initialPageSize: 25,
           }}
           search={getIntegrationsTableSearchConfig()}
-          selection={{ onSelectionChange: onSelectionChange }}
+          selection={{ onSelectionChange: onSelectionChange, initialSelected: [] }}
           isSelectable={true}
           sorting={true}
           loading={loading}

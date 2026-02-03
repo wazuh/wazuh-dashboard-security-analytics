@@ -22,6 +22,8 @@ import {
 } from '@elastic/eui';
 import React from 'react';
 import { useState } from 'react';
+import { withGuardAsync } from '../utils/helpers';
+import { DataStore } from '../../../store/DataStore';
 
 export interface DeleteIntegrationModalProps {
   integrationName: string;
@@ -31,27 +33,29 @@ export interface DeleteIntegrationModalProps {
   onConfirm: () => void;
 }
 
-export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
+const LoadingModal = ({closeModal}) => (
+  <EuiOverlayMask>
+    <EuiModal onClose={closeModal}>
+      <EuiLoadingSpinner size="l" />
+    </EuiModal>
+  </EuiOverlayMask>
+)
+
+export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = withGuardAsync(
+  ({integrationID}) => {
+    return DataStore.rules.getAllRules({
+      'rule.category': [integrationID],
+    }).then(response => ({ ok: false, data: {detectionRulesCount: response.length}}))
+}, null, LoadingModal)(({
   detectionRulesCount,
   integrationName,
-  loading,
   closeModal,
   onConfirm,
 }) => {
   const [confirmDeleteText, setConfirmDeleteText] = useState('');
 
-  if (loading) {
-    return (
-      <EuiOverlayMask>
-        <EuiModal onClose={closeModal}>
-          <EuiLoadingSpinner size="l" />
-        </EuiModal>
-      </EuiOverlayMask>
-    );
-  }
-
-  const onConfirmClick = () => {
-    // onConfirm();
+  const onConfirmClick = async () => {
+    await onConfirm();
     closeModal();
   };
 
@@ -125,4 +129,4 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
       )}
     </EuiOverlayMask>
   );
-};
+});

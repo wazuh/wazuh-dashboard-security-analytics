@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React from 'react';
-import { EuiSmallButtonIcon, EuiLink, EuiToolTip } from '@elastic/eui';
+import React, { useState, useEffect } from 'react';
+import { EuiSmallButtonIcon, EuiLink, EuiPanel } from '@elastic/eui';
 import { Integration } from '../../../../types';
 import { SpaceTypes } from '../../../../common/constants';
 import { capitalize, startCase } from 'lodash';
@@ -13,10 +13,21 @@ import { ruleSource } from '../../Rules/utils/constants';
 import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
 import { integrationLabels } from './constants';
 
+const allowedActionsBySpace = {
+  [SpaceTypes.DRAFT.value]: ['create', 'edit', 'delete', 'promote'],
+  [SpaceTypes.TESTING.value]: ['promote'],
+  [SpaceTypes.CUSTOM.value]: [],
+  [SpaceTypes.STANDARD.value]: ['create', 'edit', 'delete', 'promote'], // TOOD: remove these actions, they are added to tset due there are no in other spaces.
+}
+
 export const getIntegrationsTableColumns = (
-  showDetails: (id: string) => void,
-  deleteIntegration: (integration: Integration) => void,
-  promoteIntegration: (integration: Integration) => void
+  {
+    showDetails,
+    setItemForAction
+  }: {
+    showDetails: (id: string) => void,
+    setItemForAction: ({item: any, action: 'edit' | 'delete' | 'promote'}),
+  }
 ) => [
   {
     field: 'title',
@@ -63,29 +74,36 @@ export const getIntegrationsTableColumns = (
     name: 'Actions',
     actions: [
       {
-        render: (item: Integration) => {
-          return (<>
-            {![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(item.space)?<EuiToolTip content="Promote">
-              <EuiSmallButtonIcon
-                aria-label={'Promote integration'}
-                iconType={'share'}
-                color="primary"
-                onClick={() => promoteIntegration(item)}
-              />
-            </EuiToolTip>:<></>}
-            <EuiToolTip content="Delete">
-              <EuiSmallButtonIcon
-                aria-label={'Delete integration'}
-                iconType={'trash'}
-                color="danger"
-                disabled={![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(item.space)}
-                onClick={() => deleteIntegration(item)}
-              />
-            </EuiToolTip>
-            </>
-          );
-        },
+        name: 'Edit',
+        description: 'Edit integration',
+        type: 'icon',
+        icon: 'pencil',
+        available: (item) => allowedActionsBySpace?.[item.space]?.includes('edit'),
+        onClick: (item) => {
+          setItemForAction({item, action: 'edit'});
+        }
       },
+      {
+        name: 'Promote',
+        description: 'Promote integration',
+        type: 'icon',
+        icon: 'share',
+        available: (item) => allowedActionsBySpace?.[item.space]?.includes('promote'),
+        onClick: (item) => {
+          setItemForAction({item, action: 'promote'});
+        }
+      },
+      {
+        name: 'Remove',
+        description: 'Remove integration',
+        type: 'icon',
+        icon: 'trash',
+        color: 'danger',
+        available: (item) => allowedActionsBySpace?.[item.space]?.includes('delete'),
+        onClick: (item) => {
+          setItemForAction({item, action: 'delete'});
+        }
+      }
     ],
   },
 ];
@@ -115,3 +133,102 @@ export const getIntegrationsTableSearchConfig = (): Search => {
 export const getIntegrationLabel = (name: string) => {
   return !name ? DEFAULT_EMPTY_DATA : integrationLabels[name.toLowerCase()] || startCase(name);
 };
+
+export const withGuardAsync =
+  (
+    condition: (props: any) => Promise<{ ok: boolean; data: any }>,
+    ComponentFulfillsCondition: React.FC,
+    ComponentLoadingResolution: null | React.FC = null,
+  ) =>
+  (WrappedComponent: React.FC) =>
+  (props: any) => {
+    const [loading, setLoading] = useState(true);
+    const [fulfillsCondition, setFulfillsCondition] = useState({
+      ok: false,
+      data: {},
+    });
+
+    const execCondition = async () => {
+      try {
+        setLoading(true);
+        setFulfillsCondition({ ok: false, data: {} });
+        setFulfillsCondition(
+          await condition({ ...props, check: execCondition }),
+        );
+      } catch (error) {
+        setFulfillsCondition({ ok: false, data: { error } });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      execCondition();
+    }, []);
+
+    if (loading) {
+      return ComponentLoadingResolution ? (
+        <ComponentLoadingResolution {...props} />
+      ) : null;
+    }
+
+    return fulfillsCondition.ok ? (
+      <ComponentFulfillsCondition
+        {...props}
+        {...(fulfillsCondition?.data ?? {})}
+        check={execCondition}
+      />
+    ) : (
+      <WrappedComponent
+        {...props}
+        {...(fulfillsCondition?.data ?? {})}
+        check={execCondition}
+      />
+    );
+  };
+
+export const withWrapComponent =
+  (WrapComponent, mapWrapComponentProps = () => {}) =>
+  WrappedComponent =>
+  props =>
+    (
+      <WrapComponent
+        {...props}
+        {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}
+      >
+        <WrappedComponent {...props}></WrappedComponent>
+      </WrapComponent>
+    );
+
+export const withModal = options =>
+  withWrapComponent(
+    ({
+      paddingSize,
+      hasShadow,
+      hasBorder,
+      borderRadius,
+      grow,
+      panelRef,
+      color,
+      className,
+      'aria-label': ariaLabel,
+      'data-test-subj': dataTestSubject,
+      children,
+    }) => {
+      const panelProps = {
+        paddingSize,
+        hasShadow,
+        hasBorder,
+        borderRadius,
+        grow,
+        panelRef,
+        color,
+        className,
+        'aria-label': ariaLabel,
+        'data-test-subj': dataTestSubject,
+        children,
+      };
+      return <EuiPanel {...panelProps}>{children}</EuiPanel>;
+    },
+    () => options,
+  );
