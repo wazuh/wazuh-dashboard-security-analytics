@@ -4,7 +4,11 @@
  */
 
 import { NotificationsStart } from "opensearch-dashboards/public";
-import { DecoderItem, SearchDecodersResponse } from "../../types";
+import {
+  CUDDecoderResponse,
+  DecoderItem,
+  SearchDecodersResponse,
+} from "../../types";
 import DecodersService from "../services/DecodersService";
 import { errorNotificationToast } from "../utils/helpers";
 
@@ -90,64 +94,50 @@ export class DecodersStore {
   public async createDecoder(body: {
     document: any;
     integrationId: string;
-  }): Promise<DecoderItem | undefined> {
-    const response = await this.service.createDecoder(body);
-    if (!response.ok) {
+  }): Promise<CUDDecoderResponse | undefined> {
+    const responseRequest = await this.service.createDecoder(body);
+    if (!responseRequest.ok) {
       errorNotificationToast(
         this.notifications,
         "create",
         "decoder",
-        response.error,
+        responseRequest.error,
       );
       return undefined;
     }
-
-    const item = response.response.item;
-    if (!item) {
-      return undefined;
-    }
-
-    return {
-      ...item,
-    };
+    return responseRequest.response;
   }
 
   public async updateDecoder(
     decoderId: string,
     body: { document: any },
-  ): Promise<DecoderItem | undefined> {
-    const response = await this.service.updateDecoder(decoderId, body);
-    if (!response.ok) {
+  ): Promise<CUDDecoderResponse | undefined> {
+    const responseRequest = await this.service.updateDecoder(decoderId, body);
+    if (!responseRequest.ok) {
       errorNotificationToast(
         this.notifications,
         "update",
         "decoder",
-        response.error,
+        responseRequest.error,
       );
       return undefined;
     }
-
-    const item = response.response.item;
-    if (!item) {
-      return undefined;
-    }
-
-    return {
-      ...item,
-    };
+    return responseRequest.response;
   }
 
-  public async deleteDecoder(decoderId: string): Promise<boolean> {
-    const response = await this.service.deleteDecoder(decoderId);
-    if (!response.ok) {
+  public async deleteDecoder(
+    decoderId: string,
+  ): Promise<CUDDecoderResponse | undefined> {
+    const responseRequest = await this.service.deleteDecoder(decoderId);
+    if (!responseRequest.ok) {
       errorNotificationToast(
         this.notifications,
         "delete",
         "decoder",
-        response.error,
+        responseRequest.error,
       );
-      return false;
+      return undefined;
     }
-    return true;
+    return responseRequest.response;
   }
 }

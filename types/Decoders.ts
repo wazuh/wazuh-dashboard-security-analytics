@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 export interface DecoderDocumentAuthor {
   name?: string;
@@ -44,4 +44,10 @@ export interface SearchDecodersResponse {
 
 export interface GetDecoderResponse {
   item?: DecoderItem;
+}
+
+export interface CUDDecoderResponse {
+  message: string;
+  status: number;
+  error: string | null;
 }

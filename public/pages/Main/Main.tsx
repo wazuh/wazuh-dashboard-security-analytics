@@ -1122,6 +1122,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           {...props}
                                           notifications={core?.notifications}
                                           action="create"
+                                          history={props.history}
                                         />
                                       )}
                                     />
@@ -1136,6 +1137,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           {...props}
                                           notifications={core?.notifications}
                                           action="edit"
+                                          history={props.history}
                                         />
                                       )}
                                     />

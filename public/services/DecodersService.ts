@@ -6,7 +6,11 @@
 import { HttpSetup } from "opensearch-dashboards/public";
 import { API } from "../../server/utils/constants";
 import { ServerResponse } from "../../server/models/types";
-import { GetDecoderResponse, SearchDecodersResponse } from "../../types";
+import {
+  CUDDecoderResponse,
+  GetDecoderResponse,
+  SearchDecodersResponse,
+} from "../../types";
 
 export default class DecodersService {
   private readonly httpClient: HttpSetup;
@@ -64,7 +68,7 @@ export default class DecodersService {
   createDecoder = async (body: {
     document: any;
     integrationId: string;
-  }): Promise<ServerResponse<GetDecoderResponse>> => {
+  }): Promise<ServerResponse<CUDDecoderResponse>> => {
     const url = `${this.baseUrl}`;
     return await this.httpClient.post(url, {
       body: JSON.stringify(body),
@@ -74,14 +78,16 @@ export default class DecodersService {
   updateDecoder = async (
     decoderId: string,
     body: { document: any },
-  ): Promise<ServerResponse<GetDecoderResponse>> => {
+  ): Promise<ServerResponse<CUDDecoderResponse>> => {
     const url = `${this.baseUrl}/${decoderId}`;
     return await this.httpClient.put(url, {
       body: JSON.stringify(body),
     });
   };
 
-  deleteDecoder = async (decoderId: string): Promise<ServerResponse<null>> => {
+  deleteDecoder = async (
+    decoderId: string,
+  ): Promise<ServerResponse<CUDDecoderResponse>> => {
     const url = `${this.baseUrl}/${decoderId}`;
     return await this.httpClient.delete(url, {});
   };

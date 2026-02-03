@@ -387,9 +387,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: true,
-          response: {
-            id: createResponse._id || createResponse.id,
-          },
+          response: createResponse,
         },
       });
     } catch (error: any) {
@@ -438,13 +436,16 @@ export class DecodersService {
         decoderId: decoderId,
       };
 
-      await client(CLIENT_DECODER_METHODS.UPDATE_DECODER, updateBody);
+      const responseRequest = await client(
+        CLIENT_DECODER_METHODS.UPDATE_DECODER,
+        updateBody,
+      );
 
       return response.custom({
         statusCode: 200,
         body: {
           ok: true,
-          response: null,
+          response: responseRequest,
         },
       });
     } catch (error: any) {

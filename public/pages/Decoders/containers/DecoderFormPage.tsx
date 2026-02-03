@@ -8,7 +8,11 @@ import {
   mapYamlObjectToDecoder,
 } from "../components/mappers";
 import { YamlForm } from "../components/YamlForm";
-import { errorNotificationToast, setBreadcrumbs } from "../../../utils/helpers";
+import {
+  errorNotificationToast,
+  setBreadcrumbs,
+  successNotificationToast,
+} from "../../../utils/helpers";
 import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
 import {
   EuiPanel,
@@ -28,6 +32,7 @@ import FormFieldHeader from "../../../components/FormFieldHeader";
 import { getLogTypeLabel } from "../../LogTypes/utils/helpers";
 import { DecoderDocument } from "../../../../types/Decoders";
 import { DataStore } from "../../../store/DataStore";
+import { RouteComponentProps } from "react-router-dom";
 
 const editorTypes = [
   {
@@ -38,6 +43,7 @@ const editorTypes = [
 
 type DecoderFormPageProps = {
   notifications: NotificationsStart;
+  history: RouteComponentProps["history"];
   action: "create" | "edit";
   id?: string;
   match: { params: { id: string } };
@@ -49,7 +55,7 @@ const actionLabels: Record<string, string> = {
 };
 
 export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
-  const { notifications, action } = props;
+  const { notifications, history, action } = props;
   const idDecoder = props.match.params.id;
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState("yaml");
@@ -138,7 +144,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   }, []);
 
   const createDecoder = useCallback(
-    (values: DecoderFormModel) => {
+    async (values: DecoderFormModel) => {
       if (!values || !integrationType) {
         errorNotificationToast(
           notifications,
@@ -149,16 +155,28 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         return;
       }
 
-      DataStore.decoders.createDecoder({
+      const result = await DataStore.decoders.createDecoder({
         document: values,
         integrationId: integrationType,
       });
+
+      if (result) {
+        successNotificationToast(
+          notifications,
+          "create",
+          "decoder",
+          result.message ||
+            `The decoder ${values.name} has been created successfully.`,
+        );
+
+        history.push(`${ROUTES.DECODERS}`);
+      }
     },
-    [integrationType, notifications],
+    [integrationType, notifications, history],
   );
 
   const updateDecoder = useCallback(
-    (values: DecoderFormModel) => {
+    async (values: DecoderFormModel) => {
       if (!values) {
         errorNotificationToast(
           notifications,
@@ -169,19 +187,31 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         return;
       }
 
-      DataStore.decoders.updateDecoder(values!.id, {
+      const result = await DataStore.decoders.updateDecoder(values!.id, {
         document: values,
       });
+
+      if (result) {
+        successNotificationToast(
+          notifications,
+          "update",
+          "decoder",
+          result.message ||
+            `The decoder ${values.name} has been updated successfully.`,
+        );
+
+        history.push(`${ROUTES.DECODERS}`);
+      }
     },
-    [notifications],
+    [notifications, history],
   );
 
   const handleOnClick = useCallback(
-    (values: DecoderFormModel) => {
+    async (values: DecoderFormModel) => {
       if (action === "create") {
-        createDecoder(values);
+        await createDecoder(values);
       } else if (action === "edit") {
-        updateDecoder(values);
+        await updateDecoder(values);
       }
     },
     [action, createDecoder, updateDecoder],
@@ -248,42 +278,46 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
 
                 <EuiSpacer size="xl" />
 
-                <EuiCompressedFormRow
-                  label={
-                    <div>
-                      <FormFieldHeader headerTitle={"Integration"} />
-                      <EuiSpacer size={"s"} />
-                    </div>
-                  }
-                  fullWidth={true}
-                >
-                  <EuiCompressedComboBox
-                    placeholder="Select integration"
-                    data-test-subj={"integration_dropdown"}
-                    options={integrationTypeOptions}
-                    singleSelection={{ asPlainText: true }}
-                    onChange={(e) => onChange(e)}
-                    selectedOptions={
-                      integrationType
-                        ? [
-                            {
-                              value:
-                                integrationTypeOptions.find(
-                                  (option) => option.id === integrationType,
-                                )?.value || "",
-                              label: getLogTypeLabel(
-                                integrationTypeOptions.find(
-                                  (option) => option.id === integrationType,
-                                )?.value || "",
-                              ),
-                            },
-                          ]
-                        : []
-                    }
-                  />
-                </EuiCompressedFormRow>
+                {action === "create" && (
+                  <>
+                    <EuiCompressedFormRow
+                      label={
+                        <div>
+                          <FormFieldHeader headerTitle={"Integration"} />
+                          <EuiSpacer size={"s"} />
+                        </div>
+                      }
+                      fullWidth={true}
+                    >
+                      <EuiCompressedComboBox
+                        placeholder="Select integration"
+                        data-test-subj={"integration_dropdown"}
+                        options={integrationTypeOptions}
+                        singleSelection={{ asPlainText: true }}
+                        onChange={(e) => onChange(e)}
+                        selectedOptions={
+                          integrationType
+                            ? [
+                                {
+                                  value:
+                                    integrationTypeOptions.find(
+                                      (option) => option.id === integrationType,
+                                    )?.value || "",
+                                  label: getLogTypeLabel(
+                                    integrationTypeOptions.find(
+                                      (option) => option.id === integrationType,
+                                    )?.value || "",
+                                  ),
+                                },
+                              ]
+                            : []
+                        }
+                      />
+                    </EuiCompressedFormRow>
 
-                <EuiSpacer size="xl" />
+                    <EuiSpacer size="xl" />
+                  </>
+                )}
 
                 {selectedEditorType === "yaml" && (
                   <YamlForm
