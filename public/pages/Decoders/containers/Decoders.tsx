@@ -303,7 +303,7 @@ export const Decoders: React.FC<DecodersProps> = ({
         setIsPopoverOpen(false);
       }}
       disabled={
-        selectedItems.length === 0 || spaceFilter !== SpaceTypes.STANDARD.value
+        selectedItems.length === 0 || spaceFilter !== SpaceTypes.DRAFT.value
       }
       toolTipContent={
         spaceFilter !== SpaceTypes.DRAFT.value
