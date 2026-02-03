@@ -145,21 +145,14 @@ export class IntegrationStore {
     return createRes.ok;
   }
 
-  public async updateIntegration({
-    category,
-    id,
-    name,
-    description,
-    source,
-    tags,
-  }: Integration): Promise<boolean> {
-    const updateRes = await this.service.updateIntegration(id, {
-      name,
-      description,
-      source,
-      tags,
-      category,
-    });
+  public async updateIntegration(
+    integrationId: string,
+    document: Integration,
+  ): Promise<boolean> {
+    const updateRes = await this.service.updateIntegration(
+      integrationId,
+      document,
+    );
 
     if (!updateRes.ok) {
       errorNotificationToast(

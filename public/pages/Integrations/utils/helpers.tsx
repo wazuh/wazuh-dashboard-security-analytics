@@ -3,107 +3,104 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useEffect } from 'react';
-import { EuiSmallButtonIcon, EuiLink, EuiPanel } from '@elastic/eui';
-import { Integration } from '../../../../types';
-import { SpaceTypes } from '../../../../common/constants';
-import { capitalize, startCase } from 'lodash';
-import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { ruleSource } from '../../Rules/utils/constants';
-import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
-import { integrationLabels } from './constants';
+import React, { useState, useEffect } from "react";
+import { EuiSmallButtonIcon, EuiLink, EuiPanel } from "@elastic/eui";
+import { Integration } from "../../../../types";
+import { SpaceTypes } from "../../../../common/constants";
+import { capitalize, startCase } from "lodash";
+import { Search } from "@opensearch-project/oui/src/eui_components/basic_table";
+import { ruleSource } from "../../Rules/utils/constants";
+import {
+  DEFAULT_EMPTY_DATA,
+  integrationCategories,
+} from "../../../utils/constants";
+import { integrationLabels } from "./constants";
 
 const allowedActionsBySpace = {
-  [SpaceTypes.DRAFT.value]: ['create', 'edit', 'delete', 'promote'],
-  [SpaceTypes.TESTING.value]: ['promote'],
+  [SpaceTypes.DRAFT.value]: ["create", "edit", "delete", "promote"],
+  [SpaceTypes.TESTING.value]: ["promote"],
   [SpaceTypes.CUSTOM.value]: [],
-  [SpaceTypes.STANDARD.value]: ['create', 'edit', 'delete', 'promote'], // TOOD: remove these actions, they are added to tset due there are no in other spaces.
-}
+  [SpaceTypes.STANDARD.value]: ["create", "edit", "delete", "promote"], // TOOD: remove these actions, they are added to tset due there are no in other spaces.
+};
 
-export const getIntegrationsTableColumns = (
+export const getIntegrationsTableColumns = ({
+  showDetails,
+  setItemForAction,
+}: {
+  showDetails: (id: string) => void;
+  setItemForAction: { item: any; action: "edit" | "delete" | "promote" };
+}) => [
   {
-    showDetails,
-    setItemForAction
-  }: {
-    showDetails: (id: string) => void,
-    setItemForAction: ({item: any, action: 'edit' | 'delete' | 'promote'}),
-  }
-) => [
-  {
-    field: 'title',
-    name: 'Title',
+    field: "title",
+    name: "Title",
     sortable: true,
     render: (name: string, item: Integration) => {
-      return <EuiLink onClick={() => showDetails(item.id)}>{getIntegrationLabel(name)}</EuiLink>;
+      return (
+        <EuiLink onClick={() => showDetails(item.id)}>
+          {getIntegrationLabel(name)}
+        </EuiLink>
+      );
     },
   },
   {
-    field: 'description',
-    name: 'Description',
+    field: "description",
+    name: "Description",
     truncateText: false,
   },
   {
-    field: 'category',
-    name: 'Category',
+    field: "category",
+    name: "Category",
     truncateText: false,
   },
   {
-    field: 'space',
-    name: 'Space',
+    field: "space",
+    name: "Space",
     render: (spaceName: string) => capitalize(spaceName),
   },
   {
-    field: 'decoders.length',
-    name: 'Decoders',
+    field: "decoders.length",
+    name: "Decoders",
     sortable: true,
     render: (decodersLength: number) => decodersLength,
   },
   {
-    field: 'kvdbs.length',
-    name: 'KVDBs',
+    field: "kvdbs.length",
+    name: "KVDBs",
     sortable: true,
     render: (kvdbsLength: number) => kvdbsLength,
   },
   {
-    field: 'rules.length',
-    name: 'Rules',
+    field: "rules.length",
+    name: "Rules",
     sortable: true,
     render: (rulesLength: number) => rulesLength,
   },
   {
-    name: 'Actions',
+    name: "Actions",
     actions: [
       {
-        name: 'Edit',
-        description: 'Edit integration',
-        type: 'icon',
-        icon: 'pencil',
-        available: (item) => allowedActionsBySpace?.[item.space]?.includes('edit'),
+        name: "Promote",
+        description: "Promote integration",
+        type: "icon",
+        icon: "share",
+        available: (item) =>
+          allowedActionsBySpace?.[item.space]?.includes("promote"),
         onClick: (item) => {
-          setItemForAction({item, action: 'edit'});
-        }
+          setItemForAction({ item, action: "promote" });
+        },
       },
       {
-        name: 'Promote',
-        description: 'Promote integration',
-        type: 'icon',
-        icon: 'share',
-        available: (item) => allowedActionsBySpace?.[item.space]?.includes('promote'),
+        name: "Remove",
+        description: "Remove integration",
+        type: "icon",
+        icon: "trash",
+        color: "danger",
+        available: (item) =>
+          allowedActionsBySpace?.[item.space]?.includes("delete"),
         onClick: (item) => {
-          setItemForAction({item, action: 'promote'});
-        }
+          setItemForAction({ item, action: "delete" });
+        },
       },
-      {
-        name: 'Remove',
-        description: 'Remove integration',
-        type: 'icon',
-        icon: 'trash',
-        color: 'danger',
-        available: (item) => allowedActionsBySpace?.[item.space]?.includes('delete'),
-        onClick: (item) => {
-          setItemForAction({item, action: 'delete'});
-        }
-      }
     ],
   },
 ];
@@ -111,27 +108,29 @@ export const getIntegrationsTableColumns = (
 export const getIntegrationsTableSearchConfig = (): Search => {
   return {
     box: {
-      placeholder: 'Search integrations',
+      placeholder: "Search integrations",
       schema: true,
       compressed: true,
     },
     filters: [
       {
-        type: 'field_value_selection',
-        field: 'category',
-        name: 'Category',
+        type: "field_value_selection",
+        field: "category",
+        name: "Category",
         compressed: true,
-        multiSelect: 'or',
+        multiSelect: "or",
         options: integrationCategories.map((category) => ({
           value: category,
         })),
-      }
+      },
     ],
   };
 };
 
 export const getIntegrationLabel = (name: string) => {
-  return !name ? DEFAULT_EMPTY_DATA : integrationLabels[name.toLowerCase()] || startCase(name);
+  return !name
+    ? DEFAULT_EMPTY_DATA
+    : integrationLabels[name.toLowerCase()] || startCase(name);
 };
 
 export const withGuardAsync =
@@ -189,18 +188,17 @@ export const withGuardAsync =
 
 export const withWrapComponent =
   (WrapComponent, mapWrapComponentProps = () => {}) =>
-  WrappedComponent =>
-  props =>
-    (
-      <WrapComponent
-        {...props}
-        {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}
-      >
-        <WrappedComponent {...props}></WrappedComponent>
-      </WrapComponent>
-    );
+  (WrappedComponent) =>
+  (props) => (
+    <WrapComponent
+      {...props}
+      {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}
+    >
+      <WrappedComponent {...props}></WrappedComponent>
+    </WrapComponent>
+  );
 
-export const withModal = options =>
+export const withModal = (options) =>
   withWrapComponent(
     ({
       paddingSize,
@@ -211,8 +209,8 @@ export const withModal = options =>
       panelRef,
       color,
       className,
-      'aria-label': ariaLabel,
-      'data-test-subj': dataTestSubject,
+      "aria-label": ariaLabel,
+      "data-test-subj": dataTestSubject,
       children,
     }) => {
       const panelProps = {
@@ -224,8 +222,8 @@ export const withModal = options =>
         panelRef,
         color,
         className,
-        'aria-label': ariaLabel,
-        'data-test-subj': dataTestSubject,
+        "aria-label": ariaLabel,
+        "data-test-subj": dataTestSubject,
         children,
       };
       return <EuiPanel {...panelProps}>{children}</EuiPanel>;

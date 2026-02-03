@@ -298,13 +298,41 @@ export const integrationCategories: {
   value: string;
   description: string;
 }[] = [
-  { label: "Access Management", value: "access-management" },
-  { label: "Applications", value: "applications" },
-  { label: "Cloud Services", value: "cloud-services" },
-  { label: "Network Activity", value: "network-activity" },
-  { label: "System Activity", value: "system-activity" },
-  { label: "Security", value: "security" },
-  { label: "Other", value: "other" },
+  {
+    label: "Access Management",
+    value: "access-management",
+    description: "User access, authentication, group management",
+  },
+  {
+    label: "Applications",
+    value: "applications",
+    description: "Application lifecycle, API, and web resources activities",
+  },
+  {
+    label: "Cloud Services",
+    value: "cloud-services",
+    description: "Services managed by cloud providers",
+  },
+  {
+    label: "Network Activity",
+    value: "network-activity",
+    description: "DNS, HTTP, Email, SSH, FTP, DHCP, RDP",
+  },
+  {
+    label: "System Activity",
+    value: "system-activity",
+    description: "System monitoring logs",
+  },
+  {
+    label: "Security",
+    value: "security",
+    description: "Security-related logs and events",
+  },
+  {
+    label: "Other",
+    value: "other",
+    description: "Logs not covered in other categories",
+  },
 ];
 export const integrationsByCategories: { [category: string]: Integration[] } =
   {};

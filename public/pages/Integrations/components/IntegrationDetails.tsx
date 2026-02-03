@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { EuiSmallButton, EuiDescriptionList } from '@elastic/eui';
-import { ContentPanel } from '../../../components/ContentPanel';
-import React from 'react';
-import { IntegrationItem } from '../../../../types';
-import { DataStore } from '../../../store/DataStore';
-import { IntegrationForm } from './IntegrationForm';
-import { NotificationsStart } from 'opensearch-dashboards/public';
-import { successNotificationToast } from '../../../utils/helpers';
+import { EuiSmallButton, EuiDescriptionList } from "@elastic/eui";
+import { ContentPanel } from "../../../components/ContentPanel";
+import React from "react";
+import { IntegrationItem } from "../../../../types";
+import { DataStore } from "../../../store/DataStore";
+import { IntegrationForm } from "./IntegrationForm";
+import { NotificationsStart } from "opensearch-dashboards/public";
+import { successNotificationToast } from "../../../utils/helpers";
 
 export interface IntegrationDetailsProps {
   initialIntegrationDetails: IntegrationItem;
@@ -19,6 +19,7 @@ export interface IntegrationDetailsProps {
   notifications: NotificationsStart;
   setIsEditMode: (isEdit: boolean) => void;
   setIntegrationDetails: (integration: IntegrationItem) => void;
+  integrationId: string;
 }
 
 export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
@@ -28,12 +29,19 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   notifications,
   setIsEditMode,
   setIntegrationDetails,
+  integrationId,
 }) => {
   const onUpdateIntegration = async () => {
-    const success = await DataStore.integrations.updateIntegration(integrationDetails);
+    const success = await DataStore.integrations.updateIntegration(
+      integrationId,
+      integrationDetails,
+    );
     if (success) {
-      // Replace Log Type to Integration by Wazuh
-      successNotificationToast(notifications, 'updated', `integration ${integrationDetails.document.title}`);
+      successNotificationToast(
+        notifications,
+        "updated",
+        `integration ${integrationDetails.document.title}`,
+      );
       setIsEditMode(false);
     }
   };
@@ -43,8 +51,10 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
       title="Details"
       actions={
         !isEditMode &&
-        integrationDetails.space.name.toLocaleLowerCase() !== 'standard' && [
-          <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>,
+        integrationDetails.space.name.toLocaleLowerCase() !== "standard" && [
+          <EuiSmallButton onClick={() => setIsEditMode(true)}>
+            Edit
+          </EuiSmallButton>,
         ]
       }
     >
@@ -52,12 +62,12 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
         type="column"
         listItems={[
           {
-            title: 'Integration', // Replace Log type to Integration by Wazuh
+            title: "Integration", // Replace Log type to Integration by Wazuh
             description: (
               <IntegrationForm
                 integrationDetails={integrationDetails}
                 isEditMode={isEditMode}
-                confirmButtonText={'Update'}
+                confirmButtonText={"Update"}
                 notifications={notifications}
                 setIntegrationDetails={setIntegrationDetails}
                 onCancel={() => {

@@ -15,11 +15,11 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiButtonEmpty,
-} from '@elastic/eui';
-import { ContentPanel } from '../../../components/ContentPanel';
-import React from 'react';
-import { IntegrationItem } from '../../../../types';
-import { DataStore } from '../../../store/DataStore';
+} from "@elastic/eui";
+import { ContentPanel } from "../../../components/ContentPanel";
+import React from "react";
+import { IntegrationItem } from "../../../../types";
+import { DataStore } from "../../../store/DataStore";
 
 export interface IntegrationDetailsTabProps {
   initialIntegrationDetails: IntegrationItem;
@@ -27,6 +27,7 @@ export interface IntegrationDetailsTabProps {
   isEditMode: boolean;
   setIsEditMode: (isEdit: boolean) => void;
   setIntegrationDetails: (integration: IntegrationItem) => void;
+  integrationId: string;
 }
 
 export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
@@ -35,9 +36,13 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
   isEditMode,
   setIsEditMode,
   setIntegrationDetails,
+  integrationId,
 }) => {
   const onUpdateIntegration = async () => {
-    const success = await DataStore.integrations.updateIntegration(integrationDetails);
+    const success = await DataStore.integrations.updateIntegration(
+      integrationId,
+      integrationDetails,
+    );
     if (success) {
       setIsEditMode(false);
     }
@@ -46,13 +51,19 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
   return (
     <ContentPanel
       title="Details"
-      actions={!isEditMode && [<EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>]}
+      actions={
+        !isEditMode && [
+          <EuiSmallButton onClick={() => setIsEditMode(true)}>
+            Edit
+          </EuiSmallButton>,
+        ]
+      }
     >
       <EuiDescriptionList
         type="column"
         listItems={[
           {
-            title: 'Integration', // Replace Log type to Integration by Wazuh
+            title: "Integration", // Replace Log type to Integration by Wazuh
             description: (
               <>
                 <EuiCompressedFormRow label="Name">
@@ -68,7 +79,9 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
                       })
                     }
                     placeholder="Enter name for integration" // Replace Log type to Integration by Wazuh
-                    disabled={!isEditMode || !!integrationDetails.detectionRulesCount}
+                    disabled={
+                      !isEditMode || !!integrationDetails.detectionRulesCount
+                    }
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer />
@@ -105,7 +118,12 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
                         </EuiButtonEmpty>
                       </EuiFlexItem>
                       <EuiFlexItem grow={false}>
-                        <EuiButton color="primary" fill size="s" onClick={onUpdateIntegration}>
+                        <EuiButton
+                          color="primary"
+                          fill
+                          size="s"
+                          onClick={onUpdateIntegration}
+                        >
                           Update
                         </EuiButton>
                       </EuiFlexItem>

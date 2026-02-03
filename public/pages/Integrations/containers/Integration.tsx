@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { RouteComponentProps, useParams } from 'react-router-dom';
-import { IntegrationItem } from '../../../../types';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { RouteComponentProps, useParams } from "react-router-dom";
+import { IntegrationItem } from "../../../../types";
 import {
   EuiSmallButtonIcon,
   EuiDescriptionList,
@@ -18,85 +18,100 @@ import {
   EuiTabs,
   EuiTitle,
   EuiToolTip,
-} from '@elastic/eui';
-import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { integrationDetailsTabs } from '../utils/constants';
-import { IntegrationDetails } from '../components/IntegrationDetails';
-import { NotificationsStart } from 'opensearch-dashboards/public';
-import { IntegrationDetectionRules } from '../components/IntegrationDetectionRules';
-import { IntegrationDecoders } from '../components/IntegrationDecoders';
-import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
-import { RuleTableItem } from '../../Rules/utils/helpers';
-import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
+} from "@elastic/eui";
+import { DataStore } from "../../../store/DataStore";
+import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
+import { integrationDetailsTabs } from "../utils/constants";
+import { IntegrationDetails } from "../components/IntegrationDetails";
+import { NotificationsStart } from "opensearch-dashboards/public";
+import { IntegrationDetectionRules } from "../components/IntegrationDetectionRules";
+import { IntegrationDecoders } from "../components/IntegrationDecoders";
+import { IntegrationKVDBs } from "../components/IntegrationKVDBs";
+import { RuleTableItem } from "../../Rules/utils/helpers";
+import { DeleteIntegrationModal } from "../components/DeleteIntegrationModal";
 import {
   errorNotificationToast,
   setBreadcrumbs,
   successNotificationToast,
-} from '../../../utils/helpers';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
-import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
+} from "../../../utils/helpers";
+import { PageHeader } from "../../../components/PageHeader/PageHeader";
+import { useIntegrationDecoders } from "../../Decoders/hooks/useIntegrationDecoders";
+import { useIntegrationKVDBs } from "../../KVDBs/hooks/useIntegrationKVDBs";
 
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
 }
 
-export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
+export const Integration: React.FC<IntegrationProps> = ({
+  notifications,
+  history,
+}) => {
   const { integrationId } = useParams<{ integrationId: string }>();
-  const [selectedTabId, setSelectedTabId] = useState('details');
+  const [selectedTabId, setSelectedTabId] = useState("details");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [infoText, setInfoText] = useState<React.ReactNode | string>(
     <>
       Loading details &nbsp;
       <EuiLoadingSpinner size="l" />
-    </>
+    </>,
   );
-  const [integrationDetails, setIntegrationDetails] = useState<IntegrationItem | undefined>(undefined);
-  const [initialIntegrationDetails, setInitialIntegrationDetails] = useState<IntegrationItem | undefined>(
-    undefined
-  );
+  const [integrationDetails, setIntegrationDetails] = useState<
+    IntegrationItem | undefined
+  >(undefined);
+  const [initialIntegrationDetails, setInitialIntegrationDetails] = useState<
+    IntegrationItem | undefined
+  >(undefined);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [rules, setRules] = useState<RuleTableItem[]>([]);
   const [loadingRules, setLoadingRules] = useState(true);
 
-  const updateRules = useCallback(async (details: IntegrationItem, intialDetails: IntegrationItem) => {
-    const rulesRes = await DataStore.rules.getAllRules({
-      'rule.category': [details.document.title.toLowerCase()],
-    });
-    const ruleItems = rulesRes.map((rule) => ({
-      title: rule._source.title,
-      level: rule._source.level,
-      category: rule._source.category,
-      description: rule._source.description,
-      source: rule.prePackaged ? 'Standard' : 'Custom',
-      ruleInfo: rule,
-      ruleId: rule._id,
-    }));
-    setRules(ruleItems);
-    setLoadingRules(false);
-    setIntegrationDetails({
-      ...details,
-      detectionRulesCount: ruleItems.length,
-    });
-    setInitialIntegrationDetails({
-      ...intialDetails,
-      detectionRulesCount: ruleItems.length,
-    });
-  }, []);
+  const updateRules = useCallback(
+    async (details: IntegrationItem, intialDetails: IntegrationItem) => {
+      const rulesRes = await DataStore.rules.getAllRules({
+        "rule.category": [details.document.title.toLowerCase()],
+      });
+      const ruleItems = rulesRes.map((rule) => ({
+        title: rule._source.title,
+        level: rule._source.level,
+        category: rule._source.category,
+        description: rule._source.description,
+        source: rule.prePackaged ? "Standard" : "Custom",
+        ruleInfo: rule,
+        ruleId: rule._id,
+      }));
+      setRules(ruleItems);
+      setLoadingRules(false);
+      setIntegrationDetails({
+        ...details,
+        detectionRulesCount: ruleItems.length,
+      });
+      setInitialIntegrationDetails({
+        ...intialDetails,
+        detectionRulesCount: ruleItems.length,
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     const getIntegrationDetails = async () => {
-      const details = await DataStore.integrations.getIntegration(integrationId);
+      const details =
+        await DataStore.integrations.getIntegration(integrationId);
 
       if (!details) {
-        setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
+        setInfoText("Integration not found!"); // Replace Log Type to Integration by Wazuh
         return;
       }
 
-      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.title }]);
-      const integrationItem = { ...details, detectionRulesCount: details.detectionRules.length };
+      setBreadcrumbs([
+        BREADCRUMBS.INTEGRATIONS,
+        { text: details.document.title },
+      ]);
+      const integrationItem = {
+        ...details,
+        detectionRulesCount: details.detectionRules.length,
+      };
       updateRules(integrationItem, integrationItem);
     };
 
@@ -109,17 +124,20 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
 
   const decoderIds = useMemo(
     () => integrationDetails?.document.decoders ?? [],
-    [integrationDetails]
+    [integrationDetails],
   );
   const {
     items: decoderItems,
     loading: loadingDecoders,
     refresh: refreshDecoders,
-  } = useIntegrationDecoders({ decoderIds, space: integrationDetails?.space?.name ?? '' });
+  } = useIntegrationDecoders({
+    decoderIds,
+    space: integrationDetails?.space?.name ?? "",
+  });
 
   const kvdbIds = useMemo(
     () => integrationDetails?.document.kvdbs ?? [],
-    [integrationDetails]
+    [integrationDetails],
   );
   const {
     items: kvdbItems,
@@ -129,16 +147,16 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
 
   const renderTabContent = () => {
     switch (selectedTabId) {
-      case 'decoders':
+      case "decoders":
         return (
           <IntegrationDecoders
             decoders={decoderItems}
             loading={loadingDecoders}
-            space={integrationDetails?.space?.name ?? ''}
+            space={integrationDetails?.space?.name ?? ""}
             onRefresh={refreshDecoders}
           />
         );
-      case 'kvdbs':
+      case "kvdbs":
         return (
           <IntegrationKVDBs
             kvdbs={kvdbItems}
@@ -146,7 +164,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             onRefresh={refreshKvdbs}
           />
         );
-      case 'detection_rules':
+      case "detection_rules":
         return (
           <IntegrationDetectionRules
             loadingRules={loadingRules}
@@ -154,7 +172,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             refreshRules={refreshRules}
           />
         );
-      case 'details':
+      case "details":
       default:
         return (
           <IntegrationDetails
@@ -164,24 +182,31 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             notifications={notifications}
             setIsEditMode={setIsEditMode}
             setIntegrationDetails={setIntegrationDetails}
+            integrationId={integrationId}
           />
         );
     }
   };
 
   const deleteIntegration = async () => {
-    const deleteSucceeded = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
+    const deleteSucceeded = await DataStore.integrations.deleteIntegration(
+      integrationDetails!.id,
+    );
     if (deleteSucceeded) {
-      successNotificationToast(notifications, 'deleted', 'integration');
+      successNotificationToast(notifications, "deleted", "integration");
       history.push(ROUTES.INTEGRATIONS);
     } else {
-      errorNotificationToast(notifications, 'delete', 'integration');
+      errorNotificationToast(notifications, "delete", "integration");
     }
   };
 
   const deleteAction = (
     <EuiToolTip content="Delete" position="bottom">
-      <EuiSmallButtonIcon iconType={'trash'} color="danger" onClick={() => setShowDeleteModal(true)} />
+      <EuiSmallButtonIcon
+        iconType={"trash"}
+        color="danger"
+        onClick={() => setShowDeleteModal(true)}
+      />
     </EuiToolTip>
   );
 
@@ -212,17 +237,27 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       <EuiSpacer />
       <EuiPanel grow={false}>
         <EuiDescriptionList
-          listItems={[{ title: 'Description', description: integrationDetails.document.description }]}
+          listItems={[
+            {
+              title: "Description",
+              description: integrationDetails.document.description,
+            },
+          ]}
         />
         <EuiSpacer />
         <EuiFlexGroup>
           <EuiFlexItem>
-            <EuiDescriptionList listItems={[{ title: 'ID', description: integrationDetails.id }]} />
+            <EuiDescriptionList
+              listItems={[{ title: "ID", description: integrationDetails.id }]}
+            />
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiDescriptionList
               listItems={[
-                { title: 'Detection rules', description: integrationDetails.detectionRulesCount },
+                {
+                  title: "Detection rules",
+                  description: integrationDetails.detectionRulesCount,
+                },
               ]}
             />
           </EuiFlexItem>
@@ -230,9 +265,8 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Space',
-                  description:
-                    integrationDetails.space.name,
+                  title: "Space",
+                  description: integrationDetails.space.name,
                 },
               ]}
             />

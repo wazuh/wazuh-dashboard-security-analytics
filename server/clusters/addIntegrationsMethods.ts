@@ -27,5 +27,18 @@ export function addIntegrationsMethods(
     method: "POST",
   });
 
-  // TODO: add other endpoints
+  securityAnalytics[METHOD_NAMES.UPDATE_INTEGRATION] = createAction({
+    url: {
+      fmt: `${BASE_PATH}/integrations/<%=integrationId%>`,
+      req: {
+        integrationId: {
+          type: "string",
+          required: true,
+        },
+      },
+    },
+    needBody: true,
+    method: "PUT",
+  });
+  // TODO: add promote method
 }

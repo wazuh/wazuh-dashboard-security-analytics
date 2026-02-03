@@ -41,11 +41,11 @@ export class IntegrationService extends MDSEnabledClientService {
     >
   > => {
     try {
-      const integration = request.body;
+      const { document } = request.body;
       const client = this.getClient(request, context);
       const createIntegrationResponse: CreateIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.CREATE_INTEGRATION,
-        { body: { resource: integration.document, type: "integration" } },
+        { body: { resource: document, type: "integration" } },
       );
 
       return response.custom({
@@ -134,10 +134,11 @@ export class IntegrationService extends MDSEnabledClientService {
     >
   > => {
     try {
-      const integration = request.body;
+      const { document } = request.body;
+      delete (document as any).id;
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
-        body: integration,
+        body: { resource: document, type: "integration" },
         integrationId,
       };
       const client = this.getClient(request, context);
@@ -162,7 +163,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: error.body.message || error.message,
         },
       });
     }
