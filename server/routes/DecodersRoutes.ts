@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { IRouter } from 'opensearch-dashboards/server';
-import { schema } from '@osd/config-schema';
-import { NodeServices } from '../models/interfaces';
-import { API } from '../utils/constants';
-import { createQueryValidationSchema } from '../utils/helpers';
+import { IRouter } from "opensearch-dashboards/server";
+import { schema } from "@osd/config-schema";
+import { NodeServices } from "../models/interfaces";
+import { API } from "../utils/constants";
+import { createQueryValidationSchema } from "../utils/helpers";
 
 export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
   const { decodersService } = services;
@@ -22,7 +22,7 @@ export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
         }),
       },
     },
-    decodersService.searchDecoders
+    decodersService.searchDecoders,
   );
 
   router.get(
@@ -37,7 +37,7 @@ export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
         }),
       },
     },
-    decodersService.getDecoder
+    decodersService.getDecoder,
   );
 
   router.post(
@@ -53,7 +53,7 @@ export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
         }),
       },
     },
-    decodersService.createDecoder
+    decodersService.createDecoder,
   );
 
   router.put(
@@ -71,7 +71,7 @@ export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
         }),
       },
     },
-    decodersService.updateDecoder
+    decodersService.updateDecoder,
   );
 
   router.delete(
@@ -86,6 +86,16 @@ export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
         }),
       },
     },
-    decodersService.deleteDecoder
+    decodersService.deleteDecoder,
+  );
+
+  router.get(
+    {
+      path: `${API.DECODERS_BASE}/integrations/draft`,
+      validate: {
+        query: createQueryValidationSchema(),
+      },
+    },
+    decodersService.getDraftIntegrations,
   );
 }

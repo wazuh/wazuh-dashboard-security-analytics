@@ -26,6 +26,7 @@ import {
   EuiSmallButton,
   EuiToolTip,
   EuiLoadingSpinner,
+  EuiCallOut,
 } from "@elastic/eui";
 import { PageHeader } from "../../../components/PageHeader/PageHeader";
 import FormFieldHeader from "../../../components/FormFieldHeader";
@@ -58,6 +59,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const idDecoder = props.match.params.id;
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingIntegrations, setLoadingIntegrations] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState("yaml");
   const [integrationType, setIntegrationType] = useState<string>("");
   const [integrationTypeOptions, setIntegrationTypeOptions] = useState<
@@ -105,11 +107,11 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   }, [action, idDecoder, notifications]);
 
   const getIntegrationOptions = async () => {
-    const options = await DataStore.logTypes.getLogTypes();
+    const options = await DataStore.decoders.getDraftIntegrations();
     return options.map((option) => ({
-      value: option.name,
-      label: option.name,
-      id: option.id,
+      value: option._source.document.title,
+      label: option._source.document.title,
+      id: option._id,
     }));
   };
 
@@ -123,6 +125,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     }
 
     const fetchIntegrationTypes = async () => {
+      setLoadingIntegrations(true);
       try {
         const options = await getIntegrationOptions();
         setIntegrationTypeOptions(options);
@@ -133,6 +136,8 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           "integration types",
           "There was an error retrieving the integration types.",
         );
+      } finally {
+        setLoadingIntegrations(false);
       }
     };
 
@@ -295,6 +300,11 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                         options={integrationTypeOptions}
                         singleSelection={{ asPlainText: true }}
                         onChange={(e) => onChange(e)}
+                        isLoading={loadingIntegrations}
+                        isDisabled={
+                          loadingIntegrations ||
+                          integrationTypeOptions.length === 0
+                        }
                         selectedOptions={
                           integrationType
                             ? [
@@ -314,6 +324,24 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                         }
                       />
                     </EuiCompressedFormRow>
+
+                    {!loadingIntegrations &&
+                      integrationTypeOptions.length === 0 && (
+                        <>
+                          <EuiSpacer size="m" />
+                          <EuiCallOut
+                            title="No integrations available"
+                            color="warning"
+                            iconType="alert"
+                          >
+                            <p>
+                              There are no integrations in draft status
+                              available to add decoders. Please create or draft
+                              an integration first before adding decoders.
+                            </p>
+                          </EuiCallOut>
+                        </>
+                      )}
 
                     <EuiSpacer size="xl" />
                   </>

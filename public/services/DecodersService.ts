@@ -91,4 +91,9 @@ export default class DecodersService {
     const url = `${this.baseUrl}/${decoderId}`;
     return await this.httpClient.delete(url, {});
   };
+
+  getDraftIntegrations = async (): Promise<ServerResponse<any>> => {
+    const url = `${this.baseUrl}/integrations/draft`;
+    return await this.httpClient.get(url, {});
+  };
 }

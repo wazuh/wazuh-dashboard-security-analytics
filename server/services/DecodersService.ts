@@ -498,4 +498,57 @@ export class DecodersService {
       });
     }
   };
+
+  getDraftIntegrations = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest,
+    response: OpenSearchDashboardsResponseFactory,
+  ): Promise<
+    IOpenSearchDashboardsResponse<ServerResponse<any> | ResponseError>
+  > => {
+    try {
+      const client = this.getClient(request);
+      const searchResponse = await client("search", {
+        index: INTEGRATIONS_INDEX,
+        body: {
+          size: 10000,
+          query: {
+            term: {
+              "space.name": {
+                value: "draft",
+              },
+            },
+          },
+          _source: true,
+        },
+      });
+
+      const hits = searchResponse?.hits?.hits ?? [];
+
+      const total = hits.length;
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: {
+            total,
+            items: hits,
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error(
+        "Security Analytics - DecodersService - getDraftIntegrations:",
+        error,
+      );
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.message,
+        },
+      });
+    }
+  };
 }

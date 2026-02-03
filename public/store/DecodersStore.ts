@@ -140,4 +140,18 @@ export class DecodersStore {
     }
     return responseRequest.response;
   }
+
+  public async getDraftIntegrations(): Promise<any[]> {
+    const responseRequest = await this.service.getDraftIntegrations();
+    if (!responseRequest.ok) {
+      errorNotificationToast(
+        this.notifications,
+        "retrieve",
+        "draft integrations",
+        responseRequest.error,
+      );
+      return [];
+    }
+    return responseRequest.response?.items || [];
+  }
 }
