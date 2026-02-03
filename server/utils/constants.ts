@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { CreateDetectorSteps, MetricsCounter } from '../../types';
-import { SecurityAnalyticsApi } from '../models/interfaces';
+import { CreateDetectorSteps, MetricsCounter } from "../../types";
+import { SecurityAnalyticsApi } from "../models/interfaces";
 
 export enum CLUSTER {
-  ADMIN = 'admin',
-  SA = 'opensearch_security_analytics',
-  DATA = 'data',
+  ADMIN = "admin",
+  SA = "opensearch_security_analytics",
+  DATA = "data",
 }
 
-export const BASE_API_PATH = '/_plugins/_security_analytics';
+export const BASE_API_PATH = "/_plugins/_security_analytics";
 
 export const API: SecurityAnalyticsApi = {
   DETECTORS_BASE: `${BASE_API_PATH}/detectors`,
@@ -34,7 +34,7 @@ export const API: SecurityAnalyticsApi = {
   ACKNOWLEDGE_ALERTS: `${BASE_API_PATH}/detectors/{detector_id}/_acknowledge/alerts`,
   UPDATE_ALIASES: `${BASE_API_PATH}/update_aliases`,
   CORRELATIONS: `${BASE_API_PATH}/correlations`,
-  INTEGRATION_BASE: `${BASE_API_PATH}/integration`,
+  INTEGRATION_BASE: `${BASE_API_PATH}/integrations`,
   LOGTYPE_BASE: `${BASE_API_PATH}/logtype`,
   KVDBS_BASE: `${BASE_API_PATH}/kvdbs`,
   METRICS: `/api/security_analytics/stats`,
@@ -49,78 +49,78 @@ export const API: SecurityAnalyticsApi = {
  * Property with below name is added to the prototype of Opensearch client during setup.
  * @see ../clusters/securityAnalytics/securityAnalyticsPlugin
  */
-export const PLUGIN_PROPERTY_NAME: string = 'securityAnalytics';
+export const PLUGIN_PROPERTY_NAME: string = "securityAnalytics";
 
 export const METHOD_NAMES = {
   //Rule methods
-  CREATE_RULE: 'createRule',
-  DELETE_RULE: 'deleteRule',
-  GET_RULE: 'getRule',
-  GET_RULES: 'getRules',
-  UPDATE_RULE: 'updateRules',
+  CREATE_RULE: "createRule",
+  DELETE_RULE: "deleteRule",
+  GET_RULE: "getRule",
+  GET_RULES: "getRules",
+  UPDATE_RULE: "updateRules",
 
   // Detector methods
-  CREATE_DETECTOR: 'createDetector',
-  DELETE_DETECTOR: 'deleteDetector',
-  GET_DETECTOR: 'getDetector',
-  SEARCH_DETECTORS: 'searchDetectors',
-  UPDATE_DETECTOR: 'updateDetector',
+  CREATE_DETECTOR: "createDetector",
+  DELETE_DETECTOR: "deleteDetector",
+  GET_DETECTOR: "getDetector",
+  SEARCH_DETECTORS: "searchDetectors",
+  UPDATE_DETECTOR: "updateDetector",
 
   // Correlation methods
-  GET_CORRELATION_RULES: 'getCorrelationRules',
-  CREATE_CORRELATION_RULE: 'createCorrelationRule',
-  UPDATE_CORRELATION_RULE: 'updateCorrelationRule',
-  DELETE_CORRELATION_RULE: 'deleteCorrelationRule',
-  GET_CORRELATED_FINDINGS: 'getCorrelatedFindings',
-  GET_ALL_CORRELATIONS: 'getAllCorrelations',
-  GET_CORRELATION_ALERTS: 'getAllCorrelationAlerts',
-  ACK_CORRELATION_ALERTS: 'acknowledgeCorrelationAlerts',
+  GET_CORRELATION_RULES: "getCorrelationRules",
+  CREATE_CORRELATION_RULE: "createCorrelationRule",
+  UPDATE_CORRELATION_RULE: "updateCorrelationRule",
+  DELETE_CORRELATION_RULE: "deleteCorrelationRule",
+  GET_CORRELATED_FINDINGS: "getCorrelatedFindings",
+  GET_ALL_CORRELATIONS: "getAllCorrelations",
+  GET_CORRELATION_ALERTS: "getAllCorrelationAlerts",
+  ACK_CORRELATION_ALERTS: "acknowledgeCorrelationAlerts",
 
   // Finding methods
-  GET_FINDINGS: 'getFindings',
+  GET_FINDINGS: "getFindings",
 
   // Field mapping methods
-  GET_MAPPINGS_VIEW: 'getFieldMappingsView',
-  CREATE_MAPPINGS: 'createMappings',
-  GET_MAPPINGS: 'getMappings',
-  GET_INDEX_ALIAS_MAPPINGS: 'getIndexAliasMappings',
+  GET_MAPPINGS_VIEW: "getFieldMappingsView",
+  CREATE_MAPPINGS: "createMappings",
+  GET_MAPPINGS: "getMappings",
+  GET_INDEX_ALIAS_MAPPINGS: "getIndexAliasMappings",
 
   // Alerts methods
-  GET_ALERTS: 'getAlerts',
-  ACKNOWLEDGE_ALERTS: 'acknowledgeAlerts',
+  GET_ALERTS: "getAlerts",
+  ACKNOWLEDGE_ALERTS: "acknowledgeAlerts",
 
   // Notifications methods
-  GET_CHANNEl: 'getChannel',
-  GET_CHANNElS: 'getChannels',
-  GET_FEATURES: 'getFeatures',
+  GET_CHANNEl: "getChannel",
+  GET_CHANNElS: "getChannels",
+  GET_FEATURES: "getFeatures",
 
   // Integration methods
-  SEARCH_INTEGRATIONS: 'search',
-  CREATE_INTEGRATION: 'createIntegration',
-  UPDATE_INTEGRATION: 'updateIntegration',
-  DELETE_INTEGRATION: 'deleteIntegration',
+  SEARCH_INTEGRATIONS: "search",
+  CREATE_INTEGRATION: "createIntegration",
+  UPDATE_INTEGRATION: "updateIntegration",
+  DELETE_INTEGRATION: "deleteIntegration",
 
   // LogType methods
-  SEARCH_LOGTYPES: 'searchLogTypes',
-  CREATE_LOGTYPE: 'createLogType',
-  UPDATE_LOGTYPE: 'updateLogType',
-  DELETE_LOGTYPE: 'deleteLogType',
+  SEARCH_LOGTYPES: "searchLogTypes",
+  CREATE_LOGTYPE: "createLogType",
+  UPDATE_LOGTYPE: "updateLogType",
+  DELETE_LOGTYPE: "deleteLogType",
 
   // Threat intel methods
-  ADD_THREAT_INTEL_SOURCE: 'addThreatIntelSource',
-  UPDATE_THREAT_INTEL_SOURCE: 'updateThreatIntelSource',
-  SEARCH_THREAT_INTEL_SOURCES: 'searchThreatIntelSources',
-  GET_THREAT_INTEL_SOURCE: 'getThreatIntelSource',
-  DELETE_THREAT_INTEL_SOURCE: 'deleteThreatIntelSource',
-  REFRESH_THREAT_INTEL_SOURCE: 'refreshThreatIntelSource',
-  GET_THREAT_INTEL_IOCS: 'getThreatIntelIoCs',
-  CREATE_THREAT_INTEL_MONITOR: 'createThreatIntelMonitor',
-  UPDATE_THREAT_INTEL_MONITOR: 'updateThreatIntelMonitor',
-  SEARCH_THREAT_INTEL_MONITORS: 'searchThreatIntelMonitors',
-  DELETE_THREAT_INTEL_MONITOR: 'deleteThreatIntelMonitor',
-  GET_THREAT_INTEL_FINDINGS: 'getThreatIntelFindings',
-  GET_THREAT_INTEL_ALERTS: 'getThreatIntelAlerts',
-  UPDATE_THREAT_INTEL_ALERTS_STATE: 'updateThreatIntelAlertsStatus',
+  ADD_THREAT_INTEL_SOURCE: "addThreatIntelSource",
+  UPDATE_THREAT_INTEL_SOURCE: "updateThreatIntelSource",
+  SEARCH_THREAT_INTEL_SOURCES: "searchThreatIntelSources",
+  GET_THREAT_INTEL_SOURCE: "getThreatIntelSource",
+  DELETE_THREAT_INTEL_SOURCE: "deleteThreatIntelSource",
+  REFRESH_THREAT_INTEL_SOURCE: "refreshThreatIntelSource",
+  GET_THREAT_INTEL_IOCS: "getThreatIntelIoCs",
+  CREATE_THREAT_INTEL_MONITOR: "createThreatIntelMonitor",
+  UPDATE_THREAT_INTEL_MONITOR: "updateThreatIntelMonitor",
+  SEARCH_THREAT_INTEL_MONITORS: "searchThreatIntelMonitors",
+  DELETE_THREAT_INTEL_MONITOR: "deleteThreatIntelMonitor",
+  GET_THREAT_INTEL_FINDINGS: "getThreatIntelFindings",
+  GET_THREAT_INTEL_ALERTS: "getThreatIntelAlerts",
+  UPDATE_THREAT_INTEL_ALERTS_STATE: "updateThreatIntelAlertsStatus",
 };
 
 /**

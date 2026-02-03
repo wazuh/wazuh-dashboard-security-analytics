@@ -45,7 +45,7 @@ export class IntegrationService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const createIntegrationResponse: CreateIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.CREATE_INTEGRATION,
-        { body: integration },
+        { body: { resource: integration.document, type: "integration" } },
       );
 
       return response.custom({
@@ -64,7 +64,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: error.body || error.message,
         },
       });
     }
