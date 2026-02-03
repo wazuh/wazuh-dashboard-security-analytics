@@ -9,8 +9,8 @@ import {
   OpenSearchDashboardsResponseFactory,
   RequestHandlerContext,
   ResponseError,
-} from 'opensearch-dashboards/server';
-import { ServerResponse } from '../models/types';
+} from "opensearch-dashboards/server";
+import { ServerResponse } from "../models/types";
 import {
   CreateIntegrationRequestBody,
   CreateIntegrationResponse,
@@ -20,26 +20,32 @@ import {
   SearchIntegrationsResponse,
   UpdateIntegrationParams,
   UpdateIntegrationResponse,
-} from '../../types';
-import { CLIENT_INTEGRATION_METHODS } from '../utils/constants';
-import { MDSEnabledClientService } from './MDSEnabledClientService';
+} from "../../types";
+import { CLIENT_INTEGRATION_METHODS } from "../utils/constants";
+import { MDSEnabledClientService } from "./MDSEnabledClientService";
 
 const INTEGRATIONS_INDEX = ".cti-integrations";
 
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
     context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest<unknown, unknown, CreateIntegrationRequestBody>,
-    response: OpenSearchDashboardsResponseFactory
+    request: OpenSearchDashboardsRequest<
+      unknown,
+      unknown,
+      CreateIntegrationRequestBody
+    >,
+    response: OpenSearchDashboardsResponseFactory,
   ): Promise<
-    IOpenSearchDashboardsResponse<ServerResponse<CreateIntegrationResponse> | ResponseError>
+    IOpenSearchDashboardsResponse<
+      ServerResponse<CreateIntegrationResponse> | ResponseError
+    >
   > => {
     try {
       const integration = request.body;
       const client = this.getClient(request, context);
       const createIntegrationResponse: CreateIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.CREATE_INTEGRATION,
-        { body: integration }
+        { body: integration },
       );
 
       return response.custom({
@@ -50,7 +56,10 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - createIntegration:', error);
+      console.error(
+        "Security Analytics - IntegrationService - createIntegration:",
+        error,
+      );
       return response.custom({
         statusCode: 200,
         body: {
@@ -64,27 +73,30 @@ export class IntegrationService extends MDSEnabledClientService {
   searchIntegrations = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest,
-    response: OpenSearchDashboardsResponseFactory
+    response: OpenSearchDashboardsResponseFactory,
   ): Promise<
-    IOpenSearchDashboardsResponse<ServerResponse<SearchIntegrationsResponse> | ResponseError>
+    IOpenSearchDashboardsResponse<
+      ServerResponse<SearchIntegrationsResponse> | ResponseError
+    >
   > => {
     try {
       const query = request.body;
       const client = this.getClient(request, context);
-      const searchIntegrationsResponse: SearchIntegrationsResponse = await client(
-        // CLIENT_INTEGRATION_METHODS.SEARCH_INTEGRATIONS,
-        'search',
-        {
-          index: INTEGRATIONS_INDEX,
-          body: {
-            size: 10000,
-            // query: query ?? {
-            query: query ?? {
-              match_all: {},
+      const searchIntegrationsResponse: SearchIntegrationsResponse =
+        await client(
+          // CLIENT_INTEGRATION_METHODS.SEARCH_INTEGRATIONS,
+          "search",
+          {
+            index: INTEGRATIONS_INDEX,
+            body: {
+              size: 10000,
+              // query: query ?? {
+              query: query ?? {
+                match_all: {},
+              },
             },
           },
-        }
-      );
+        );
 
       return response.custom({
         statusCode: 200,
@@ -94,7 +106,10 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - searchIntegrations:', error);
+      console.error(
+        "Security Analytics - IntegrationService - searchIntegrations:",
+        error,
+      );
       return response.custom({
         statusCode: 200,
         body: {
@@ -107,19 +122,28 @@ export class IntegrationService extends MDSEnabledClientService {
 
   updateIntegration = async (
     context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest<{ integrationId: string }, unknown, IntegrationBase>,
-    response: OpenSearchDashboardsResponseFactory
+    request: OpenSearchDashboardsRequest<
+      { integrationId: string },
+      unknown,
+      IntegrationBase
+    >,
+    response: OpenSearchDashboardsResponseFactory,
   ): Promise<
-    IOpenSearchDashboardsResponse<ServerResponse<UpdateIntegrationResponse> | ResponseError>
+    IOpenSearchDashboardsResponse<
+      ServerResponse<UpdateIntegrationResponse> | ResponseError
+    >
   > => {
     try {
       const integration = request.body;
       const { integrationId } = request.params;
-      const params: UpdateIntegrationParams = { body: integration, integrationId };
+      const params: UpdateIntegrationParams = {
+        body: integration,
+        integrationId,
+      };
       const client = this.getClient(request, context);
       const updateIntegrationResponse: UpdateIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.UPDATE_INTEGRATION,
-        params
+        params,
       );
 
       return response.custom({
@@ -130,7 +154,10 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - updateIntegration:', error);
+      console.error(
+        "Security Analytics - IntegrationService - updateIntegration:",
+        error,
+      );
       return response.custom({
         statusCode: 200,
         body: {
@@ -144,9 +171,11 @@ export class IntegrationService extends MDSEnabledClientService {
   deleteIntegration = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<{ integrationId: string }>,
-    response: OpenSearchDashboardsResponseFactory
+    response: OpenSearchDashboardsResponseFactory,
   ): Promise<
-    IOpenSearchDashboardsResponse<ServerResponse<DeleteIntegrationResponse> | ResponseError>
+    IOpenSearchDashboardsResponse<
+      ServerResponse<DeleteIntegrationResponse> | ResponseError
+    >
   > => {
     try {
       const { integrationId } = request.params;
@@ -154,7 +183,7 @@ export class IntegrationService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const deleteIntegrationResponse: DeleteIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.DELETE_INTEGRATION,
-        params
+        params,
       );
 
       return response.custom({
@@ -165,12 +194,15 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DetectorsService - deleteDetector:', error);
+      console.error(
+        "Security Analytics - IntegrationService - deleteIntegration:",
+        error,
+      );
       return response.custom({
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: error.body || error.message,
         },
       });
     }
