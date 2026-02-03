@@ -192,7 +192,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         return;
       }
 
-      const result = await DataStore.decoders.updateDecoder(values!.id, {
+      const result = await DataStore.decoders.updateDecoder(idDecoder, {
         document: values,
       });
 

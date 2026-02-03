@@ -173,10 +173,6 @@ export const Decoders: React.FC<DecodersProps> = ({
           ),
         );
       }
-      if (!isMountedRef.current) {
-        return;
-      }
-      setSelectedItems([]);
       successNotificationToast(
         notifications,
         "delete",
@@ -186,6 +182,10 @@ export const Decoders: React.FC<DecodersProps> = ({
           : "The selected decoders have been deleted successfully.",
       );
       await loadDecoders();
+      if (!isMountedRef.current) {
+        return;
+      }
+      setSelectedItems([]);
     } catch (error) {
       errorNotificationToast(
         notifications,
