@@ -40,7 +40,7 @@ export const decoderFormDefaultValue: DecoderFormModel = {
   },
 };
 
-// Convierte del DecoderDocument (API) al DecoderFormModel (formulario)
+// Convert from DecoderDocument (API) to DecoderFormModel (form)
 export const mapDecoderToForm = (decoder: any): DecoderFormModel => {
   const result: any = {
     name: decoder.name || "decoder/change_me",
@@ -65,7 +65,7 @@ export const mapDecoderToForm = (decoder: any): DecoderFormModel => {
   return result as DecoderFormModel;
 };
 
-// Convierte del DecoderFormModel (formulario) al DecoderDocument (API)
+// Convert from DecoderFormModel (form) to DecoderDocument (API)
 export const mapFormToDecoder = (
   formState: DecoderFormModel,
 ): DecoderDocument => {
