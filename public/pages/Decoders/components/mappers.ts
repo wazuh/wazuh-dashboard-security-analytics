@@ -43,7 +43,7 @@ export const decoderFormDefaultValue: DecoderFormModel = {
 // Convert from DecoderDocument (API) to DecoderFormModel (form)
 export const mapDecoderToForm = (decoder: any): DecoderFormModel => {
   const result: any = {
-    name: decoder.name || "decoder/change_me",
+    name: decoder.name || "",
   };
 
   if (decoder.id !== undefined) result.id = decoder.id;
