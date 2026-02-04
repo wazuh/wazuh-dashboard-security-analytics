@@ -222,6 +222,20 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     [action, createDecoder, updateDecoder],
   );
 
+  const validateForm = useCallback((values: DecoderFormModel) => {
+    const errors: FormikErrors<DecoderFormModel> = {};
+
+    if (!values.name) {
+      errors.name = "Decoder name is required";
+    }
+
+    if (!values.name.startsWith("decoder/")) {
+      errors.name = "Decoder name must start with 'decoder/'";
+    }
+
+    return errors;
+  }, []);
+
   return (
     <>
       {isLoading ? (
@@ -242,15 +256,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           initialValues={initialValue}
           validateOnMount={true}
           enableReinitialize={true}
-          validate={(values) => {
-            const errors: FormikErrors<DecoderFormModel> = {};
-
-            if (!values.name) {
-              errors.name = "Rule name is required";
-            }
-
-            return errors;
-          }}
+          validate={validateForm}
           onSubmit={(values, { setSubmitting }) => {
             setSubmitting(false);
             handleOnClick(values);

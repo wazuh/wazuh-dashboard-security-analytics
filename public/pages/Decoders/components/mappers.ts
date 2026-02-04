@@ -30,7 +30,7 @@ export interface DecoderFormModel {
 }
 
 export const decoderFormDefaultValue: DecoderFormModel = {
-  name: "change_me",
+  name: "decoder/change_me",
   enabled: true,
   metadata: {
     title: "Placeholder Decoder",
@@ -43,7 +43,7 @@ export const decoderFormDefaultValue: DecoderFormModel = {
 // Convierte del DecoderDocument (API) al DecoderFormModel (formulario)
 export const mapDecoderToForm = (decoder: any): DecoderFormModel => {
   const result: any = {
-    name: decoder.name || "",
+    name: decoder.name || "decoder/change_me",
   };
 
   if (decoder.id !== undefined) result.id = decoder.id;
