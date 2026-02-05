@@ -26,12 +26,14 @@ export const integrationDetailsTabs = [
 
 export const defaultIntegration: IntegrationBase = {
   document: {
-    name: '',
+    title: '',
     description: '',
-    source: 'Custom',
+    source: 'Custom', // TODO: research if we need this field
     tags: null,
     category: '',
-  }
+    date: '',
+    author: '',
+  },
 };
 
 export const integrationLabels: { [value: string]: string } = {
