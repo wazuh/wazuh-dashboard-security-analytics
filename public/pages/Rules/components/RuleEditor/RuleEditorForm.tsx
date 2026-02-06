@@ -365,7 +365,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                               ? [
                                   {
                                     value: props.values.logType,
-                                    label: getLogTypeLabel(props.values.logType),
+                                  label: getLogTypeLabel(String(props.values.logType)),
                                   },
                                 ]
                               : []
@@ -442,7 +442,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                       onBlur={props.handleBlur('status')}
                       selectedOptions={
                         props.values.status
-                          ? [{ value: props.values.status, label: props.values.status }]
+                          ? [{ value: props.values.status, label: String(props.values.status) }]
                           : []
                       }
                     />
