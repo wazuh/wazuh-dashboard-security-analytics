@@ -27,7 +27,7 @@ import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
-import { SpaceTypes } from '../../../../common/constants';
+import { AllowedActionsBySpace, SpaceTypes } from '../../../../common/constants';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -41,9 +41,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 }) => {
   const isMountedRef = useRef(true);
   const [integrations, setIntegrations] = useState<Integration[]>([]);
-  const [integrationToDelete, setIntegrationItemToDelete] = useState<Integration | undefined>(
-    undefined
-  );
   const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<Integration[]>([]);
@@ -90,9 +87,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       href={`#${ROUTES.INTEGRATIONS_CREATE}`}
       disabled={spaceFilter !== SpaceTypes.DRAFT.value}
       toolTipContent={
-        spaceFilter !== SpaceTypes.DRAFT.value
-          ? 'Integration can only be created in the draft space.'
-          : undefined
+        AllowedActionsBySpace[SpaceTypes[spaceFilter.toUpperCase()].value].includes('create')
+          ? undefined
+          : 'Integration can only be created in the draft space.'
       }
     >
       Create
@@ -109,7 +106,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           search: `?space=${spaceFilter}`,
         });
       }}
-      disabled={![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(spaceFilter)}
+      disabled={
+        !AllowedActionsBySpace[SpaceTypes[spaceFilter.toUpperCase()].value].includes('promote')
+      }
       toolTipContent={
         ![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(spaceFilter)
           ? 'Integration can only be promoted in the draft or testing space.'

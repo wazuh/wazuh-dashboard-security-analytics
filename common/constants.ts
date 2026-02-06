@@ -11,7 +11,6 @@ export const WAZUH_VERSION = wazuh.version;
 
 export const PLUGIN_VERSION_SHORT = WAZUH_VERSION.split('.').splice(0, 2).join('.');
 
-
 export enum ThreatIntelIocSourceType {
   S3_CUSTOM = 'S3_CUSTOM',
   IOC_UPLOAD = 'IOC_UPLOAD',
@@ -40,3 +39,10 @@ export const SpaceTypes = {
     description: 'Default KVDBs provided by the system',
   },
 } as const;
+
+export const AllowedActionsBySpace = {
+  [SpaceTypes.DRAFT.value]: ['create', 'edit', 'delete', 'promote'],
+  [SpaceTypes.TESTING.value]: ['promote'],
+  [SpaceTypes.CUSTOM.value]: [],
+  [SpaceTypes.STANDARD.value]: [],
+};

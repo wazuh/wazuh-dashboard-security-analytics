@@ -6,25 +6,18 @@
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel } from '@elastic/eui';
 import { Integration } from '../../../../types';
-import { SpaceTypes } from '../../../../common/constants';
+import { SpaceTypes, AllowedActionsBySpace } from '../../../../common/constants';
 import { capitalize, startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
 import { integrationLabels } from './constants';
-
-const allowedActionsBySpace = {
-  [SpaceTypes.DRAFT.value]: ['create', 'edit', 'delete', 'promote'],
-  [SpaceTypes.TESTING.value]: ['promote'],
-  [SpaceTypes.CUSTOM.value]: [],
-  [SpaceTypes.STANDARD.value]: [], // TOOD: remove these actions, they are added to tset due there are no in other spaces.
-};
 
 export const getIntegrationsTableColumns = ({
   showDetails,
   setItemForAction,
 }: {
   showDetails: (id: string) => void;
-  setItemForAction: { item: any; action: 'edit' | 'delete' };
+  setItemForAction: { item: any; action: 'delete' };
 }) => [
   {
     field: 'title',
@@ -85,7 +78,7 @@ export const getIntegrationsTableColumns = ({
         type: 'icon',
         icon: 'trash',
         color: 'danger',
-        available: (item) => allowedActionsBySpace?.[item.space]?.includes('delete'),
+        available: (item) => AllowedActionsBySpace?.[item.space]?.includes('delete'),
         onClick: (item) => {
           setItemForAction({ item, action: 'delete' });
         },
