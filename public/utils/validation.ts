@@ -56,7 +56,7 @@ export function validateCondition(
   name: string,
   regex: RegExp = DETECTION_CONDITION_REGEX
 ): boolean {
-  return name.trim().match(regex) !== null;
+  return String(name).trim().match(regex) !== null; // Wazuh: ensure name is string
 }
 
 const nameOrTitleErrorBase = `should only consist of upper and lowercase letters, numbers 0-9, hyphens, spaces, and underscores.
