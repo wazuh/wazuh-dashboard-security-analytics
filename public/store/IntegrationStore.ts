@@ -6,6 +6,7 @@
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   GetPromote,
+  GetPromoteBySpaceResponse,
   Integration,
   IntegrationBase,
   IntegrationWithRules,
@@ -163,7 +164,9 @@ export class IntegrationStore {
     return deleteRes.ok;
   }
 
-  public async getPromote(data: GetPromote) {
+  public async getPromote(
+    data: GetPromote
+  ): Promise<[GetPromoteBySpaceResponse['ok'], GetPromoteBySpaceResponse['response']]> {
     const promoteRes = await this.service.getPromoteIntegration(data);
     if (!promoteRes.ok) {
       errorNotificationToast(

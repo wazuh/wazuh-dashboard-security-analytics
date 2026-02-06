@@ -84,7 +84,13 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = withGuardAsync(
       };
     }
   },
-  ({ promoteData, space }) => {
+  ({
+    promoteData,
+    space,
+  }: {
+    promoteData: GetPromoteBySpaceResponse['response'];
+    space: PromoteSpaces;
+  }) => {
     // TODO: add ability to select which entities to promote
     const hasPromotions =
       promoteData?.promote.changes.integrations.length > 0 ||
@@ -95,7 +101,10 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = withGuardAsync(
 
     const onConfirmPromote = async () => {
       // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
-      const success = await DataStore.integrations.promoteIntegration(promoteData.promote);
+      const success = await DataStore.integrations.promoteIntegration({
+        space,
+        changes: promoteData.promote.changes,
+      });
       if (success) {
         successNotificationToast(notifications, 'promoted', 'integration');
       }

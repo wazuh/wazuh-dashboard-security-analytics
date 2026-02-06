@@ -8,6 +8,7 @@ import {
   CreateIntegrationResponse,
   DeleteIntegrationResponse,
   GetPromote,
+  GetPromoteBySpaceResponse,
   IntegrationBase,
   PromoteIntegrationRequestBody,
   PromoteIntegrationResponse,
@@ -91,13 +92,13 @@ export default class IntegrationService {
 
   getPromoteIntegration = async ({
     space,
-  }: GetPromote): Promise<ServerResponse<PromoteIntegrationResponse>> => {
+  }: GetPromote): Promise<ServerResponse<GetPromoteBySpaceResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/promote/${space}`;
     return (await this.httpClient.get(url, {
       query: {
         dataSourceId: dataSourceInfo.activeDataSource.id,
       },
-    })) as ServerResponse<PromoteIntegrationResponse>;
+    })) as ServerResponse<GetPromoteBySpaceResponse>;
   };
 
   promoteIntegration = async (
