@@ -164,23 +164,31 @@ export const Decoders: React.FC<DecodersProps> = ({
     setLoading(true);
     setIsDeleteModalVisible(false);
     try {
+      let response;
       if (decoderToDelete) {
-        await DataStore.decoders.deleteDecoder(decoderToDelete);
+        response = await DataStore.decoders.deleteDecoder(decoderToDelete);
       } else {
-        await Promise.all(
+        const responses = await Promise.all(
           selectedItems.map((item) =>
             DataStore.decoders.deleteDecoder(item.id),
           ),
         );
+        response = responses.every((r) => r !== undefined)
+          ? responses
+          : undefined;
       }
-      successNotificationToast(
-        notifications,
-        "delete",
-        decoderToDelete ? "Decoder deleted" : "Decoders deleted",
-        decoderToDelete
-          ? "The decoder has been deleted successfully."
-          : "The selected decoders have been deleted successfully.",
-      );
+
+      if (response !== undefined) {
+        successNotificationToast(
+          notifications,
+          "delete",
+          decoderToDelete ? "Decoder deleted" : "Decoders deleted",
+          decoderToDelete
+            ? "The decoder has been deleted successfully."
+            : "The selected decoders have been deleted successfully.",
+        );
+      }
+
       await loadDecoders();
       if (!isMountedRef.current) {
         return;
@@ -262,7 +270,7 @@ export const Decoders: React.FC<DecodersProps> = ({
             onClick: (item: DecoderItem) => {
               deleteDecoder(item.id);
             },
-            available: () => spaceFilter === SpaceTypes.DRAFT.value,
+            // available: () => spaceFilter === SpaceTypes.DRAFT.value,
           },
         ],
       },

@@ -229,8 +229,26 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
       errors.name = "Decoder name is required";
     }
 
-    if (!values.name.startsWith("decoder/")) {
-      errors.name = "Decoder name must start with 'decoder/'";
+    const parts = values.name.split("/");
+
+    if (parts.length !== 3) {
+      errors.name =
+        "Decoder name must have exactly 3 parts 'decoder/<name>/<version>'";
+    }
+
+    if (parts?.[0] !== "decoder") {
+      errors.name =
+        "Decoder name must start with 'decoder/' and follow the format 'decoder/<name>/<version>'";
+    }
+
+    if (parts?.[1]?.trim().length === 0) {
+      errors.name =
+        "Name cannot have empty parts and must follow the format 'decoder/<name>/<version>'";
+    }
+
+    if (parts?.[2]?.trim().length === 0) {
+      errors.name =
+        "Version cannot have empty parts and must follow the format 'decoder/<name>/<version>'";
     }
 
     return errors;
