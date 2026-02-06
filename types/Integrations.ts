@@ -32,7 +32,7 @@ export interface IntegrationBase {
     } | null;
     decoders?: string[];
     kvdbs?: string[];
-  }
+  };
 }
 
 export interface SearchIntegrationsResponse {
@@ -44,7 +44,7 @@ export interface SearchIntegrationsResponse {
   };
 }
 
-export interface CreateIntegrationRequestBody extends IntegrationBase { }
+export interface CreateIntegrationRequestBody extends IntegrationBase {}
 
 export interface CreateIntegrationResponse {
   _id: string;
@@ -65,6 +65,46 @@ export interface DeleteIntegrationParams {
   integrationId: string;
 }
 
-export interface DeleteIntegrationResponse { }
+export interface DeleteIntegrationResponse {}
 
-export interface PromoteIntegrationResponse { }
+export interface PromoteIntegrationResponse {}
+
+export type PromoteSpaces = 'draft' | 'test';
+export type PromoteNextSpaces = 'test' | 'custom';
+
+export type PromoteOperations = 'update' | 'add' | 'delete';
+export type PromoteOperationsPolicy = 'update';
+
+export interface PromoteChanges {
+  policy: { operation: PromoteOperationsPolicy; id: string }[];
+  integrations: { operation: PromoteOperations; id: string }[];
+  kvdbs: { operation: PromoteOperations; id: string }[];
+  decoders: { operation: PromoteOperations; id: string }[];
+  filters: { operation: PromoteOperations; id: string }[];
+}
+
+export type PromoteChangeGroup = keyof PromoteChanges;
+export interface PromoteIntegrationRequestBody {
+  space: PromoteSpaces;
+  changes: PromoteChanges;
+}
+
+export interface GetPromote {
+  space: PromoteSpaces;
+}
+
+interface PromoteAvailablePromotionsMap {
+  [key: string]: string;
+}
+
+export interface GetPromoteBySpaceResponse {
+  ok: boolean;
+  response: {
+    promote: PromoteIntegrationRequestBody;
+    available_promotions: {
+      integrations: PromoteAvailablePromotionsMap;
+      decoders: PromoteAvailablePromotionsMap;
+      kvdbs: PromoteAvailablePromotionsMap;
+    };
+  };
+}

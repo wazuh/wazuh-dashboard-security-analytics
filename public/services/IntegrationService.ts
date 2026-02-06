@@ -7,7 +7,9 @@ import { HttpSetup } from 'opensearch-dashboards/public';
 import {
   CreateIntegrationResponse,
   DeleteIntegrationResponse,
+  GetPromote,
   IntegrationBase,
+  PromoteIntegrationRequestBody,
   PromoteIntegrationResponse,
   SearchIntegrationsResponse,
   ServerResponse,
@@ -17,7 +19,7 @@ import { API } from '../../server/utils/constants';
 import { dataSourceInfo } from './utils/constants';
 
 export default class IntegrationService {
-  constructor(private httpClient: HttpSetup) { }
+  constructor(private httpClient: HttpSetup) {}
 
   createIntegration = async (integration: IntegrationBase) => {
     const url = `..${API.INTEGRATION_BASE}`;
@@ -31,22 +33,27 @@ export default class IntegrationService {
     return response;
   };
 
-  searchIntegrations = async ({spaceFilter, id}: {spaceFilter?: string, id?: string}): Promise<ServerResponse<SearchIntegrationsResponse>> => {
+  searchIntegrations = async ({
+    spaceFilter,
+    id,
+  }: {
+    spaceFilter?: string;
+    id?: string;
+  }): Promise<ServerResponse<SearchIntegrationsResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/_search`;
     const query = id
       ? {
-        terms: { _id: [id] },
-      }
+          terms: { _id: [id] },
+        }
       : {
-        bool: {
-          must: {
-            query_string: {
-              query:
-                `space.name:${spaceFilter ? spaceFilter : '*'}`,
+          bool: {
+            must: {
+              query_string: {
+                query: `space.name:${spaceFilter ? spaceFilter : '*'}`,
+              },
             },
           },
-        },
-      };
+        };
     const queryString = JSON.stringify(query);
     return (await this.httpClient.post(url, {
       body: queryString,
@@ -71,7 +78,9 @@ export default class IntegrationService {
     return response;
   };
 
-  deleteIntegration = async (integrationId: string): Promise<ServerResponse<DeleteIntegrationResponse>> => {
+  deleteIntegration = async (
+    integrationId: string
+  ): Promise<ServerResponse<DeleteIntegrationResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/${integrationId}`;
     return (await this.httpClient.delete(url, {
       query: {
@@ -80,13 +89,26 @@ export default class IntegrationService {
     })) as ServerResponse<DeleteIntegrationResponse>;
   };
 
-  promoteIntegration = async (integrationId: string): Promise<ServerResponse<PromoteIntegrationResponse>> => {
-    const url = `..${API.INTEGRATION_BASE}/${integrationId}`;
-    return (await this.httpClient.post(url, {
+  getPromoteIntegration = async ({
+    space,
+  }: GetPromote): Promise<ServerResponse<PromoteIntegrationResponse>> => {
+    const url = `..${API.INTEGRATION_BASE}/promote/${space}`;
+    return (await this.httpClient.get(url, {
       query: {
         dataSourceId: dataSourceInfo.activeDataSource.id,
       },
     })) as ServerResponse<PromoteIntegrationResponse>;
   };
-  
+
+  promoteIntegration = async (
+    data: PromoteIntegrationRequestBody
+  ): Promise<ServerResponse<PromoteIntegrationResponse>> => {
+    const url = `..${API.INTEGRATION_BASE}/promote`;
+    return (await this.httpClient.post(url, {
+      body: JSON.stringify(data),
+      query: {
+        dataSourceId: dataSourceInfo.activeDataSource.id,
+      },
+    })) as ServerResponse<PromoteIntegrationResponse>;
+  };
 }
