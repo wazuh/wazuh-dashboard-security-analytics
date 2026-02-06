@@ -27,7 +27,7 @@ import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
-import { AllowedActionsBySpace, SpaceTypes } from '../../../../common/constants';
+import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -46,7 +46,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [selectedItems, setSelectedItems] = useState<Integration[]>([]);
   const [itemForAction, setItemForAction] = useState<{
     item: Integration;
-    action: 'delete' | 'promote';
+    action: typeof SPACE_ACTIONS.DELETE;
   } | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const getIntegrations = async () => {
@@ -80,16 +80,21 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     />
   );
 
+  const isCreateActionDisabled = !AllowedActionsBySpace[
+    SpaceTypes[spaceFilter.toUpperCase()].value
+  ].includes(SPACE_ACTIONS.CREATE);
+  const isPromoteActionDisabled = !AllowedActionsBySpace[
+    SpaceTypes[spaceFilter.toUpperCase()].value
+  ].includes(SPACE_ACTIONS.PROMOTE);
+
   const panels = [
     <EuiContextMenuItem
       key="create"
       icon="plusInCircle"
       href={`#${ROUTES.INTEGRATIONS_CREATE}`}
-      disabled={spaceFilter !== SpaceTypes.DRAFT.value}
+      disabled={isCreateActionDisabled}
       toolTipContent={
-        AllowedActionsBySpace[SpaceTypes[spaceFilter.toUpperCase()].value].includes('create')
-          ? undefined
-          : 'Integration can only be created in the draft space.'
+        isCreateActionDisabled ? 'Integration can only be created in the draft space.' : undefined
       }
     >
       Create
@@ -106,11 +111,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           search: `?space=${spaceFilter}`,
         });
       }}
-      disabled={
-        !AllowedActionsBySpace[SpaceTypes[spaceFilter.toUpperCase()].value].includes('promote')
-      }
+      disabled={isPromoteActionDisabled}
       toolTipContent={
-        ![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(spaceFilter)
+        isPromoteActionDisabled
           ? 'Integration can only be promoted in the draft or testing space.'
           : undefined
       }
@@ -182,7 +185,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     <>
       {itemForAction && (
         <>
-          {itemForAction.action === 'delete' && (
+          {itemForAction.action === SPACE_ACTIONS.DELETE && (
             <DeleteIntegrationModal
               integrationName={itemForAction.item.title}
               closeModal={() => setItemForAction(null)}

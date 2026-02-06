@@ -8,7 +8,7 @@ import { schema } from '@osd/config-schema';
 import { NodeServices } from '../models/interfaces';
 import { API } from '../utils/constants';
 import { createQueryValidationSchema } from '../utils/helpers';
-import { SpaceTypes } from '../../common/constants';
+import { AllowedActionsBySpace, SPACE_ACTIONS } from '../../common/constants';
 
 export function setupIntegrationRoutes(services: NodeServices, router: IRouter) {
   const { integrationService } = services;
@@ -54,10 +54,11 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
       path: `${API.INTEGRATION_BASE}/promote/{space}`,
       validate: {
         params: schema.object({
-          space: schema.oneOf([
-            schema.literal(SpaceTypes.DRAFT.value),
-            schema.literal(SpaceTypes.TESTING.value),
-          ]),
+          space: schema.oneOf(
+            Object.entries(AllowedActionsBySpace)
+              .filter(([_, actions]) => actions.includes(SPACE_ACTIONS.PROMOTE))
+              .map(([space]) => schema.literal(space))
+          ),
         }),
         query: createQueryValidationSchema(),
       },

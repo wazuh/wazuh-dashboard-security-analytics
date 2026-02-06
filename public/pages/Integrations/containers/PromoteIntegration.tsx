@@ -23,7 +23,7 @@ import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { getNextSpace, withGuardAsync } from '../utils/helpers';
 import { PromoteBySpaceModal } from '../components/PromoteModal';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
-import { SpaceTypes } from '../../../../common/constants';
+import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 
 export interface PromoteIntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -162,11 +162,9 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
         </EuiText>
         <EuiSpacer />
       </PageHeader>
-      {!space || ![SpaceTypes.DRAFT.value, SpaceTypes.TESTING.value].includes(space) ? (
-        <EuiText size="s" color="danger">
-          Invalid space for promotion: {space}
-        </EuiText>
-      ) : (
+      {AllowedActionsBySpace?.[SpaceTypes[space.toUpperCase()]?.value]?.includes(
+        SPACE_ACTIONS.PROMOTE
+      ) ? (
         <>
           <EuiText size="s">
             You are promoting the entities from <b>{space}</b> to <b>{getNextSpace(space)}</b>{' '}
@@ -175,6 +173,10 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
           <EuiSpacer />
           <PromoteBySpace space={space as PromoteSpaces} />
         </>
+      ) : (
+        <EuiText size="s" color="danger">
+          Invalid space for promotion: {space}
+        </EuiText>
       )}
     </EuiPanel>
   );

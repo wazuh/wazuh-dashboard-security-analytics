@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel } from '@elastic/eui';
 import { Integration } from '../../../../types';
-import { SpaceTypes, AllowedActionsBySpace } from '../../../../common/constants';
+import { SpaceTypes, AllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
 import { capitalize, startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
@@ -17,7 +17,7 @@ export const getIntegrationsTableColumns = ({
   setItemForAction,
 }: {
   showDetails: (id: string) => void;
-  setItemForAction: { item: any; action: 'delete' };
+  setItemForAction: (options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null) => void;
 }) => [
   {
     field: 'title',
@@ -78,9 +78,9 @@ export const getIntegrationsTableColumns = ({
         type: 'icon',
         icon: 'trash',
         color: 'danger',
-        available: (item) => AllowedActionsBySpace?.[item.space]?.includes('delete'),
+        available: (item) => AllowedActionsBySpace?.[item.space]?.includes(SPACE_ACTIONS.DELETE),
         onClick: (item) => {
-          setItemForAction({ item, action: 'delete' });
+          setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },
       },
     ],

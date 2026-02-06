@@ -40,9 +40,21 @@ export const SpaceTypes = {
   },
 } as const;
 
+export const SPACE_ACTIONS = {
+  CREATE: 'create',
+  EDIT: 'edit',
+  DELETE: 'delete',
+  PROMOTE: 'promote',
+};
+
 export const AllowedActionsBySpace = {
-  [SpaceTypes.DRAFT.value]: ['create', 'edit', 'delete', 'promote'],
-  [SpaceTypes.TESTING.value]: ['promote'],
+  [SpaceTypes.DRAFT.value]: [
+    SPACE_ACTIONS.CREATE,
+    SPACE_ACTIONS.EDIT,
+    SPACE_ACTIONS.DELETE,
+    SPACE_ACTIONS.PROMOTE,
+  ],
+  [SpaceTypes.TESTING.value]: [SPACE_ACTIONS.PROMOTE],
   [SpaceTypes.CUSTOM.value]: [],
   [SpaceTypes.STANDARD.value]: [],
 };
