@@ -30,7 +30,7 @@ export interface DecoderFormModel {
 }
 
 export const decoderFormDefaultValue: DecoderFormModel = {
-  name: "decoder/change_me",
+  name: "decoder/<name>/<version>",
   enabled: true,
   metadata: {
     title: "Placeholder Decoder",
