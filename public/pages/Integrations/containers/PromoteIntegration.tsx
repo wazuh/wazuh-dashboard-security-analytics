@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { BREADCRUMBS } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -87,17 +87,20 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = withGuardAsync(
   ({
     promoteData,
     space,
+    notifications,
+    history,
   }: {
     promoteData: GetPromoteBySpaceResponse['response'];
     space: PromoteSpaces;
+    notifications: PromoteIntegrationProps['notifications'];
   }) => {
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+
     // TODO: add ability to select which entities to promote
     const hasPromotions =
       promoteData?.promote.changes.integrations.length > 0 ||
       promoteData?.promote.changes.decoders.length > 0 ||
       promoteData?.promote.changes.kvdbs.length > 0;
-
-    const [modalIsOpen, setModalIsOpen] = useState(false);
 
     const onConfirmPromote = async () => {
       // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
@@ -106,9 +109,14 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = withGuardAsync(
         changes: promoteData.promote.changes,
       });
       if (success) {
-        successNotificationToast(notifications, 'promoted', 'integration');
+        successNotificationToast(notifications, 'promoted', `[${space}] space`);
+        history.push(ROUTES.INTEGRATIONS);
       }
     };
+
+    if (!hasPromotions) {
+      return <EuiText>There is nothing to promote.</EuiText>;
+    }
 
     return (
       <>
@@ -180,7 +188,11 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
             space.
           </EuiText>
           <EuiSpacer />
-          <PromoteBySpace space={space as PromoteSpaces} />
+          <PromoteBySpace
+            space={space as PromoteSpaces}
+            history={history}
+            notifications={notifications}
+          />
         </>
       ) : (
         <EuiText size="s" color="danger">
