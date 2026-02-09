@@ -13,6 +13,7 @@ import { addNotificationsMethods } from './addNotificationsMethods';
 import { addCorrelationMethods } from './addCorrelationMethods';
 import { addLogTypeMethods } from './addLogTypeMethods';
 import { addThreatIntelMethods } from './addThreatIntelMethods';
+import { addDecoderMethods } from './addDecoderMethods';
 import { addLogTestMethods } from './addLogTestMethods';
 
 export function securityAnalyticsPlugin(Client: any, config: any, components: any) {
@@ -30,5 +31,6 @@ export function securityAnalyticsPlugin(Client: any, config: any, components: an
   addNotificationsMethods(securityAnalytics, createAction);
   addLogTypeMethods(securityAnalytics, createAction);
   addThreatIntelMethods(securityAnalytics, createAction);
+  addDecoderMethods(securityAnalytics, createAction);
   addLogTestMethods(securityAnalytics, createAction);
 }
