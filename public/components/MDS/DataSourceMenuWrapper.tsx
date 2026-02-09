@@ -61,6 +61,7 @@ export const DataSourceMenuWrapper: React.FC<DataSourceMenuWrapperProps> = ({
     `${ROUTES.FINDINGS}/:detectorId`,
     `${ROUTES.THREAT_INTEL_SOURCE_DETAILS}/:sourceId`,
     ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
+    ROUTES.DECODERS_CREATE,
   ];
 
   const pathToParentMap = {
@@ -79,6 +80,7 @@ export const DataSourceMenuWrapper: React.FC<DataSourceMenuWrapperProps> = ({
     [`${ROUTES.FINDINGS}/:detectorId`]: ROUTES.FINDINGS,
     [`${ROUTES.THREAT_INTEL_SOURCE_DETAILS}/:sourceId`]: ROUTES.THREAT_INTEL_OVERVIEW,
     [ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG]: ROUTES.THREAT_INTEL_OVERVIEW,
+    [ROUTES.DECODERS_CREATE]: ROUTES.DECODERS,
   };
 
   const matchedPath = matchPath(location.pathname, {
@@ -120,7 +122,7 @@ export const DataSourceMenuWrapper: React.FC<DataSourceMenuWrapperProps> = ({
         }}
       />
       <Route
-        path={[ROUTES.DETECTORS_CREATE]}
+        path={[ROUTES.DETECTORS_CREATE, ROUTES.DECODERS_CREATE]}
         render={() => {
           return dataSourceMenuReadOnly ? (
             <DataSourceMenuViewComponent
