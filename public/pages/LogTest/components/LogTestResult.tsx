@@ -70,7 +70,7 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result }) => {
         if (!result?.message) return null;
         try {
             const parsed = JSON.parse(result.message);
-            const output = JSON.parse(parsed.output);
+            const output = parsed.output;
             return { ...parsed, output };
         } catch {
             return null;
