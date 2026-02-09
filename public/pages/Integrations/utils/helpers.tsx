@@ -6,7 +6,12 @@
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel } from '@elastic/eui';
 import { Integration } from '../../../../types';
-import { SpaceTypes, AllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
+import {
+  SpaceTypes,
+  AllowedActionsBySpace,
+  SPACE_ACTIONS,
+  UserSpacesOrder,
+} from '../../../../common/constants';
 import { capitalize, startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
@@ -196,16 +201,10 @@ export const withModal = (options) =>
     () => options
   );
 
-const spaceOrder = [
-  SpaceTypes.DRAFT.value,
-  SpaceTypes.TESTING.value,
-  SpaceTypes.CUSTOM.value,
-  SpaceTypes.STANDARD.value,
-];
 export const getNextSpace = (space: string) => {
-  const currentIndex = spaceOrder.indexOf(space);
-  if (currentIndex === -1 || currentIndex === spaceOrder.length - 1) {
+  const currentIndex = UserSpacesOrder.indexOf(space);
+  if (currentIndex === -1 || currentIndex === UserSpacesOrder.length - 1) {
     return null; // No next space available
   }
-  return spaceOrder[currentIndex + 1];
+  return UserSpacesOrder[currentIndex + 1];
 };

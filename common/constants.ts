@@ -23,9 +23,9 @@ export const SpaceTypes = {
     value: 'draft',
     description: 'Staging area for creating or editing resources before testing',
   },
-  TESTING: {
-    label: 'Testing',
-    value: 'testing',
+  TEST: {
+    label: 'Test',
+    value: 'test',
     description: 'Controlled environment for validation before production',
   },
   CUSTOM: {
@@ -54,7 +54,13 @@ export const AllowedActionsBySpace = {
     SPACE_ACTIONS.DELETE,
     SPACE_ACTIONS.PROMOTE,
   ],
-  [SpaceTypes.TESTING.value]: [SPACE_ACTIONS.PROMOTE],
+  [SpaceTypes.TEST.value]: [SPACE_ACTIONS.PROMOTE],
   [SpaceTypes.CUSTOM.value]: [],
   [SpaceTypes.STANDARD.value]: [],
 };
+
+export const UserSpacesOrder = [
+  SpaceTypes.DRAFT.value,
+  SpaceTypes.TEST.value,
+  SpaceTypes.CUSTOM.value,
+];
