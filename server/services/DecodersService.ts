@@ -17,6 +17,7 @@ import {
   GetDecoderResponse,
   SearchDecodersResponse,
 } from "../../types";
+import { CLIENT_DECODER_METHODS } from "../utils/constants";
 
 const DECODERS_INDEX = ".cti-decoders";
 const INTEGRATIONS_INDEX = ".cti-integrations";
@@ -333,6 +334,212 @@ export class DecodersService {
     } catch (error: any) {
       console.error(
         "Security Analytics - DecodersService - getDecoder:",
+        error,
+      );
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.message,
+        },
+      });
+    }
+  };
+
+  createDecoder = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest,
+    response: OpenSearchDashboardsResponseFactory,
+  ): Promise<
+    IOpenSearchDashboardsResponse<
+      ServerResponse<{ id: string }> | ResponseError
+    >
+  > => {
+    try {
+      const body = request.body as { document: any; integrationId: string };
+      const client = this.getClient(request);
+
+      const { document: decoderDocument, integrationId } = body;
+      if (!decoderDocument) {
+        return response.custom({
+          statusCode: 200,
+          body: {
+            ok: false,
+            error: "Decoder document is required",
+          },
+        });
+      }
+
+      const createBody = {
+        body: {
+          type: "decoder",
+          resource: decoderDocument,
+          integration: integrationId,
+        },
+      };
+
+      const createResponse = await client(
+        CLIENT_DECODER_METHODS.CREATE_DECODER,
+        createBody,
+      );
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: createResponse,
+        },
+      });
+    } catch (error: any) {
+      console.error(
+        "Security Analytics - DecodersService - createDecoder:",
+        error,
+      );
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.body.message || error.message,
+        },
+      });
+    }
+  };
+
+  updateDecoder = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest<{ decoderId: string }>,
+    response: OpenSearchDashboardsResponseFactory,
+  ): Promise<
+    IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>
+  > => {
+    try {
+      const { decoderId } = request.params;
+      const body = request.body as { document: any };
+      const client = this.getClient(request);
+
+      const { document: decoderDocument } = body;
+      if (!decoderDocument) {
+        return response.custom({
+          statusCode: 200,
+          body: {
+            ok: false,
+            error: "Decoder document is required",
+          },
+        });
+      }
+
+      const updateBody = {
+        body: {
+          type: "decoder",
+          resource: decoderDocument,
+        },
+        decoderId: decoderId,
+      };
+
+      const responseRequest = await client(
+        CLIENT_DECODER_METHODS.UPDATE_DECODER,
+        updateBody,
+      );
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: responseRequest,
+        },
+      });
+    } catch (error: any) {
+      console.error(
+        "Security Analytics - DecodersService - updateDecoder:",
+        error,
+      );
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.body.message || error.message,
+        },
+      });
+    }
+  };
+
+  deleteDecoder = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest<{ decoderId: string }>,
+    response: OpenSearchDashboardsResponseFactory,
+  ): Promise<
+    IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>
+  > => {
+    try {
+      const { decoderId } = request.params;
+      const client = this.getClient(request);
+
+      const deleteBody = { body: { type: "decoder" }, decoderId };
+
+      await client(CLIENT_DECODER_METHODS.DELETE_DECODER, deleteBody);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: null,
+        },
+      });
+    } catch (error: any) {
+      console.error(
+        "Security Analytics - DecodersService - deleteDecoder:",
+        error,
+      );
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.message,
+        },
+      });
+    }
+  };
+
+  getDraftIntegrations = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest,
+    response: OpenSearchDashboardsResponseFactory,
+  ): Promise<
+    IOpenSearchDashboardsResponse<ServerResponse<any> | ResponseError>
+  > => {
+    try {
+      const client = this.getClient(request);
+      const searchResponse = await client("search", {
+        index: INTEGRATIONS_INDEX,
+        body: {
+          size: 10000,
+          query: {
+            term: {
+              "space.name": {
+                value: "draft",
+              },
+            },
+          },
+          _source: true,
+        },
+      });
+
+      const hits = searchResponse?.hits?.hits ?? [];
+
+      const total = hits.length;
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: {
+            total,
+            items: hits,
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error(
+        "Security Analytics - DecodersService - getDraftIntegrations:",
         error,
       );
       return response.custom({
