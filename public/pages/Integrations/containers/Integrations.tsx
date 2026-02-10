@@ -28,6 +28,7 @@ import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
+import { RootDecoderRequirement } from '../components/RootDecoderRequirement';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -215,6 +216,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         </EuiFlexItem>
       </PageHeader>
       <EuiPanel>
+        {AllowedActionsBySpace?.[SpaceTypes[spaceFilter.toUpperCase()]?.value]?.includes(
+          SPACE_ACTIONS.DEFINE_ROOT_DECODER
+        ) && (
+          <>
+            <RootDecoderRequirement space={spaceFilter} notifications={notifications} />
+            <EuiSpacer size="s"></EuiSpacer>
+          </>
+        )}
         <EuiInMemoryTable
           itemId={'id'}
           items={integrations}

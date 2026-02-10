@@ -208,3 +208,51 @@ export const getNextSpace = (space: string) => {
   }
   return UserSpacesOrder[currentIndex + 1];
 };
+
+type useAsyncActionRunOnStartDependenciesReturns<T> = {
+  data: T | null;
+  error: Error | null;
+  running: boolean;
+  run: () => Promise<void>;
+};
+type useAsyncActionRunOnStartAction<T> = (
+  dependencies: any[],
+  state: {
+    data: useAsyncActionRunOnStartDependenciesReturns<T>['data'];
+    error: useAsyncActionRunOnStartDependenciesReturns<T>['error'];
+    running: useAsyncActionRunOnStartDependenciesReturns<T>['running'];
+  }
+) => Promise<T>;
+type useAsyncActionRunOnStartDependencies = any[];
+
+export function useAsyncActionRunOnStart<T>(
+  action: useAsyncActionRunOnStartAction<T>,
+  dependencies: useAsyncActionRunOnStartDependencies = [],
+  { refreshDataOnPreRun }: { refreshDataOnPreRun: boolean } = { refreshDataOnPreRun: true }
+): useAsyncActionRunOnStartDependenciesReturns<T> {
+  const [running, setRunning] = useState(true);
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const run = async () => {
+    try {
+      setRunning(true);
+      setError(null);
+      if (refreshDataOnPreRun) {
+        setData(null);
+      }
+      const result = await action(dependencies, { data, error, running });
+      setData(result);
+    } catch (error) {
+      setError(error as Error);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  useEffect(() => {
+    run();
+  }, [...dependencies]);
+
+  return { data, error, run, running };
+}

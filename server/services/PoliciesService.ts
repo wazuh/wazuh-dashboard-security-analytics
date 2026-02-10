@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import {
   IOpenSearchDashboardsResponse,
@@ -15,8 +15,10 @@ import {
   PolicyItem,
   GetPolicyResponse,
   SearchPoliciesResponse,
+  UpdatePolicyRequestBody,
 } from '../../types';
-import { MDSEnabledClientService } from "./MDSEnabledClientService";
+import { MDSEnabledClientService } from './MDSEnabledClientService';
+import { CLIENT_POLICY_METHODS } from '../utils/constants';
 
 const POLICIES_INDEX = '.cti-policies';
 const INTEGRATIONS_INDEX = '.cti-integrations';
@@ -37,10 +39,8 @@ interface SpaceFieldCaps {
 }
 
 export class PoliciesService extends MDSEnabledClientService {
-
   private spaceFieldCaps?: SpaceFieldCaps;
   private spaceFieldCapsPromise?: Promise<SpaceFieldCaps>;
-
 
   private async getSpaceFieldCaps(client: any): Promise<SpaceFieldCaps> {
     if (this.spaceFieldCaps) {
@@ -62,14 +62,14 @@ export class PoliciesService extends MDSEnabledClientService {
             if (!types) {
               return;
             }
-            const entries = Object.entries(types) as Array<[string, { searchable?: boolean; aggregatable?: boolean }]>;
+            const entries = Object.entries(types) as Array<
+              [string, { searchable?: boolean; aggregatable?: boolean }]
+            >;
             const isSearchable = entries.some(
-              ([type, meta]) =>
-                meta?.searchable && type !== 'object' && type !== 'nested'
+              ([type, meta]) => meta?.searchable && type !== 'object' && type !== 'nested'
             );
             const isAggregatable = entries.some(
-              ([type, meta]) =>
-                meta?.aggregatable && type !== 'object' && type !== 'nested'
+              ([type, meta]) => meta?.aggregatable && type !== 'object' && type !== 'nested'
             );
             if (isSearchable) {
               searchFields.push(field);
@@ -165,11 +165,7 @@ export class PoliciesService extends MDSEnabledClientService {
       hits.forEach((hit: any) => {
         const title = hit?._source?.document?.title;
         const policyRefs = hit?._source?.document?.policies;
-        const policyList = Array.isArray(policyRefs)
-          ? policyRefs
-          : policyRefs
-          ? [policyRefs]
-          : [];
+        const policyList = Array.isArray(policyRefs) ? policyRefs : policyRefs ? [policyRefs] : [];
         policyList.forEach((policyId: string) => {
           if (!integrations.has(policyId)) {
             integrations.set(policyId, []);
@@ -293,6 +289,42 @@ export class PoliciesService extends MDSEnabledClientService {
       });
     } catch (error: any) {
       console.error('Security Analytics - PoliciesService - getPolicy:', error);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.message,
+        },
+      });
+    }
+  };
+
+  updatePolicy = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest<{ policyId: string }, {}, UpdatePolicyRequestBody>,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<GetPolicyResponse> | ResponseError>> => {
+    try {
+      const { policyId } = request.params;
+      const { body } = request;
+
+      const client = this.getClient(request, context);
+      const updatePolicyResponse = await client(CLIENT_POLICY_METHODS.UPDATE_POLICY, {
+        body: {
+          type: 'policy',
+          resource: { ...body, id: policyId },
+        },
+      });
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: updatePolicyResponse,
+        },
+      });
+    } catch (error: any) {
+      console.error('Security Analytics - PoliciesService - updatePolicy:', error);
       return response.custom({
         statusCode: 200,
         body: {

@@ -1,10 +1,15 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { PolicyItem, SearchPoliciesResponse } from '../../types';
+import {
+  PolicyItem,
+  SearchPoliciesResponse,
+  UpdatePolicyRequestBody,
+  UpdatePolicyResponse,
+} from '../../types';
 import PoliciesService from '../services/PoliciesService';
 import { errorNotificationToast } from '../utils/helpers';
 
@@ -19,9 +24,7 @@ export interface PoliciesSearchParams {
 export class PoliciesStore {
   constructor(private service: PoliciesService, private notifications: NotificationsStart) {}
 
-  public async searchPolicies(
-    space: string
-  ): Promise<SearchPoliciesResponse> {
+  public async searchPolicies(space: string): Promise<SearchPoliciesResponse> {
     const response = await this.service.searchPolicies(space);
     if (!response.ok) {
       if (
@@ -62,5 +65,16 @@ export class PoliciesStore {
     return {
       ...item,
     };
+  }
+
+  public async updatePolicy(
+    policyId: string,
+    data: UpdatePolicyRequestBody
+  ): Promise<[boolean, UpdatePolicyResponse['response']]> {
+    const response = await this.service.updatePolicy(policyId, data);
+    if (!response.ok) {
+      errorNotificationToast(this.notifications, 'update', 'policy', response.error);
+    }
+    return [response.ok, response.response];
   }
 }

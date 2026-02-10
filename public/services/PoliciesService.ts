@@ -1,12 +1,17 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import { HttpSetup } from 'opensearch-dashboards/public';
 import { API } from '../../server/utils/constants';
 import { ServerResponse } from '../../server/models/types';
-import { GetPolicyResponse, SearchPoliciesResponse } from '../../types';
+import {
+  GetPolicyResponse,
+  SearchPoliciesResponse,
+  UpdatePolicyRequestBody,
+  UpdatePolicyResponse,
+} from '../../types';
 
 export default class PoliciesService {
   httpClient: HttpSetup;
@@ -15,12 +20,9 @@ export default class PoliciesService {
     this.httpClient = httpClient;
   }
 
-
-  searchPolicies = async (
-    space: string
-  ): Promise<ServerResponse<SearchPoliciesResponse>> => {
+  searchPolicies = async (space: string): Promise<ServerResponse<SearchPoliciesResponse>> => {
     const url = `..${API.POLICIES_BASE}/_search`;
-    
+
     const query = { space };
     return (await this.httpClient.post(url, {
       query,
@@ -29,8 +31,18 @@ export default class PoliciesService {
 
   getPolicy = async (policyId: string): Promise<ServerResponse<GetPolicyResponse>> => {
     const url = `..${API.POLICIES_BASE}/${policyId}`;
-    
-    return (await this.httpClient.get(url, {
-    })) as ServerResponse<GetPolicyResponse>;
+
+    return (await this.httpClient.get(url, {})) as ServerResponse<GetPolicyResponse>;
+  };
+
+  updatePolicy = async (
+    policyId: string,
+    policyData: UpdatePolicyRequestBody
+  ): Promise<ServerResponse<UpdatePolicyResponse>> => {
+    const url = `..${API.POLICIES_BASE}/${policyId}`;
+
+    return (await this.httpClient.put(url, {
+      body: JSON.stringify(policyData),
+    })) as ServerResponse<UpdatePolicyResponse>;
   };
 }

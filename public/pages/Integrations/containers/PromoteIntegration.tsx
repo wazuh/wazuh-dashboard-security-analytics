@@ -24,6 +24,8 @@ import { getNextSpace, withGuardAsync } from '../utils/helpers';
 import { PromoteBySpaceModal } from '../components/PromoteModal';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
 import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
+import { compose } from 'redux';
+import { withRootDecoderRequirementGuard } from '../components/RootDecoderRequirement';
 
 export interface PromoteIntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -60,97 +62,100 @@ const PromoteEntity: React.FC<{
   );
 };
 
-const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = withGuardAsync(
-  async ({ space }) => {
-    try {
-      // Get promotions by space
-      const [ok, data] = await DataStore.integrations.getPromote({ space });
+const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
+  withRootDecoderRequirementGuard,
+  withGuardAsync(
+    async ({ space }) => {
+      try {
+        // Get promotions by space
+        const [ok, data] = await DataStore.integrations.getPromote({ space });
 
-      if (!ok) {
+        if (!ok) {
+          return {
+            ok: false,
+            data: { errorPromote: 'Error getting the promote data' },
+          };
+        }
+
+        return {
+          ok: true,
+          data: { promoteData: data },
+        };
+      } catch (error) {
         return {
           ok: false,
-          data: { errorPromote: 'Error getting the promote data' },
+          data: { errorPromote: error.message || 'Error getting the promote data' },
         };
       }
+    },
+    ({
+      promoteData,
+      space,
+      notifications,
+      history,
+    }: {
+      promoteData: GetPromoteBySpaceResponse['response'];
+      space: PromoteSpaces;
+      notifications: PromoteIntegrationProps['notifications'];
+    }) => {
+      const [modalIsOpen, setModalIsOpen] = useState(false);
 
-      return {
-        ok: true,
-        data: { promoteData: data },
+      // TODO: add ability to select which entities to promote
+      const hasPromotions =
+        promoteData?.promote.changes.integrations.length > 0 ||
+        promoteData?.promote.changes.decoders.length > 0 ||
+        promoteData?.promote.changes.kvdbs.length > 0;
+
+      const onConfirmPromote = async () => {
+        // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
+        const success = await DataStore.integrations.promoteIntegration({
+          space,
+          changes: promoteData.promote.changes,
+        });
+        if (success) {
+          successNotificationToast(notifications, 'promoted', `[${space}] space`);
+          history.push(ROUTES.INTEGRATIONS);
+        }
       };
-    } catch (error) {
-      return {
-        ok: false,
-        data: { errorPromote: error.message || 'Error getting the promote data' },
-      };
-    }
-  },
-  ({
-    promoteData,
-    space,
-    notifications,
-    history,
-  }: {
-    promoteData: GetPromoteBySpaceResponse['response'];
-    space: PromoteSpaces;
-    notifications: PromoteIntegrationProps['notifications'];
-  }) => {
-    const [modalIsOpen, setModalIsOpen] = useState(false);
 
-    // TODO: add ability to select which entities to promote
-    const hasPromotions =
-      promoteData?.promote.changes.integrations.length > 0 ||
-      promoteData?.promote.changes.decoders.length > 0 ||
-      promoteData?.promote.changes.kvdbs.length > 0;
-
-    const onConfirmPromote = async () => {
-      // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
-      const success = await DataStore.integrations.promoteIntegration({
-        space,
-        changes: promoteData.promote.changes,
-      });
-      if (success) {
-        successNotificationToast(notifications, 'promoted', `[${space}] space`);
-        history.push(ROUTES.INTEGRATIONS);
+      if (!hasPromotions) {
+        return <EuiText>There is nothing to promote.</EuiText>;
       }
-    };
 
-    if (!hasPromotions) {
-      return <EuiText>There is nothing to promote.</EuiText>;
-    }
-
-    return (
-      <>
-        {modalIsOpen && (
-          <PromoteBySpaceModal
-            closeModal={() => setModalIsOpen(false)}
-            promote={promoteData}
-            onConfirm={onConfirmPromote}
-            space={space}
-          ></PromoteBySpaceModal>
-        )}
-        <div>
-          {promoteData?.promote.changes.integrations.length > 0 && (
-            <PromoteEntity label="Integrations" entity="integrations" data={promoteData} />
+      return (
+        <>
+          {modalIsOpen && (
+            <PromoteBySpaceModal
+              closeModal={() => setModalIsOpen(false)}
+              promote={promoteData}
+              onConfirm={onConfirmPromote}
+              space={space}
+            ></PromoteBySpaceModal>
           )}
-          {promoteData?.promote.changes.decoders.length > 0 && (
-            <PromoteEntity label="Decoders" entity="decoders" data={promoteData} />
-          )}
-          {promoteData?.promote.changes.kvdbs.length > 0 && (
-            <PromoteEntity label="KVDBs" entity="kvdbs" data={promoteData} />
-          )}
-        </div>
-        <EuiSpacer size="m" />
-        <EuiFlexGroup justifyContent="flexEnd">
-          <EuiFlexItem grow={false}>
-            <EuiButton disabled={!hasPromotions} onClick={() => setModalIsOpen(true)} fill={true}>
-              Promote
-            </EuiButton>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </>
-    );
-  },
-  EuiLoadingSpinner
+          <div>
+            {promoteData?.promote.changes.integrations.length > 0 && (
+              <PromoteEntity label="Integrations" entity="integrations" data={promoteData} />
+            )}
+            {promoteData?.promote.changes.decoders.length > 0 && (
+              <PromoteEntity label="Decoders" entity="decoders" data={promoteData} />
+            )}
+            {promoteData?.promote.changes.kvdbs.length > 0 && (
+              <PromoteEntity label="KVDBs" entity="kvdbs" data={promoteData} />
+            )}
+          </div>
+          <EuiSpacer size="m" />
+          <EuiFlexGroup justifyContent="flexEnd">
+            <EuiFlexItem grow={false}>
+              <EuiButton disabled={!hasPromotions} onClick={() => setModalIsOpen(true)} fill={true}>
+                Promote
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </>
+      );
+    },
+    EuiLoadingSpinner
+  )
 )(({ errorPromote }) => {
   return <EuiText color="danger">{errorPromote}</EuiText>;
 });

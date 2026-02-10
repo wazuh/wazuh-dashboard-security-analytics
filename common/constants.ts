@@ -45,6 +45,7 @@ export const SPACE_ACTIONS = {
   EDIT: 'edit',
   DELETE: 'delete',
   PROMOTE: 'promote',
+  DEFINE_ROOT_DECODER: 'define_root_decoder',
 };
 
 export const AllowedActionsBySpace = {
@@ -53,6 +54,7 @@ export const AllowedActionsBySpace = {
     SPACE_ACTIONS.EDIT,
     SPACE_ACTIONS.DELETE,
     SPACE_ACTIONS.PROMOTE,
+    SPACE_ACTIONS.DEFINE_ROOT_DECODER,
   ],
   [SpaceTypes.TEST.value]: [SPACE_ACTIONS.PROMOTE],
   [SpaceTypes.CUSTOM.value]: [],

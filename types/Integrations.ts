@@ -69,8 +69,10 @@ export interface DeleteIntegrationResponse {}
 
 export interface PromoteIntegrationResponse {}
 
-export type PromoteSpaces = 'draft' | 'test'; // TODO: use the centralized items on constants instead
-export type PromoteNextSpaces = 'test' | 'custom'; // TODO: use the centralized items on constants instead
+export type UserSpace = 'draft' | 'test' | 'custom';
+export type PromoteSpaces = Omit<UserSpace, 'custom'>; // TODO: use the centralized items on constants instead
+export type PromoteNextSpaces = Omit<UserSpace, 'draft'>; // TODO: use the centralized items on constants instead
+export type NonUserSpace = 'standard';
 
 export type PromoteOperations = 'update' | 'add' | 'delete';
 export type PromoteOperationsPolicy = 'update';
