@@ -22,7 +22,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { errorNotificationToast, successNotificationToast } from '../../../utils/helpers';
 
 const delayOnSearch = 300; // ms
-const itemsPerPage = 1;
+const itemsPerPage = 25;
 
 const SelectRootDecoder: React.FC<{
   space: UserSpace;
