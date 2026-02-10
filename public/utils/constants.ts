@@ -37,6 +37,7 @@ export const DETECTION_NAV_ID = "detection_nav";
 export const NORMALIZATION_NAV_ID = "normalization";
 export const DECODERS_NAV_ID = "decoders";
 export const KVDBS_NAV_ID = "kvdbs";
+export const LOG_TEST_NAV_ID = 'log_test';
 // Wazuh: Threat intelligence app/endpoints are not available.
 export const THREAT_INTEL_ENABLED = false;
 
@@ -81,6 +82,7 @@ export const ROUTES = Object.freeze({
   DECODERS_CREATE: "/create-decoder",
   DECODERS_EDIT: "/edit-decoder",
   KVDBS: "/kvdbs",
+  LOG_TEST: "/log-test",
 
   get LANDING_PAGE(): string {
     return this.OVERVIEW;
@@ -148,6 +150,7 @@ export const BREADCRUMBS = Object.freeze({
   DECODERS_CREATE: { text: "Create", href: `#${ROUTES.DECODERS_CREATE}` },
   DECODERS_EDIT: { text: "Edit" },
   KVDBS: { text: "KVDBs", href: `#${ROUTES.KVDBS}` },
+  LOG_TEST: { text: "Log test", href: `#${ROUTES.LOG_TEST}` },
   THREAT_INTEL_OVERVIEW: {
     text: "Threat intelligence",
     href: `#${ROUTES.THREAT_INTEL_OVERVIEW}`,
@@ -260,33 +263,33 @@ export const logTypesWithDashboards = new Set(["network", "cloudtrail", "s3"]);
 
 export const pendingDashboardCreations: {
   [detectorId: string]:
-    | undefined
-    | Promise<void | ServerResponse<SimpleSavedObject<unknown>>>;
+  | undefined
+  | Promise<void | ServerResponse<SimpleSavedObject<unknown>>>;
 } = {};
 
 export const logTypeCategoryDescription: {
   name: string;
   description: string;
 }[] = [
-  {
-    name: "Access Management",
-    description: "User access, authentication, group management",
-  },
-  {
-    name: "Applications",
-    description: "Application lifecycle, API, and web resources activities",
-  },
-  {
-    name: "Cloud Services",
-    description: "Services managed by cloud providers",
-  },
-  {
-    name: "Network Activity",
-    description: "DNS, HTTP, Email, SSH, FTP, DHCP, RDP",
-  },
-  { name: "System Activity", description: "System monitoring logs" },
-  { name: "Other", description: "Logs not covered in other categories" },
-];
+    {
+      name: "Access Management",
+      description: "User access, authentication, group management",
+    },
+    {
+      name: "Applications",
+      description: "Application lifecycle, API, and web resources activities",
+    },
+    {
+      name: "Cloud Services",
+      description: "Services managed by cloud providers",
+    },
+    {
+      name: "Network Activity",
+      description: "DNS, HTTP, Email, SSH, FTP, DHCP, RDP",
+    },
+    { name: "System Activity", description: "System monitoring logs" },
+    { name: "Other", description: "Logs not covered in other categories" },
+  ];
 
 export const logTypeCategories: string[] = [];
 export const logTypesByCategories: { [category: string]: LogType[] } = {};

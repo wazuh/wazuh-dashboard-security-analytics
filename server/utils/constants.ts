@@ -36,6 +36,7 @@ export const API: SecurityAnalyticsApi = {
   CORRELATIONS: `${BASE_API_PATH}/correlations`,
   LOGTYPE_BASE: `${BASE_API_PATH}/logtype`,
   KVDBS_BASE: `${BASE_API_PATH}/kvdbs`,
+  LOG_TEST_BASE: `${BASE_API_PATH}/logtest`,
   METRICS: `/api/security_analytics/stats`,
   GET_CORRELATION_ALERTS: `${BASE_API_PATH}/correlationAlerts`,
   ACK_CORRELATION_ALERTS: `${BASE_API_PATH}/_acknowledge/correlationAlerts`,
@@ -97,6 +98,9 @@ export const METHOD_NAMES = {
   CREATE_LOGTYPE: 'createLogType',
   UPDATE_LOGTYPE: 'updateLogType',
   DELETE_LOGTYPE: 'deleteLogType',
+
+  // LogTest methods
+  TEST_LOG: 'executeLogtest',
 
   // Threat intel methods
   ADD_THREAT_INTEL_SOURCE: 'addThreatIntelSource',
@@ -178,6 +182,10 @@ export const CLIENT_LOGTYPE_METHODS = {
   DELETE_LOGTYPE: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.DELETE_LOGTYPE}`,
 };
 
+export const CLIENT_LOG_TEST_METHODS = {
+  TEST_LOG: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.TEST_LOG}`,
+};
+
 export const CLIENT_THREAT_INTEL_METHODS = {
   ADD_THREAT_INTEL_SOURCE: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.ADD_THREAT_INTEL_SOURCE}`,
   UPDATE_THREAT_INTEL_SOURCE: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.UPDATE_THREAT_INTEL_SOURCE}`,
@@ -213,3 +221,5 @@ export const DEFAULT_METRICS_COUNTER: MetricsCounter = {
     [CreateDetectorSteps.createClicked]: 0,
   },
 };
+
+export const CONTENT_MANAGER_BASE_PATH = '/_plugins/_content_manager';
