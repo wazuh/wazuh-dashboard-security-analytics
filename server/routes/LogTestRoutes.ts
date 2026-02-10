@@ -21,7 +21,7 @@ export function setupLogTestRoutes(services: NodeServices, router: IRouter) {
                         queue: schema.number(),
                         location: schema.string(),
                         agent_metadata: schema.maybe(
-                            schema.recordOf(schema.string(), schema.string())
+                            schema.recordOf(schema.string(), schema.any())
                         ),
                         event: schema.string(),
                         trace_level: schema.maybe(

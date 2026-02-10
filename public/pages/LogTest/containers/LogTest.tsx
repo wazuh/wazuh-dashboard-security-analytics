@@ -76,28 +76,51 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
         return Object.keys(newErrors).length === 0;
     }, [formData]);
 
-    const buildAgentMetadata = useCallback((): Record<string, string> => {
-        const metadata: Record<string, string> = {};
+    const buildAgentMetadata = useCallback((): Record<string, object> => {
         const { agentMetadata } = formData;
 
-        if (agentMetadata.groups) metadata['groups'] = agentMetadata.groups;
-        if (agentMetadata.hostArchitecture)
-            metadata['agent.host.architecture'] = agentMetadata.hostArchitecture;
-        if (agentMetadata.hostHostname)
-            metadata['agent.host.hostname'] = agentMetadata.hostHostname;
-        if (agentMetadata.hostOsName)
-            metadata['agent.host.os.name'] = agentMetadata.hostOsName;
-        if (agentMetadata.hostOsPlatform)
-            metadata['agent.host.os.platform'] = agentMetadata.hostOsPlatform;
-        if (agentMetadata.hostOsType)
-            metadata['agent.host.os.type'] = agentMetadata.hostOsType;
-        if (agentMetadata.hostOsVersion)
-            metadata['agent.host.os.version'] = agentMetadata.hostOsVersion;
-        if (agentMetadata.id) metadata['agent.id'] = agentMetadata.id;
-        if (agentMetadata.name) metadata['agent.name'] = agentMetadata.name;
-        if (agentMetadata.version) metadata['agent.version'] = agentMetadata.version;
+        const {
+            groups,
+            hostArchitecture,
+            hostHostname,
+            hostOsName,
+            hostOsPlatform,
+            hostOsType,
+            hostOsVersion,
+            id,
+            name,
+            version,
+        } = agentMetadata || {};
 
-        return metadata;
+        // safely build the agent metadata object
+        const wazuhAgent = {
+            ...(groups && { groups }),
+            ...(id && { id }),
+            ...(name && { name }),
+            ...(version && { version }),
+            ...(hostArchitecture || hostHostname || hostOsName || hostOsPlatform || hostOsType || hostOsVersion
+                ? {
+                    host: {
+                        ...(hostArchitecture && { architecture: hostArchitecture }),
+                        ...(hostHostname && { hostname: hostHostname }),
+                        ...(hostOsName || hostOsPlatform || hostOsType || hostOsVersion
+                            ? {
+                                os: {
+                                    ...(hostOsName && { name: hostOsName }),
+                                    ...(hostOsPlatform && { platform: hostOsPlatform }),
+                                    ...(hostOsType && { type: hostOsType }),
+                                    ...(hostOsVersion && { version: hostOsVersion }),
+                                },
+                            }
+                            : {}),
+                    },
+                }
+                : {}),
+        };
+
+        return Object.keys(wazuhAgent).length
+            ? { wazuh: { agent: wazuhAgent } }
+            : {};
     }, [formData]);
 
     const handleExecuteLogTest = async () => {

@@ -8,7 +8,7 @@ export type LogTestTraceLevel = 'NONE' | 'ASSET_ONLY' | 'ALL';
 export interface LogTestRequestBody {
     queue: number;
     location: string;
-    agent_metadata?: Record<string, string>;
+    agent_metadata?: Record<string, object>;
     event: string;
     trace_level?: LogTestTraceLevel;
 }
