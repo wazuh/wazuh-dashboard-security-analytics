@@ -48,6 +48,8 @@ import { securityAnalyticsPlugin } from './clusters/securityAnalyticsPlugin';
 import ThreatIntelService from './services/ThreatIntelService';
 import { setupThreatIntelRoutes } from './routes/ThreatIntel';
 import { DecodersService } from './services/DecodersService';
+import { setupLogTestRoutes } from './routes/LogTestRoutes';
+import { LogTestService } from './services/LogTestService';
 
 export interface SecurityAnalyticsPluginDependencies {
   dataSource?: DataSourcePluginSetup;
@@ -83,6 +85,7 @@ export class SecurityAnalyticsPlugin
       notificationsService: new NotificationsService(securityAnalyticsClient, dataSourceEnabled),
       logTypeService: new LogTypeService(securityAnalyticsClient, dataSourceEnabled),
       kvdbsService: new KVDBsService(securityAnalyticsClient, false),
+      logTestService: new LogTestService(securityAnalyticsClient, false),
       metricsService: new MetricsService(),
       threatIntelService: new ThreatIntelService(securityAnalyticsClient, dataSourceEnabled),
       decodersService: new DecodersService(securityAnalyticsClient),
@@ -103,6 +106,7 @@ export class SecurityAnalyticsPlugin
     setupNotificationsRoutes(services, router);
     setupLogTypeRoutes(services, router);
     setupKVDBsRoutes(services, router);
+    setupLogTestRoutes(services, router);
     setupMetricsRoutes(services, router);
     setupThreatIntelRoutes(services, router);
     setupDecodersRoutes(services, router);
