@@ -135,6 +135,7 @@ export const BREADCRUMBS = Object.freeze({
     text: 'Create integration',
     href: `#${ROUTES.INTEGRATIONS_CREATE}`,
   }, // Replace Log Type with Integration by Wazuh
+  PROMOTE: { text: 'Promote', href: `#${ROUTES.PROMOTE}` },
   DECODERS: { text: 'Decoders', href: `#${ROUTES.DECODERS}` },
   KVDBS: { text: 'KVDBs', href: `#${ROUTES.KVDBS}` },
   THREAT_INTEL_OVERVIEW: { text: 'Threat intelligence', href: `#${ROUTES.THREAT_INTEL_OVERVIEW}` },
