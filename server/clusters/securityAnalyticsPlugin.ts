@@ -16,6 +16,7 @@ import { addThreatIntelMethods } from './addThreatIntelMethods';
 // Wazuh
 import { addIntegrationsMethods } from './addIntegrationsMethods';
 import { addPoliciesMethods } from './addPoliciesMethods';
+import { addDecoderMethods } from './addDecoderMethods';
 
 export function securityAnalyticsPlugin(Client: any, config: any, components: any) {
   const createAction = components.clientAction.factory;
@@ -35,4 +36,5 @@ export function securityAnalyticsPlugin(Client: any, config: any, components: an
   // Wazuh
   addIntegrationsMethods(securityAnalytics, createAction);
   addPoliciesMethods(securityAnalytics, createAction);
+  addDecoderMethods(securityAnalytics, createAction);
 }

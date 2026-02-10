@@ -14,8 +14,6 @@ import {
   EuiTitle,
   EuiSpacer,
   EuiGlobalToastList,
-  EuiFlexGroup,
-  EuiFlexItem,
 } from '@elastic/eui';
 import { Toast } from '@opensearch-project/oui/src/eui_components/toast/global_toast_list';
 import { AppMountParameters, CoreStart } from 'opensearch-dashboards/public';
@@ -100,6 +98,7 @@ import { GettingStartedContent } from '../Overview/components/GettingStarted/Get
 import { BrowserServices } from '../../models/interfaces';
 import { CHANNEL_TYPES } from '../CreateDetector/components/ConfigureAlerts/utils/constants';
 import { PromoteIntegration } from '../Integrations/containers/PromoteIntegration';
+import { DecoderFormPage } from '../Decoders/containers/DecoderFormPage';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
@@ -144,6 +143,8 @@ const HIDDEN_NAV_ROUTES: string[] = [
   ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE,
   ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
   ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
+  ROUTES.DECODERS_CREATE,
+  ROUTES.DECODERS_EDIT,
 ];
 
 interface MainProps extends RouteComponentProps {
@@ -1086,7 +1087,33 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.DECODERS}
                                       render={(props: RouteComponentProps) => (
-                                        <Decoders {...props} />
+                                        <Decoders {...props} notifications={core?.notifications} />
+                                      )}
+                                    />
+                                    <Route
+                                      path={ROUTES.DECODERS_CREATE}
+                                      render={(props: RouteComponentProps) => (
+                                        <DecoderFormPage
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="create"
+                                          history={props.history}
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={`${ROUTES.DECODERS_EDIT}/:id`}
+                                      render={(
+                                        props: RouteComponentProps<{
+                                          id: string;
+                                        }>
+                                      ) => (
+                                        <DecoderFormPage
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="edit"
+                                          history={props.history}
+                                        />
                                       )}
                                     />
                                     <Route

@@ -9,14 +9,14 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DetectorsStore } from './DetectorsStore';
 import { CorrelationsStore } from './CorrelationsStore';
 import { FindingsStore } from './FindingsStore';
-import { IntegrationStore } from './IntegrationStore';
-import { PoliciesStore } from './PoliciesStore';
 import { LogTypeStore } from './LogTypeStore';
 import { AlertsStore } from './AlertsStore';
 import { ThreatIntelStore } from './ThreatIntelStore';
 import { DocumentStore } from './DocumentStore';
+import { IntegrationStore } from './IntegrationStore';
 import { DecodersStore } from './DecodersStore';
 import { KVDBsStore } from './KVDBsStore';
+import { PoliciesStore } from './PoliciesStore';
 
 export class DataStore {
   public static rules: RulesStore;

@@ -10,25 +10,22 @@ import {
   RequestHandlerContext,
   ResponseError,
   ILegacyCustomClusterClient,
-} from "opensearch-dashboards/server";
-import { ServerResponse } from "../models/types";
-import {
-  DecoderItem,
-  GetDecoderResponse,
-  SearchDecodersResponse,
-} from "../../types";
+} from 'opensearch-dashboards/server';
+import { ServerResponse } from '../models/types';
+import { DecoderItem, GetDecoderResponse, SearchDecodersResponse } from '../../types';
+import { CLIENT_DECODER_METHODS } from '../utils/constants';
 
-const DECODERS_INDEX = ".cti-decoders";
-const INTEGRATIONS_INDEX = ".cti-integrations";
+const DECODERS_INDEX = '.cti-decoders';
+const INTEGRATIONS_INDEX = '.cti-integrations';
 const SPACE_FIELD_CANDIDATES = [
-  "space.keyword",
-  "space",
-  "space.name.keyword",
-  "space.name",
-  "document.space.keyword",
-  "document.space",
-  "document.space.name.keyword",
-  "document.space.name",
+  'space.keyword',
+  'space',
+  'space.name.keyword',
+  'space.name',
+  'document.space.keyword',
+  'document.space',
+  'document.space.name.keyword',
+  'document.space.name',
 ];
 
 interface SpaceFieldCaps {
@@ -54,7 +51,7 @@ export class DecodersService {
     if (!this.spaceFieldCapsPromise) {
       this.spaceFieldCapsPromise = (async () => {
         try {
-          const fieldCapsResponse = await client("fieldCaps", {
+          const fieldCapsResponse = await client('fieldCaps', {
             index: DECODERS_INDEX,
             fields: SPACE_FIELD_CANDIDATES,
           });
@@ -70,12 +67,10 @@ export class DecodersService {
               [string, { searchable?: boolean; aggregatable?: boolean }]
             >;
             const isSearchable = entries.some(
-              ([type, meta]) =>
-                meta?.searchable && type !== "object" && type !== "nested",
+              ([type, meta]) => meta?.searchable && type !== 'object' && type !== 'nested'
             );
             const isAggregatable = entries.some(
-              ([type, meta]) =>
-                meta?.aggregatable && type !== "object" && type !== "nested",
+              ([type, meta]) => meta?.aggregatable && type !== 'object' && type !== 'nested'
             );
             if (isSearchable) {
               searchFields.push(field);
@@ -86,18 +81,13 @@ export class DecodersService {
           });
 
           const result = {
-            searchFields: searchFields.length
-              ? searchFields
-              : SPACE_FIELD_CANDIDATES,
+            searchFields: searchFields.length ? searchFields : SPACE_FIELD_CANDIDATES,
             aggFields: aggFields.length ? aggFields : SPACE_FIELD_CANDIDATES,
           };
           this.spaceFieldCaps = result;
           return result;
         } catch (error: any) {
-          console.warn(
-            "Security Analytics - DecodersService - fieldCaps:",
-            error?.message,
-          );
+          console.warn('Security Analytics - DecodersService - fieldCaps:', error?.message);
         }
 
         const fallback = {
@@ -121,11 +111,7 @@ export class DecodersService {
     };
   }
 
-  private applySpaceFilter(
-    query: any,
-    space: string | undefined,
-    fields: string[],
-  ) {
+  private applySpaceFilter(query: any, space: string | undefined, fields: string[]) {
     if (!space) {
       return query ?? { match_all: {} };
     }
@@ -138,11 +124,7 @@ export class DecodersService {
 
     if (query.bool) {
       const { filter, ...restBool } = query.bool;
-      const existingFilter = Array.isArray(filter)
-        ? filter
-        : filter
-          ? [filter]
-          : [];
+      const existingFilter = Array.isArray(filter) ? filter : filter ? [filter] : [];
       return {
         bool: {
           ...restBool,
@@ -167,16 +149,16 @@ export class DecodersService {
     }
 
     try {
-      const integrationResponse = await client("search", {
+      const integrationResponse = await client('search', {
         index: INTEGRATIONS_INDEX,
         body: {
           size: 10000,
           query: {
             terms: {
-              "document.decoders": decoderIds,
+              'document.decoders': decoderIds,
             },
           },
-          _source: ["document.title", "document.decoders"],
+          _source: ['document.title', 'document.decoders'],
         },
       });
 
@@ -187,8 +169,8 @@ export class DecodersService {
         const decoderList = Array.isArray(decoderRefs)
           ? decoderRefs
           : decoderRefs
-            ? [decoderRefs]
-            : [];
+          ? [decoderRefs]
+          : [];
         decoderList.forEach((decoderId: string) => {
           if (!integrations.has(decoderId)) {
             integrations.set(decoderId, []);
@@ -199,10 +181,7 @@ export class DecodersService {
         });
       });
     } catch (error: any) {
-      console.warn(
-        "Security Analytics - DecodersService - fetchIntegrationMap:",
-        error?.message,
-      );
+      console.warn('Security Analytics - DecodersService - fetchIntegrationMap:', error?.message);
     }
 
     return integrations;
@@ -211,11 +190,9 @@ export class DecodersService {
   searchDecoders = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest,
-    response: OpenSearchDashboardsResponseFactory,
+    response: OpenSearchDashboardsResponseFactory
   ): Promise<
-    IOpenSearchDashboardsResponse<
-      ServerResponse<SearchDecodersResponse> | ResponseError
-    >
+    IOpenSearchDashboardsResponse<ServerResponse<SearchDecodersResponse> | ResponseError>
   > => {
     try {
       const body = (request.body as any) ?? {};
@@ -224,17 +201,14 @@ export class DecodersService {
 
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
-      const searchResponse = await client("search", {
+      const searchResponse = await client('search', {
         index: DECODERS_INDEX,
         body: {
           from,
           size,
           sort,
           track_total_hits: true,
-          _source:
-            _source === undefined
-              ? { includes: ["document", "space"] }
-              : _source,
+          _source: _source === undefined ? { includes: ['document', 'space'] } : _source,
           query: this.applySpaceFilter(query, space, searchFields),
         },
       });
@@ -248,9 +222,9 @@ export class DecodersService {
         integrations: integrationMap.get(hit._id) ?? [],
       }));
       const total =
-        typeof searchResponse?.hits?.total === "number"
+        typeof searchResponse?.hits?.total === 'number'
           ? searchResponse.hits.total
-          : (searchResponse?.hits?.total?.value ?? items.length);
+          : searchResponse?.hits?.total?.value ?? items.length;
 
       return response.custom({
         statusCode: 200,
@@ -263,10 +237,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error(
-        "Security Analytics - DecodersService - searchDecoders:",
-        error,
-      );
+      console.error('Security Analytics - DecodersService - searchDecoders:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -280,26 +251,18 @@ export class DecodersService {
   getDecoder = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<{ decoderId: string }>,
-    response: OpenSearchDashboardsResponseFactory,
-  ): Promise<
-    IOpenSearchDashboardsResponse<
-      ServerResponse<GetDecoderResponse> | ResponseError
-    >
-  > => {
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<GetDecoderResponse> | ResponseError>> => {
     try {
       const { decoderId } = request.params;
       const space = (request.query as { space?: string })?.space;
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
-      const searchResponse = await client("search", {
+      const searchResponse = await client('search', {
         index: DECODERS_INDEX,
         body: {
           size: 1,
-          query: this.applySpaceFilter(
-            { ids: { values: [decoderId] } },
-            space,
-            searchFields,
-          ),
+          query: this.applySpaceFilter({ ids: { values: [decoderId] } }, space, searchFields),
         },
       });
 
@@ -309,7 +272,7 @@ export class DecodersService {
           statusCode: 200,
           body: {
             ok: false,
-            error: "Decoder not found",
+            error: 'Decoder not found',
           },
         });
       }
@@ -331,10 +294,185 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error(
-        "Security Analytics - DecodersService - getDecoder:",
-        error,
-      );
+      console.error('Security Analytics - DecodersService - getDecoder:', error);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.message,
+        },
+      });
+    }
+  };
+
+  createDecoder = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<{ id: string }> | ResponseError>> => {
+    try {
+      const body = request.body as { document: any; integrationId: string };
+      const client = this.getClient(request);
+
+      const { document: decoderDocument, integrationId } = body;
+      if (!decoderDocument) {
+        return response.custom({
+          statusCode: 200,
+          body: {
+            ok: false,
+            error: 'Decoder document is required',
+          },
+        });
+      }
+
+      const createBody = {
+        body: {
+          type: 'decoder',
+          resource: decoderDocument,
+          integration: integrationId,
+        },
+      };
+
+      const createResponse = await client(CLIENT_DECODER_METHODS.CREATE_DECODER, createBody);
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: createResponse,
+        },
+      });
+    } catch (error: any) {
+      console.error('Security Analytics - DecodersService - createDecoder:', error);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.body.message || error.message,
+        },
+      });
+    }
+  };
+
+  updateDecoder = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest<{ decoderId: string }>,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
+    try {
+      const { decoderId } = request.params;
+      const body = request.body as { document: any };
+      const client = this.getClient(request);
+
+      const { document: decoderDocument } = body;
+      if (!decoderDocument) {
+        return response.custom({
+          statusCode: 200,
+          body: {
+            ok: false,
+            error: 'Decoder document is required',
+          },
+        });
+      }
+
+      const updateBody = {
+        body: {
+          type: 'decoder',
+          resource: decoderDocument,
+        },
+        decoderId: decoderId,
+      };
+
+      const responseRequest = await client(CLIENT_DECODER_METHODS.UPDATE_DECODER, updateBody);
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: responseRequest,
+        },
+      });
+    } catch (error: any) {
+      console.error('Security Analytics - DecodersService - updateDecoder:', error);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.body.message || error.message,
+        },
+      });
+    }
+  };
+
+  deleteDecoder = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest<{ decoderId: string }>,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
+    try {
+      const { decoderId } = request.params;
+      const client = this.getClient(request);
+
+      const deleteBody = { body: { type: 'decoder' }, decoderId };
+
+      await client(CLIENT_DECODER_METHODS.DELETE_DECODER, deleteBody);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: null,
+        },
+      });
+    } catch (error: any) {
+      console.error('Security Analytics - DecodersService - deleteDecoder:', error);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: error.message,
+        },
+      });
+    }
+  };
+
+  getDraftIntegrations = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<any> | ResponseError>> => {
+    try {
+      const client = this.getClient(request);
+      const searchResponse = await client('search', {
+        index: INTEGRATIONS_INDEX,
+        body: {
+          size: 10000,
+          query: {
+            term: {
+              'space.name': {
+                value: 'draft',
+              },
+            },
+          },
+          _source: true,
+        },
+      });
+
+      const hits = searchResponse?.hits?.hits ?? [];
+
+      const total = hits.length;
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: {
+            total,
+            items: hits,
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error('Security Analytics - DecodersService - getDraftIntegrations:', error);
       return response.custom({
         statusCode: 200,
         body: {

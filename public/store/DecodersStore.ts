@@ -1,10 +1,10 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { DecoderItem, SearchDecodersResponse } from '../../types';
+import { CUDDecoderResponse, DecoderItem, SearchDecodersResponse } from '../../types';
 import DecodersService from '../services/DecodersService';
 import { errorNotificationToast } from '../utils/helpers';
 
@@ -69,5 +69,52 @@ export class DecodersStore {
         this.service.normalizeSpace(item.space) ??
         this.service.normalizeSpace(item.document?.space),
     };
+  }
+
+  public async createDecoder(body: {
+    document: any;
+    integrationId: string;
+  }): Promise<CUDDecoderResponse | undefined> {
+    const responseRequest = await this.service.createDecoder(body);
+    if (!responseRequest.ok) {
+      errorNotificationToast(this.notifications, 'create', 'decoder', responseRequest.error);
+      return undefined;
+    }
+    return responseRequest.response;
+  }
+
+  public async updateDecoder(
+    decoderId: string,
+    body: { document: any }
+  ): Promise<CUDDecoderResponse | undefined> {
+    const responseRequest = await this.service.updateDecoder(decoderId, body);
+    if (!responseRequest.ok) {
+      errorNotificationToast(this.notifications, 'update', 'decoder', responseRequest.error);
+      return undefined;
+    }
+    return responseRequest.response;
+  }
+
+  public async deleteDecoder(decoderId: string): Promise<CUDDecoderResponse | undefined> {
+    const responseRequest = await this.service.deleteDecoder(decoderId);
+    if (!responseRequest.ok) {
+      errorNotificationToast(this.notifications, 'delete', 'decoder', responseRequest.error);
+      return undefined;
+    }
+    return responseRequest.response;
+  }
+
+  public async getDraftIntegrations(): Promise<any[]> {
+    const responseRequest = await this.service.getDraftIntegrations();
+    if (!responseRequest.ok) {
+      errorNotificationToast(
+        this.notifications,
+        'retrieve',
+        'draft integrations',
+        responseRequest.error
+      );
+      return [];
+    }
+    return responseRequest.response?.items || [];
   }
 }
