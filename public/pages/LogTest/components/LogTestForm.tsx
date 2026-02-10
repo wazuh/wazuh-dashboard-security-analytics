@@ -129,7 +129,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                 <EuiSpacer size="s" />
                 <EuiFlexGroup gutterSize="m" wrap>
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.groups" fullWidth>
+                        <EuiFormRow label="wazuh.agent.groups" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.groups}
                                 onChange={(e) => onAgentMetadataChange('groups', e.target.value)}
@@ -140,7 +140,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.host.architecture" fullWidth>
+                        <EuiFormRow label="wazuh.agent.host.architecture" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.hostArchitecture}
                                 onChange={(e) =>
@@ -153,7 +153,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.host.hostname" fullWidth>
+                        <EuiFormRow label="wazuh.agent.host.hostname" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.hostHostname}
                                 onChange={(e) =>
@@ -166,7 +166,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.host.os.name" fullWidth>
+                        <EuiFormRow label="wazuh.agent.host.os.name" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.hostOsName}
                                 onChange={(e) =>
@@ -179,7 +179,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.host.os.platform" fullWidth>
+                        <EuiFormRow label="wazuh.agent.host.os.platform" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.hostOsPlatform}
                                 onChange={(e) =>
@@ -192,7 +192,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.host.os.type" fullWidth>
+                        <EuiFormRow label="wazuh.agent.host.os.type" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.hostOsType}
                                 onChange={(e) =>
@@ -205,7 +205,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.host.os.version" fullWidth>
+                        <EuiFormRow label="wazuh.agent.host.os.version" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.hostOsVersion}
                                 onChange={(e) =>
@@ -218,7 +218,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.id" fullWidth>
+                        <EuiFormRow label="wazuh.agent.id" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.id}
                                 onChange={(e) => onAgentMetadataChange('id', e.target.value)}
@@ -229,7 +229,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.name" fullWidth>
+                        <EuiFormRow label="wazuh.agent.name" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.name}
                                 onChange={(e) => onAgentMetadataChange('name', e.target.value)}
@@ -240,7 +240,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                     </EuiFlexItem>
 
                     <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="agent.version" fullWidth>
+                        <EuiFormRow label="wazuh.agent.version" fullWidth>
                             <EuiFieldText
                                 value={formData.agentMetadata.version}
                                 onChange={(e) => onAgentMetadataChange('version', e.target.value)}
