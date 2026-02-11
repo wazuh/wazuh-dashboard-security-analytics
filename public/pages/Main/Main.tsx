@@ -39,6 +39,7 @@ import {
   DECODERS_NAV_ID,
   KVDBS_NAV_ID,
   INTEGRATIONS_NAV_ID,
+  LOG_TEST_NAV_ID,
 } from '../../utils/constants';
 import { CoreServicesConsumer } from '../../components/core_services';
 import Findings from '../Findings';
@@ -72,6 +73,7 @@ import { Integration } from '../Integrations/containers/Integration';
 import { CreateIntegration } from '../Integrations/containers/CreateIntegration';
 import Decoders from '../Decoders';
 import { KVDBs } from '../KVDBs/containers/KVDBs';
+import { LogTest } from "../LogTest/containers/LogTest";
 import {
   DataSourceContextType,
   DateTimeFilter,
@@ -117,9 +119,10 @@ enum Navigation {
   // Insights = "Insights",
   Detection = 'Detection',
   // Wazuh
-  Normalization = 'Normalization',
-  Decoders = 'Decoders',
-  KVDBS = 'KVDBs',
+  Normalization = "Normalization",
+  Decoders = "Decoders",
+  KVDBS = "KVDBs",
+  LogTest = "Log test",
 }
 
 /**
@@ -182,6 +185,7 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   [ROUTES.INTEGRATIONS]: Navigation.Integrations,
   [ROUTES.DECODERS]: Navigation.Decoders,
   [ROUTES.KVDBS]: Navigation.KVDBS,
+  [ROUTES.LOG_TEST]: Navigation.LogTest,
 };
 
 // Wazuh
@@ -512,6 +516,16 @@ export default class Main extends Component<MainProps, MainState> {
                   });
                 },
                 isSelected: selectedNavItemId === Navigation.KVDBS,
+              },
+              {
+                name: Navigation.LogTest,
+                id: Navigation.LogTest,
+                onClick: () => {
+                  getApplication().navigateToApp(LOG_TEST_NAV_ID, {
+                    path: generateAppPath(ROUTES.LOG_TEST),
+                  });
+                },
+                isSelected: selectedNavItemId === Navigation.LogTest,
               },
             ],
             // onClick: () => {
@@ -1120,6 +1134,15 @@ export default class Main extends Component<MainProps, MainState> {
                                       path={ROUTES.KVDBS}
                                       render={(props: RouteComponentProps) => (
                                         <KVDBs {...props} notifications={core?.notifications} />
+                                      )}
+                                    />
+                                    <Route
+                                      path={ROUTES.LOG_TEST}
+                                      render={(props: RouteComponentProps) => (
+                                        <LogTest
+                                          {...props}
+                                          notifications={core?.notifications}
+                                        />
                                       )}
                                     />
                                     {THREAT_INTEL_ENABLED && (

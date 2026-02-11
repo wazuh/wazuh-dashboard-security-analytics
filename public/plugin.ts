@@ -36,6 +36,7 @@ import {
   NORMALIZATION_NAV_ID,
   DECODERS_NAV_ID,
   KVDBS_NAV_ID,
+  LOG_TEST_NAV_ID,
 } from './utils/constants';
 import { SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart } from './index';
 import { DataPublicPluginStart, DataPublicPluginSetup } from '../../../src/plugins/data/public';
@@ -82,7 +83,7 @@ export class SecurityAnalyticsPlugin
     > {
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
-  ) {}
+  ) { }
 
   private updateDefaultRouteOfManagementApplications: AppUpdater = () => {
     const dataSourceValue = dataSourceObservable.value?.id;
@@ -248,6 +249,21 @@ export class SecurityAnalyticsPlugin
       },
     });
 
+    core.application.register({
+      id: LOG_TEST_NAV_ID,
+      title: 'Log test',
+      order: 7008,
+      category: {
+        id: 'security_analytics',
+        label: 'Security Analytics',
+        order: 550,
+        euiIconType: 'securityAnalyticsApp',
+      },
+      updater$: this.appStateUpdater,
+      mount: async (params: AppMountParameters) => {
+        return mountWrapper(params, ROUTES.LOG_TEST);
+      },
+    });
 
     core.application.register({
       id: DETECTORS_NAV_ID,

@@ -21,6 +21,7 @@ import MetricsService from '../../services/MetricsService';
 import RulesService from '../../services/RuleService';
 import ThreatIntelService from '../../services/ThreatIntelService';
 import { KVDBsService } from '../../services/KVDBsService';
+import { LogTestService } from '../../services/LogTestService';
 
 export interface SecurityAnalyticsApi {
   readonly DETECTORS_BASE: string;
@@ -46,6 +47,7 @@ export interface SecurityAnalyticsApi {
   readonly INTEGRATION_BASE: string;
   readonly POLICIES_BASE: string;
   readonly KVDBS_BASE: string;
+  readonly LOG_TEST_BASE: string;
   readonly METRICS: string;
   readonly GET_CORRELATION_ALERTS: string;
   readonly ACK_CORRELATION_ALERTS: string;
@@ -70,6 +72,7 @@ export interface NodeServices {
   metricsService: MetricsService;
   threatIntelService: ThreatIntelService;
   decodersService: DecodersService;
+  logTestService: LogTestService;
 }
 
 export interface GetIndicesResponse {

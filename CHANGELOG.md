@@ -10,6 +10,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Added KVDBs management feature with detailed views [#24](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/24) [#30](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/30) [#37](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/37) [#46](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/46)
 - Added Decoders management feature [#27](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/27) [#30](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/30) [#37](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/37) [#46](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/46) [#41](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/41)
 - Added Integrations management feature [#40](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/40)
+- Added Log test feature [#43](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/43)
 
 ### Changed
 
