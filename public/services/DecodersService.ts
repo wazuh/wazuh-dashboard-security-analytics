@@ -3,14 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { HttpSetup } from "opensearch-dashboards/public";
-import { API } from "../../server/utils/constants";
-import { ServerResponse } from "../../server/models/types";
-import {
-  CUDDecoderResponse,
-  GetDecoderResponse,
-  SearchDecodersResponse,
-} from "../../types";
+import { HttpSetup } from 'opensearch-dashboards/public';
+import { API } from '../../server/utils/constants';
+import { ServerResponse } from '../../server/models/types';
+import { CUDDecoderResponse, GetDecoderResponse, SearchDecodersResponse } from '../../types';
 
 export default class DecodersService {
   private readonly httpClient: HttpSetup;
@@ -24,18 +20,18 @@ export default class DecodersService {
     if (!space) {
       return undefined;
     }
-    if (typeof space === "string") {
+    if (typeof space === 'string') {
       return space;
     }
-    if (typeof space === "object") {
+    if (typeof space === 'object') {
       const record = space as Record<string, unknown>;
-      if (typeof record.name === "string") {
+      if (typeof record.name === 'string') {
         return record.name;
       }
-      if (typeof record.id === "string") {
+      if (typeof record.id === 'string') {
         return record.id;
       }
-      if (typeof record.value === "string") {
+      if (typeof record.value === 'string') {
         return record.value;
       }
     }
@@ -44,7 +40,7 @@ export default class DecodersService {
 
   searchDecoders = async (
     body: any,
-    space?: string,
+    space?: string
   ): Promise<ServerResponse<SearchDecodersResponse>> => {
     const url = `${this.baseUrl}/_search`;
     const normalizedSpace = this.normalizeSpace(space);
@@ -55,14 +51,9 @@ export default class DecodersService {
     });
   };
 
-  getDecoder = async (
-    decoderId: string,
-  ): Promise<ServerResponse<GetDecoderResponse>> => {
+  getDecoder = async (decoderId: string): Promise<ServerResponse<GetDecoderResponse>> => {
     const url = `${this.baseUrl}/${decoderId}`;
-    return (await this.httpClient.get(
-      url,
-      {},
-    )) as ServerResponse<GetDecoderResponse>;
+    return (await this.httpClient.get(url, {})) as ServerResponse<GetDecoderResponse>;
   };
 
   createDecoder = async (body: {
@@ -77,7 +68,7 @@ export default class DecodersService {
 
   updateDecoder = async (
     decoderId: string,
-    body: { document: any },
+    body: { document: any }
   ): Promise<ServerResponse<CUDDecoderResponse>> => {
     const url = `${this.baseUrl}/${decoderId}`;
     return await this.httpClient.put(url, {
@@ -85,9 +76,7 @@ export default class DecodersService {
     });
   };
 
-  deleteDecoder = async (
-    decoderId: string,
-  ): Promise<ServerResponse<CUDDecoderResponse>> => {
+  deleteDecoder = async (decoderId: string): Promise<ServerResponse<CUDDecoderResponse>> => {
     const url = `${this.baseUrl}/${decoderId}`;
     return await this.httpClient.delete(url, {});
   };

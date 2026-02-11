@@ -23,6 +23,7 @@ import {
   FINDINGS_NAV_ID,
   // Wazuh: hide Insights category (keep Findings at root).
   // INSIGHTS_NAV_ID,
+  INTEGRATIONS_NAV_ID,
   LOG_TYPES_NAV_ID,
   OVERVIEW_NAV_ID,
   PLUGIN_NAME,
@@ -202,7 +203,7 @@ export class SecurityAnalyticsPlugin
     // });
 
     core.application.register({
-      id: LOG_TYPES_NAV_ID,
+      id: INTEGRATIONS_NAV_ID,
       title: 'Integrations',
       order: 7004,
       category: {
@@ -213,7 +214,7 @@ export class SecurityAnalyticsPlugin
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.LOG_TYPES);
+        return mountWrapper(params, ROUTES.INTEGRATIONS);
       },
     });
 

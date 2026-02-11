@@ -9,13 +9,18 @@ import {
   OpenSearchDashboardsResponseFactory,
   RequestHandlerContext,
   ResponseError,
-  ILegacyCustomClusterClient,
 } from 'opensearch-dashboards/server';
 import { ServerResponse } from '../models/types';
-import { DecoderItem, GetDecoderResponse, SearchDecodersResponse } from '../../types';
-import { CLIENT_DECODER_METHODS } from '../utils/constants';
+import {
+  PolicyItem,
+  GetPolicyResponse,
+  SearchPoliciesResponse,
+  UpdatePolicyRequestBody,
+} from '../../types';
+import { MDSEnabledClientService } from './MDSEnabledClientService';
+import { CLIENT_POLICY_METHODS } from '../utils/constants';
 
-const DECODERS_INDEX = '.cti-decoders';
+const POLICIES_INDEX = '.cti-policies';
 const INTEGRATIONS_INDEX = '.cti-integrations';
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',
@@ -33,15 +38,9 @@ interface SpaceFieldCaps {
   aggFields: string[];
 }
 
-export class DecodersService {
-  constructor(private osDriver: ILegacyCustomClusterClient) {}
-
+export class PoliciesService extends MDSEnabledClientService {
   private spaceFieldCaps?: SpaceFieldCaps;
   private spaceFieldCapsPromise?: Promise<SpaceFieldCaps>;
-
-  private getClient(request: OpenSearchDashboardsRequest) {
-    return this.osDriver.asScoped(request).callAsCurrentUser;
-  }
 
   private async getSpaceFieldCaps(client: any): Promise<SpaceFieldCaps> {
     if (this.spaceFieldCaps) {
@@ -52,7 +51,7 @@ export class DecodersService {
       this.spaceFieldCapsPromise = (async () => {
         try {
           const fieldCapsResponse = await client('fieldCaps', {
-            index: DECODERS_INDEX,
+            index: POLICIES_INDEX,
             fields: SPACE_FIELD_CANDIDATES,
           });
           const fields = fieldCapsResponse?.fields ?? {};
@@ -87,7 +86,7 @@ export class DecodersService {
           this.spaceFieldCaps = result;
           return result;
         } catch (error: any) {
-          console.warn('Security Analytics - DecodersService - fieldCaps:', error?.message);
+          console.warn('Security Analytics - PoliciesService - fieldCaps:', error?.message);
         }
 
         const fallback = {
@@ -141,10 +140,10 @@ export class DecodersService {
     };
   }
 
-  private async fetchIntegrationMap(client: any, decoderIds: string[]) {
+  private async fetchIntegrationMap(client: any, policyIds: string[]) {
     const integrations = new Map<string, string[]>();
 
-    if (!decoderIds.length) {
+    if (!policyIds.length) {
       return integrations;
     }
 
@@ -155,54 +154,49 @@ export class DecodersService {
           size: 10000,
           query: {
             terms: {
-              'document.decoders': decoderIds,
+              'document.policies': policyIds,
             },
           },
-          _source: ['document.title', 'document.decoders'],
+          _source: ['document.title', 'document.policies'],
         },
       });
 
       const hits = integrationResponse?.hits?.hits ?? [];
       hits.forEach((hit: any) => {
         const title = hit?._source?.document?.title;
-        const decoderRefs = hit?._source?.document?.decoders;
-        const decoderList = Array.isArray(decoderRefs)
-          ? decoderRefs
-          : decoderRefs
-          ? [decoderRefs]
-          : [];
-        decoderList.forEach((decoderId: string) => {
-          if (!integrations.has(decoderId)) {
-            integrations.set(decoderId, []);
+        const policyRefs = hit?._source?.document?.policies;
+        const policyList = Array.isArray(policyRefs) ? policyRefs : policyRefs ? [policyRefs] : [];
+        policyList.forEach((policyId: string) => {
+          if (!integrations.has(policyId)) {
+            integrations.set(policyId, []);
           }
-          if (title && !integrations.get(decoderId)!.includes(title)) {
-            integrations.get(decoderId)!.push(title);
+          if (title && !integrations.get(policyId)!.includes(title)) {
+            integrations.get(policyId)!.push(title);
           }
         });
       });
     } catch (error: any) {
-      console.warn('Security Analytics - DecodersService - fetchIntegrationMap:', error?.message);
+      console.warn('Security Analytics - PoliciesService - fetchIntegrationMap:', error?.message);
     }
 
     return integrations;
   }
 
-  searchDecoders = async (
+  searchPolicies = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest,
     response: OpenSearchDashboardsResponseFactory
   ): Promise<
-    IOpenSearchDashboardsResponse<ServerResponse<SearchDecodersResponse> | ResponseError>
+    IOpenSearchDashboardsResponse<ServerResponse<SearchPoliciesResponse> | ResponseError>
   > => {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
       const { from = 0, size = 25, sort, query, _source } = body;
-
-      const client = this.getClient(request);
+      const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
-        index: DECODERS_INDEX,
+        index: POLICIES_INDEX,
         body: {
           from,
           size,
@@ -214,9 +208,9 @@ export class DecodersService {
       });
 
       const hits = searchResponse?.hits?.hits ?? [];
-      const decoderIds = hits.map((hit: any) => hit._id);
-      const integrationMap = await this.fetchIntegrationMap(client, decoderIds);
-      const items: DecoderItem[] = hits.map((hit: any) => ({
+      const policyIds = hits.map((hit: any) => hit._id);
+      const integrationMap = await this.fetchIntegrationMap(client, policyIds);
+      const items: PolicyItem[] = hits.map((hit: any) => ({
         id: hit._id,
         ...hit._source,
         integrations: integrationMap.get(hit._id) ?? [],
@@ -237,7 +231,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - searchDecoders:', error);
+      console.error('Security Analytics - PoliciesService - searchPolicies:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -248,21 +242,21 @@ export class DecodersService {
     }
   };
 
-  getDecoder = async (
+  getPolicy = async (
     context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest<{ decoderId: string }>,
+    request: OpenSearchDashboardsRequest<{ policyId: string }>,
     response: OpenSearchDashboardsResponseFactory
-  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<GetDecoderResponse> | ResponseError>> => {
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<GetPolicyResponse> | ResponseError>> => {
     try {
-      const { decoderId } = request.params;
+      const { policyId } = request.params;
       const space = (request.query as { space?: string })?.space;
-      const client = this.getClient(request);
+      const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
-        index: DECODERS_INDEX,
+        index: POLICIES_INDEX,
         body: {
           size: 1,
-          query: this.applySpaceFilter({ ids: { values: [decoderId] } }, space, searchFields),
+          query: this.applySpaceFilter({ ids: { values: [policyId] } }, space, searchFields),
         },
       });
 
@@ -272,13 +266,13 @@ export class DecodersService {
           statusCode: 200,
           body: {
             ok: false,
-            error: 'Decoder not found',
+            error: 'Policy not found',
           },
         });
       }
 
       const integrationMap = await this.fetchIntegrationMap(client, [hit._id]);
-      const item: DecoderItem = {
+      const item: PolicyItem = {
         id: hit._id,
         ...hit._source,
         integrations: integrationMap.get(hit._id) ?? [],
@@ -294,7 +288,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - getDecoder:', error);
+      console.error('Security Analytics - PoliciesService - getPolicy:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -305,174 +299,32 @@ export class DecodersService {
     }
   };
 
-  createDecoder = async (
+  updatePolicy = async (
     context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest,
+    request: OpenSearchDashboardsRequest<{ policyId: string }, {}, UpdatePolicyRequestBody>,
     response: OpenSearchDashboardsResponseFactory
-  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<{ id: string }> | ResponseError>> => {
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<GetPolicyResponse> | ResponseError>> => {
     try {
-      const body = request.body as { document: any; integrationId: string };
-      const client = this.getClient(request);
+      const { policyId } = request.params;
+      const { body } = request;
 
-      const { document: decoderDocument, integrationId } = body;
-      if (!decoderDocument) {
-        return response.custom({
-          statusCode: 200,
-          body: {
-            ok: false,
-            error: 'Decoder document is required',
-          },
-        });
-      }
-
-      const createBody = {
+      const client = this.getClient(request, context);
+      const updatePolicyResponse = await client(CLIENT_POLICY_METHODS.UPDATE_POLICY, {
         body: {
-          type: 'decoder',
-          resource: decoderDocument,
-          integration: integrationId,
+          type: 'policy',
+          resource: { ...body, id: policyId },
         },
-      };
-
-      const createResponse = await client(CLIENT_DECODER_METHODS.CREATE_DECODER, createBody);
+      });
 
       return response.custom({
         statusCode: 200,
         body: {
           ok: true,
-          response: createResponse,
+          response: updatePolicyResponse,
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - createDecoder:', error);
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: false,
-          error: error.body.message || error.message,
-        },
-      });
-    }
-  };
-
-  updateDecoder = async (
-    context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest<{ decoderId: string }>,
-    response: OpenSearchDashboardsResponseFactory
-  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
-    try {
-      const { decoderId } = request.params;
-      const body = request.body as { document: any };
-      const client = this.getClient(request);
-
-      const { document: decoderDocument } = body;
-      if (!decoderDocument) {
-        return response.custom({
-          statusCode: 200,
-          body: {
-            ok: false,
-            error: 'Decoder document is required',
-          },
-        });
-      }
-
-      const updateBody = {
-        body: {
-          type: 'decoder',
-          resource: decoderDocument,
-        },
-        decoderId: decoderId,
-      };
-
-      const responseRequest = await client(CLIENT_DECODER_METHODS.UPDATE_DECODER, updateBody);
-
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: true,
-          response: responseRequest,
-        },
-      });
-    } catch (error: any) {
-      console.error('Security Analytics - DecodersService - updateDecoder:', error);
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: false,
-          error: error.body.message || error.message,
-        },
-      });
-    }
-  };
-
-  deleteDecoder = async (
-    context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest<{ decoderId: string }>,
-    response: OpenSearchDashboardsResponseFactory
-  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
-    try {
-      const { decoderId } = request.params;
-      const client = this.getClient(request);
-
-      const deleteBody = { body: { type: 'decoder' }, decoderId };
-
-      await client(CLIENT_DECODER_METHODS.DELETE_DECODER, deleteBody);
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: true,
-          response: null,
-        },
-      });
-    } catch (error: any) {
-      console.error('Security Analytics - DecodersService - deleteDecoder:', error);
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: false,
-          error: error.message,
-        },
-      });
-    }
-  };
-
-  getDraftIntegrations = async (
-    context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest,
-    response: OpenSearchDashboardsResponseFactory
-  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<any> | ResponseError>> => {
-    try {
-      const client = this.getClient(request);
-      const searchResponse = await client('search', {
-        index: INTEGRATIONS_INDEX,
-        body: {
-          size: 10000,
-          query: {
-            term: {
-              'space.name': {
-                value: 'draft',
-              },
-            },
-          },
-          _source: true,
-        },
-      });
-
-      const hits = searchResponse?.hits?.hits ?? [];
-
-      const total = hits.length;
-
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: true,
-          response: {
-            total,
-            items: hits,
-          },
-        },
-      });
-    } catch (error: any) {
-      console.error('Security Analytics - DecodersService - getDraftIntegrations:', error);
+      console.error('Security Analytics - PoliciesService - updatePolicy:', error);
       return response.custom({
         statusCode: 200,
         body: {

@@ -11,7 +11,6 @@ export const WAZUH_VERSION = wazuh.version;
 
 export const PLUGIN_VERSION_SHORT = WAZUH_VERSION.split('.').splice(0, 2).join('.');
 
-
 export enum ThreatIntelIocSourceType {
   S3_CUSTOM = 'S3_CUSTOM',
   IOC_UPLOAD = 'IOC_UPLOAD',
@@ -24,9 +23,9 @@ export const SpaceTypes = {
     value: 'draft',
     description: 'Staging area for creating or editing resources before testing',
   },
-  TESTING: {
-    label: 'Testing',
-    value: 'testing',
+  TEST: {
+    label: 'Test',
+    value: 'test',
     description: 'Controlled environment for validation before production',
   },
   CUSTOM: {
@@ -40,3 +39,30 @@ export const SpaceTypes = {
     description: 'Default KVDBs provided by the system',
   },
 } as const;
+
+export const SPACE_ACTIONS = {
+  CREATE: 'create',
+  EDIT: 'edit',
+  DELETE: 'delete',
+  PROMOTE: 'promote',
+  DEFINE_ROOT_DECODER: 'define_root_decoder',
+};
+
+export const AllowedActionsBySpace = {
+  [SpaceTypes.DRAFT.value]: [
+    SPACE_ACTIONS.CREATE,
+    SPACE_ACTIONS.EDIT,
+    SPACE_ACTIONS.DELETE,
+    SPACE_ACTIONS.PROMOTE,
+    SPACE_ACTIONS.DEFINE_ROOT_DECODER,
+  ],
+  [SpaceTypes.TEST.value]: [SPACE_ACTIONS.PROMOTE],
+  [SpaceTypes.CUSTOM.value]: [],
+  [SpaceTypes.STANDARD.value]: [],
+};
+
+export const UserSpacesOrder = [
+  SpaceTypes.DRAFT.value,
+  SpaceTypes.TEST.value,
+  SpaceTypes.CUSTOM.value,
+];

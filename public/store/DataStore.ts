@@ -3,18 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { RulesStore } from "./RulesStore";
-import { BrowserServices } from "../models/interfaces";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import { DetectorsStore } from "./DetectorsStore";
-import { CorrelationsStore } from "./CorrelationsStore";
-import { FindingsStore } from "./FindingsStore";
-import { LogTypeStore } from "./LogTypeStore";
-import { AlertsStore } from "./AlertsStore";
-import { ThreatIntelStore } from "./ThreatIntelStore";
-import { DocumentStore } from "./DocumentStore";
-import { DecodersStore } from "./DecodersStore";
-import { KVDBsStore } from "./KVDBsStore";
+import { RulesStore } from './RulesStore';
+import { BrowserServices } from '../models/interfaces';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { DetectorsStore } from './DetectorsStore';
+import { CorrelationsStore } from './CorrelationsStore';
+import { FindingsStore } from './FindingsStore';
+import { LogTypeStore } from './LogTypeStore';
+import { AlertsStore } from './AlertsStore';
+import { ThreatIntelStore } from './ThreatIntelStore';
+import { DocumentStore } from './DocumentStore';
+import { IntegrationStore } from './IntegrationStore';
+import { DecodersStore } from './DecodersStore';
+import { KVDBsStore } from './KVDBsStore';
+import { PoliciesStore } from './PoliciesStore';
 import { LogTestStore } from './LogTestStore';
 
 export class DataStore {
@@ -23,6 +25,8 @@ export class DataStore {
   public static correlations: CorrelationsStore;
   public static findings: FindingsStore;
   public static logTypes: LogTypeStore;
+  public static integrations: IntegrationStore;
+  public static policies: PoliciesStore;
   public static decoders: DecodersStore;
   public static kvdbs: KVDBsStore;
   public static logTests: LogTestStore;
@@ -30,17 +34,14 @@ export class DataStore {
   public static threatIntel: ThreatIntelStore;
   public static documents: DocumentStore;
 
-  public static init = (
-    services: BrowserServices,
-    notifications: NotificationsStart,
-  ) => {
+  public static init = (services: BrowserServices, notifications: NotificationsStart) => {
     const rulesStore = new RulesStore(services.ruleService, notifications);
     DataStore.rules = rulesStore;
 
     DataStore.detectors = new DetectorsStore(
       services.detectorsService,
       notifications,
-      services.savedObjectsService,
+      services.savedObjectsService
     );
 
     DataStore.findings = new FindingsStore(
@@ -49,7 +50,7 @@ export class DataStore {
       notifications,
       services.indexPatternsService,
       services.correlationsService,
-      services.opensearchService,
+      services.opensearchService
     );
 
     DataStore.correlations = new CorrelationsStore(
@@ -57,18 +58,13 @@ export class DataStore {
       services.detectorsService,
       services.findingsService,
       notifications,
-      rulesStore,
+      rulesStore
     );
 
-    DataStore.logTypes = new LogTypeStore(
-      services.logTypeService,
-      notifications,
-    );
-
-    DataStore.decoders = new DecodersStore(
-      services.decodersService,
-      notifications,
-    );
+    DataStore.integrations = new IntegrationStore(services.integrationService, notifications);
+    DataStore.policies = new PoliciesStore(services.policiesService, notifications);
+    DataStore.logTypes = new LogTypeStore(services.logTypeService, notifications);
+    DataStore.decoders = new DecodersStore(services.decodersService, notifications);
 
     DataStore.kvdbs = new KVDBsStore(services.kvdbsService, notifications);
 

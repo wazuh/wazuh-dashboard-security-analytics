@@ -14,6 +14,8 @@ import {
 } from '../../services';
 import AlertService from '../../services/AlertService';
 import { DecodersService } from '../../services/DecodersService';
+import { PoliciesService } from '../../services/PoliciesService';
+import { IntegrationService } from '../../services/IntegrationService';
 import { LogTypeService } from '../../services/LogTypeService';
 import MetricsService from '../../services/MetricsService';
 import RulesService from '../../services/RuleService';
@@ -42,6 +44,8 @@ export interface SecurityAnalyticsApi {
   readonly UPDATE_ALIASES: string;
   readonly CORRELATIONS: string;
   readonly LOGTYPE_BASE: string;
+  readonly INTEGRATION_BASE: string;
+  readonly POLICIES_BASE: string;
   readonly KVDBS_BASE: string;
   readonly LOG_TEST_BASE: string;
   readonly METRICS: string;
@@ -61,6 +65,8 @@ export interface NodeServices {
   alertService: AlertService;
   rulesService: RulesService;
   notificationsService: NotificationsService;
+  policiesService: PoliciesService;
+  integrationService: IntegrationService;
   logTypeService: LogTypeService;
   kvdbsService: KVDBsService;
   metricsService: MetricsService;
