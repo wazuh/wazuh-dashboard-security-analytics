@@ -73,6 +73,7 @@ export type UserSpace = 'draft' | 'test' | 'custom';
 export type PromoteSpaces = Omit<UserSpace, 'custom'>; // TODO: use the centralized items on constants instead
 export type PromoteNextSpaces = Omit<UserSpace, 'draft'>; // TODO: use the centralized items on constants instead
 export type NonUserSpace = 'standard';
+export type Space = UserSpace | NonUserSpace;
 
 export type PromoteOperations = 'update' | 'add' | 'delete';
 export type PromoteOperationsPolicy = 'update';

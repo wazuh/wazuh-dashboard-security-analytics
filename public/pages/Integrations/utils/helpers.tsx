@@ -121,7 +121,8 @@ export const getIntegrationLabel = (name: string) => {
 export const withGuardAsync = (
   condition: (props: any) => Promise<{ ok: boolean; data: any }>,
   ComponentFulfillsCondition: React.FC,
-  ComponentLoadingResolution: null | React.FC = null
+  ComponentLoadingResolution: null | React.FC = null,
+  options: { rerunOn?: (props) => any[] }
 ) => (WrappedComponent: React.FC) => (props: any) => {
   const [loading, setLoading] = useState(true);
   const [fulfillsCondition, setFulfillsCondition] = useState({
@@ -141,9 +142,11 @@ export const withGuardAsync = (
     }
   };
 
+  const dependenciesRun = options?.rerunOn ? options.rerunOn(props) : [];
+
   useEffect(() => {
     execCondition();
-  }, []);
+  }, dependenciesRun);
 
   if (loading) {
     return ComponentLoadingResolution ? <ComponentLoadingResolution {...props} /> : null;

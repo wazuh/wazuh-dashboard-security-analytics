@@ -8,6 +8,8 @@ import { DEFAULT_METRICS_COUNTER } from '../server/utils/constants';
 import { MetricsCounter, PartialMetricsCounter } from '../types';
 import { SecurityAnalyticsPluginConfigType } from '../config';
 import { Get, Set } from '../../../src/plugins/opensearch_dashboards_utils/common';
+// Wazuh
+import { AllowedActionsBySpace, SpaceTypes } from './constants';
 
 export function aggregateMetrics(
   metrics: PartialMetricsCounter,
@@ -75,4 +77,9 @@ export function createNullableGetterSetter<T>(): [Get<T | undefined>, Set<T>] {
   };
 
   return [get, set];
+}
+
+// Wazuh
+export function actionIsAllowedOnSpace(space: string, action: string): Boolean {
+  return AllowedActionsBySpace?.[SpaceTypes[space.toUpperCase()]?.value]?.includes(action);
 }

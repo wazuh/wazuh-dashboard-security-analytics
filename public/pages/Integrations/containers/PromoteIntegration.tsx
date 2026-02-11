@@ -23,9 +23,13 @@ import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { getNextSpace, withGuardAsync } from '../utils/helpers';
 import { PromoteBySpaceModal } from '../components/PromoteModal';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
-import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
+import { SPACE_ACTIONS } from '../../../../common/constants';
 import { compose } from 'redux';
-import { withRootDecoderRequirementGuard } from '../components/RootDecoderRequirement';
+import {
+  withConditionalHOC,
+  withRootDecoderRequirementGuard,
+} from '../components/RootDecoderRequirement';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 
 export interface PromoteIntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -63,7 +67,9 @@ const PromoteEntity: React.FC<{
 };
 
 const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
-  withRootDecoderRequirementGuard,
+  withConditionalHOC((props) => {
+    return actionIsAllowedOnSpace(props.space, SPACE_ACTIONS.DEFINE_ROOT_DECODER);
+  }, withRootDecoderRequirementGuard), // This guard is added to make sure that the user has a root decoder defined before promoting, as it is a requirement for the promotion. If the user doesn't have a root decoder defined, it will show a message to the user to define a root decoder before promoting.
   withGuardAsync(
     async ({ space }) => {
       try {
@@ -184,9 +190,7 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
         </EuiText>
         <EuiSpacer />
       </PageHeader>
-      {AllowedActionsBySpace?.[SpaceTypes[space.toUpperCase()]?.value]?.includes(
-        SPACE_ACTIONS.PROMOTE
-      ) ? (
+      {actionIsAllowedOnSpace(space, SPACE_ACTIONS.PROMOTE) ? (
         <>
           <EuiText size="s">
             You are promoting the entities from <b>{space}</b> to <b>{getNextSpace(space)}</b>{' '}

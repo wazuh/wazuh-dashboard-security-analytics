@@ -1,6 +1,8 @@
 import React from 'react';
 import {
   EuiButton,
+  EuiButtonEmpty,
+  EuiButtonIcon,
   EuiConfirmModal,
   EuiModal,
   EuiModalHeader,
@@ -67,33 +69,37 @@ export const ButtonOpenModalConfirm: React.FC<{
   );
 };
 
-export const ButtonOpenModal: React.FC<{
+const ButtonComponentByType = {
+  default: EuiButton,
+  icon: EuiButtonIcon,
+  empty: EuiButtonEmpty,
+};
+
+export interface ButtonOpenModalProps {
   label: string;
+  type: keyof typeof ButtonComponentByType;
   buttonProps: any;
   modal: {
     title: string | React.ReactNode;
-    cancelButtonText: string;
-    confirmButtonText: string;
     onConfirm: () => void;
   };
-}> = ({
+}
+
+export const ButtonOpenModal: React.FC<ButtonOpenModalProps> = ({
   label,
   buttonProps,
-  modal: {
-    title,
-    cancelButtonText = 'Cancel',
-    confirmButtonText = 'Confirm',
-    onConfirm,
-    ...modalProps
-  },
+  type,
+  modal: { title, onConfirm, ...modalProps },
   children,
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
+
+  const Button = ButtonComponentByType[type] || ButtonComponentByType.default;
   return (
     <>
       {isOpen && (
         <EuiOverlayMask>
-          <EuiModal onClose={() => setIsOpen(false)}>
+          <EuiModal {...modalProps} onClose={() => setIsOpen(false)}>
             <EuiModalHeader>
               <EuiModalHeaderTitle>
                 {typeof title === 'string' ? (
@@ -113,9 +119,9 @@ export const ButtonOpenModal: React.FC<{
           </EuiModal>
         </EuiOverlayMask>
       )}
-      <EuiButton {...buttonProps} onClick={() => setIsOpen(true)}>
+      <Button {...buttonProps} onClick={() => setIsOpen(true)}>
         {label}
-      </EuiButton>
+      </Button>
     </>
   );
 };

@@ -15,8 +15,8 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
-import { UserSpace } from '../../../../types';
-import { ButtonOpenModal } from './Button';
+import { DecoderSource, PolicyDocument, UserSpace } from '../../../../types';
+import { ButtonOpenModal, ButtonOpenModalProps } from './Button';
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { errorNotificationToast, successNotificationToast } from '../../../utils/helpers';
@@ -24,13 +24,23 @@ import { errorNotificationToast, successNotificationToast } from '../../../utils
 const delayOnSearch = 300; // ms
 const itemsPerPage = 25;
 
-const SelectRootDecoder: React.FC<{
+interface SelectRootDecoderFormProps {
   space: UserSpace;
-  closeModal: () => void;
   notifications: NotificationsStart;
-  policyData: any;
-  refreshPolicy: () => void;
-}> = ({ space, closeModal, notifications, policyData, refreshPolicy }) => {
+  policyDocumentData: PolicyDocument;
+  rootDecoderSource?: DecoderSource;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
+  space,
+  onCancel,
+  notifications,
+  policyDocumentData,
+  onConfirm,
+  rootDecoderSource,
+}) => {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState(search);
 
@@ -97,14 +107,13 @@ const SelectRootDecoder: React.FC<{
   );
 
   const updatePolicy = async () => {
-    const [success] = await DataStore.policies.updatePolicy(policyData.id, {
-      ...policyData,
+    const [success] = await DataStore.policies.updatePolicy(policyDocumentData.id, {
+      ...policyDocumentData,
       root_decoder: selected,
     });
     if (success) {
       successNotificationToast(notifications, 'updated', `[${space}] policy`);
-      closeModal();
-      refreshPolicy();
+      onConfirm();
     } else {
       errorNotificationToast(notifications, 'updated', `[${space}] policy`);
     }
@@ -151,6 +160,17 @@ const SelectRootDecoder: React.FC<{
           />
         </EuiFormRow>
         <EuiSpacer size="s" />
+        {rootDecoderSource && (
+          <>
+            <EuiText size="s">
+              Current root decoder:{' '}
+              <EuiToolTip position="top" content={`ID: ${rootDecoderSource.document.id}`}>
+                <div>{rootDecoderSource.document.name}</div>
+              </EuiToolTip>
+            </EuiText>
+            <EuiSpacer size="s" />
+          </>
+        )}
         <div style={{ display: 'flex', justifyContent: 'end' }}>
           <EuiText size="s" color="subdued">
             {action.data.items.length} of {action.data.total_items} decoders loaded
@@ -159,7 +179,7 @@ const SelectRootDecoder: React.FC<{
         <EuiSpacer size="m" />
         <EuiFlexGroup justifyContent="flexEnd" gutterSize="m">
           <EuiFlexItem grow={false}>
-            <EuiButtonEmpty onClick={closeModal}>Cancel</EuiButtonEmpty>
+            <EuiButtonEmpty onClick={onCancel}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <EuiButton fill={true} onClick={updatePolicy} isDisabled={!selected}>
@@ -173,30 +193,71 @@ const SelectRootDecoder: React.FC<{
   return null;
 };
 
-const Callout: React.FC<{ space: UserSpace }> = ({ space, policyData, notifications, check }) => {
+export type ButtonSelectRootDecoderProps = Omit<ButtonOpenModalProps, 'label' | 'modal'> &
+  SelectRootDecoderFormProps;
+
+export const ButtonSelectRootDecoder: React.FC<ButtonSelectRootDecoderProps> = ({
+  space,
+  notifications,
+  buttonProps,
+  policyDocumentData,
+  rootDecoderSource,
+  onConfirm,
+  onCancel,
+  type,
+}) => {
+  return (
+    <ButtonOpenModal
+      label="Select root decoder"
+      type={type}
+      buttonProps={buttonProps}
+      modal={{
+        title: `Select the root decoder for [${space}] space`,
+        onConfirm: () => {},
+      }}
+      children={({ closeModal }) => (
+        <SelectRootDecoderForm
+          space={space}
+          policyDocumentData={policyDocumentData}
+          rootDecoderSource={rootDecoderSource}
+          notifications={notifications}
+          onCancel={() => {
+            closeModal();
+            onCancel?.();
+          }}
+          onConfirm={() => {
+            closeModal();
+            onConfirm?.();
+          }}
+        />
+      )}
+    />
+  );
+};
+type CalloutProps = {
+  check: () => void;
+  rootDecoder: DecoderSource;
+} & ButtonSelectRootDecoderProps;
+const Callout: React.FC<CalloutProps> = ({
+  space,
+  policyDocumentData,
+  notifications,
+  check,
+  rootDecoder,
+}) => {
   return (
     <EuiCallOut title="Root decoder not defined in the space" color="warning" iconType="alert">
       <p>
         The promotion of the space requires a root decoder to be defined in the space. Please create
         and/or select a root decoder.
       </p>
-      <ButtonOpenModal
-        // TODO: change by a regular modal and add the cancel and confirm buttons because the confirm button needs to be disabled until a decoder is selected
-        label="Select"
+      <ButtonSelectRootDecoder
         buttonProps={{ color: 'warning' }}
-        modal={{
-          title: `Select the root decoder for [${space}] space`,
-          onConfirm: () => {},
-        }}
-        children={({ closeModal }) => (
-          <SelectRootDecoder
-            space={space}
-            closeModal={closeModal}
-            policyData={policyData}
-            notifications={notifications}
-            refreshPolicy={check}
-          />
-        )}
+        space={space}
+        policyDocumentData={policyDocumentData}
+        rootDecoderSource={rootDecoder}
+        notifications={notifications}
+        onConfirm={check}
       />
     </EuiCallOut>
   );
@@ -207,11 +268,15 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
     try {
       const response = await DataStore.policies.searchPolicies(space);
 
-      const policyData = response.items?.[0]?.document;
+      const policyDocumentData = response.items?.[0]?.document;
 
-      const rootDecoderId = policyData?.root_decoder;
+      const rootDecoderId = policyDocumentData?.root_decoder;
+      let rootDecoder;
+      if (rootDecoderId) {
+        rootDecoder = await DataStore.decoders.getDecoder(rootDecoderId, space);
+      }
 
-      return { ok: !Boolean(rootDecoderId), data: { rootDecoderId, policyData } };
+      return { ok: !Boolean(rootDecoder), data: { policyDocumentData, rootDecoder } };
     } catch (error) {
       return { ok: false, data: { error } };
     }
@@ -219,9 +284,23 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
   Callout
 );
 
-export const RootDecoderRequirement: React.FC<{
-  space: UserSpace;
-  notifications: NotificationsStart;
-}> = withRootDecoderRequirementGuard(({ error }) => {
-  return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
-});
+export const RootDecoderRequirement: React.FC<CalloutProps> = withRootDecoderRequirementGuard(
+  ({ error }: { error: Error }) => {
+    return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
+  }
+);
+
+export const withConditionalHOC = (
+  condition: (props: any) => boolean,
+  hoc: (Component: React.FC) => React.FC
+) => {
+  return (Component: React.FC): React.FC => {
+    const EnhancedComponent = hoc(Component);
+    return (props) => {
+      if (condition(props)) {
+        return <EnhancedComponent {...props} />;
+      }
+      return <Component {...props} />;
+    };
+  };
+};
