@@ -311,7 +311,6 @@ export class PoliciesService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const updatePolicyResponse = await client(CLIENT_POLICY_METHODS.UPDATE_POLICY, {
         body: {
-          type: 'policy',
           resource: { ...body, id: policyId },
         },
       });

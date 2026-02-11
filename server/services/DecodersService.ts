@@ -327,7 +327,6 @@ export class DecodersService {
 
       const createBody = {
         body: {
-          type: 'decoder',
           resource: decoderDocument,
           integration: integrationId,
         },
@@ -377,7 +376,6 @@ export class DecodersService {
 
       const updateBody = {
         body: {
-          type: 'decoder',
           resource: decoderDocument,
         },
         decoderId: decoderId,
@@ -413,7 +411,7 @@ export class DecodersService {
       const { decoderId } = request.params;
       const client = this.getClient(request);
 
-      const deleteBody = { body: { type: 'decoder' }, decoderId };
+      const deleteBody = { decoderId };
 
       await client(CLIENT_DECODER_METHODS.DELETE_DECODER, deleteBody);
       return response.custom({
