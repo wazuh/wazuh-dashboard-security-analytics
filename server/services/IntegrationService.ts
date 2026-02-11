@@ -46,7 +46,7 @@ export class IntegrationService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const createIntegrationResponse: CreateIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.CREATE_INTEGRATION,
-        { body: { resource: document, type: 'integration' } }
+        { body: { resource: document } }
       );
 
       return response.custom({
@@ -124,7 +124,7 @@ export class IntegrationService extends MDSEnabledClientService {
       delete (document as any).id;
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
-        body: { resource: document, type: 'integration' },
+        body: { resource: document },
         integrationId,
       };
       const client = this.getClient(request, context);
