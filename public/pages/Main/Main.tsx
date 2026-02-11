@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { Component } from "react";
-import { Switch, Route, Redirect, RouteComponentProps } from "react-router-dom";
+import React, { Component } from 'react';
+import { Switch, Route, Redirect, RouteComponentProps } from 'react-router-dom';
 import {
   EuiSideNav,
   EuiPage,
@@ -14,10 +14,10 @@ import {
   EuiTitle,
   EuiSpacer,
   EuiGlobalToastList,
-} from "@elastic/eui";
-import { Toast } from "@opensearch-project/oui/src/eui_components/toast/global_toast_list";
-import { AppMountParameters, CoreStart } from "opensearch-dashboards/public";
-import { SaContextConsumer } from "../../services";
+} from '@elastic/eui';
+import { Toast } from '@opensearch-project/oui/src/eui_components/toast/global_toast_list';
+import { AppMountParameters, CoreStart } from 'opensearch-dashboards/public';
+import { SaContextConsumer } from '../../services';
 import {
   DEFAULT_DATE_RANGE,
   DATE_TIME_FILTER_KEY,
@@ -38,37 +38,41 @@ import {
   LOG_TYPES_NAV_ID,
   DECODERS_NAV_ID,
   KVDBS_NAV_ID,
+  INTEGRATIONS_NAV_ID,
   LOG_TEST_NAV_ID,
-} from "../../utils/constants";
-import { CoreServicesConsumer } from "../../components/core_services";
-import Findings from "../Findings";
-import Detectors from "../Detectors";
-import Overview from "../Overview";
-import CreateDetector from "../CreateDetector/containers/CreateDetector";
+} from '../../utils/constants';
+import { CoreServicesConsumer } from '../../components/core_services';
+import Findings from '../Findings';
+import Detectors from '../Detectors';
+import Overview from '../Overview';
+import CreateDetector from '../CreateDetector/containers/CreateDetector';
 // Wazuh: hide Alerts app and routes.
 // import Alerts from "../Alerts";
-import { DetectorDetails } from "../Detectors/containers/Detector/DetectorDetails";
-import { UpdateDetectorBasicDetails } from "../Detectors/components/UpdateBasicDetails/UpdateBasicDetails";
-import { UpdateDetectorRules } from "../Detectors/components/UpdateRules/UpdateRules";
-import UpdateFieldMappings from "../Detectors/components/UpdateFieldMappings/UpdateFieldMappings";
+import { DetectorDetails } from '../Detectors/containers/Detector/DetectorDetails';
+import { UpdateDetectorBasicDetails } from '../Detectors/components/UpdateBasicDetails/UpdateBasicDetails';
+import { UpdateDetectorRules } from '../Detectors/components/UpdateRules/UpdateRules';
+import UpdateFieldMappings from '../Detectors/components/UpdateFieldMappings/UpdateFieldMappings';
 // Wazuh: hide Alert triggers edit route.
 // import UpdateAlertConditions from "../Detectors/components/UpdateAlertConditions/UpdateAlertConditions";
-import { Rules } from "../Rules/containers/Rules/Rules";
-import { CreateRule } from "../Rules/containers/CreateRule/CreateRule";
-import { EditRule } from "../Rules/containers/EditRule/EditRule";
-import { ImportRule } from "../Rules/containers/ImportRule/ImportRule";
-import { DuplicateRule } from "../Rules/containers/DuplicateRule/DuplicateRule";
-import Callout, { ICalloutProps } from "./components/Callout";
-import { DataStore } from "../../store/DataStore";
+import { Rules } from '../Rules/containers/Rules/Rules';
+import { CreateRule } from '../Rules/containers/CreateRule/CreateRule';
+import { EditRule } from '../Rules/containers/EditRule/EditRule';
+import { ImportRule } from '../Rules/containers/ImportRule/ImportRule';
+import { DuplicateRule } from '../Rules/containers/DuplicateRule/DuplicateRule';
+import Callout, { ICalloutProps } from './components/Callout';
+import { DataStore } from '../../store/DataStore';
 // Wazuh: hide Correlations and Correlation rules routes.
 // import { CreateCorrelationRule } from "../Correlations/containers/CreateCorrelationRule";
 // import { CorrelationRules } from "../Correlations/containers/CorrelationRules";
 // import { Correlations } from "../Correlations/containers/CorrelationsContainer";
-import { LogTypes } from "../LogTypes/containers/LogTypes";
-import { LogType } from "../LogTypes/containers/LogType";
-import { CreateLogType } from "../LogTypes/containers/CreateLogType";
-import Decoders from "../Decoders";
-import { KVDBs } from "../KVDBs/containers/KVDBs";
+// import { LogTypes } from "../LogTypes/containers/LogTypes";
+// import { LogType } from "../LogTypes/containers/LogType";
+// import { CreateLogType } from "../LogTypes/containers/CreateLogType";
+import { Integrations } from '../Integrations/containers/Integrations';
+import { Integration } from '../Integrations/containers/Integration';
+import { CreateIntegration } from '../Integrations/containers/CreateIntegration';
+import Decoders from '../Decoders';
+import { KVDBs } from '../KVDBs/containers/KVDBs';
 import { LogTest } from "../LogTest/containers/LogTest";
 import {
   DataSourceContextType,
@@ -76,49 +80,44 @@ import {
   ShowFlyoutDataType,
   SecurityAnalyticsContextType,
   FlyoutPropsType,
-} from "../../../types";
-import { DataSourceManagementPluginSetup } from "../../../../../src/plugins/data_source_management/public";
-import { DataSourceMenuWrapper } from "../../components/MDS/DataSourceMenuWrapper";
-import { DataSourceOption } from "src/plugins/data_source_management/public/components/data_source_menu/types";
-import {
-  DataSourceContext,
-  DataSourceContextConsumer,
-} from "../../services/DataSourceContext";
-import {
-  dataSourceInfo,
-  getApplication,
-  getUseUpdatedUx,
-} from "../../services/utils/constants";
-import { ThreatIntelOverview } from "../ThreatIntel/containers/Overview/ThreatIntelOverview";
-import { AddThreatIntelSource } from "../ThreatIntel/containers/AddThreatIntelSource/AddThreatIntelSource";
-import { ThreatIntelScanConfigForm } from "../ThreatIntel/containers/ScanConfiguration/ThreatIntelScanConfigForm";
-import { ThreatIntelSource } from "../ThreatIntel/containers/ThreatIntelSource/ThreatIntelSource";
-import { parse } from "query-string";
+} from '../../../types';
+import { DataSourceManagementPluginSetup } from '../../../../../src/plugins/data_source_management/public';
+import { DataSourceMenuWrapper } from '../../components/MDS/DataSourceMenuWrapper';
+import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
+import { DataSourceContext, DataSourceContextConsumer } from '../../services/DataSourceContext';
+import { dataSourceInfo, getApplication, getUseUpdatedUx } from '../../services/utils/constants';
+import { ThreatIntelOverview } from '../ThreatIntel/containers/Overview/ThreatIntelOverview';
+import { AddThreatIntelSource } from '../ThreatIntel/containers/AddThreatIntelSource/AddThreatIntelSource';
+import { ThreatIntelScanConfigForm } from '../ThreatIntel/containers/ScanConfiguration/ThreatIntelScanConfigForm';
+import { ThreatIntelSource } from '../ThreatIntel/containers/ThreatIntelSource/ThreatIntelSource';
+import { parse } from 'query-string';
 import {
   dataSourceFilterFn,
   getPlugins,
   setIsNotificationPluginInstalled,
-} from "../../utils/helpers";
-import { GettingStartedContent } from "../Overview/components/GettingStarted/GettingStartedContent";
-import { BrowserServices } from "../../models/interfaces";
-import { CHANNEL_TYPES } from "../CreateDetector/components/ConfigureAlerts/utils/constants";
-import { DecoderFormPage } from "../Decoders/containers/DecoderFormPage";
+} from '../../utils/helpers';
+import { GettingStartedContent } from '../Overview/components/GettingStarted/GettingStartedContent';
+import { BrowserServices } from '../../models/interfaces';
+import { CHANNEL_TYPES } from '../CreateDetector/components/ConfigureAlerts/utils/constants';
+import { PromoteIntegration } from '../Integrations/containers/PromoteIntegration';
+import { DecoderFormPage } from '../Decoders/containers/DecoderFormPage';
 
 enum Navigation {
-  SecurityAnalytics = "Security Analytics",
-  Findings = "Findings",
-  Detectors = "Detectors",
-  Rules = "Detection rules",
-  Overview = "Overview",
+  SecurityAnalytics = 'Security Analytics',
+  Findings = 'Findings',
+  Detectors = 'Detectors',
+  Rules = 'Detection rules',
+  Overview = 'Overview',
   // Wazuh: hide Alerts/Correlations navigation items.
   // Alerts = "Alerts",
   // Correlations = "Correlations",
   // CorrelationRules = "Correlation rules",
-  LogTypes = "Integrations", // Replace Log Types to Integrations by Wazuh
+  LogTypes = 'Integrations', // Replace Log Types to Integrations by Wazuh
+  Integrations = 'Integrations', // Integrations by Wazuh
   // Removed Threat Intel from side nav by Wazuh
   // Wazuh: hide Alerts/Correlations navigation items.
   // Insights = "Insights",
-  Detection = "Detection",
+  Detection = 'Detection',
   // Wazuh
   Normalization = "Normalization",
   Decoders = "Decoders",
@@ -142,6 +141,8 @@ const HIDDEN_NAV_ROUTES: string[] = [
   // ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS,
   `${ROUTES.LOG_TYPES}/.+`,
   ROUTES.LOG_TYPES_CREATE,
+  ROUTES.INTEGRATIONS_CREATE,
+  ROUTES.PROMOTE,
   ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE,
   ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
   ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
@@ -151,7 +152,7 @@ const HIDDEN_NAV_ROUTES: string[] = [
 
 interface MainProps extends RouteComponentProps {
   landingPage: string;
-  setActionMenu: AppMountParameters["setHeaderActionMenu"];
+  setActionMenu: AppMountParameters['setHeaderActionMenu'];
   multiDataSourceEnabled: boolean;
   dataSourceManagement?: DataSourceManagementPluginSetup;
   services: BrowserServices;
@@ -179,7 +180,9 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   // [ROUTES.ALERTS]: Navigation.Alerts,
   [ROUTES.DETECTORS]: Navigation.Detectors,
   [ROUTES.RULES]: Navigation.Rules,
-  [ROUTES.LOG_TYPES]: Navigation.LogTypes,
+  // Wazuh: hide Log types and add Wazuh integrations route mapping.
+  // [ROUTES.LOG_TYPES]: Navigation.LogTypes,
+  [ROUTES.INTEGRATIONS]: Navigation.Integrations,
   [ROUTES.DECODERS]: Navigation.Decoders,
   [ROUTES.KVDBS]: Navigation.KVDBS,
   [ROUTES.LOG_TEST]: Navigation.LogTest,
@@ -198,8 +201,8 @@ export default class Main extends Component<MainProps, MainState> {
           startTime: DEFAULT_DATE_RANGE.start,
           endTime: DEFAULT_DATE_RANGE.end,
         };
-    let dataSourceId = "";
-    let dataSourceLabel = "";
+    let dataSourceId = '';
+    let dataSourceLabel = '';
     if (props.multiDataSourceEnabled) {
       const {
         dataSourceId: parsedDataSourceId,
@@ -209,7 +212,7 @@ export default class Main extends Component<MainProps, MainState> {
         dataSourceLabel: string;
       };
       dataSourceId = parsedDataSourceId;
-      dataSourceLabel = parsedDataSourceLabel || "";
+      dataSourceLabel = parsedDataSourceLabel || '';
     }
 
     this.state = {
@@ -222,8 +225,7 @@ export default class Main extends Component<MainProps, MainState> {
        * empty string: using the local cluster.
        * string: using the selected data source.
        */
-      dataSourceLoading:
-        dataSourceId === undefined ? props.multiDataSourceEnabled : false,
+      dataSourceLoading: dataSourceId === undefined ? props.multiDataSourceEnabled : false,
       selectedDataSource: { id: dataSourceId },
       dataSourceMenuReadOnly: false,
     };
@@ -256,23 +258,19 @@ export default class Main extends Component<MainProps, MainState> {
   componentDidUpdate(
     prevProps: Readonly<MainProps>,
     prevState: Readonly<MainState>,
-    snapshot?: any,
+    snapshot?: any
   ): void {
-    const pathnameChanged =
-      this.props.location.pathname !== prevProps.location.pathname;
+    const pathnameChanged = this.props.location.pathname !== prevProps.location.pathname;
 
-    if (
-      pathnameChanged ||
-      this.state.selectedDataSource.id !== prevState.selectedDataSource.id
-    ) {
+    if (pathnameChanged || this.state.selectedDataSource.id !== prevState.selectedDataSource.id) {
       const searchParams = new URLSearchParams(this.props.location.search);
-      searchParams.set("dataSourceId", this.state.selectedDataSource.id);
+      searchParams.set('dataSourceId', this.state.selectedDataSource.id);
       this.props.history.replace(
         {
           ...this.props.location,
           search: searchParams.toString(),
         },
-        this.props.location.state,
+        this.props.location.state
       );
     }
 
@@ -312,7 +310,7 @@ export default class Main extends Component<MainProps, MainState> {
       this.setState({ selectedNavItemId: navItemId });
     }
 
-    if (this.props.location.pathname.includes("detector-details")) {
+    if (this.props.location.pathname.includes('detector-details')) {
       this.setState({ selectedNavItemId: navItemIdByRoute[ROUTES.DETECTORS] });
     }
   }
@@ -326,8 +324,7 @@ export default class Main extends Component<MainProps, MainState> {
     const { services } = this.props;
     if (
       sources[0] &&
-      (dataSource?.id !== sources[0].id ||
-        dataSource?.label !== sources[0].label)
+      (dataSource?.id !== sources[0].id || dataSource?.label !== sources[0].label)
     ) {
       dataSourceInfo.activeDataSource = sources[0];
       this.setState({
@@ -342,9 +339,7 @@ export default class Main extends Component<MainProps, MainState> {
       });
 
       getPlugins(services.opensearchService).then((plugins): void => {
-        setIsNotificationPluginInstalled(
-          plugins.includes(OS_NOTIFICATION_PLUGIN),
-        );
+        setIsNotificationPluginInstalled(plugins.includes(OS_NOTIFICATION_PLUGIN));
       });
 
       DataStore.logTypes.getLogTypes();
@@ -462,6 +457,23 @@ export default class Main extends Component<MainProps, MainState> {
           //   ],
           // },
           {
+            name: Navigation.Integrations,
+            id: Navigation.Integrations,
+            onClick: () => {
+              // this.setState({ selectedNavItemId: Navigation.Integrations });
+              // history.push(ROUTES.INTEGRATIONS);
+              // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+              getApplication().navigateToApp(INTEGRATIONS_NAV_ID, {
+                path: generateAppPath(ROUTES.INTEGRATIONS),
+              });
+              if (history.location.pathname !== ROUTES.INTEGRATIONS) {
+                history.push(ROUTES.INTEGRATIONS);
+              }
+            },
+            isSelected: selectedNavItemId === Navigation.Integrations,
+          },
+          /**** Wazuh Replace LogTypes entry for Wazuh integrations 
+          {
             name: Navigation.LogTypes,
             id: Navigation.LogTypes,
             onClick: () => {
@@ -474,6 +486,7 @@ export default class Main extends Component<MainProps, MainState> {
             },
             isSelected: selectedNavItemId === Navigation.LogTypes,
           },
+          */
           {
             name: Navigation.Normalization,
             id: Navigation.Normalization,
@@ -594,8 +607,7 @@ export default class Main extends Component<MainProps, MainState> {
       dataSourceLoading,
       dataSourceMenuReadOnly,
     } = this.state;
-    const sideNav: EuiSideNavItemType<{ style: any }>[] =
-      this.getSideNavItems();
+    const sideNav: EuiSideNavItemType<{ style: any }>[] = this.getSideNavItems();
     const isDecodersRoute = !!pathname.match(new RegExp(`^${ROUTES.DECODERS}`));
     const showDataSourceMenu = multiDataSourceEnabled && !isDecodersRoute;
     const shouldBlockForDataSource = dataSourceLoading && !isDecodersRoute;
@@ -631,17 +643,12 @@ export default class Main extends Component<MainProps, MainState> {
                               />
                             )}
                             {!shouldBlockForDataSource && services && (
-                              <EuiPage restrictWidth={"100%"}>
+                              <EuiPage restrictWidth={'100%'}>
                                 {/* Hide side navigation bar when on any HIDDEN_NAV_ROUTES pages. */}
-                                {!HIDDEN_NAV_ROUTES.some((route) =>
-                                  pathname.match(route),
-                                ) &&
+                                {!HIDDEN_NAV_ROUTES.some((route) => pathname.match(route)) &&
                                   !core.chrome.navGroup.getNavGroupEnabled() && (
                                     <EuiPageSideBar style={{ minWidth: 200 }}>
-                                      <EuiSideNav
-                                        style={{ width: 200 }}
-                                        items={sideNav}
-                                      />
+                                      <EuiSideNav style={{ width: 200 }} items={sideNav} />
                                     </EuiPageSideBar>
                                   )}
                                 <EuiPageBody>
@@ -658,21 +665,11 @@ export default class Main extends Component<MainProps, MainState> {
                                       render={(props: RouteComponentProps) => (
                                         <Findings
                                           {...props}
-                                          setDateTimeFilter={
-                                            this.setDateTimeFilter
-                                          }
-                                          dateTimeFilter={
-                                            this.state.dateTimeFilter
-                                          }
-                                          opensearchService={
-                                            services.opensearchService
-                                          }
-                                          detectorService={
-                                            services.detectorsService
-                                          }
-                                          indexPatternsService={
-                                            services.indexPatternsService
-                                          }
+                                          setDateTimeFilter={this.setDateTimeFilter}
+                                          dateTimeFilter={this.state.dateTimeFilter}
+                                          opensearchService={services.opensearchService}
+                                          detectorService={services.detectorsService}
+                                          indexPatternsService={services.indexPatternsService}
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
                                         />
@@ -683,9 +680,7 @@ export default class Main extends Component<MainProps, MainState> {
                                       render={(props: RouteComponentProps) => (
                                         <Detectors
                                           {...props}
-                                          detectorService={
-                                            services.detectorsService
-                                          }
+                                          detectorService={services.detectorsService}
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
                                         />
@@ -702,12 +697,8 @@ export default class Main extends Component<MainProps, MainState> {
                                           history={props.history}
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
-                                          setDataSource={
-                                            this.onDataSourceSelected
-                                          }
-                                          setDataSourceMenuReadOnly={
-                                            this.setDataSourceMenuReadOnly
-                                          }
+                                          setDataSource={this.onDataSourceSelected}
+                                          setDataSourceMenuReadOnly={this.setDataSourceMenuReadOnly}
                                         />
                                       )}
                                     />
@@ -733,21 +724,13 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={ROUTES.RULES_EDIT}
-                                      render={(
-                                        props: RouteComponentProps<
-                                          any,
-                                          any,
-                                          any
-                                        >,
-                                      ) => {
+                                      render={(props: RouteComponentProps<any, any, any>) => {
                                         if (!props.location.state?.ruleItem) {
                                           props.history.replace(ROUTES.RULES);
                                           return (
                                             <Rules
                                               {...props}
-                                              notifications={
-                                                core?.notifications
-                                              }
+                                              notifications={core?.notifications}
                                               dataSource={selectedDataSource}
                                             />
                                           );
@@ -764,21 +747,13 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={ROUTES.RULES_DUPLICATE}
-                                      render={(
-                                        props: RouteComponentProps<
-                                          any,
-                                          any,
-                                          any
-                                        >,
-                                      ) => {
+                                      render={(props: RouteComponentProps<any, any, any>) => {
                                         if (!props.location.state?.ruleItem) {
                                           props.history.replace(ROUTES.RULES);
                                           return (
                                             <Rules
                                               {...props}
-                                              notifications={
-                                                core?.notifications
-                                              }
+                                              notifications={core?.notifications}
                                               dataSource={selectedDataSource}
                                             />
                                           );
@@ -808,18 +783,12 @@ export default class Main extends Component<MainProps, MainState> {
                                       render={(props: RouteComponentProps) => (
                                         <Overview
                                           {...props}
-                                          setDateTimeFilter={
-                                            this.setDateTimeFilter
-                                          }
-                                          dateTimeFilter={
-                                            this.state.dateTimeFilter
-                                          }
+                                          setDateTimeFilter={this.setDateTimeFilter}
+                                          dateTimeFilter={this.state.dateTimeFilter}
                                           getStartedDismissedOnce={
                                             this.state.getStartedDismissedOnce
                                           }
-                                          onGetStartedDismissed={
-                                            this.setGetStartedDismissedOnce
-                                          }
+                                          onGetStartedDismissed={this.setGetStartedDismissedOnce}
                                           notifications={core?.notifications}
                                           dataSource={selectedDataSource}
                                         />
@@ -828,9 +797,7 @@ export default class Main extends Component<MainProps, MainState> {
                                     {getUseUpdatedUx() && (
                                       <Route
                                         path={ROUTES.GETTING_STARTED}
-                                        render={(
-                                          props: RouteComponentProps,
-                                        ) => (
+                                        render={(props: RouteComponentProps) => (
                                           <GettingStartedContent
                                             {...props}
                                             onStepClicked={() => {}}
@@ -873,23 +840,11 @@ export default class Main extends Component<MainProps, MainState> {
                                     /> */}
                                     <Route
                                       path={`${ROUTES.DETECTOR_DETAILS}/:id`}
-                                      render={(
-                                        props: RouteComponentProps<
-                                          {},
-                                          any,
-                                          any
-                                        >,
-                                      ) => (
+                                      render={(props: RouteComponentProps<{}, any, any>) => (
                                         <DetectorDetails
-                                          detectorService={
-                                            services.detectorsService
-                                          }
-                                          savedObjectsService={
-                                            services.savedObjectsService
-                                          }
-                                          indexPatternsService={
-                                            services.indexPatternsService
-                                          }
+                                          detectorService={services.detectorsService}
+                                          savedObjectsService={services.savedObjectsService}
+                                          indexPatternsService={services.indexPatternsService}
                                           {...props}
                                           notifications={core?.notifications}
                                         />
@@ -897,13 +852,7 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.EDIT_DETECTOR_DETAILS}/:id`}
-                                      render={(
-                                        props: RouteComponentProps<
-                                          any,
-                                          any,
-                                          any
-                                        >,
-                                      ) => (
+                                      render={(props: RouteComponentProps<any, any, any>) => (
                                         <UpdateDetectorBasicDetails
                                           {...props}
                                           notifications={core?.notifications}
@@ -912,13 +861,7 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.EDIT_DETECTOR_RULES}/:id`}
-                                      render={(
-                                        props: RouteComponentProps<
-                                          any,
-                                          any,
-                                          any
-                                        >,
-                                      ) => (
+                                      render={(props: RouteComponentProps<any, any, any>) => (
                                         <UpdateDetectorRules
                                           {...props}
                                           notifications={core?.notifications}
@@ -927,21 +870,11 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.EDIT_FIELD_MAPPINGS}/:id`}
-                                      render={(
-                                        props: RouteComponentProps<
-                                          any,
-                                          any,
-                                          any
-                                        >,
-                                      ) => (
+                                      render={(props: RouteComponentProps<any, any, any>) => (
                                         <UpdateFieldMappings
                                           {...props}
-                                          fieldMappingService={
-                                            services.fieldMappingService
-                                          }
-                                          detectorService={
-                                            services.detectorsService
-                                          }
+                                          fieldMappingService={services.fieldMappingService}
+                                          detectorService={services.detectorsService}
                                           notifications={core?.notifications}
                                         />
                                       )}
@@ -1070,6 +1003,8 @@ export default class Main extends Component<MainProps, MainState> {
                                         );
                                       }}
                                     /> */}
+                                    {/* Wazuh: hide Log Types routes. */}
+                                    {/*
                                     <Route
                                       path={`${ROUTES.LOG_TYPES}/:logTypeId`}
                                       render={(
@@ -1119,14 +1054,54 @@ export default class Main extends Component<MainProps, MainState> {
                                           />
                                         );
                                       }}
+                                    /> */}
+                                    <Route
+                                      path={`${ROUTES.INTEGRATIONS}/:integrationId`}
+                                      render={(props: RouteComponentProps<any, any, any>) => (
+                                        <Integration
+                                          notifications={core?.notifications}
+                                          {...props}
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={`${ROUTES.INTEGRATIONS}`}
+                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                        return (
+                                          <Integrations
+                                            notifications={core?.notifications}
+                                            {...props}
+                                            dataSource={selectedDataSource}
+                                          />
+                                        );
+                                      }}
+                                    />
+                                    <Route
+                                      path={ROUTES.INTEGRATIONS_CREATE}
+                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                        return (
+                                          <CreateIntegration
+                                            notifications={core?.notifications}
+                                            {...props}
+                                          />
+                                        );
+                                      }}
+                                    />
+                                    <Route
+                                      path={ROUTES.PROMOTE}
+                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                        return (
+                                          <PromoteIntegration
+                                            notifications={core?.notifications}
+                                            {...props}
+                                          />
+                                        );
+                                      }}
                                     />
                                     <Route
                                       path={ROUTES.DECODERS}
                                       render={(props: RouteComponentProps) => (
-                                        <Decoders
-                                          {...props}
-                                          notifications={core?.notifications}
-                                        />
+                                        <Decoders {...props} notifications={core?.notifications} />
                                       )}
                                     />
                                     <Route
@@ -1145,7 +1120,7 @@ export default class Main extends Component<MainProps, MainState> {
                                       render={(
                                         props: RouteComponentProps<{
                                           id: string;
-                                        }>,
+                                        }>
                                       ) => (
                                         <DecoderFormPage
                                           {...props}
@@ -1158,10 +1133,7 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.KVDBS}
                                       render={(props: RouteComponentProps) => (
-                                        <KVDBs
-                                          {...props}
-                                          notifications={core?.notifications}
-                                        />
+                                        <KVDBs {...props} notifications={core?.notifications} />
                                       )}
                                     />
                                     <Route
@@ -1176,16 +1148,12 @@ export default class Main extends Component<MainProps, MainState> {
                                     {THREAT_INTEL_ENABLED && (
                                       <>
                                         <Route
-                                          path={
-                                            ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE
-                                          }
+                                          path={ROUTES.THREAT_INTEL_ADD_CUSTOM_SOURCE}
                                           render={(props) => {
                                             return (
                                               <AddThreatIntelSource
                                                 {...props}
-                                                threatIntelService={
-                                                  services.threatIntelService
-                                                }
+                                                threatIntelService={services.threatIntelService}
                                               />
                                             );
                                           }}
@@ -1196,9 +1164,7 @@ export default class Main extends Component<MainProps, MainState> {
                                             return (
                                               <ThreatIntelOverview
                                                 {...props}
-                                                threatIntelService={
-                                                  services.threatIntelService
-                                                }
+                                                threatIntelService={services.threatIntelService}
                                                 dataSource={selectedDataSource}
                                               />
                                             );
@@ -1209,47 +1175,25 @@ export default class Main extends Component<MainProps, MainState> {
                                             ROUTES.THREAT_INTEL_CREATE_SCAN_CONFIG,
                                             ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
                                           ]}
-                                          render={(
-                                            props: RouteComponentProps<
-                                              any,
-                                              any,
-                                              any
-                                            >,
-                                          ) => {
+                                          render={(props: RouteComponentProps<any, any, any>) => {
                                             return (
                                               <ThreatIntelScanConfigForm
                                                 {...props}
-                                                notificationsService={
-                                                  services.notificationsService
-                                                }
-                                                threatIntelService={
-                                                  services.threatIntelService
-                                                }
-                                                notifications={
-                                                  core.notifications
-                                                }
+                                                notificationsService={services.notificationsService}
+                                                threatIntelService={services.threatIntelService}
+                                                notifications={core.notifications}
                                               />
                                             );
                                           }}
                                         />
                                         <Route
                                           path={`${ROUTES.THREAT_INTEL_SOURCE_DETAILS}/:id`}
-                                          render={(
-                                            props: RouteComponentProps<
-                                              any,
-                                              any,
-                                              any
-                                            >,
-                                          ) => {
+                                          render={(props: RouteComponentProps<any, any, any>) => {
                                             return (
                                               <ThreatIntelSource
                                                 {...props}
-                                                threatIntelService={
-                                                  services.threatIntelService
-                                                }
-                                                notifications={
-                                                  core.notifications
-                                                }
+                                                threatIntelService={services.threatIntelService}
+                                                notifications={core.notifications}
                                               />
                                             );
                                           }}
@@ -1257,7 +1201,7 @@ export default class Main extends Component<MainProps, MainState> {
                                       </>
                                     )}
 
-                                    <Redirect from={"/"} to={landingPage} />
+                                    <Redirect from={'/'} to={landingPage} />
                                   </Switch>
                                 </EuiPageBody>
                                 <EuiGlobalToastList

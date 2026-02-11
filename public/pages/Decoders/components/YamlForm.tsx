@@ -1,21 +1,15 @@
-import React, { useRef, useState } from "react";
-import { DecoderDocument } from "../../../../types";
-import {
-  EuiCompressedFormRow,
-  EuiCodeEditor,
-  EuiSpacer,
-  EuiText,
-  EuiCallOut,
-} from "@elastic/eui";
-import FormFieldHeader from "../../../components/FormFieldHeader";
-import { YamlEditorState } from "../../Rules/components/RuleEditor/components/YamlRuleEditorComponent/YamlRuleEditorComponent";
-import { load } from "js-yaml";
+import React, { useRef, useState } from 'react';
+import { DecoderDocument } from '../../../../types';
+import { EuiCompressedFormRow, EuiCodeEditor, EuiSpacer, EuiText, EuiCallOut } from '@elastic/eui';
+import FormFieldHeader from '../../../components/FormFieldHeader';
+import { YamlEditorState } from '../../Rules/components/RuleEditor/components/YamlRuleEditorComponent/YamlRuleEditorComponent';
+import { load } from 'js-yaml';
 import {
   DecoderFormModel,
   mapDecoderToYamlObject,
   mapYamlObjectToDecoder,
   mapYamlObjectToYamlString,
-} from "./mappers";
+} from './mappers';
 
 interface YamlFormProps {
   decoder?: DecoderDocument;
@@ -48,8 +42,8 @@ export const YamlForm: React.FC<YamlFormProps> = ({
   };
 
   const tryParseAndNotify = (value: string) => {
-    if (!value || value.trim() === "") {
-      setState((prev) => ({ ...prev, errors: ["Decoder cannot be empty"] }));
+    if (!value || value.trim() === '') {
+      setState((prev) => ({ ...prev, errors: ['Decoder cannot be empty'] }));
       return;
     }
     try {
@@ -58,8 +52,8 @@ export const YamlForm: React.FC<YamlFormProps> = ({
       change(parsedDecoder);
       setState((prev) => ({ ...prev, errors: null }));
     } catch (err) {
-      setState((prev) => ({ ...prev, errors: ["Invalid YAML"] }));
-      console.warn("Security Analytics - Decoder Editor - Yaml load", err);
+      setState((prev) => ({ ...prev, errors: ['Invalid YAML'] }));
+      console.warn('Security Analytics - Decoder Editor - Yaml load', err);
     }
   };
 
@@ -77,11 +71,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
   const renderErrors = () => {
     if (state.errors && state.errors.length > 0) {
       return (
-        <EuiCallOut
-          size="m"
-          color="danger"
-          title="Please address the highlighted errors."
-        >
+        <EuiCallOut size="m" color="danger" title="Please address the highlighted errors.">
           <ul>
             {state.errors.map((error, i) => (
               <li key={i}>{error}</li>
@@ -91,11 +81,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
       );
     } else if (isInvalid && errors && errors.length > 0) {
       return (
-        <EuiCallOut
-          size="m"
-          color="danger"
-          title="Please address the highlighted errors."
-        >
+        <EuiCallOut size="m" color="danger" title="Please address the highlighted errors.">
           <ul>
             {errors.map((error, i) => (
               <li key={i}>{error}</li>
@@ -113,7 +99,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
       {renderErrors()}
       <EuiSpacer size="s" />
       <EuiCompressedFormRow
-        label={<FormFieldHeader headerTitle={"Define decoder in YAML"} />}
+        label={<FormFieldHeader headerTitle={'Define decoder in YAML'} />}
         fullWidth={true}
       >
         <>
@@ -128,7 +114,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
             value={state.value}
             onChange={onChangeYaml}
             onFocus={onFocus}
-            data-test-subj={"yaml_editor"}
+            data-test-subj={'yaml_editor'}
           />
         </>
       </EuiCompressedFormRow>
