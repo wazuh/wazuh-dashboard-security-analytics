@@ -53,7 +53,7 @@ export interface CreateIntegrationResponse {
 
 export interface UpdateIntegrationParams {
   integrationId: string;
-  body: IntegrationBase;
+  body: { resource: IntegrationBase['document'] };
 }
 
 export interface UpdateIntegrationResponse {
