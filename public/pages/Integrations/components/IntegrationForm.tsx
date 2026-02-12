@@ -18,7 +18,6 @@ import {
 import { IntegrationItem } from "../../../../types";
 import React from "react";
 import {
-  INTEGRATION_DATE_REGEX,
   LOG_TYPE_NAME_REGEX,
   validateName,
 } from "../../../utils/validation";
@@ -48,7 +47,6 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   const [nameError, setNameError] = useState("");
   const [categoryError, setCategoryError] = useState("");
   const [categoryTouched, setCategoryTouched] = useState(false);
-  const [dateError, setDateError] = useState("");
   const [authorError, setAuthorError] = useState("");
 
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
@@ -62,16 +60,10 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       LOG_TYPE_NAME_REGEX,
       false /* shouldTrim */,
     );
-    const dateInvalid = !validateName(
-      details.document.date,
-      INTEGRATION_DATE_REGEX,
-      false /* shouldTrim */,
-    );
     const categoryInvalid =
       (categoryTouched || onSubmit) && !details.document.category;
     setNameError(nameInvalid ? "Invalid name" : "");
     setCategoryError(categoryInvalid ? "Select category to assign" : "");
-    setDateError(dateInvalid ? "Invalid date" : "");
     setAuthorError(authorInvalid ? "Invalid author" : "");
 
     return { nameInvalid, categoryInvalid };
@@ -213,31 +205,6 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
               document: {
                 ...integrationDetails!.document,
                 author: e.target.value,
-              },
-            };
-            setIntegrationDetails(newIntegration);
-            updateErrors(newIntegration);
-          }}
-          readOnly={!isEditMode}
-          disabled={isEditMode && !!integrationDetails.detectionRulesCount}
-        />
-      </EuiCompressedFormRow>
-      <EuiCompressedFormRow
-        label="Date"
-        helpText={
-          isEditMode && "The format must be YEAR-MONTH-DAY. Example 2025-10-25"
-        }
-        isInvalid={!!dateError}
-        error={dateError}
-      >
-        <EuiCompressedFieldText
-          value={integrationDetails?.document.date}
-          onChange={(e) => {
-            const newIntegration = {
-              ...integrationDetails!,
-              document: {
-                ...integrationDetails!.document,
-                date: e.target.value,
               },
             };
             setIntegrationDetails(newIntegration);
