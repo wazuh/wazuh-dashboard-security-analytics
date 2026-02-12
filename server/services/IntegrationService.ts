@@ -120,8 +120,7 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<UpdateIntegrationResponse> | ResponseError>
   > => {
     try {
-      const { document } = request.body;
-      delete (document as any).id;
+      const { document: { id, date, modified, ...document } } = request.body;
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
         body: { resource: document },
