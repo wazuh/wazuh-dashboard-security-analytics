@@ -31,7 +31,6 @@ export const defaultIntegration: IntegrationBase = {
     source: 'Custom', // TODO: research if we need this field
     tags: null,
     category: '',
-    date: '',
     author: '',
   },
 };
