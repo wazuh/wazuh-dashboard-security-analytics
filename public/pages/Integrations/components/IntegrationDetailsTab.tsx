@@ -102,9 +102,7 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
                   />
                 </EuiCompressedFormRow>
                 {isEditMode ? (
-                  <>
-                    <EuiSpacer size="xxl" />
-                    <EuiSpacer size="xxl" />
+                <>
                   <EuiBottomBar>
                     <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
                       <EuiFlexItem grow={false}>
@@ -132,7 +130,7 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
                       </EuiFlexItem>
                     </EuiFlexGroup>
                   </EuiBottomBar>
-                  </>
+                </>
                 ) : null}
               </>
             ),

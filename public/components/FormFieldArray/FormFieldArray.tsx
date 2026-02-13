@@ -51,8 +51,8 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
         <>
           {values.map((value: string, index: number) => {
             return (
-              <EuiFlexGroup key={index}>
-                <EuiFlexItem style={{ minWidth: '100%' }}>
+              <EuiFlexGroup key={index} gutterSize="s" responsive={false}>
+                <EuiFlexItem>
                   <EuiCompressedFieldText
                     value={value}
                     placeholder={placeholder}
