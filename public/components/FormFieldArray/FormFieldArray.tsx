@@ -37,12 +37,11 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
   useEffect(() => {
     let newValues = initialValues.length ? [...initialValues] : [''];
     setValues(newValues);
-  }, []);
+  }, [initialValues]);
 
   const updateValues = (values: string[]) => {
     setValues(values);
-    const eventValue = values.filter((val: string) => val.trim() !== '');
-    onChange(eventValue);
+    onChange(values);
   };
 
   return (
@@ -88,7 +87,7 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
             <EuiSmallButton
               type="button"
               onClick={() => {
-                setValues([...values, '']);
+                updateValues([...values, '']);
               }}
             >
               {addButtonLabel}
