@@ -32,6 +32,7 @@ export const defaultIntegration: IntegrationBase = {
     tags: null,
     category: '',
     author: '',
+    references: '',
   },
 };
 

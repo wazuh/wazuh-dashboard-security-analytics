@@ -89,7 +89,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   return (
     <>
       <EuiCompressedFormRow
-        label="Name"
+        label="Title"
         helpText={
           isEditMode &&
           "Must contain 2-50 characters. Valid characters are a-z, 0-9, hyphens, and underscores"
@@ -233,6 +233,32 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
           }}
           readOnly={!isEditMode}
           disabled={isEditMode && !!integrationDetails.detectionRulesCount}
+        />
+      </EuiCompressedFormRow>
+      <EuiSpacer />
+      <EuiCompressedFormRow
+        label={
+          <>
+            {"References - "}
+            <em>optional</em>
+          </>
+        }
+      >
+        <EuiCompressedTextArea
+          value={integrationDetails?.document?.references}
+          onChange={(e) => {
+            const newIntegration = {
+              ...integrationDetails!,
+              document: {
+                ...integrationDetails!.document,
+                references: e.target.value,
+              },
+            };
+            setIntegrationDetails(newIntegration);
+            updateErrors(newIntegration);
+          }}
+          placeholder="Add references or links related to the integration"
+          readOnly={!isEditMode}
         />
       </EuiCompressedFormRow>
       {isEditMode ? (

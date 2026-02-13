@@ -66,7 +66,7 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
             title: "Integration", // Replace Log type to Integration by Wazuh
             description: (
               <>
-                <EuiCompressedFormRow label="Name">
+                <EuiCompressedFormRow label="Title">
                   <EuiCompressedFieldText
                     value={integrationDetails?.document.title}
                     onChange={(e) =>
