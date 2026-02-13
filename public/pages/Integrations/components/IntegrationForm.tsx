@@ -262,6 +262,9 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         />
       </EuiCompressedFormRow>
       {isEditMode ? (
+        <>
+          <EuiSpacer size="xxl" />
+          <EuiSpacer size="xxl" />
         <EuiBottomBar>
           <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
             <EuiFlexItem grow={false}>
@@ -287,6 +290,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
             </EuiFlexItem>
           </EuiFlexGroup>
         </EuiBottomBar>
+        </>
       ) : null}
     </>
   );
