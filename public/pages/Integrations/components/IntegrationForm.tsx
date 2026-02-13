@@ -24,6 +24,7 @@ import {
 import { NotificationsStart } from "opensearch-dashboards/public";
 import { useState } from "react";
 import { getIntegrationCategoryOptions } from "../../../utils/helpers";
+import { FormFieldArray } from "../../../components/FormFieldArray";
 
 export interface IntegrationFormProps {
   integrationDetails: IntegrationItem;
@@ -236,31 +237,29 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         />
       </EuiCompressedFormRow>
       <EuiSpacer />
-      <EuiCompressedFormRow
+      <FormFieldArray
         label={
           <>
             {"References - "}
             <em>optional</em>
           </>
         }
-      >
-        <EuiCompressedTextArea
-          value={integrationDetails?.document?.references}
-          onChange={(e) => {
-            const newIntegration = {
-              ...integrationDetails!,
-              document: {
-                ...integrationDetails!.document,
-                references: e.target.value,
-              },
-            };
-            setIntegrationDetails(newIntegration);
-            updateErrors(newIntegration);
-          }}
-          placeholder="Add references or links related to the integration"
-          readOnly={!isEditMode}
-        />
-      </EuiCompressedFormRow>
+        values={integrationDetails?.document?.references || []}
+        placeholder="https://example.com/reference"
+        readOnly={!isEditMode}
+        addButtonLabel="Add reference"
+        onChange={(references) => {
+          const newIntegration = {
+            ...integrationDetails!,
+            document: {
+              ...integrationDetails!.document,
+              references,
+            },
+          };
+          setIntegrationDetails(newIntegration);
+          updateErrors(newIntegration);
+        }}
+      />
       {isEditMode ? (
         <>
           <EuiSpacer size="xxl" />

@@ -27,7 +27,7 @@ export interface IntegrationBase {
     description: string;
     space: { name: string };
     category: string;
-    references?: string;
+    references?: string[];
     tags: {
       correlation_id: number;
     } | null;
