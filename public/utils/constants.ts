@@ -305,6 +305,9 @@ export const integrationCategories: {
     description: 'Logs not covered in other categories',
   },
 ];
+export const integrationCategoryFilters: string[] = integrationCategories.map(
+  ({ value }) => value
+);
 export const integrationsByCategories: { [category: string]: Integration[] } = {};
 
 export const logTypeCategories: string[] = [];
