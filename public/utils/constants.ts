@@ -319,12 +319,12 @@ export const defaultIntervalUnitOptions = {
 };
 
 export enum FindingTabId {
-  DetectionRules = 'detection-rules',
+  Rules = 'rules',
   ThreatIntel = 'threat-intel',
 }
 
 export enum AlertTabId {
-  DetectionRules = 'detection-rules',
+  Rules = 'rules',
   ThreatIntel = 'threat-intel',
   Correlations = 'correlations',
 }
