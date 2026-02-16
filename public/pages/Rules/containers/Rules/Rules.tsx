@@ -70,10 +70,10 @@ export const Rules: React.FC<RulesProps> = (props) => {
   const headerActions = useMemo(
     () => [
       <EuiSmallButton onClick={openImportPage} data-test-subj={'import_rule_button'}>
-        Import detection rule
+        Import rule
       </EuiSmallButton>,
       <EuiSmallButton onClick={openCreatePage} data-test-subj={'create_rule_button'} fill={true}>
-        Create detection rule
+        Create rule
       </EuiSmallButton>,
     ],
     []
@@ -110,7 +110,7 @@ export const Rules: React.FC<RulesProps> = (props) => {
             <EuiFlexGroup gutterSize={'s'} justifyContent={'spaceBetween'}>
               <EuiFlexItem>
                 <EuiText size="s">
-                  <h1>Detection rules</h1>
+                  <h1>Rules</h1>
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem>

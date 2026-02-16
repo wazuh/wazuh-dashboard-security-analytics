@@ -28,7 +28,7 @@ export const THREAT_ALERTS_NAV_ID = `threat_alerts`;
 export const FINDINGS_NAV_ID = `findings`;
 export const CORRELATIONS_NAV_ID = `correlations`;
 export const DETECTORS_NAV_ID = `detectors`;
-export const DETECTION_RULE_NAV_ID = `detection_rules`;
+export const DETECTION_RULE_NAV_ID = `rules`;
 export const CORRELATIONS_RULE_NAV_ID = `correlation_rules`;
 export const THREAT_INTEL_NAV_ID = `threat_intelligence`;
 export const INTEGRATIONS_NAV_ID = `sa-integrations`;
@@ -113,9 +113,9 @@ export const BREADCRUMBS = Object.freeze({
     text: `${name}`,
     href: `#${ROUTES.EDIT_DETECTOR_DETAILS}/${detectorId}`,
   }),
-  RULES: { text: 'Detection rules', href: `#${ROUTES.RULES}` },
+  RULES: { text: 'Rules', href: `#${ROUTES.RULES}` },
   ALERTS: { text: 'Alerts', href: `#${ROUTES.ALERTS}` },
-  RULES_CREATE: { text: 'Create detection rule', href: `#${ROUTES.RULES_CREATE}` },
+  RULES_CREATE: { text: 'Create rule', href: `#${ROUTES.RULES_CREATE}` },
   RULES_EDIT: { text: 'Edit rule', href: `#${ROUTES.RULES_EDIT}` },
   RULE_EDIT_DETAILS: (name: string) => ({
     text: `${name}`,

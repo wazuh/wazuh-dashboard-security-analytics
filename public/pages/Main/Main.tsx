@@ -106,7 +106,7 @@ enum Navigation {
   SecurityAnalytics = 'Security Analytics',
   Findings = 'Findings',
   Detectors = 'Detectors',
-  Rules = 'Detection rules',
+  Rules = 'Rules',
   Overview = 'Overview',
   // Wazuh: hide Alerts/Correlations navigation items.
   // Alerts = "Alerts",

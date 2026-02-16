@@ -109,7 +109,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
                     target={'_blank'}
                     href={'https://github.com/SigmaHQ/sigma/blob/master/LICENSE.Detection.Rules.md'}
                   >
-                    Detection Rule License (DLR)
+                    Rule License (DLR)
                   </EuiLink>
                 </EuiText>
               </EuiFlexItem>

@@ -283,7 +283,7 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: DETECTION_RULE_NAV_ID,
-      title: 'Detection rules',
+      title: 'Rules',
       order: 7010,
       category: {
         id: 'security_analytics',

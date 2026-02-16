@@ -601,7 +601,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                   data-test-subj={'submit_rule_form_button'}
                   fill
                 >
-                  {mode === 'create' ? 'Create detection rule' : 'Save changes'}
+                  {mode === 'create' ? 'Create rule' : 'Save changes'}
                 </EuiSmallButton>
               </EuiFlexItem>
             </EuiFlexGroup>

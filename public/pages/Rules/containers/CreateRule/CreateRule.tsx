@@ -25,7 +25,7 @@ export const CreateRule: React.FC<CreateRuleProps> = ({ history, services, notif
 
   return (
     <RuleEditorContainer
-      title="Create detection rule"
+      title="Create rule"
       subtitleData={{
         description:
           'Create a rule for detectors to identify threat scenarios for different log sources.',
