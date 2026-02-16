@@ -10,6 +10,7 @@ export const DECODER_SEARCH_FIELDS = [
   'document.metadata.description',
   'document.metadata.compatibility',
   'document.metadata.versions',
+  'document.metadata.author.name',
 ];
 
 export const buildDecodersSearchQuery = (searchText: string) => {
