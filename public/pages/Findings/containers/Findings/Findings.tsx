@@ -102,7 +102,7 @@ interface FindingsState {
   loading: boolean;
   selectedTabId: FindingTabId;
   findingStateByTabId: {
-    [FindingTabId.DetectionRules]: DetectionRulesFindingsState;
+    [FindingTabId.Rules]: DetectionRulesFindingsState;
     [FindingTabId.ThreatIntel]: ThreatIntelFindingsState;
   };
   // Wazuh: hide alert-related channels and props from findings page.
@@ -128,7 +128,7 @@ interface ThreatIntelFindingVisualizationData {
 type FindingsGroupByType = 'logType' | 'ruleSeverity';
 
 export const groupByOptionsByTabId = {
-  [FindingTabId.DetectionRules]: [
+  [FindingTabId.Rules]: [
     { text: 'Log type', value: 'logType' },
     { text: 'Rule severity', value: 'ruleSeverity' },
   ],
@@ -154,15 +154,15 @@ class Findings extends Component<FindingsProps, FindingsState> {
     const selectedTabFromUrl = searchParams.get('detectionType') as FindingTabId | null;
     const selectedTabId =
       selectedTabFromUrl === FindingTabId.ThreatIntel && !THREAT_INTEL_ENABLED
-        ? FindingTabId.DetectionRules
-        : selectedTabFromUrl ?? FindingTabId.DetectionRules;
+        ? FindingTabId.Rules
+        : selectedTabFromUrl ?? FindingTabId.Rules;
     this.state = {
       loading: true,
       // Wazuh: hide alert-related channels and props from findings page.
       // notificationChannels: [],
       selectedTabId,
       findingStateByTabId: {
-        [FindingTabId.DetectionRules]: {
+        [FindingTabId.Rules]: {
           findings: [],
           rules: {},
           filteredFindings: [],
@@ -200,9 +200,9 @@ class Findings extends Component<FindingsProps, FindingsState> {
     let currentFindingsState, prevFindingsState;
 
     switch (selectedTabId) {
-      case FindingTabId.DetectionRules:
-        currentFindingsState = findingStateByTabId[FindingTabId.DetectionRules];
-        prevFindingsState = prevFindingStateByTabId[FindingTabId.DetectionRules];
+      case FindingTabId.Rules:
+        currentFindingsState = findingStateByTabId[FindingTabId.Rules];
+        prevFindingsState = prevFindingStateByTabId[FindingTabId.Rules];
         return (
           currentFindingsState.filteredFindings !== prevFindingsState.filteredFindings ||
           currentFindingsState.groupBy !== prevFindingsState.groupBy
@@ -248,7 +248,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
   onRefresh = async () => {
     // Wazuh: hide alert-related channels and props from findings page.
     // await this.getNotificationChannels();
-    if (this.state.selectedTabId === FindingTabId.DetectionRules) {
+    if (this.state.selectedTabId === FindingTabId.Rules) {
       await this.getDetectionRulesFindings();
     } else if (this.state.selectedTabId === FindingTabId.ThreatIntel && THREAT_INTEL_ENABLED) {
       await this.getThreatIntelFindings();
@@ -285,9 +285,9 @@ class Findings extends Component<FindingsProps, FindingsState> {
 
     await this.getRules(Array.from(ruleIds));
     this.setStateForTab({
-      tabId: FindingTabId.DetectionRules,
+      tabId: FindingTabId.Rules,
       field: 'findings',
-      value: [...this.state.findingStateByTabId[FindingTabId.DetectionRules].findings, ...findings],
+      value: [...this.state.findingStateByTabId[FindingTabId.Rules].findings, ...findings],
     });
   };
 
@@ -309,7 +309,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
     this.abortGetFindings();
     this.setStateForTab(
       {
-        tabId: FindingTabId.DetectionRules,
+        tabId: FindingTabId.Rules,
         field: 'findings',
         value: [],
       },
@@ -393,12 +393,12 @@ class Findings extends Component<FindingsProps, FindingsState> {
       });
 
       const allRules: { [id: string]: RuleSource } = {
-        ...this.state.findingStateByTabId[FindingTabId.DetectionRules].rules,
+        ...this.state.findingStateByTabId[FindingTabId.Rules].rules,
       };
       rules.forEach((hit) => (allRules[hit._id] = hit._source));
 
       this.setStateForTab({
-        tabId: FindingTabId.DetectionRules,
+        tabId: FindingTabId.Rules,
         field: 'rules',
         value: allRules,
       });
@@ -440,12 +440,12 @@ class Findings extends Component<FindingsProps, FindingsState> {
     const { selectedTabId, findingStateByTabId } = this.state;
 
     const findingsState =
-      selectedTabId === FindingTabId.DetectionRules
-        ? findingStateByTabId[FindingTabId.DetectionRules]
+      selectedTabId === FindingTabId.Rules
+        ? findingStateByTabId[FindingTabId.Rules]
         : findingStateByTabId[FindingTabId.ThreatIntel];
     const groupBy = findingsState.groupBy;
 
-    if (selectedTabId === FindingTabId.DetectionRules) {
+    if (selectedTabId === FindingTabId.Rules) {
       (findingsState.filteredFindings as FindingItemType[]).forEach((finding: FindingItemType) => {
         const findingTime = new Date(finding.timestamp);
         findingTime.setMilliseconds(0);
@@ -502,7 +502,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
 
   onFindingsFiltered = (findings: FindingItemType[]) => {
     this.setStateForTab({
-      tabId: FindingTabId.DetectionRules,
+      tabId: FindingTabId.Rules,
       field: 'filteredFindings',
       value: findings,
     });
@@ -533,7 +533,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
       findingStateByTabId,
     } = this.state;
     let findings = findingStateByTabId[selectedTabId].findings;
-    const rules = findingStateByTabId[FindingTabId.DetectionRules].rules;
+    const rules = findingStateByTabId[FindingTabId.Rules].rules;
 
     const {
       dateTimeFilter = {
@@ -541,7 +541,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
         endTime: DEFAULT_DATE_RANGE.end,
       },
     } = this.props;
-    if (selectedTabId === FindingTabId.DetectionRules && Object.keys(rules).length > 0) {
+    if (selectedTabId === FindingTabId.Rules && Object.keys(rules).length > 0) {
       findings = findings.map((finding: any) => {
         const matchedRules: RuleSource[] = [];
         finding.queries.forEach((query: any) => {
@@ -573,11 +573,11 @@ class Findings extends Component<FindingsProps, FindingsState> {
 
     const tabs = [
       {
-        id: FindingTabId.DetectionRules,
+        id: FindingTabId.Rules,
         name: (
           <span>
-            Detection rules (
-            {findingStateByTabId[FindingTabId.DetectionRules].filteredFindings.length})
+            Rules (
+            {findingStateByTabId[FindingTabId.Rules].filteredFindings.length})
           </span>
         ),
         content: (

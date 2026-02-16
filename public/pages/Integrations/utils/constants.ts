@@ -11,8 +11,8 @@ export const integrationDetailsTabs = [
     name: 'Details',
   },
   {
-    id: 'detection_rules',
-    name: 'Detection rules',
+    id: 'rules',
+    name: 'Rules',
   },
   {
     id: 'decoders',

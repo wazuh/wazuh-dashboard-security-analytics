@@ -45,7 +45,7 @@ export const getOverviewsCardsProps = (): EuiCardProps[] => {
     {
       icon: React.createElement(EuiIcon, { type: 'pulse', size: "l", color: "primary" }),
       title: '',
-      description: 'Identify security threats in your log data with detection rules.',
+      description: 'Identify security threats in your log data with rules.',
       onClick: () => {
         getApplication().navigateToApp(DETECTORS_NAV_ID);
       },
@@ -89,7 +89,7 @@ export const getOverviewStatsProps = ({
     // },
     {
       title: ruleFindings,
-      description: 'Detection rule findings',
+      description: 'Rule findings',
     },
   ];
 

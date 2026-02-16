@@ -11,8 +11,8 @@ export const logTypeDetailsTabs = [
     name: 'Details',
   },
   {
-    id: 'detection_rules',
-    name: 'Detection rules',
+    id: 'rules',
+    name: 'Rules',
   },
 ];
 
