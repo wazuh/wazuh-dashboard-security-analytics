@@ -315,8 +315,8 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
           compressed: true,
           options: [
             {
-              value: 'Detection rules',
-              name: 'Detection rules',
+              value: 'Rules',
+              name: 'Rules',
             },
           ],
           multiSelect: 'or',

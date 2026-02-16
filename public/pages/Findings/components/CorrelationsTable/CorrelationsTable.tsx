@@ -80,7 +80,7 @@ export const CorrelationsTable: React.FC<CorrelationsTableProps> = ({
 
           <EuiFlexGroup justifyContent="flexStart">
             <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
-              <EuiText size={'xs'}>Detection rule</EuiText>
+              <EuiText size={'xs'}>Rule</EuiText>
             </EuiFlexItem>
             <EuiFlexItem grow={true}>
               <EuiText size={'xs'} className={'correlations-table-details-row-value'}>

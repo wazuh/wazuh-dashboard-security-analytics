@@ -387,7 +387,7 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
         <EuiSpacer size="s" />
         <EuiText>{timestamp}</EuiText>
         <EuiHorizontalRule margin="xs" />
-        <strong>Detection rule</strong>
+        <strong>Rule</strong>
         <EuiSpacer size="s" />
         <p>{detectionRule.name}</p>
       </div>

@@ -45,7 +45,7 @@ export const FindingCard: React.FC<FindingCardProps> = ({
 }) => {
   const list = [
     {
-      title: <b>Detection rule</b>,
+      title: <b>Rule</b>,
       description: <EuiText size="s">{detectionRule.name}</EuiText>,
     },
   ];

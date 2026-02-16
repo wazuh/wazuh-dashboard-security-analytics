@@ -70,7 +70,7 @@ export const CorrelationsTableFlyout: React.FC<CorrelationsTableFlyoutProps> = (
     },
     {
       field: 'detectionRule',
-      name: 'Detection Rule',
+      name: 'Rule',
       sortable: true,
     },
     {
