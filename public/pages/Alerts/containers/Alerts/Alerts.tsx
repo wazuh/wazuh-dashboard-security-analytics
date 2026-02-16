@@ -139,8 +139,8 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
     const selectedTabFromUrl = searchParams.get('detectionType') as AlertTabId | null;
     const selectedTabId =
       selectedTabFromUrl === AlertTabId.ThreatIntel && !THREAT_INTEL_ENABLED
-        ? AlertTabId.DetectionRules
-        : selectedTabFromUrl ?? AlertTabId.DetectionRules;
+        ? AlertTabId.Rules
+        : selectedTabFromUrl ?? AlertTabId.Rules;
     this.state = {
       loading: true,
       groupBy: 'status',
@@ -189,7 +189,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
 
   filterAlertsOnStateChange(prevState: AlertsState) {
     switch (this.state.selectedTabId) {
-      case AlertTabId.DetectionRules:
+      case AlertTabId.Rules:
         const alertsChanged =
           prevState.alerts !== this.state.alerts ||
           prevState.alerts.length !== this.state.alerts.length;
@@ -207,7 +207,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
         }
         break;
 
-      case AlertTabId.DetectionRules:
+      case AlertTabId.Rules:
         const threatIntelAlertsChanged =
           prevState.threatIntelAlerts !== this.state.threatIntelAlerts ||
           prevState.threatIntelAlerts.length !== this.state.threatIntelAlerts.length;
@@ -302,7 +302,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
 
   private renderVisAsPerTab() {
     switch (this.state.selectedTabId) {
-      case AlertTabId.DetectionRules:
+      case AlertTabId.Rules:
         // this.getChart(this.getVisData(this.state.filteredAlerts));
         break;
       case AlertTabId.Correlations:
@@ -320,7 +320,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
     this.abortControllers.push(abortController);
 
     switch (this.state.selectedTabId) {
-      case AlertTabId.DetectionRules:
+      case AlertTabId.Rules:
         this.getAlerts(abortController.signal);
         break;
 
@@ -844,7 +844,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
 
   getContelPanelActions() {
     switch (this.state.selectedTabId) {
-      case AlertTabId.DetectionRules:
+      case AlertTabId.Rules:
         return this.createAcknowledgeControl();
 
       case AlertTabId.Correlations:
@@ -880,7 +880,7 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
     let alerts = [];
 
     switch (selectedTabId) {
-      case AlertTabId.DetectionRules:
+      case AlertTabId.Rules:
         alerts = detectionRuleAlerts;
         break;
 
@@ -1002,8 +1002,8 @@ export class Alerts extends Component<AlertsProps, AlertsState> {
 
     const tabs = [
       {
-        id: 'detection-rules',
-        name: 'Detection rules',
+        id: 'rules',
+        name: 'Rules',
         content: (
           <>
             <EuiSpacer size="m" />
