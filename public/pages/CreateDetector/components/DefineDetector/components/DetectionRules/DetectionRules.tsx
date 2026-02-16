@@ -108,7 +108,7 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
           <div data-test-subj="detection-rules-btn">
             <EuiTitle size={'s'}>
               <h4>
-                {'Selected rules ('}}
+                {'Selected rules ('}
                 <>{enabledRulesCountDisplay}</>
                 {')'}
               </h4>
