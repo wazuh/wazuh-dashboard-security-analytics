@@ -108,13 +108,13 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
           <div data-test-subj="detection-rules-btn">
             <EuiTitle size={'s'}>
               <h4>
-                {'Selected detection rules ('}
+                {'Selected rules ('}}
                 <>{enabledRulesCountDisplay}</>
                 {')'}
               </h4>
             </EuiTitle>
             <EuiText size="s" color="subdued">
-              Add or remove detection rules for this detector.
+              Add or remove rules for this detector.
             </EuiText>
           </div>
         }
@@ -140,15 +140,15 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
           <EuiEmptyPrompt
             title={
               <EuiTitle>
-                <h1>No detection rules {detectorType ? 'to display' : 'selected'}</h1>
+                <h1>No rules {detectorType ? 'to display' : 'selected'}</h1>
               </EuiTitle>
             }
             body={
               <EuiText size="s">
                 <p>
                   {detectorType
-                    ? 'There are no applicable detection rules for the selected log type. Consider creating new detection rules.'
-                    : 'Select a log type to be able to select detection rules.'}
+                    ? 'There are no applicable rules for the selected log type. Consider creating new rules.'
+                    : 'Select a log type to be able to select rules.'}
                 </p>
               </EuiText>
             }

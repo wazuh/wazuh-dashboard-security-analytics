@@ -409,7 +409,7 @@ export default class AlertConditionPanel extends Component<
         {threatIntelEnabledInDetector ? (
           <EuiCompressedCheckbox
             id="detection-type-rules"
-            label="Detection rules"
+            label="Rules"
             checked={detectionRulesTriggerEnabled}
             onChange={(e) => {
               this.setState({ detectionRulesTriggerEnabled: e.target.checked });
@@ -418,7 +418,7 @@ export default class AlertConditionPanel extends Component<
           />
         ) : (
           <EuiText>
-            <p>Detection rules</p>
+            <p>Rules</p>
           </EuiText>
         )}
 
