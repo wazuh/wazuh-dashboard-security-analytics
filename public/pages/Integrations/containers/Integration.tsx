@@ -147,7 +147,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         return (
           <IntegrationKVDBs kvdbs={kvdbItems} loading={loadingKvdbs} onRefresh={refreshKvdbs} />
         );
-      case 'detection_rules':
+      case 'rules':
         return (
           <IntegrationDetectionRules
             loadingRules={loadingRules}
@@ -234,7 +234,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Detection rules',
+                  title: 'Rules',
                   description: integrationDetails.detectionRulesCount,
                 },
               ]}

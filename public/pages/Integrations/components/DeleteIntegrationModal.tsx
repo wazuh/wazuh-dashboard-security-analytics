@@ -74,7 +74,7 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = wit
           <EuiModalBody>
             <EuiCallOut
               size="s"
-              title={`This integration is associated with ${detectionRulesCount} detection ${
+              title={`This integration is associated with ${detectionRulesCount} ${
                 detectionRulesCount > 1 ? 'rules' : 'rule'
               }.`}
               iconType={'iInCircle'}
@@ -84,7 +84,7 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = wit
             <EuiText size="s">
               <p>
                 Only integrations that don’t have any associated rules can be deleted. Consider editing
-                integration or deleting associated detection rules.
+                integration or deleting associated rules.
               </p>
             </EuiText>
           </EuiModalBody>

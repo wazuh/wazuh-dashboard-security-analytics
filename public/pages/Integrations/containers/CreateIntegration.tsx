@@ -33,7 +33,7 @@ export const CreateIntegration: React.FC<CreateIntegrationProps> = ({
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, BREADCRUMBS.INTEGRATIONS_CREATE]);
 
   const description =
-    "Create integration to categorize and identify detection rules for your data sources."; // Replace Log Type is replaced with Integration by Wazuh
+    "Create integration to categorize and identify rules for your data sources."; // Replace Log Type is replaced with Integration by Wazuh
 
   return (
     <EuiPanel>

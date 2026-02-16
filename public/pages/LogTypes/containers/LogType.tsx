@@ -108,7 +108,7 @@ export const LogType: React.FC<LogTypeProps> = ({ notifications, history }) => {
 
   const renderTabContent = () => {
     switch (selectedTabId) {
-      case 'detection_rules':
+      case 'rules':
         return (
           <LogTypeDetectionRules
             loadingRules={loadingRules}
@@ -184,7 +184,7 @@ export const LogType: React.FC<LogTypeProps> = ({ notifications, history }) => {
           <EuiFlexItem>
             <EuiDescriptionList
               listItems={[
-                { title: 'Detection rules', description: logTypeDetails.detectionRulesCount },
+                { title: 'Rules', description: logTypeDetails.detectionRulesCount },
               ]}
             />
           </EuiFlexItem>

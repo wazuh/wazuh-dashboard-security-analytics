@@ -33,7 +33,7 @@ export const CreateLogType: React.FC<CreateLogTypeProps> = ({ history, notificat
   }, [getUseUpdatedUx()]);
 
   const description =
-    'Create integration to categorize and identify detection rules for your data sources.'; // Replace Log Type is replaced with Integration by Wazuh
+    'Create integration to categorize and identify rules for your data sources.'; // Replace Log Type is replaced with Integration by Wazuh
 
   return (
     <EuiPanel>

@@ -102,7 +102,7 @@ export const LogTypes: React.FC<LogTypesProps> = ({ history, notifications, data
                   <h1>Integrations</h1>
                 </EuiText>
                 <EuiText size="s" color="subdued">
-                  Integrations describe the data sources to which the detection rules are meant to be
+                  Integrations describe the data sources to which the rules are meant to be
                   applied.
                 </EuiText>
               </EuiFlexItem>
