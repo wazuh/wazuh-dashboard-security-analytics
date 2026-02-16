@@ -13,7 +13,7 @@ import {
   EuiSpacer,
   EuiToolTip,
 } from '@elastic/eui';
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent } from 'react';
 
 export interface FormFieldArrayProps {
   label: string | React.ReactNode;
@@ -26,54 +26,44 @@ export interface FormFieldArrayProps {
 
 export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
   label,
-  values: initialValues,
+  values,
   onChange,
   placeholder = '',
   readOnly = false,
   addButtonLabel = 'Add item',
 }) => {
-  const [values, setValues] = useState<string[]>([]);
-
-  useEffect(() => {
-    let newValues = initialValues.length ? [...initialValues] : [''];
-    setValues(newValues);
-  }, [initialValues]);
-
-  const updateValues = (values: string[]) => {
-    setValues(values);
-    onChange(values);
-  };
+  const displayValues = values.length ? values : [''];
 
   return (
     <>
       <EuiCompressedFormRow label={label}>
         <>
-          {values.map((value: string, index: number) => {
+          {displayValues.map((value: string, index: number) => {
             return (
               <EuiFlexGroup key={index} gutterSize="s" responsive={false}>
                 <EuiFlexItem>
                   <EuiCompressedFieldText
                     value={value}
-                    placeholder={placeholder}
+                    placeholder={!readOnly ? placeholder : ''}
                     readOnly={readOnly}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      let newValues = [...values];
+                      let newValues = [...displayValues];
                       newValues[index] = e.target.value;
-                      updateValues(newValues);
+                      onChange(newValues);
                     }}
                   />
                 </EuiFlexItem>
-                {values.length > 1 && !readOnly ? (
+                {displayValues.length > 1 && !readOnly ? (
                   <EuiFlexItem grow={false}>
-                    <EuiToolTip title={'Remove'}>
+                    <EuiToolTip content={'Remove'}>
                       <EuiSmallButtonIcon
                         aria-label={'Remove'}
                         iconType={'trash'}
                         color="danger"
                         onClick={() => {
-                          let newValues = [...values];
+                          let newValues = [...displayValues];
                           newValues.splice(index, 1);
-                          updateValues(newValues);
+                          onChange(newValues);
                         }}
                       />
                     </EuiToolTip>
@@ -87,7 +77,7 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
             <EuiSmallButton
               type="button"
               onClick={() => {
-                updateValues([...values, '']);
+                onChange([...displayValues, '']);
               }}
             >
               {addButtonLabel}
