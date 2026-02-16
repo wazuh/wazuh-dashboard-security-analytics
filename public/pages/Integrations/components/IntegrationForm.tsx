@@ -45,7 +45,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   onCancel,
   onConfirm,
 }) => {
-  const [nameError, setNameError] = useState("");
+  const [titleError, setTitleError] = useState("");
   const [categoryError, setCategoryError] = useState("");
   const [categoryTouched, setCategoryTouched] = useState(false);
   const [authorError, setAuthorError] = useState("");
@@ -63,7 +63,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
     );
     const categoryInvalid =
       (categoryTouched || onSubmit) && !details.document.category;
-    setNameError(titleInvalid ? "Invalid name" : "");
+    setTitleError(titleInvalid ? "Invalid title" : "");
     setCategoryError(categoryInvalid ? "Select category to assign" : "");
     setAuthorError(authorInvalid ? "Invalid author" : "");
 
@@ -95,8 +95,8 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
           isEditMode &&
           "Must contain 2-50 characters. Valid characters are a-z, 0-9, hyphens, and underscores"
         }
-        isInvalid={!!nameError}
-        error={nameError}
+        isInvalid={!!titleError}
+        error={titleError}
       >
         <EuiCompressedFieldText
           value={integrationDetails?.document.title}
