@@ -292,7 +292,7 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
       <EuiSpacer size="xl" />
 
       <ContentPanel
-        title={`Detection rules (${
+        title={`Rules (${
           prePackagedRuleItems.concat(customRuleItems).filter((item) => item.active).length
         })`}
       >

@@ -68,7 +68,7 @@ export const AlertTriggerView: React.FC<AlertTriggerViewProps> = ({
         {ruleDetectionTypeEnabled && (
           <>
             <EuiTitle size="xs">
-              <h5>For detection rules</h5>
+              <h5>For rules</h5>
             </EuiTitle>
             <EuiSpacer size={'s'} />
             {createTextDetailsGroup([
