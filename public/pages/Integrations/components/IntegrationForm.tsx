@@ -51,7 +51,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   const [authorError, setAuthorError] = useState("");
 
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
-    const nameInvalid = !validateName(
+    const titleInvalid = !validateName(
       details.document.title,
       LOG_TYPE_NAME_REGEX,
       false /* shouldTrim */,
@@ -63,19 +63,19 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
     );
     const categoryInvalid =
       (categoryTouched || onSubmit) && !details.document.category;
-    setNameError(nameInvalid ? "Invalid name" : "");
+    setNameError(titleInvalid ? "Invalid name" : "");
     setCategoryError(categoryInvalid ? "Select category to assign" : "");
     setAuthorError(authorInvalid ? "Invalid author" : "");
 
-    return { nameInvalid, categoryInvalid };
+    return { titleInvalid, categoryInvalid, authorInvalid };
   };
   const onConfirmClicked = () => {
-    const { nameInvalid, categoryInvalid } = updateErrors(
+    const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(
       integrationDetails,
       true,
     );
 
-    if (nameInvalid || categoryInvalid) {
+    if (titleInvalid || categoryInvalid || authorInvalid) {
       notifications?.toasts.addDanger({
         title: `Failed to ${confirmButtonText.toLowerCase()}`,
         text: `Fix the marked errors.`,
