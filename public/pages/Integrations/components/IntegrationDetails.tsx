@@ -59,10 +59,8 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
       }
     >
       <EuiDescriptionList
-        // type="column" // Commented by Wazuh
         listItems={[
           {
-            // title: "Integration", // Replace Log type to Integration by Wazuh
             description: (
               <IntegrationForm
                 integrationDetails={integrationDetails}
