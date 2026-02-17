@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RouteComponentProps, useParams } from 'react-router-dom';
 import { IntegrationItem } from '../../../../types';
 import {
-  EuiSmallButtonIcon,
+  EuiSmallButton,
   EuiDescriptionList,
   EuiFlexGroup,
   EuiFlexItem,
@@ -17,7 +17,9 @@ import {
   EuiTab,
   EuiTabs,
   EuiTitle,
-  EuiToolTip,
+  EuiPopover,
+  EuiContextMenuPanel,
+  EuiContextMenuItem,
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -46,6 +48,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   const { integrationId } = useParams<{ integrationId: string }>();
   const [selectedTabId, setSelectedTabId] = useState('details');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [infoText, setInfoText] = useState<React.ReactNode | string>(
     <>
       Loading details &nbsp;
@@ -181,14 +184,50 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     }
   };
 
-  const deleteAction = (
-    <EuiToolTip content="Delete" position="bottom">
-      <EuiSmallButtonIcon
-        iconType={'trash'}
-        color="danger"
-        onClick={() => setShowDeleteModal(true)}
+  const toggleActionsMenu = () => {
+    setIsActionsMenuOpen(!isActionsMenuOpen);
+  };
+
+  const closeActionsPopover = () => {
+    setIsActionsMenuOpen(false);
+  };
+
+  const actionsButton = (
+    <EuiPopover
+      id={'integrationsActionsPopover'}
+      button={
+        <EuiSmallButton
+          iconType={'arrowDown'}
+          iconSide={'right'}
+          onClick={toggleActionsMenu}
+          data-test-subj={'integrationsActionsButton'}
+        >
+          Actions
+        </EuiSmallButton>
+      }
+      isOpen={isActionsMenuOpen}
+      closePopover={closeActionsPopover}
+      panelPaddingSize={'none'}
+      anchorPosition={'downLeft'}
+      data-test-subj={'integrationsActionsPopover'}
+    >
+      <EuiContextMenuPanel
+        size="s"
+        items={[
+          <EuiContextMenuItem
+            key={'Delete'}
+            icon={'empty'}
+            onClick={() => {
+              closeActionsPopover();
+              setShowDeleteModal(true);
+            }}
+            data-test-subj={'deleteIntegrationButton'}
+          >
+            Delete
+          </EuiContextMenuItem>,
+        ]}
       />
-    </EuiToolTip>
+    </EuiPopover>
   );
 
   return !integrationDetails ? (
@@ -205,15 +244,22 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           onConfirm={deleteIntegration}
         />
       )}
-      <PageHeader appRightControls={[{ renderComponent: deleteAction }]}>
-        <EuiFlexGroup justifyContent="spaceBetween">
+      <PageHeader appRightControls={[{ renderComponent: actionsButton }]}>
+        <EuiFlexGroup>
           <EuiFlexItem>
             <EuiTitle>
               <h1>{integrationDetails.document.title}</h1>
             </EuiTitle>
           </EuiFlexItem>
-          <EuiFlexItem grow={false}>{deleteAction}</EuiFlexItem>
+          <EuiFlexItem>
+            <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
+              <EuiFlexItem grow={false}>
+                {actionsButton}
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiFlexItem>
         </EuiFlexGroup>
+        <EuiSpacer size="m" />
       </PageHeader>
       <EuiSpacer />
       <EuiPanel grow={false}>
