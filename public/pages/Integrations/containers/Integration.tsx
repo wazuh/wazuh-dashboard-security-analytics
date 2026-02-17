@@ -20,6 +20,7 @@ import {
   EuiPopover,
   EuiContextMenuPanel,
   EuiContextMenuItem,
+  EuiHorizontalRule,
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -214,6 +215,20 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         size="s"
         items={[
           <EuiContextMenuItem
+            key={'Edit'}
+            icon={'empty'}
+            onClick={() => {
+              closeActionsPopover();
+              setIsEditMode(true);
+              setSelectedTabId('details');
+            }}
+            disabled={integrationDetails?.space.name.toLowerCase() === 'standard'}
+            data-test-subj={'editIntegrationButton'}
+          >
+            Edit
+          </EuiContextMenuItem>,
+          <EuiHorizontalRule margin="xs" />,
+          <EuiContextMenuItem
             key={'Delete'}
             icon={'empty'}
             onClick={() => {
@@ -221,6 +236,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               setShowDeleteModal(true);
             }}
             data-test-subj={'deleteIntegrationButton'}
+            disabled={integrationDetails?.space.name.toLowerCase() === 'standard'}
           >
             Delete
           </EuiContextMenuItem>,
