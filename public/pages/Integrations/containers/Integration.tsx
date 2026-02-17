@@ -175,12 +175,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   };
 
   const deleteIntegration = async () => {
-    const deleteSucceeded = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
-    if (deleteSucceeded) {
+    const { ok } = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
+    
+    if (ok) {
       successNotificationToast(notifications, 'deleted', 'integration');
       history.push(ROUTES.INTEGRATIONS);
-    } else {
-      errorNotificationToast(notifications, 'delete', 'integration');
     }
   };
 
