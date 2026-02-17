@@ -118,10 +118,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       <EuiSpacer />
       <EuiCompressedFormRow
         label={
-          <>
-            {"Description - "}
-            <em>optional</em>
-          </>
+          isEditMode ? (
+            <>
+              {"Description - "}
+              <em>optional</em>
+            </>
+          ) : (
+            "Description"
+          )
         }
       >
         <EuiCompressedTextArea
@@ -239,10 +243,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       <EuiSpacer />
       <FormFieldArray
         label={
-          <>
-            {"References - "}
-            <em>optional</em>
-          </>
+          isEditMode ? (
+            <>
+              {"References - "}
+              <em>optional</em>
+            </>
+          ) : (
+            "References"
+          )
         }
         values={integrationDetails?.document?.references || []}
         placeholder="https://example.com/reference"
