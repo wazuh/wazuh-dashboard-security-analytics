@@ -15,16 +15,22 @@ export const RULE_NAME_REGEX = new RegExp(/^.{1,256}$/);
 
 export const LOG_TYPE_NAME_REGEX = new RegExp(/^[a-z0-9_-]{2,50}$/);
 
+// This regex pattern support 2 to 50 character limit, capital and lowercase letters,
+// numbers 0-9, hyphens, spaces, and underscores.
+export const INTEGRATION_NAME_REGEX = new RegExp(/^[a-zA-Z0-9_-]{2,50}$/);
+
 // This regex pattern support MIN to MAX character limit, capital and lowercase letters,
 // numbers 0-9, hyphens, dot, and underscores.
 export const DETECTION_NAME_REGEX = new RegExp(/^[a-zA-Z0-9_.-]{1,50}$/);
 
 // This regex pattern support MIN to MAX character limit, capital and lowercase letters,
 // numbers 0-9, hyphens, dot, and underscores.
-export const THREAT_INTEL_SOURCE_NAME_REGEX = new RegExp(/^[a-zA-Z0-9 _-]{1,128}$/);
+export const THREAT_INTEL_SOURCE_NAME_REGEX = new RegExp(
+  /^[a-zA-Z0-9 _-]{1,128}$/,
+);
 
 export const DETECTION_CONDITION_REGEX = new RegExp(
-  /^((not )?.+)?( (and|or|and not|or not|not) ?(.+))*(?<!and|or|not)$/
+  /^((not )?.+)?( (and|or|and not|or not|not) ?(.+))*(?<!and|or|not)$/,
 );
 
 // This regex pattern support MIN to MAX character limit.
@@ -39,7 +45,7 @@ export const AUTHOR_REGEX = new RegExp(/^.{0,256}$/);
 export function validateName(
   name: string,
   regex: RegExp = NAME_REGEX,
-  shouldTrimName: boolean = true
+  shouldTrimName: boolean = true,
 ): boolean {
   const toValidate = shouldTrimName ? name.trim() : name;
   return toValidate.match(regex) !== null;
@@ -47,14 +53,14 @@ export function validateName(
 
 export function validateDetectionFieldName(
   name: string,
-  regex: RegExp = DETECTION_NAME_REGEX
+  regex: RegExp = DETECTION_NAME_REGEX,
 ): boolean {
   return name.trim().match(regex) !== null;
 }
 
 export function validateCondition(
   name: string,
-  regex: RegExp = DETECTION_CONDITION_REGEX
+  regex: RegExp = DETECTION_CONDITION_REGEX,
 ): boolean {
   return String(name).trim().match(regex) !== null; // Wazuh: ensure name is string
 }
@@ -69,11 +75,11 @@ Use between ${MIN_NAME_CHARACTERS} and ${MAX_NAME_CHARACTERS} characters.`;
 export function getNameErrorMessage(
   name: string,
   nameIsInvalid: boolean,
-  nameFieldTouched: boolean
+  nameFieldTouched: boolean,
 ) {
   const trimmedName = name.trim();
   if (nameFieldTouched) {
-    if (trimmedName.length === 0) return 'Enter a name.';
+    if (trimmedName.length === 0) return "Enter a name.";
     if (nameIsInvalid) return nameErrorString;
   }
 }
@@ -85,10 +91,12 @@ export const DESCRIPTION_REGEX = new RegExp(/^[a-zA-Z0-9 _.,-]{0,500}$/);
 export const MAX_RULE_DESCRIPTION_LENGTH = 65535;
 
 // This regex pattern support MIN to MAX character limit for detection rule description.
-export const RULE_DESCRIPTION_REGEX = new RegExp(`^.{0,${MAX_RULE_DESCRIPTION_LENGTH}}$`);
+export const RULE_DESCRIPTION_REGEX = new RegExp(
+  `^.{0,${MAX_RULE_DESCRIPTION_LENGTH}}$`,
+);
 
 export const THREAT_INTEL_SOURCE_DESCRIPTION_REGEX = new RegExp(
-  `^.{0,${MAX_RULE_DESCRIPTION_LENGTH}}$`
+  `^.{0,${MAX_RULE_DESCRIPTION_LENGTH}}$`,
 );
 
 /**
@@ -98,7 +106,7 @@ export const THREAT_INTEL_SOURCE_DESCRIPTION_REGEX = new RegExp(
  */
 export function validateDescription(
   name: string,
-  descriptionRegex: RegExp = DESCRIPTION_REGEX
+  descriptionRegex: RegExp = DESCRIPTION_REGEX,
 ): boolean {
   return name.trim().match(descriptionRegex) !== null;
 }
@@ -110,7 +118,7 @@ export const detectionRuleDescriptionError = `Description has max limit of 65,53
 export function getDescriptionErrorMessage(
   _description: string,
   descriptionIsInvalid: boolean,
-  descriptionFieldTouched: boolean
+  descriptionFieldTouched: boolean,
 ) {
   if (descriptionFieldTouched && descriptionIsInvalid) {
     return descriptionError;
@@ -121,4 +129,4 @@ export function validateField(hasSubmitted: boolean, fieldTouched: boolean) {
   return hasSubmitted || fieldTouched;
 }
 
-export const detectionRuleNameError = 'Rule name can be max 256 characters.';
+export const detectionRuleNameError = "Rule name can be max 256 characters.";

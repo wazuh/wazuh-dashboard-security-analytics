@@ -18,7 +18,7 @@ import {
 import { IntegrationItem } from "../../../../types";
 import React from "react";
 import {
-  LOG_TYPE_NAME_REGEX,
+  INTEGRATION_NAME_REGEX,
   validateName,
 } from "../../../utils/validation";
 import { NotificationsStart } from "opensearch-dashboards/public";
@@ -52,12 +52,12 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
     const nameInvalid = !validateName(
       details.document.title,
-      LOG_TYPE_NAME_REGEX,
+      INTEGRATION_NAME_REGEX,
       false /* shouldTrim */,
     );
     const authorInvalid = !validateName(
       details.document.author,
-      LOG_TYPE_NAME_REGEX,
+      INTEGRATION_NAME_REGEX,
       false /* shouldTrim */,
     );
     const categoryInvalid =
