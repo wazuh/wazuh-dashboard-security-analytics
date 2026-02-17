@@ -5,12 +5,15 @@
 
 import { NotificationsStart } from "opensearch-dashboards/public";
 import {
+  CreateKVDBPayload,
+  CUDKVDBResponse,
   KVDBIntegrationSummary,
   KVDBIntegrationsSearchResponse,
   KVDBItem,
   KVDBSearchRequest,
   KVDBSearchResponse,
   ServerResponse,
+  UpdateKVDBPayload,
 } from "../../types";
 import KVDBsService from "../services/KVDBsService";
 import { errorNotificationToast } from "../utils/helpers";
@@ -113,6 +116,36 @@ export class KVDBsStore {
       ...item,
       integration: integrationsMap.get(item.document?.id ?? "") ?? undefined,
     };
+  }
+
+  public async createKVDB(body: CreateKVDBPayload): Promise<CUDKVDBResponse | undefined> {
+    const response = await this.service.createKVDB(body);
+    if (!response.ok) {
+      errorNotificationToast(this.notifications, "create", "KVDB", response.error);
+      return undefined;
+    }
+    return response.response;
+  }
+
+  public async updateKVDB(
+    kvdbId: string,
+    body: UpdateKVDBPayload,
+  ): Promise<CUDKVDBResponse | undefined> {
+    const response = await this.service.updateKVDB(kvdbId, body);
+    if (!response.ok) {
+      errorNotificationToast(this.notifications, "update", "KVDB", response.error);
+      return undefined;
+    }
+    return response.response;
+  }
+
+  public async deleteKVDB(kvdbId: string): Promise<CUDKVDBResponse | undefined> {
+    const response = await this.service.deleteKVDB(kvdbId);
+    if (!response.ok) {
+      errorNotificationToast(this.notifications, "delete", "KVDB", response.error);
+      return undefined;
+    }
+    return response.response;
   }
 
   private async getIntegrationsMap(
