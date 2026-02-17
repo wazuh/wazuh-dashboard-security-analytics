@@ -27,3 +27,4 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 
 - Fixed YAML Editor when creating or editing detection rules [#9](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/9)
 - Fixed detection rule editor causing blank screen [#44](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/44)
+- Fixed empty category selector on create integrations form [#64](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/64)
