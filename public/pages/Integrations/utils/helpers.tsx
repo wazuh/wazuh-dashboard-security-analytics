@@ -14,7 +14,7 @@ import {
 } from '../../../../common/constants';
 import { capitalize, startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
+import { DEFAULT_EMPTY_DATA, integrationCategoryFilters } from '../../../utils/constants';
 import { integrationLabels } from './constants';
 
 export const getIntegrationsTableColumns = ({
@@ -106,7 +106,7 @@ export const getIntegrationsTableSearchConfig = (): Search => {
         name: 'Category',
         compressed: true,
         multiSelect: 'or',
-        options: integrationCategories.map((category) => ({
+        options: integrationCategoryFilters.map((category) => ({
           value: category,
         })),
       },
