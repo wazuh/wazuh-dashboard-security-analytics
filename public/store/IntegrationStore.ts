@@ -19,7 +19,7 @@ import { DataStore } from './DataStore';
 import { ruleTypes } from '../pages/Rules/utils/constants';
 import {
   DATA_SOURCE_NOT_SET_ERROR,
-  integrationCategories,
+  integrationCategoryFilters,
   integrationsByCategories,
 } from '../utils/constants';
 import { getIntegrationLabel } from '../pages/Integrations/utils/helpers';
@@ -91,9 +91,9 @@ export class IntegrationStore {
             integrationsByCategories[integration.category] || [];
           integrationsByCategories[integration.category].push(integration);
         });
-        integrationCategories.splice(
+        integrationCategoryFilters.splice(
           0,
-          integrationCategories.length,
+          integrationCategoryFilters.length,
           ...Object.keys(integrationsByCategories).sort((a, b) => {
             if (a === 'Other') {
               return 1;
