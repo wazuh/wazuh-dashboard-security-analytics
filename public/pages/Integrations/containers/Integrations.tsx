@@ -208,6 +208,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
                 Integrations describe the data sources to which the detection rules are meant to be
                 applied.
               </EuiText>
+              <EuiSpacer size="s"></EuiSpacer>
+              <PolicyInfoCard space={spaceFilter} notifications={notifications} />
             </EuiFlexItem>
             {/* <EuiFlexItem grow={false}>{createIntegrationAction}</EuiFlexItem> */}
             <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
@@ -217,8 +219,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         </EuiFlexItem>
       </PageHeader>
       <EuiPanel>
-        <PolicyInfoCard space={spaceFilter} notifications={notifications} />
-        <EuiSpacer size="s"></EuiSpacer>
         <EuiInMemoryTable
           itemId={'id'}
           items={integrations}
