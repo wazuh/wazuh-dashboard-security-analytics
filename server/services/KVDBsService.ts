@@ -12,9 +12,12 @@ import {
 } from "opensearch-dashboards/server";
 import { ServerResponse } from "../models/types";
 import {
+  CreateKVDBPayload,
   KVDBIntegrationsSearchResponse,
+  KVDBResource,
   KVDBSearchRequest,
   KVDBSearchResponse,
+  UpdateKVDBPayload,
 } from "../../types";
 import { CLIENT_KVDB_METHODS } from "../utils/constants";
 import { MDSEnabledClientService } from "./MDSEnabledClientService";
@@ -47,7 +50,7 @@ export class KVDBsService extends MDSEnabledClientService {
           response: searchResponse,
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Security Analytics - KVDBsService - searchKVDBs:", error);
       return response.custom({
         statusCode: 200,
@@ -107,7 +110,7 @@ export class KVDBsService extends MDSEnabledClientService {
           response: searchResponse,
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error(
         "Security Analytics - KVDBsService - searchIntegrations:",
         error,
@@ -132,7 +135,7 @@ export class KVDBsService extends MDSEnabledClientService {
     >
   > => {
     try {
-      const body = request.body as { resource: any; integrationId: string };
+      const body = request.body as CreateKVDBPayload;
       const client = this.getClient(request, context);
 
       const { resource, integrationId } = body;
@@ -165,7 +168,7 @@ export class KVDBsService extends MDSEnabledClientService {
           response: createResponse,
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Security Analytics - KVDBsService - createKVDB:", error);
       return response.custom({
         statusCode: 200,
@@ -186,7 +189,7 @@ export class KVDBsService extends MDSEnabledClientService {
   > => {
     try {
       const { kvdbId } = request.params;
-      const body = request.body as { resource: any };
+      const body = request.body as UpdateKVDBPayload;
       const client = this.getClient(request, context);
 
       const { resource } = body;
@@ -219,7 +222,7 @@ export class KVDBsService extends MDSEnabledClientService {
           response: updateResponse,
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Security Analytics - KVDBsService - updateKVDB:", error);
       return response.custom({
         statusCode: 200,
@@ -252,7 +255,7 @@ export class KVDBsService extends MDSEnabledClientService {
           response: null,
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Security Analytics - KVDBsService - deleteKVDB:", error);
       return response.custom({
         statusCode: 200,

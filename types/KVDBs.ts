@@ -11,7 +11,7 @@ export interface KVDBDocument {
   enabled?: boolean;
   references?: string[] | string;
   date?: string;
-  content?: any;
+  content?: Record<string, unknown>;
   metadata?: {
     author?: {
       url?: string;
@@ -20,6 +20,16 @@ export interface KVDBDocument {
       date?: string;
     };
   };
+}
+
+export interface KVDBResource {
+  title: string;
+  author: string;
+  description?: string;
+  documentation?: string;
+  references?: string[];
+  enabled?: boolean;
+  content?: Record<string, unknown>;
 }
 
 export interface KVDBSource {
@@ -49,9 +59,18 @@ export interface KVDBSearchRequest {
   from?: number;
   size?: number;
   sort?: Array<Record<string, { order: "asc" | "desc" }>>;
-  query?: any;
-  _source?: any;
+  query?: Record<string, unknown>;
+  _source?: Record<string, unknown> | string[] | boolean;
   track_total_hits?: boolean;
+}
+
+export interface CreateKVDBPayload {
+  resource: KVDBResource;
+  integrationId: string;
+}
+
+export interface UpdateKVDBPayload {
+  resource: KVDBResource;
 }
 
 export interface KVDBSearchResponse {
