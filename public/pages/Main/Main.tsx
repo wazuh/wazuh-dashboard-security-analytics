@@ -73,6 +73,7 @@ import { Integration } from '../Integrations/containers/Integration';
 import { CreateIntegration } from '../Integrations/containers/CreateIntegration';
 import Decoders from '../Decoders';
 import { KVDBs } from '../KVDBs/containers/KVDBs';
+import { KVDBFormPage } from '../KVDBs/containers/KVDBFormPage';
 import { LogTest } from "../LogTest/containers/LogTest";
 import {
   DataSourceContextType,
@@ -148,6 +149,8 @@ const HIDDEN_NAV_ROUTES: string[] = [
   ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
   ROUTES.DECODERS_CREATE,
   ROUTES.DECODERS_EDIT,
+  ROUTES.KVDBS_CREATE,
+  ROUTES.KVDBS_EDIT,
 ];
 
 interface MainProps extends RouteComponentProps {
@@ -1123,6 +1126,32 @@ export default class Main extends Component<MainProps, MainState> {
                                         }>
                                       ) => (
                                         <DecoderFormPage
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="edit"
+                                          history={props.history}
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={ROUTES.KVDBS_CREATE}
+                                      render={(props: RouteComponentProps) => (
+                                        <KVDBFormPage
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="create"
+                                          history={props.history}
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={`${ROUTES.KVDBS_EDIT}/:id`}
+                                      render={(
+                                        props: RouteComponentProps<{
+                                          id: string;
+                                        }>
+                                      ) => (
+                                        <KVDBFormPage
                                           {...props}
                                           notifications={core?.notifications}
                                           action="edit"

@@ -8,9 +8,12 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
+  EuiContextMenuItem,
+  EuiContextMenuPanel,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
+  EuiPopover,
   EuiSearchBar,
   EuiSmallButton,
   EuiSpacer,
@@ -20,7 +23,7 @@ import {
 import { RouteComponentProps } from "react-router-dom";
 import { KVDBItem } from "../../../../types";
 import { DataStore } from "../../../store/DataStore";
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from "../../../utils/constants";
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from "../../../utils/constants";
 import { PageHeader } from "../../../components/PageHeader/PageHeader";
 import { formatCellValue, setBreadcrumbs } from "../../../utils/helpers";
 import {
@@ -205,6 +208,44 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                 setPageIndex(0);
               }}
             />
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiPopover
+              id={'kvdbsActionsPopover'}
+              button={
+                <EuiSmallButton
+                  iconType={'arrowDown'}
+                  iconSide={'right'}
+                  onClick={() => setActionsPopoverOpen((prev) => !prev)}
+                  data-test-subj={'kvdbsActionsButton'}
+                >
+                  Actions
+                </EuiSmallButton>
+              }
+              isOpen={actionsPopoverOpen}
+              closePopover={() => setActionsPopoverOpen(false)}
+              panelPaddingSize={'none'}
+              anchorPosition={'downLeft'}
+            >
+              <EuiContextMenuPanel
+                size="s"
+                items={[
+                  <EuiContextMenuItem
+                    key="create"
+                    icon="plusInCircle"
+                    href={`#${ROUTES.KVDBS_CREATE}`}
+                    disabled={spaceFilter !== SpaceTypes.DRAFT.value}
+                    toolTipContent={
+                      spaceFilter !== SpaceTypes.DRAFT.value
+                        ? `Cannot create KVDBs in the ${spaceFilter} space.`
+                        : undefined
+                    }
+                  >
+                    Create
+                  </EuiContextMenuItem>,
+                ]}
+              />
+            </EuiPopover>
           </EuiFlexItem>
         </EuiFlexGroup>
       </PageHeader></EuiFlexItem>
