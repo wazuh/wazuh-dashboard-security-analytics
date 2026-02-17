@@ -3,15 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-export const DECODER_SEARCH_FIELDS = [
+const KEYWORD_SEARCH_FIELDS = [
   'document.name',
-  'document.metadata.title',
   'document.metadata.module',
-  'document.metadata.description',
   'document.metadata.compatibility',
   'document.metadata.versions',
   'document.metadata.author.name',
 ];
+
+const TEXT_SEARCH_FIELDS = [
+  'document.metadata.title',
+  'document.metadata.description',
+];
+
+const escapeWildcard = (str: string) => str.replace(/[*?]/g, '\\$&');
 
 export const buildDecodersSearchQuery = (searchText: string) => {
   const trimmed = searchText.trim();
@@ -20,10 +25,23 @@ export const buildDecodersSearchQuery = (searchText: string) => {
   }
 
   return {
-    simple_query_string: {
-      query: trimmed,
-      fields: DECODER_SEARCH_FIELDS,
-      default_operator: 'and',
+    bool: {
+      should: [
+        ...KEYWORD_SEARCH_FIELDS.map((field) => ({
+          wildcard: {
+            [field]: {
+              value: `*${escapeWildcard(trimmed)}*`,
+              case_insensitive: true,
+            },
+          },
+        })),
+        ...TEXT_SEARCH_FIELDS.map((field) => ({
+          match_phrase: {
+            [field]: trimmed,
+          },
+        })),
+      ],
+      minimum_should_match: 1,
     },
   };
 };
