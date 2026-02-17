@@ -72,3 +72,9 @@ export interface KVDBIntegrationsSearchResponse {
     }[];
   };
 }
+
+export interface CUDKVDBResponse {
+  message: string;
+  status: number;
+  error: string | null;
+}
