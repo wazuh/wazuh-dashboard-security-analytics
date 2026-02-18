@@ -32,7 +32,8 @@ import {
   KVDBS_SORT_FIELD,
 } from "../utils/constants";
 import { KVDBDetailsFlyout } from "../components/KVDBDetailsFlyout";
-import { SpaceTypes } from "../../../../common/constants";
+import { SPACE_ACTIONS, SpaceTypes } from "../../../../common/constants";
+import { actionIsAllowedOnSpace } from "../../../../common/helpers";
 import { SpaceSelector } from "../../../components/SpaceSelector/SpaceSelector";
 
 export const KVDBs: React.FC<RouteComponentProps> = () => {
@@ -48,6 +49,8 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
   const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
+
+  const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
@@ -234,9 +237,9 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
                     key="create"
                     icon="plusInCircle"
                     href={`#${ROUTES.KVDBS_CREATE}`}
-                    disabled={spaceFilter !== SpaceTypes.DRAFT.value}
+                    disabled={isCreateActionDisabled}
                     toolTipContent={
-                      spaceFilter !== SpaceTypes.DRAFT.value
+                      isCreateActionDisabled
                         ? `Cannot create KVDBs in the ${spaceFilter} space.`
                         : undefined
                     }
