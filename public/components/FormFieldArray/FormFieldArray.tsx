@@ -32,13 +32,11 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
   readOnly = false,
   addButtonLabel = 'Add item',
 }) => {
-  const displayValues = values.length ? values : [''];
-
   return (
     <>
       <EuiCompressedFormRow label={label}>
         <>
-          {displayValues.map((value: string, index: number) => {
+          {values.map((value: string, index: number) => {
             return (
               <EuiFlexGroup key={index} gutterSize="s" responsive={false}>
                 <EuiFlexItem>
@@ -47,13 +45,13 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
                     placeholder={!readOnly ? placeholder : ''}
                     readOnly={readOnly}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      let newValues = [...displayValues];
+                      let newValues = [...values];
                       newValues[index] = e.target.value;
                       onChange(newValues);
                     }}
                   />
                 </EuiFlexItem>
-                {displayValues.length > 1 && !readOnly ? (
+                {!readOnly ? (
                   <EuiFlexItem grow={false}>
                     <EuiToolTip content={'Remove'}>
                       <EuiSmallButtonIcon
@@ -61,7 +59,7 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
                         iconType={'trash'}
                         color="danger"
                         onClick={() => {
-                          let newValues = [...displayValues];
+                          let newValues = [...values];
                           newValues.splice(index, 1);
                           onChange(newValues);
                         }}
@@ -72,12 +70,12 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
               </EuiFlexGroup>
             );
           })}
-          <EuiSpacer size="m" />
+          {values.length > 0 && <EuiSpacer size="m" />}
           {!readOnly && (
             <EuiSmallButton
               type="button"
               onClick={() => {
-                onChange([...displayValues, '']);
+                onChange([...values, '']);
               }}
             >
               {addButtonLabel}
