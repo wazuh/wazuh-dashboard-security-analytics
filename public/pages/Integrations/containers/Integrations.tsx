@@ -27,9 +27,10 @@ import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
-import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { RootDecoderRequirement } from '../components/RootDecoderRequirement';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { PolicyInfoCard } from '../components/PolicyInfo';
+import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
+import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -82,12 +83,12 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     />
   );
 
-  const isCreateActionDisabled = !AllowedActionsBySpace[
-    SpaceTypes[spaceFilter.toUpperCase()].value
-  ].includes(SPACE_ACTIONS.CREATE);
-  const isPromoteActionDisabled = !AllowedActionsBySpace[
-    SpaceTypes[spaceFilter.toUpperCase()].value
-  ].includes(SPACE_ACTIONS.PROMOTE);
+  const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
+  const isPromoteActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.PROMOTE);
+  const isRearrangeIntegrationsActionDisabled = !actionIsAllowedOnSpace(
+    spaceFilter,
+    SPACE_ACTIONS.REARRANGE_INTEGRATIONS
+  );
 
   const panels = [
     <EuiContextMenuItem
@@ -96,7 +97,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       href={`#${ROUTES.INTEGRATIONS_CREATE}`}
       disabled={isCreateActionDisabled}
       toolTipContent={
-        isCreateActionDisabled ? 'Integration can only be created in the draft space.' : undefined
+        isCreateActionDisabled
+          ? `Integration can only be created in the spaces: ${getSpacesAllowAction(
+              SPACE_ACTIONS.CREATE
+            ).join(', ')}`
+          : undefined
       }
     >
       Create
@@ -116,11 +121,33 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       disabled={isPromoteActionDisabled}
       toolTipContent={
         isPromoteActionDisabled
-          ? 'Integration can only be promoted in the draft or testing space.'
+          ? `Integration can only be promoted in the spaces: ${getSpacesAllowAction(
+              SPACE_ACTIONS.PROMOTE
+            ).join(', ')}`
           : undefined
       }
     >
       Promote
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="rearrange_integrations"
+      icon="sortable"
+      onClick={() => {
+        setItemForAction({
+          action: SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
+        });
+        setIsPopoverOpen(false);
+      }}
+      disabled={isRearrangeIntegrationsActionDisabled}
+      toolTipContent={
+        isRearrangeIntegrationsActionDisabled
+          ? `Integration can only be rearranged in the spaces: ${getSpacesAllowAction(
+              SPACE_ACTIONS.REARRANGE_INTEGRATIONS
+            ).join(', ')}`
+          : undefined
+      }
+    >
+      Rearrange
     </EuiContextMenuItem>,
   ];
 
@@ -192,6 +219,13 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               integrationName={itemForAction.item.title}
               closeModal={() => setItemForAction(null)}
               onConfirm={() => deleteIntegration(itemForAction.item.id)}
+            />
+          )}
+          {itemForAction.action === SPACE_ACTIONS.REARRANGE_INTEGRATIONS && (
+            <RearrangeIntegrations
+              space={spaceFilter}
+              onClose={() => setItemForAction(null)}
+              notifications={notifications}
             />
           )}
         </>

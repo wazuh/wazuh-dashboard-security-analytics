@@ -33,9 +33,17 @@ export interface PolicySource {
 
 export interface PolicyItem extends PolicySource {
   id: string;
-  integrations?: string[];
+  integrationsMap?: Map<string, { title: string; id: string }>;
 }
 
+export interface SearchPolicyOptions {
+  from?: number;
+  size?: number;
+  sort?: any;
+  query?: any;
+  _source?: any;
+  includeIntegrationFields?: string[]; // specify which fields of the integrations to include in the response
+}
 export interface SearchPoliciesResponse {
   total: number;
   items: PolicyItem[];

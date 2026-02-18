@@ -1,0 +1,283 @@
+import React, { useEffect, useState, useMemo } from 'react';
+import {
+  EuiButton,
+  EuiConfirmModal,
+  EuiDescriptionListTitle,
+  EuiDescriptionListDescription,
+  EuiPanel,
+  EuiFlexGroup,
+  EuiFlexGrid,
+  EuiFlexItem,
+  EuiFieldNumber,
+  EuiFlyout,
+  EuiFlyoutHeader,
+  EuiFlyoutBody,
+  EuiIcon,
+  EuiOverlayMask,
+  EuiText,
+  EuiSpacer,
+} from '@elastic/eui';
+import { get } from 'lodash';
+import { RearrangeItems, RearrangeItemsProps } from './Rearrange';
+import { withPolicyGuard } from './PolicyInfo';
+import { Space } from '../../../../types';
+import { DataStore } from '../../../store/DataStore';
+import { successNotificationToast } from '../../../utils/helpers';
+
+const RearrageItemAttribute: React.FC<{ title: string; description: any }> = ({ field, value }) => (
+  <>
+    <EuiDescriptionListTitle>
+      {integrationSourceDocumentFieldsUIMapperLabel[field]}
+    </EuiDescriptionListTitle>
+    <EuiDescriptionListDescription>{value}</EuiDescriptionListDescription>
+  </>
+);
+
+const euiDescriptionListClassName =
+  'euiDescriptionList euiDescriptionList--row euiDescriptionList--compressed';
+
+const RearrangeItem: RearrangeItemsProps = (
+  item: any,
+  idx,
+  items,
+  { hidx, lastMovement, moveItem }
+) => {
+  const [valueIndex, setValueIndex] = useState(hidx);
+  const moveItemto = (toIndex: number) => {
+    setValueIndex(toIndex);
+    moveItem(toIndex);
+  };
+
+  useEffect(() => {
+    setValueIndex(hidx);
+  }, [lastMovement]);
+
+  return (
+    <EuiPanel paddingSize="s">
+      <EuiFlexGroup alignItems="center">
+        <EuiFlexItem grow={false} responsive={false}>
+          <EuiIcon type="grab" />
+        </EuiFlexItem>
+        <EuiFlexItem grow={false} responsive={false}>
+          <EuiFieldNumber
+            style={{ maxWidth: '55px' }}
+            value={valueIndex}
+            onChange={(e) => setValueIndex(e.target.value)}
+            min={1}
+            max={items.length}
+            compressed
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                moveItemto(Number(valueIndex));
+              }
+            }}
+          />
+        </EuiFlexItem>
+        <EuiFlexItem grow={true}>
+          <EuiFlexGrid columns={3} gutterSize="s">
+            {['title', 'category'].map((field) => (
+              <EuiFlexItem key={field} className={euiDescriptionListClassName}>
+                <RearrageItemAttribute field={field} value={get(item.source, field)} />
+              </EuiFlexItem>
+            ))}
+          </EuiFlexGrid>
+          <EuiSpacer size="s" />
+          <EuiFlexGrid columns={3} gutterSize="s">
+            {['decoders', 'kvdbs', 'rules'].map((field) => (
+              <EuiFlexItem key={field} className={euiDescriptionListClassName}>
+                <RearrageItemAttribute field={field} value={get(item.source, field)} />
+              </EuiFlexItem>
+            ))}
+          </EuiFlexGrid>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </EuiPanel>
+  );
+};
+
+const SKIP_FIELD = '___SKIP___';
+const integrationSourceDocumentFieldsUIWithSkipField = [
+  'title',
+  'category',
+  SKIP_FIELD,
+  'decoders',
+  'kvdbs',
+  'rules',
+];
+const integrationSourceDocumentFieldsUI = integrationSourceDocumentFieldsUIWithSkipField.filter(
+  (field) => field !== SKIP_FIELD
+); // specify which fields from the integration document to show in the UI
+const integrationSourceDocumentFields = ['id', ...integrationSourceDocumentFieldsUI];
+
+const integrationSourceDocumentFieldsUIMapperLabel = {
+  title: 'Title',
+  category: 'Category',
+  decoders: 'Decoders',
+  kvdbs: 'KVDBs',
+  rules: 'Rules',
+};
+
+const getArrayLengthMapper = (value: any) => value?.length || 0;
+
+// specify how to map the fields from the document to the values used in the UI, for example we want to show the length of the decoders array instead of the array itself
+const integrationSourceDocumentFieldMapper = {
+  decoders: getArrayLengthMapper,
+  kvdbs: getArrayLengthMapper,
+  rules: getArrayLengthMapper,
+};
+
+// helper function to get the field path for the integration document fields, for example for the 'title' field it will return 'document.title' since the data is nested in the document object
+function getDocumentField(field: string) {
+  return `document.${field}`;
+}
+
+interface RearrangeIntegrationsViewProps {
+  policyDocumentData: any;
+  policyEnhancedData: any;
+  space: Space;
+  notifications: any;
+  onConfirm: () => void;
+  setHasModifications: (hasModifications: boolean) => void;
+}
+const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
+  policyDocumentData,
+  policyEnhancedData,
+  onConfirm,
+  space,
+  notifications,
+  setHasModifications,
+}) => {
+  const integrations = useMemo(
+    () =>
+      policyDocumentData?.integrations.map((id) => {
+        const integrationData = policyEnhancedData.integrationsMap?.[id] || {};
+
+        const source = Object.fromEntries(
+          integrationSourceDocumentFields.map((field) => {
+            const value = get(integrationData, getDocumentField(field));
+            return [
+              field,
+              integrationSourceDocumentFieldMapper[field]
+                ? integrationSourceDocumentFieldMapper[field](value)
+                : value,
+            ];
+          })
+        );
+
+        return { id, source };
+      }) || [],
+    [policyDocumentData]
+  );
+  const [rearrangedIntegrations, setRearrangedIntegrations] = useState(integrations);
+
+  const areIntegrationsInOrder = useMemo(() => {
+    return integrations.every(
+      (integration, index) => integration.id === rearrangedIntegrations[index]?.id
+    );
+  }, [integrations, rearrangedIntegrations]);
+
+  useEffect(() => {
+    setHasModifications(areIntegrationsInOrder);
+  }, [areIntegrationsInOrder]);
+
+  console.log(integrations.map((integration) => integration.id));
+  console.log(rearrangedIntegrations.map((integration) => integration.id));
+  console.log(areIntegrationsInOrder);
+
+  const onConfirmEnhanced = async () => {
+    const payload = {
+      ...policyDocumentData,
+      integrations: rearrangedIntegrations.map((integration) => integration.id),
+    };
+    console.log({ payload });
+    const [success] = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
+
+    if (success) {
+      successNotificationToast(notifications, 'updated', `[${space}] policy`);
+      onConfirm();
+    }
+  };
+
+  return (
+    <>
+      <RearrangeItems
+        items={rearrangedIntegrations}
+        onChange={setRearrangedIntegrations}
+        droppableProps={{ spacing: 'm' }}
+        renderItem={RearrangeItem}
+      />
+      <EuiSpacer size="m" />
+      <EuiFlexGroup justifyContent="flexEnd" gutterSize="m">
+        <EuiFlexItem grow={false}>
+          <EuiButton fill={true} onClick={onConfirmEnhanced} isDisabled={areIntegrationsInOrder}>
+            Rearrange
+          </EuiButton>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </>
+  );
+};
+
+export type RearrangeIntegrationWithDataProps = RearrangeIntegrationsViewProps;
+
+const RearrangeIntegrationWithData: React.FC<RearrangeIntegrationWithDataProps> = withPolicyGuard({
+  includeIntegrationFields: integrationSourceDocumentFields.map((field) => getDocumentField(field)),
+})(RearrangeIntegrationsBody);
+
+export type RearrangeIntegrationsProps = RearrangeIntegrationWithDataProps & {
+  onClose: () => void;
+};
+export const RearrangeIntegrations: React.FC<RearrangeIntegrationsProps> = ({
+  onClose,
+  space,
+  notifications,
+}) => {
+  const [canClose, setCanClose] = useState(true);
+  const [canNotCloseIsOpen, setCanNotCloseIsOpen] = useState(false);
+  const onFlyoutClose = function () {
+    if (!canClose) {
+      setCanNotCloseIsOpen(true);
+      return;
+    }
+    onClose();
+  };
+
+  return (
+    <>
+      <EuiFlyout onClose={onFlyoutClose} ownFocus>
+        <EuiFlyoutHeader hasBorder={true}>
+          <EuiText size="s">
+            <h2>Rearrange Integrations</h2>
+          </EuiText>
+        </EuiFlyoutHeader>
+        <EuiFlyoutBody>
+          <EuiText>
+            Rearrange the integrations for <b>{space}</b>
+          </EuiText>
+          <EuiSpacer></EuiSpacer>
+          <RearrangeIntegrationWithData
+            space={space}
+            onConfirm={onClose}
+            notifications={notifications}
+            setHasModifications={setCanClose}
+          />
+        </EuiFlyoutBody>
+      </EuiFlyout>
+      {canNotCloseIsOpen && (
+        <EuiOverlayMask>
+          <EuiConfirmModal
+            title="Unsubmitted changes"
+            onConfirm={onClose}
+            onCancel={() => setCanNotCloseIsOpen(false)}
+            cancelButtonText="No, don't do it"
+            confirmButtonText="Yes, do it"
+          >
+            <p style={{ textAlign: 'center' }}>
+              There are unsaved changes. Are you sure you want to proceed?
+            </p>
+          </EuiConfirmModal>
+        </EuiOverlayMask>
+      )}
+    </>
+  );
+};
