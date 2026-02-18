@@ -13,11 +13,12 @@ export const NAME_REGEX = new RegExp(/^[a-zA-Z0-9 _-]{5,50}$/);
 // This regex pattern support MIN to MAX character limit for detection rule name
 export const RULE_NAME_REGEX = new RegExp(/^.{1,256}$/);
 
+// Restriction defined by OpenSearch security analitycs.
+// Applies to LogTypes and Integrations name/title.
 export const LOG_TYPE_NAME_REGEX = new RegExp(/^[a-z0-9_-]{2,50}$/);
 
-// This regex pattern support 2 to 50 character limit, capital and lowercase letters,
-// numbers 0-9, hyphens, spaces, and underscores.
-export const INTEGRATION_NAME_REGEX = new RegExp(/^[a-zA-Z0-9_-]{2,50}$/);
+// This regex pattern support MIN to MAX character limit.
+export const INTEGRATION_AUTHOR_REGEX = new RegExp(/^.{2,50}$/);
 
 // This regex pattern support MIN to MAX character limit, capital and lowercase letters,
 // numbers 0-9, hyphens, dot, and underscores.

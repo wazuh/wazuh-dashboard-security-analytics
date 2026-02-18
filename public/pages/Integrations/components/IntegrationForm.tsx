@@ -18,7 +18,8 @@ import {
 import { IntegrationItem } from "../../../../types";
 import React from "react";
 import {
-  INTEGRATION_NAME_REGEX,
+  INTEGRATION_AUTHOR_REGEX,
+  LOG_TYPE_NAME_REGEX,
   validateName,
 } from "../../../utils/validation";
 import { NotificationsStart } from "opensearch-dashboards/public";
@@ -52,12 +53,12 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
     const nameInvalid = !validateName(
       details.document.title,
-      INTEGRATION_NAME_REGEX,
+      LOG_TYPE_NAME_REGEX,
       false /* shouldTrim */,
     );
     const authorInvalid = !validateName(
       details.document.author,
-      INTEGRATION_NAME_REGEX,
+      INTEGRATION_AUTHOR_REGEX,
       false /* shouldTrim */,
     );
     const categoryInvalid =
@@ -215,8 +216,13 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         />
       </EuiCompressedFormRow>
       <EuiCompressedFormRow
-        label="Documentation"
-        helpText={isEditMode && "Must contain 2-100 characters."}
+        label={
+          <>
+            {"Documentation - "}
+            <em>optional</em>
+          </>
+        }
+        helpText={isEditMode && "Must contain 0-100 characters."}
       >
         <EuiCompressedFieldText
           value={integrationDetails?.document.documentation}
