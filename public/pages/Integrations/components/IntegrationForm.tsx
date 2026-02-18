@@ -14,6 +14,7 @@ import {
   EuiSpacer,
   EuiCompressedSuperSelect,
   EuiCompressedTextArea,
+  EuiText,
 } from "@elastic/eui";
 import { IntegrationItem } from "../../../../types";
 import React from "react";
@@ -241,33 +242,50 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         />
       </EuiCompressedFormRow>
       <EuiSpacer />
-      <FormFieldArray
-        label={
-          isEditMode ? (
+      {isEditMode ? (
+        <FormFieldArray
+          label={
             <>
               {"References - "}
               <em>optional</em>
             </>
-          ) : (
-            "References"
-          )
-        }
-        values={integrationDetails?.document?.references || []}
-        placeholder="https://example.com/reference"
-        readOnly={!isEditMode}
-        addButtonLabel="Add reference"
-        onChange={(references) => {
-          const newIntegration = {
-            ...integrationDetails!,
-            document: {
-              ...integrationDetails!.document,
-              references,
-            },
-          };
-          setIntegrationDetails(newIntegration);
-          updateErrors(newIntegration);
-        }}
-      />
+          }
+          values={integrationDetails?.document?.references || []}
+          placeholder='https://example.com/reference'
+          readOnly={false}
+          addButtonLabel='Add reference'
+          onChange={(references) => {
+            const newIntegration = {
+              ...integrationDetails!,
+              document: {
+                ...integrationDetails!.document,
+                references,
+              },
+            };
+            setIntegrationDetails(newIntegration);
+            updateErrors(newIntegration);
+          }}
+        />
+      ) : (
+        <>
+          <EuiCompressedFormRow label='References'>
+            <>
+              {integrationDetails?.document?.references?.length > 0 ? (
+                <EuiText size='s'>
+                  <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
+                    {integrationDetails.document.references.map(
+                      (ref: string, index: number) => (
+                        <li key={index}>{ref || "-"}</li>
+                      ),
+                    )}
+                  </ul>
+                </EuiText>
+              ) : null}
+            </>
+          </EuiCompressedFormRow>
+          <EuiSpacer />
+        </>
+      )}
       {isEditMode ? (
         <div style={{ padding: '30px 0px' }}>
         <EuiBottomBar>
