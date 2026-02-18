@@ -215,8 +215,41 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         size="s"
         items={[
           <EuiContextMenuItem
+            key={'createRule'}
+            href={"detection_rules#/create-rule"}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createRuleButton'}
+          >
+            Create rule
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
+            key={'createDecoder'}
+            href={"decoders#/create-decoder"}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createDecoderButton'}
+          >
+            Create decoder
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
+            key={'createKVDB'}
+            href={"kvdbs#/create-kvdb"}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createKVDBButton'}
+          >
+            Create KVDB
+          </EuiContextMenuItem>,
+          <EuiHorizontalRule margin="xs" />,
+          <EuiContextMenuItem
             key={'Edit'}
-            icon={'empty'}
             onClick={() => {
               closeActionsPopover();
               setIsEditMode(true);
@@ -227,10 +260,8 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           >
             Edit
           </EuiContextMenuItem>,
-          <EuiHorizontalRule margin="xs" />,
           <EuiContextMenuItem
             key={'Delete'}
-            icon={'empty'}
             onClick={() => {
               closeActionsPopover();
               setShowDeleteModal(true);
