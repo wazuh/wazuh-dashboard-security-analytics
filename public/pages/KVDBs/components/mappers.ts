@@ -46,8 +46,8 @@ export const mapKVDBToForm = (document: KVDBDocument): KVDBFormModel => {
   return {
     title: document.title || '',
     author: document.author || document.metadata?.author?.name || '',
-    description: '',
-    documentation: '',
+    description: document.description || '',
+    documentation: document.documentation || '',
     references,
     enabled: document.enabled ?? true,
     contentEntries,

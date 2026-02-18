@@ -7,7 +7,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
-  EuiButtonIcon,
   EuiContextMenuItem,
   EuiContextMenuPanel,
   EuiFlexGroup,
@@ -18,7 +17,6 @@ import {
   EuiSmallButton,
   EuiSpacer,
   EuiText,
-  EuiToolTip,
 } from "@elastic/eui";
 import { RouteComponentProps } from "react-router-dom";
 import { KVDBItem } from "../../../../types";
@@ -36,7 +34,7 @@ import { SPACE_ACTIONS, SpaceTypes } from "../../../../common/constants";
 import { actionIsAllowedOnSpace } from "../../../../common/helpers";
 import { SpaceSelector } from "../../../components/SpaceSelector/SpaceSelector";
 
-export const KVDBs: React.FC<RouteComponentProps> = () => {
+export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -168,19 +166,26 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       },
       {
         name: "Actions",
-        align: "right",
-        render: (item: KVDBItem) => (
-          <EuiToolTip content="View details">
-            <EuiButtonIcon
-              iconType="inspect"
-              aria-label="View KVDB details"
-              onClick={() => setSelectedKVDB(item)}
-            />
-          </EuiToolTip>
-        ),
+        actions: [
+          {
+            name: "View",
+            description: "View KVDB details",
+            type: "icon",
+            icon: "inspect",
+            onClick: (item: KVDBItem) => setSelectedKVDB(item),
+          },
+          {
+            name: "Edit",
+            description: "Edit KVDB",
+            type: "icon",
+            icon: "pencil",
+            onClick: (item: KVDBItem) => history.push(`${ROUTES.KVDBS_EDIT}/${item.id}`),
+            available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT),
+          },
+        ],
       },
     ],
-    [],
+    [spaceFilter, history],
   );
 
   return (

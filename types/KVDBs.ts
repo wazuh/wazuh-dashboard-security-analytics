@@ -9,6 +9,8 @@ export interface KVDBDocument {
   name?: string;
   author?: string;
   enabled?: boolean;
+  description?: string;
+  documentation?: string;
   references?: string[] | string;
   date?: string;
   content?: Record<string, unknown>;

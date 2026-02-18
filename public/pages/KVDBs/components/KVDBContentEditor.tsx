@@ -48,6 +48,11 @@ export const KVDBContentEditor: React.FC = () => {
             const showKeyError = (entryTouched?.key || afterSubmit) && !!entryErrors?.key;
             const showValueError = (entryTouched?.value || afterSubmit) && !!entryErrors?.value;
 
+            const textareaRows = Math.min(
+              Math.max(entry.value.split("\n").length, 1),
+              8
+            );
+
             return (
               <div key={index}>
                 {index > 0 && <EuiSpacer size="s" />}
@@ -59,6 +64,7 @@ export const KVDBContentEditor: React.FC = () => {
                       fullWidth
                     >
                       <EuiCompressedFieldText
+                        style={{ height: "37px", padding: "6px 8px" }}
                         placeholder="Key"
                         value={entry.key}
                         onChange={(e) =>
@@ -81,7 +87,6 @@ export const KVDBContentEditor: React.FC = () => {
                       <EuiFlexGroup gutterSize="xs" alignItems="flexStart" responsive={false}>
                         <EuiFlexItem>
                           <EuiCompressedTextArea
-                            style={{ height: "32px", padding: "6px 8px" }}
                             placeholder='Value (text or JSON, e.g. {"action": "executed"})'
                             value={entry.value}
                             onChange={(e) =>
@@ -91,7 +96,7 @@ export const KVDBContentEditor: React.FC = () => {
                               setFieldTouched(`contentEntries[${index}].value`, true)
                             }
                             isInvalid={showValueError}
-                            rows={1}
+                            rows={textareaRows}
                             fullWidth
                           />
                         </EuiFlexItem>
