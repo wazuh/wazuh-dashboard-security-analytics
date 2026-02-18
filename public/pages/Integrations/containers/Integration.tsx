@@ -199,6 +199,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     <>
       {showDeleteModal && (
         <DeleteIntegrationModal
+          integrationID={integrationDetails.document.title}
           integrationName={integrationDetails.document.title}
           detectionRulesCount={integrationDetails.detectionRulesCount} // TODO: refactor to avoid passing this prop
           closeModal={() => setShowDeleteModal(false)}
