@@ -222,7 +222,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
             <em>optional</em>
           </>
         }
-        helpText={isEditMode && "Must contain 0-100 characters."}
+        helpText={isEditMode}
       >
         <EuiCompressedFieldText
           value={integrationDetails?.document.documentation}
