@@ -16,6 +16,8 @@ import {
 import { ContentPanel } from "../../../components/ContentPanel";
 import { KVDBDetailsFlyout } from "../../KVDBs/components/KVDBDetailsFlyout";
 import { formatCellValue } from "../../../utils/helpers";
+import { EuiIcon } from "@elastic/eui";
+import { ROUTES } from "../../../utils/constants";
 
 export interface IntegrationKVDBsProps {
   kvdbs: KVDBTableItem[];
@@ -77,6 +79,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
       {flyoutKvdb && (
         <KVDBDetailsFlyout kvdb={flyoutKvdb} onClose={closeFlyout} />
       )}
+
       <ContentPanel
         title="KVDBs"
         hideHeaderBorder={true}
@@ -93,6 +96,17 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
                 <p>There are no KVDBs associated with this integration.</p>
               </EuiText>
             </EuiFlexItem>
+            {/* TO DO: Create KVDB page*/}
+            <EuiFlexItem grow={false}>
+              <EuiSmallButton
+                fill
+                href={`#${ROUTES.KVDBS_CREATE}`}
+                target="_blank"
+              >
+                Create KVDBs&nbsp;
+                <EuiIcon type={"popout"} />
+              </EuiSmallButton>
+            </EuiFlexItem>
           </EuiFlexGroup>
         ) : (
           <EuiInMemoryTable
@@ -100,10 +114,14 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
             columns={columns}
             loading={loading}
             search={search}
-            pagination={{ initialPageSize: 10, pageSizeOptions: [10, 25, 50] }}
-            sorting={{ sort: { field: "document.title", direction: "asc" } }}
+            pagination={{
+              initialPageSize: 10,
+              pageSizeOptions: [10, 25, 50],
+            }}
+            sorting={{
+              sort: { field: "document.title", direction: "asc" },
+            }}
             message="No KVDBs found."
-
           />
         )}
       </ContentPanel>

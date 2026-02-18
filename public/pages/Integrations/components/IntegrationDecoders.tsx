@@ -16,6 +16,8 @@ import {
 import { ContentPanel } from "../../../components/ContentPanel";
 import { DecoderDetailsFlyout } from "../../Decoders/components/DecoderDetailsFlyout";
 import { formatCellValue } from "../../../utils/helpers";
+import { EuiIcon } from "@elastic/eui";
+import { ROUTES } from "../../../utils/constants";
 
 export interface IntegrationDecodersProps {
   decoders: DecoderTableItem[];
@@ -92,6 +94,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
           onClose={closeFlyout}
         />
       )}
+
       <ContentPanel
         title="Decoders"
         hideHeaderBorder={true}
@@ -108,6 +111,17 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
                 <p>There are no decoders associated with this integration.</p>
               </EuiText>
             </EuiFlexItem>
+
+            <EuiFlexItem grow={false}>
+              <EuiSmallButton
+                fill
+                href={`#${ROUTES.DECODERS_CREATE}`}
+                target="_blank"
+              >
+                Create decoder&nbsp;
+                <EuiIcon type={"popout"} />
+              </EuiSmallButton>
+            </EuiFlexItem>
           </EuiFlexGroup>
         ) : (
           <EuiInMemoryTable
@@ -115,8 +129,13 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
             columns={columns}
             loading={loading}
             search={search}
-            pagination={{ initialPageSize: 10, pageSizeOptions: [10, 25, 50] }}
-            sorting={{ sort: { field: "document.name", direction: "asc" } }}
+            pagination={{
+              initialPageSize: 10,
+              pageSizeOptions: [10, 25, 50],
+            }}
+            sorting={{
+              sort: { field: "document.name", direction: "asc" },
+            }}
             message="No decoders found."
           />
         )}
