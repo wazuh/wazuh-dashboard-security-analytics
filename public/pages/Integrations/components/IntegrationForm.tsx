@@ -15,17 +15,14 @@ import {
   EuiCompressedSuperSelect,
   EuiCompressedTextArea,
   EuiText,
-} from "@elastic/eui";
-import { IntegrationItem } from "../../../../types";
-import React from "react";
-import {
-  LOG_TYPE_NAME_REGEX,
-  validateName,
-} from "../../../utils/validation";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import { useState } from "react";
-import { getIntegrationCategoryOptions } from "../../../utils/helpers";
-import { FormFieldArray } from "../../../components/FormFieldArray";
+} from '@elastic/eui';
+import { IntegrationItem } from '../../../../types';
+import React from 'react';
+import { LOG_TYPE_NAME_REGEX, validateName } from '../../../utils/validation';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { useState } from 'react';
+import { getIntegrationCategoryOptions } from '../../../utils/helpers';
+import { FormFieldArray } from '../../../components/FormFieldArray';
 
 interface ReadOnlyFieldProps {
   value: string | undefined;
@@ -33,16 +30,20 @@ interface ReadOnlyFieldProps {
   isTextArea?: boolean;
 }
 
-const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({ value, placeholder = "-", isTextArea = false }) => (
+const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({
+  value,
+  placeholder = '-',
+  isTextArea = false,
+}) => (
   <EuiText
     size="s"
     style={{
-      minHeight: isTextArea ? "88px" : "32px",
-      padding: isTextArea ? "6px 0" : "6px 0",
-      lineHeight: isTextArea ? "1.5" : "20px",
-      whiteSpace: isTextArea ? "pre-wrap" : "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
+      minHeight: isTextArea ? '88px' : '32px',
+      padding: isTextArea ? '6px 0' : '6px 0',
+      lineHeight: isTextArea ? '1.5' : '20px',
+      whiteSpace: isTextArea ? 'pre-wrap' : 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     }}
   >
     {value || placeholder}
@@ -68,35 +69,31 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   onCancel,
   onConfirm,
 }) => {
-  const [titleError, setTitleError] = useState("");
-  const [categoryError, setCategoryError] = useState("");
+  const [titleError, setTitleError] = useState('');
+  const [categoryError, setCategoryError] = useState('');
   const [categoryTouched, setCategoryTouched] = useState(false);
-  const [authorError, setAuthorError] = useState("");
+  const [authorError, setAuthorError] = useState('');
 
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
     const titleInvalid = !validateName(
       details.document.title,
       LOG_TYPE_NAME_REGEX,
-      false /* shouldTrim */,
+      false /* shouldTrim */
     );
     const authorInvalid = !validateName(
       details.document.author,
       LOG_TYPE_NAME_REGEX,
-      false /* shouldTrim */,
+      false /* shouldTrim */
     );
-    const categoryInvalid =
-      (categoryTouched || onSubmit) && !details.document.category;
-    setTitleError(titleInvalid ? "Invalid title" : "");
-    setCategoryError(categoryInvalid ? "Select category to assign" : "");
-    setAuthorError(authorInvalid ? "Invalid author" : "");
+    const categoryInvalid = (categoryTouched || onSubmit) && !details.document.category;
+    setTitleError(titleInvalid ? 'Invalid title' : '');
+    setCategoryError(categoryInvalid ? 'Select category to assign' : '');
+    setAuthorError(authorInvalid ? 'Invalid author' : '');
 
     return { titleInvalid, categoryInvalid, authorInvalid };
   };
   const onConfirmClicked = () => {
-    const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(
-      integrationDetails,
-      true,
-    );
+    const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(integrationDetails, true);
 
     if (titleInvalid || categoryInvalid || authorInvalid) {
       notifications?.toasts.addDanger({
@@ -116,7 +113,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         label="Title"
         helpText={
           isEditMode &&
-          "Must contain 2-50 characters. Valid characters are a-z, 0-9, hyphens, and underscores"
+          'Must contain 2-50 characters. Valid characters are a-z, 0-9, hyphens, and underscores'
         }
         isInvalid={!!titleError}
         error={titleError}
@@ -146,11 +143,11 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         label={
           isEditMode ? (
             <>
-              {"Description - "}
+              {'Description - '}
               <em>optional</em>
             </>
           ) : (
-            "Description"
+            'Description'
           )
         }
       >
@@ -175,11 +172,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         )}
       </EuiCompressedFormRow>
       <EuiSpacer />
-      <EuiCompressedFormRow
-        label="Category"
-        isInvalid={!!categoryError}
-        error={categoryError}
-      >
+      <EuiCompressedFormRow label="Category" isInvalid={!!categoryError} error={categoryError}>
         {isEditMode ? (
           <EuiCompressedSuperSelect
             options={getIntegrationCategoryOptions().map((option) => ({
@@ -207,7 +200,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       </EuiCompressedFormRow>
       <EuiCompressedFormRow
         label="Author"
-        helpText={isEditMode && "Must contain 2-50 characters."}
+        helpText={isEditMode && 'Must contain 2-50 characters.'}
         isInvalid={!!authorError}
         error={authorError}
       >
@@ -233,7 +226,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       </EuiCompressedFormRow>
       <EuiCompressedFormRow
         label="Documentation"
-        helpText={isEditMode && "Must contain 2-100 characters."}
+        helpText={isEditMode && 'Must contain 2-100 characters.'}
       >
         {isEditMode ? (
           <EuiCompressedFieldText
@@ -260,14 +253,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         <FormFieldArray
           label={
             <>
-              {"References - "}
+              {'References - '}
               <em>optional</em>
             </>
           }
           values={integrationDetails?.document?.references || []}
-          placeholder='https://example.com/reference'
+          placeholder="https://example.com/reference"
           readOnly={false}
-          addButtonLabel='Add reference'
+          addButtonLabel="Add reference"
           onChange={(references) => {
             const newIntegration = {
               ...integrationDetails!,
@@ -283,14 +276,12 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       ) : (
         integrationDetails?.document?.references?.length > 0 && (
           <>
-            <EuiCompressedFormRow label='References'>
-              <EuiText size='s'>
-                <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
-                  {integrationDetails.document.references.map(
-                    (ref: string, index: number) => (
-                      <li key={index}>{ref || "-"}</li>
-                    ),
-                  )}
+            <EuiCompressedFormRow label="References">
+              <EuiText size="s">
+                <ul style={{ paddingLeft: '20px', marginBottom: 0 }}>
+                  {integrationDetails.document.references.map((ref: string, index: number) => (
+                    <li key={index}>{ref || '-'}</li>
+                  ))}
                 </ul>
               </EuiText>
             </EuiCompressedFormRow>
@@ -300,31 +291,26 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       )}
       {isEditMode ? (
         <div style={{ padding: '30px 0px' }}>
-        <EuiBottomBar>
-          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
-            <EuiFlexItem grow={false}>
-              <EuiButtonEmpty
-                color="ghost"
-                size="s"
-                iconType="cross"
-                onClick={onCancel}
-              >
-                Cancel
-              </EuiButtonEmpty>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EuiButton
-                color="primary"
-                fill
-                iconType="check"
-                size="s"
-                onClick={onConfirmClicked}
-              >
-                {confirmButtonText}
-              </EuiButton>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        </EuiBottomBar>
+          <EuiBottomBar>
+            <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
+              <EuiFlexItem grow={false}>
+                <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={onCancel}>
+                  Cancel
+                </EuiButtonEmpty>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiButton
+                  color="primary"
+                  fill
+                  iconType="check"
+                  size="s"
+                  onClick={onConfirmClicked}
+                >
+                  {confirmButtonText}
+                </EuiButton>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiBottomBar>
         </div>
       ) : null}
     </>
