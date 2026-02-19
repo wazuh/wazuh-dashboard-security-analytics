@@ -217,10 +217,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       </EuiCompressedFormRow>
       <EuiCompressedFormRow
         label={
-          <>
-            {"Documentation - "}
-            <em>optional</em>
-          </>
+          isEditMode ? (
+            <>
+              {"Documentation - "}
+              <em>optional</em>
+            </>
+          ) : (
+            "Documentation"
+          )
         }
         helpText={isEditMode}
       >
