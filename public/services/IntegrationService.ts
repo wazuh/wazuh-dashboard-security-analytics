@@ -38,7 +38,7 @@ export default class IntegrationService {
     spaceFilter,
     id,
   }: {
-    spaceFilter?: string;
+    spaceFilter?: string | null;
     id?: string;
   }): Promise<ServerResponse<SearchIntegrationsResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/_search`;

@@ -29,7 +29,7 @@ export class IntegrationStore {
 
   public async getIntegration(
     id: string,
-    spaceFilter?: string
+    spaceFilter?: string | null
   ): Promise<IntegrationWithRules | undefined> {
     const integrationsRes = await this.service.searchIntegrations({ id, spaceFilter });
     if (integrationsRes.ok) {
