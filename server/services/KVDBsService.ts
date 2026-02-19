@@ -9,8 +9,8 @@ import {
   OpenSearchDashboardsResponseFactory,
   RequestHandlerContext,
   ResponseError,
-} from "opensearch-dashboards/server";
-import { ServerResponse } from "../models/types";
+} from 'opensearch-dashboards/server';
+import { ServerResponse } from '../models/types';
 import {
   CreateKVDBPayload,
   KVDBIntegrationsSearchResponse,
@@ -18,27 +18,23 @@ import {
   KVDBSearchRequest,
   KVDBSearchResponse,
   UpdateKVDBPayload,
-} from "../../types";
-import { CLIENT_KVDB_METHODS } from "../utils/constants";
-import { MDSEnabledClientService } from "./MDSEnabledClientService";
+} from '../../types';
+import { CLIENT_KVDB_METHODS } from '../utils/constants';
+import { MDSEnabledClientService } from './MDSEnabledClientService';
 
-const KVDBS_INDEX = ".cti-kvdbs";
-const INTEGRATIONS_INDEX = ".cti-integrations";
+const KVDBS_INDEX = '.cti-kvdbs';
+const INTEGRATIONS_INDEX = '.cti-integrations';
 
 export class KVDBsService extends MDSEnabledClientService {
   searchKVDBs = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<unknown, unknown, KVDBSearchRequest>,
-    response: OpenSearchDashboardsResponseFactory,
-  ): Promise<
-    IOpenSearchDashboardsResponse<
-      ServerResponse<KVDBSearchResponse> | ResponseError
-    >
-  > => {
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<KVDBSearchResponse> | ResponseError>> => {
     try {
       const body = request.body ?? { query: { match_all: {} } };
       const client = this.getClient(request, context);
-      const searchResponse: KVDBSearchResponse = await client("search", {
+      const searchResponse: KVDBSearchResponse = await client('search', {
         index: KVDBS_INDEX,
         body: JSON.stringify(body),
       });
@@ -51,7 +47,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       });
     } catch (error) {
-      console.error("Security Analytics - KVDBsService - searchKVDBs:", error);
+      console.error('Security Analytics - KVDBsService - searchKVDBs:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -64,16 +60,10 @@ export class KVDBsService extends MDSEnabledClientService {
 
   searchIntegrations = async (
     context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest<
-      unknown,
-      unknown,
-      { kvdbIds: string[] }
-    >,
-    response: OpenSearchDashboardsResponseFactory,
+    request: OpenSearchDashboardsRequest<unknown, unknown, { kvdbIds: string[] }>,
+    response: OpenSearchDashboardsResponseFactory
   ): Promise<
-    IOpenSearchDashboardsResponse<
-      ServerResponse<KVDBIntegrationsSearchResponse> | ResponseError
-    >
+    IOpenSearchDashboardsResponse<ServerResponse<KVDBIntegrationsSearchResponse> | ResponseError>
   > => {
     try {
       const { kvdbIds } = request.body ?? { kvdbIds: [] };
@@ -88,20 +78,17 @@ export class KVDBsService extends MDSEnabledClientService {
       }
 
       const client = this.getClient(request, context);
-      const searchResponse: KVDBIntegrationsSearchResponse = await client(
-        "search",
-        {
-          index: INTEGRATIONS_INDEX,
-          body: JSON.stringify({
-            size: kvdbIds.length,
-            query: {
-              terms: {
-                "document.kvdbs": kvdbIds,
-              },
+      const searchResponse: KVDBIntegrationsSearchResponse = await client('search', {
+        index: INTEGRATIONS_INDEX,
+        body: JSON.stringify({
+          size: kvdbIds.length,
+          query: {
+            terms: {
+              'document.kvdbs': kvdbIds,
             },
-          }),
-        },
-      );
+          },
+        }),
+      });
 
       return response.custom({
         statusCode: 200,
@@ -111,10 +98,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       });
     } catch (error) {
-      console.error(
-        "Security Analytics - KVDBsService - searchIntegrations:",
-        error,
-      );
+      console.error('Security Analytics - KVDBsService - searchIntegrations:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -128,12 +112,8 @@ export class KVDBsService extends MDSEnabledClientService {
   createKVDB = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest,
-    response: OpenSearchDashboardsResponseFactory,
-  ): Promise<
-    IOpenSearchDashboardsResponse<
-      ServerResponse<{ id: string }> | ResponseError
-    >
-  > => {
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<{ id: string }> | ResponseError>> => {
     try {
       const body = request.body as CreateKVDBPayload;
       const client = this.getClient(request, context);
@@ -144,7 +124,7 @@ export class KVDBsService extends MDSEnabledClientService {
           statusCode: 200,
           body: {
             ok: false,
-            error: "KVDB resource is required",
+            error: 'KVDB resource is required',
           },
         });
       }
@@ -156,10 +136,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       };
 
-      const createResponse = await client(
-        CLIENT_KVDB_METHODS.CREATE_KVDB,
-        createBody,
-      );
+      const createResponse = await client(CLIENT_KVDB_METHODS.CREATE_KVDB, createBody);
 
       return response.custom({
         statusCode: 200,
@@ -169,7 +146,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       });
     } catch (error) {
-      console.error("Security Analytics - KVDBsService - createKVDB:", error);
+      console.error('Security Analytics - KVDBsService - createKVDB:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -183,10 +160,8 @@ export class KVDBsService extends MDSEnabledClientService {
   updateKVDB = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<{ kvdbId: string }>,
-    response: OpenSearchDashboardsResponseFactory,
-  ): Promise<
-    IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>
-  > => {
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
     try {
       const { kvdbId } = request.params;
       const body = request.body as UpdateKVDBPayload;
@@ -198,7 +173,7 @@ export class KVDBsService extends MDSEnabledClientService {
           statusCode: 200,
           body: {
             ok: false,
-            error: "KVDB resource is required",
+            error: 'KVDB resource is required',
           },
         });
       }
@@ -210,10 +185,7 @@ export class KVDBsService extends MDSEnabledClientService {
         kvdbId: kvdbId,
       };
 
-      const updateResponse = await client(
-        CLIENT_KVDB_METHODS.UPDATE_KVDB,
-        updateBody,
-      );
+      const updateResponse = await client(CLIENT_KVDB_METHODS.UPDATE_KVDB, updateBody);
 
       return response.custom({
         statusCode: 200,
@@ -223,7 +195,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       });
     } catch (error) {
-      console.error("Security Analytics - KVDBsService - updateKVDB:", error);
+      console.error('Security Analytics - KVDBsService - updateKVDB:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -237,10 +209,8 @@ export class KVDBsService extends MDSEnabledClientService {
   deleteKVDB = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<{ kvdbId: string }>,
-    response: OpenSearchDashboardsResponseFactory,
-  ): Promise<
-    IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>
-  > => {
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
     try {
       const { kvdbId } = request.params;
       const client = this.getClient(request, context);
@@ -256,7 +226,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       });
     } catch (error) {
-      console.error("Security Analytics - KVDBsService - deleteKVDB:", error);
+      console.error('Security Analytics - KVDBsService - deleteKVDB:', error);
       return response.custom({
         statusCode: 200,
         body: {

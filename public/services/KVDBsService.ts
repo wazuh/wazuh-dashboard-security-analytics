@@ -1,9 +1,9 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
-import { HttpSetup } from "opensearch-dashboards/public";
+import { HttpSetup } from 'opensearch-dashboards/public';
 import {
   CreateKVDBPayload,
   CUDKVDBResponse,
@@ -12,17 +12,15 @@ import {
   KVDBSearchResponse,
   ServerResponse,
   UpdateKVDBPayload,
-} from "../../types";
-import { API } from "../../server/utils/constants";
+} from '../../types';
+import { API } from '../../server/utils/constants';
 
 export default class KVDBsService {
   private readonly baseUrl: string = `..${API.KVDBS_BASE}`;
 
   constructor(private httpClient: HttpSetup) {}
 
-  searchKVDBs = async (
-    params: KVDBSearchRequest,
-  ): Promise<ServerResponse<KVDBSearchResponse>> => {
+  searchKVDBs = async (params: KVDBSearchRequest): Promise<ServerResponse<KVDBSearchResponse>> => {
     const url = `${this.baseUrl}/_search`;
     return (await this.httpClient.post(url, {
       body: JSON.stringify(params ?? {}),
@@ -30,7 +28,7 @@ export default class KVDBsService {
   };
 
   searchIntegrations = async (
-    kvdbIds: string[],
+    kvdbIds: string[]
   ): Promise<ServerResponse<KVDBIntegrationsSearchResponse>> => {
     const url = `${this.baseUrl}/_integrations`;
     return (await this.httpClient.post(url, {
@@ -47,7 +45,7 @@ export default class KVDBsService {
 
   updateKVDB = async (
     kvdbId: string,
-    body: UpdateKVDBPayload,
+    body: UpdateKVDBPayload
   ): Promise<ServerResponse<CUDKVDBResponse>> => {
     const url = `${this.baseUrl}/${kvdbId}`;
     return await this.httpClient.put(url, {
@@ -55,9 +53,7 @@ export default class KVDBsService {
     });
   };
 
-  deleteKVDB = async (
-    kvdbId: string,
-  ): Promise<ServerResponse<CUDKVDBResponse>> => {
+  deleteKVDB = async (kvdbId: string): Promise<ServerResponse<CUDKVDBResponse>> => {
     const url = `${this.baseUrl}/${kvdbId}`;
     return await this.httpClient.delete(url, {});
   };

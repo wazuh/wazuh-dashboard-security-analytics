@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React from "react";
+import React from 'react';
 import {
   EuiButtonEmpty,
   EuiButtonIcon,
@@ -15,9 +15,9 @@ import {
   EuiSpacer,
   EuiText,
   EuiToolTip,
-} from "@elastic/eui";
-import { FieldArray, FormikErrors, FormikTouched, useFormikContext } from "formik";
-import { KVDBFormModel } from "./mappers";
+} from '@elastic/eui';
+import { FieldArray, FormikErrors, FormikTouched, useFormikContext } from 'formik';
+import { KVDBFormModel } from './mappers';
 
 export interface ContentEntry {
   key: string;
@@ -25,8 +25,9 @@ export interface ContentEntry {
 }
 
 export const KVDBContentEditor: React.FC = () => {
-  const { values, errors, touched, setFieldValue, setFieldTouched, submitCount } =
-    useFormikContext<KVDBFormModel>();
+  const { values, errors, touched, setFieldValue, setFieldTouched, submitCount } = useFormikContext<
+    KVDBFormModel
+  >();
 
   const contentErrors = errors.contentEntries as FormikErrors<ContentEntry>[] | undefined;
   const contentTouched = touched.contentEntries as FormikTouched<ContentEntry>[] | undefined;
@@ -48,15 +49,12 @@ export const KVDBContentEditor: React.FC = () => {
             const showKeyError = (entryTouched?.key || afterSubmit) && !!entryErrors?.key;
             const showValueError = (entryTouched?.value || afterSubmit) && !!entryErrors?.value;
 
-            const textareaRows = Math.min(
-              Math.max(entry.value.split("\n").length, 1),
-              8
-            );
+            const textareaRows = Math.min(Math.max(entry.value.split('\n').length, 1), 8);
 
             return (
               <div key={index}>
                 {index > 0 && <EuiSpacer size="s" />}
-                <EuiFlexGroup alignItems="flexStart" gutterSize="s" responsive={false} >
+                <EuiFlexGroup alignItems="flexStart" gutterSize="s" responsive={false}>
                   <EuiFlexItem grow={3}>
                     <EuiFormRow
                       isInvalid={showKeyError}
@@ -64,15 +62,13 @@ export const KVDBContentEditor: React.FC = () => {
                       fullWidth
                     >
                       <EuiCompressedFieldText
-                        style={{ height: "37px", padding: "6px 8px" }}
+                        style={{ height: '37px', padding: '6px 8px' }}
                         placeholder="Key"
                         value={entry.key}
                         onChange={(e) =>
                           setFieldValue(`contentEntries[${index}].key`, e.target.value)
                         }
-                        onBlur={() =>
-                          setFieldTouched(`contentEntries[${index}].key`, true)
-                        }
+                        onBlur={() => setFieldTouched(`contentEntries[${index}].key`, true)}
                         isInvalid={showKeyError}
                         fullWidth
                       />
@@ -92,9 +88,7 @@ export const KVDBContentEditor: React.FC = () => {
                             onChange={(e) =>
                               setFieldValue(`contentEntries[${index}].value`, e.target.value)
                             }
-                            onBlur={() =>
-                              setFieldTouched(`contentEntries[${index}].value`, true)
-                            }
+                            onBlur={() => setFieldTouched(`contentEntries[${index}].value`, true)}
                             isInvalid={showValueError}
                             rows={textareaRows}
                             fullWidth
@@ -120,7 +114,11 @@ export const KVDBContentEditor: React.FC = () => {
             );
           })}
           <EuiSpacer size="s" />
-          <EuiButtonEmpty size="s" iconType="plusInCircle" onClick={() => push({ key: "", value: "" })}>
+          <EuiButtonEmpty
+            size="s"
+            iconType="plusInCircle"
+            onClick={() => push({ key: '', value: '' })}
+          >
             Add
           </EuiButtonEmpty>
         </div>

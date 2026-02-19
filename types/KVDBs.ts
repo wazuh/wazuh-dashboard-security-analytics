@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 export interface KVDBDocument {
   id: string;
@@ -60,7 +60,7 @@ export interface KVDBItem extends KVDBSource {
 export interface KVDBSearchRequest {
   from?: number;
   size?: number;
-  sort?: Array<Record<string, { order: "asc" | "desc" }>>;
+  sort?: Array<Record<string, { order: 'asc' | 'desc' }>>;
   query?: Record<string, unknown>;
   _source?: Record<string, unknown> | string[] | boolean;
   track_total_hits?: boolean;

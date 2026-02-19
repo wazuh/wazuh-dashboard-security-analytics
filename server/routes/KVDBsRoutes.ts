@@ -1,13 +1,13 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
-import { IRouter } from "opensearch-dashboards/server";
-import { schema } from "@osd/config-schema";
-import { NodeServices } from "../models/interfaces";
-import { API } from "../utils/constants";
-import { createQueryValidationSchema } from "../utils/helpers";
+import { IRouter } from 'opensearch-dashboards/server';
+import { schema } from '@osd/config-schema';
+import { NodeServices } from '../models/interfaces';
+import { API } from '../utils/constants';
+import { createQueryValidationSchema } from '../utils/helpers';
 
 const kvdbCreateResourceSchema = schema.object({
   title: schema.string(),
@@ -40,7 +40,7 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.searchKVDBs,
+    kvdbsService.searchKVDBs
   );
 
   router.post(
@@ -51,7 +51,7 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.searchIntegrations,
+    kvdbsService.searchIntegrations
   );
 
   router.post(
@@ -65,7 +65,7 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.createKVDB,
+    kvdbsService.createKVDB
   );
 
   router.put(
@@ -81,7 +81,7 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.updateKVDB,
+    kvdbsService.updateKVDB
   );
 
   router.delete(
@@ -94,6 +94,6 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.deleteKVDB,
+    kvdbsService.deleteKVDB
   );
 }

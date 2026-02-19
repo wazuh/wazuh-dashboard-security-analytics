@@ -74,7 +74,7 @@ import { CreateIntegration } from '../Integrations/containers/CreateIntegration'
 import Decoders from '../Decoders';
 import { KVDBs } from '../KVDBs/containers/KVDBs';
 import { KVDBFormPage } from '../KVDBs/containers/KVDBFormPage';
-import { LogTest } from "../LogTest/containers/LogTest";
+import { LogTest } from '../LogTest/containers/LogTest';
 import {
   DataSourceContextType,
   DateTimeFilter,
@@ -120,10 +120,10 @@ enum Navigation {
   // Insights = "Insights",
   Detection = 'Detection',
   // Wazuh
-  Normalization = "Normalization",
-  Decoders = "Decoders",
-  KVDBS = "KVDBs",
-  LogTest = "Log test",
+  Normalization = 'Normalization',
+  Decoders = 'Decoders',
+  KVDBS = 'KVDBs',
+  LogTest = 'Log test',
 }
 
 /**
@@ -1168,10 +1168,7 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.LOG_TEST}
                                       render={(props: RouteComponentProps) => (
-                                        <LogTest
-                                          {...props}
-                                          notifications={core?.notifications}
-                                        />
+                                        <LogTest {...props} notifications={core?.notifications} />
                                       )}
                                     />
                                     {THREAT_INTEL_ENABLED && (
