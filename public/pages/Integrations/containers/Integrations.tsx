@@ -173,9 +173,12 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     setSelectedItems(selectedItems);
   };
 
-  const showIntegrationDetails = useCallback((id: string) => {
-    history.push(`${ROUTES.INTEGRATIONS}/${id}`);
-  }, []);
+  const showIntegrationDetails = useCallback(
+    (id: string) => {
+      history.push(`${ROUTES.INTEGRATIONS}/${id}?space=${spaceFilter}`);
+    },
+    [spaceFilter]
+  );
 
   const createIntegrationAction = (
     <EuiSmallButton fill={true} onClick={() => history.push(ROUTES.INTEGRATIONS_CREATE)}>

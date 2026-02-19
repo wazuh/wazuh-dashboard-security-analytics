@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { RouteComponentProps, useParams } from 'react-router-dom';
+import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
 import { IntegrationItem } from '../../../../types';
 import {
   EuiSmallButtonIcon,
@@ -44,6 +44,9 @@ export interface IntegrationProps extends RouteComponentProps {
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
   const { integrationId } = useParams<{ integrationId: string }>();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const space = searchParams.get('space') || 'standard';
   const [selectedTabId, setSelectedTabId] = useState('details');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [infoText, setInfoText] = useState<React.ReactNode | string>(
@@ -93,7 +96,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
 
   useEffect(() => {
     const getIntegrationDetails = async () => {
-      const details = await DataStore.integrations.getIntegration(integrationId);
+      const details = await DataStore.integrations.getIntegration(integrationId, space);
 
       if (!details) {
         setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
@@ -109,7 +112,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     };
 
     getIntegrationDetails();
-  }, []);
+  }, [space]);
 
   const refreshRules = useCallback(() => {
     updateRules(integrationDetails!, initialIntegrationDetails!);

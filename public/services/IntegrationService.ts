@@ -42,19 +42,44 @@ export default class IntegrationService {
     id?: string;
   }): Promise<ServerResponse<SearchIntegrationsResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/_search`;
-    const query = id
-      ? {
-          terms: { _id: [id] },
-        }
-      : {
-          bool: {
-            must: {
-              query_string: {
-                query: `space.name:${spaceFilter ? spaceFilter : '*'}`,
+    let query;
+
+    if (id && spaceFilter) {
+      // When both id and spaceFilter are provided, use bool query with must clauses
+      query = {
+        bool: {
+          must: [
+            {
+              match: {
+                'document.id': id,
               },
             },
+            {
+              match: {
+                'space.name': spaceFilter,
+              },
+            },
+          ],
+        },
+      };
+    } else if (id) {
+      // Only id provided - search by id only
+      query = {
+        terms: { _id: [id] },
+      };
+    } else {
+      // Only spaceFilter provided - search by space
+      query = {
+        bool: {
+          must: {
+            query_string: {
+              query: `space.name:${spaceFilter ? spaceFilter : '*'}`,
+            },
           },
-        };
+        },
+      };
+    }
+
     const queryString = JSON.stringify(query);
     return (await this.httpClient.post(url, {
       body: queryString,

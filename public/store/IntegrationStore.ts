@@ -27,8 +27,11 @@ import { getIntegrationLabel } from '../pages/Integrations/utils/helpers';
 export class IntegrationStore {
   constructor(private service: IntegrationService, private notifications: NotificationsStart) {}
 
-  public async getIntegration(id: string): Promise<IntegrationWithRules | undefined> {
-    const integrationsRes = await this.service.searchIntegrations({ id });
+  public async getIntegration(
+    id: string,
+    spaceFilter?: string
+  ): Promise<IntegrationWithRules | undefined> {
+    const integrationsRes = await this.service.searchIntegrations({ id, spaceFilter });
     if (integrationsRes.ok) {
       const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
         return {
