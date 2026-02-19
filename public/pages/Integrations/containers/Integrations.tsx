@@ -58,8 +58,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   };
 
   const deleteIntegration = async (id: string) => {
-    const deleteSucceeded = await DataStore.integrations.deleteIntegration(id);
-    if (deleteSucceeded) {
+    const { ok } = await DataStore.integrations.deleteIntegration(id);
+    
+    if (ok) {
       successNotificationToast(notifications, 'deleted', 'integration');
       getIntegrations();
     }

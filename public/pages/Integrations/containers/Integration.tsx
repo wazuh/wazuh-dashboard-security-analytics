@@ -6,8 +6,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RouteComponentProps, useParams } from 'react-router-dom';
 import { IntegrationItem } from '../../../../types';
+import { AllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
 import {
-  EuiSmallButtonIcon,
+  EuiSmallButton,
   EuiDescriptionList,
   EuiFlexGroup,
   EuiFlexItem,
@@ -17,7 +18,10 @@ import {
   EuiTab,
   EuiTabs,
   EuiTitle,
-  EuiToolTip,
+  EuiPopover,
+  EuiContextMenuPanel,
+  EuiContextMenuItem,
+  EuiHorizontalRule,
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -46,6 +50,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   const { integrationId } = useParams<{ integrationId: string }>();
   const [selectedTabId, setSelectedTabId] = useState('details');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [infoText, setInfoText] = useState<React.ReactNode | string>(
     <>
       Loading details &nbsp;
@@ -172,23 +177,110 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   };
 
   const deleteIntegration = async () => {
-    const deleteSucceeded = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
-    if (deleteSucceeded) {
+    const { ok } = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
+    
+    if (ok) {
       successNotificationToast(notifications, 'deleted', 'integration');
       history.push(ROUTES.INTEGRATIONS);
-    } else {
-      errorNotificationToast(notifications, 'delete', 'integration');
     }
   };
 
-  const deleteAction = (
-    <EuiToolTip content="Delete" position="bottom">
-      <EuiSmallButtonIcon
-        iconType={'trash'}
-        color="danger"
-        onClick={() => setShowDeleteModal(true)}
+  const toggleActionsMenu = () => {
+    setIsActionsMenuOpen(!isActionsMenuOpen);
+  };
+
+  const closeActionsPopover = () => {
+    setIsActionsMenuOpen(false);
+  };
+
+  const spaceName = integrationDetails?.space.name.toLowerCase() ?? '';
+  const allowedActions = AllowedActionsBySpace[spaceName] ?? [];
+  const isEditDisabled = !allowedActions.includes(SPACE_ACTIONS.EDIT);
+  const isDeleteDisabled = !allowedActions.includes(SPACE_ACTIONS.DELETE);
+
+
+  const actionsButton = (
+    <EuiPopover
+      id={'integrationsActionsPopover'}
+      button={
+        <EuiSmallButton
+          iconType={'arrowDown'}
+          iconSide={'right'}
+          onClick={toggleActionsMenu}
+          data-test-subj={'integrationsActionsButton'}
+        >
+          Actions
+        </EuiSmallButton>
+      }
+      isOpen={isActionsMenuOpen}
+      closePopover={closeActionsPopover}
+      panelPaddingSize={'none'}
+      anchorPosition={'downLeft'}
+      data-test-subj={'integrationsActionsPopover'}
+    >
+      <EuiContextMenuPanel
+        size="s"
+        items={[
+          <EuiContextMenuItem
+            key={'createRule'}
+            href={"detection_rules#/create-rule"}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createRuleButton'}
+          >
+            Create rule
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
+            key={'createDecoder'}
+            href={"decoders#/create-decoder"}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createDecoderButton'}
+          >
+            Create decoder
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
+            key={'createKVDB'}
+            href={"kvdbs#/create-kvdb"}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createKVDBButton'}
+          >
+            Create KVDB
+          </EuiContextMenuItem>,
+          <EuiHorizontalRule margin="xs" />,
+          <EuiContextMenuItem
+            key={'Edit'}
+            onClick={() => {
+              closeActionsPopover();
+              setIsEditMode(true);
+              setSelectedTabId('details');
+            }}
+            disabled={isEditDisabled}
+            data-test-subj={'editIntegrationButton'}
+          >
+            Edit
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
+            key={'Delete'}
+            onClick={() => {
+              closeActionsPopover();
+              setShowDeleteModal(true);
+            }}
+            data-test-subj={'deleteIntegrationButton'}
+            disabled={isDeleteDisabled}
+          >
+            Delete
+          </EuiContextMenuItem>,
+        ]}
       />
-    </EuiToolTip>
+    </EuiPopover>
   );
 
   return !integrationDetails ? (
@@ -205,15 +297,22 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           onConfirm={deleteIntegration}
         />
       )}
-      <PageHeader appRightControls={[{ renderComponent: deleteAction }]}>
-        <EuiFlexGroup justifyContent="spaceBetween">
+      <PageHeader appRightControls={[{ renderComponent: actionsButton }]}>
+        <EuiFlexGroup>
           <EuiFlexItem>
             <EuiTitle>
               <h1>{integrationDetails.document.title}</h1>
             </EuiTitle>
           </EuiFlexItem>
-          <EuiFlexItem grow={false}>{deleteAction}</EuiFlexItem>
+          <EuiFlexItem>
+            <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
+              <EuiFlexItem grow={false}>
+                {actionsButton}
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiFlexItem>
         </EuiFlexGroup>
+        <EuiSpacer size="m" />
       </PageHeader>
       <EuiSpacer />
       <EuiPanel grow={false}>
