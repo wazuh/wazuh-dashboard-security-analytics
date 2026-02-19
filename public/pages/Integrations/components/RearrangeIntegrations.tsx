@@ -10,8 +10,9 @@ import {
   EuiFlexItem,
   EuiFieldNumber,
   EuiFlyout,
-  EuiFlyoutHeader,
   EuiFlyoutBody,
+  EuiFlyoutHeader,
+  EuiFlyoutFooter,
   EuiIcon,
   EuiOverlayMask,
   EuiText,
@@ -95,18 +96,7 @@ const RearrangeItem: RearrangeItemsProps = (
   );
 };
 
-const SKIP_FIELD = '___SKIP___';
-const integrationSourceDocumentFieldsUIWithSkipField = [
-  'title',
-  'category',
-  SKIP_FIELD,
-  'decoders',
-  'kvdbs',
-  'rules',
-];
-const integrationSourceDocumentFieldsUI = integrationSourceDocumentFieldsUIWithSkipField.filter(
-  (field) => field !== SKIP_FIELD
-); // specify which fields from the integration document to show in the UI
+const integrationSourceDocumentFieldsUI = ['title', 'category', 'decoders', 'kvdbs', 'rules'];
 const integrationSourceDocumentFields = ['id', ...integrationSourceDocumentFieldsUI];
 
 const integrationSourceDocumentFieldsUIMapperLabel = {
@@ -132,6 +122,7 @@ function getDocumentField(field: string) {
 }
 
 interface RearrangeIntegrationsViewProps {
+  prependRearrangeItems?: React.ReactNode;
   policyDocumentData: any;
   policyEnhancedData: any;
   space: Space;
@@ -146,6 +137,7 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
   space,
   notifications,
   setHasModifications,
+  prependRearrangeItems = null,
 }) => {
   const integrations = useMemo(
     () =>
@@ -180,16 +172,11 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
     setHasModifications(areIntegrationsInOrder);
   }, [areIntegrationsInOrder]);
 
-  console.log(integrations.map((integration) => integration.id));
-  console.log(rearrangedIntegrations.map((integration) => integration.id));
-  console.log(areIntegrationsInOrder);
-
   const onConfirmEnhanced = async () => {
     const payload = {
       ...policyDocumentData,
       integrations: rearrangedIntegrations.map((integration) => integration.id),
     };
-    console.log({ payload });
     const [success] = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
 
     if (success) {
@@ -200,20 +187,24 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
 
   return (
     <>
-      <RearrangeItems
-        items={rearrangedIntegrations}
-        onChange={setRearrangedIntegrations}
-        droppableProps={{ spacing: 'm' }}
-        renderItem={RearrangeItem}
-      />
-      <EuiSpacer size="m" />
-      <EuiFlexGroup justifyContent="flexEnd" gutterSize="m">
-        <EuiFlexItem grow={false}>
-          <EuiButton fill={true} onClick={onConfirmEnhanced} isDisabled={areIntegrationsInOrder}>
-            Rearrange
-          </EuiButton>
-        </EuiFlexItem>
-      </EuiFlexGroup>
+      <EuiFlyoutBody>
+        {prependRearrangeItems}
+        <RearrangeItems
+          items={rearrangedIntegrations}
+          onChange={setRearrangedIntegrations}
+          draggableProps={{ spacing: 's' }}
+          renderItem={RearrangeItem}
+        />
+      </EuiFlyoutBody>
+      <EuiFlyoutFooter>
+        <EuiFlexGroup justifyContent="flexEnd" gutterSize="m">
+          <EuiFlexItem grow={false}>
+            <EuiButton fill={true} onClick={onConfirmEnhanced} isDisabled={areIntegrationsInOrder}>
+              Rearrange
+            </EuiButton>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiFlyoutFooter>
     </>
   );
 };
@@ -247,21 +238,21 @@ export const RearrangeIntegrations: React.FC<RearrangeIntegrationsProps> = ({
       <EuiFlyout onClose={onFlyoutClose} ownFocus>
         <EuiFlyoutHeader hasBorder={true}>
           <EuiText size="s">
-            <h2>Rearrange Integrations</h2>
+            <h2>Rearrange Integrations - {space} space</h2>
           </EuiText>
         </EuiFlyoutHeader>
-        <EuiFlyoutBody>
-          <EuiText>
-            Rearrange the integrations for <b>{space}</b>
-          </EuiText>
-          <EuiSpacer></EuiSpacer>
-          <RearrangeIntegrationWithData
-            space={space}
-            onConfirm={onClose}
-            notifications={notifications}
-            setHasModifications={setCanClose}
-          />
-        </EuiFlyoutBody>
+        <RearrangeIntegrationWithData
+          prependRearrangeItems={
+            <>
+              <EuiText>Define the order of the integrations in the space.</EuiText>
+              <EuiSpacer></EuiSpacer>
+            </>
+          }
+          space={space}
+          onConfirm={onClose}
+          notifications={notifications}
+          setHasModifications={setCanClose}
+        />
       </EuiFlyout>
       {canNotCloseIsOpen && (
         <EuiOverlayMask>
