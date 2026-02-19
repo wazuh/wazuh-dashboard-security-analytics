@@ -4,4 +4,4 @@
  */
 
 export { IntegrationComboBox } from './IntegrationComboBox';
-export { useIntegrationSelector, type IntegrationOption } from './useIntegrationSelector';
+export { useIntegrationSelector, IntegrationOption } from './useIntegrationSelector';

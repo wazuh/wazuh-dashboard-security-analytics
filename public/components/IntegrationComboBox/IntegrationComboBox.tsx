@@ -3,12 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  EuiCallOut,
-  EuiCompressedComboBox,
-  EuiCompressedFormRow,
-  EuiSpacer,
-} from '@elastic/eui';
+import { EuiCallOut, EuiCompressedComboBox, EuiCompressedFormRow, EuiSpacer } from '@elastic/eui';
 import React from 'react';
 import FormFieldHeader from '../FormFieldHeader';
 import { getLogTypeLabel } from '../../pages/LogTypes/utils/helpers';
