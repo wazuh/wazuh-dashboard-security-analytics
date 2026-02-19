@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   EuiButton,
+  EuiCallOut,
   EuiConfirmModal,
   EuiDescriptionListTitle,
   EuiDescriptionListDescription,
-  EuiPanel,
   EuiFlexGroup,
   EuiFlexGrid,
   EuiFlexItem,
@@ -15,15 +15,18 @@ import {
   EuiFlyoutFooter,
   EuiIcon,
   EuiOverlayMask,
+  EuiPanel,
   EuiText,
   EuiSpacer,
 } from '@elastic/eui';
 import { get } from 'lodash';
+import { compose } from 'redux';
 import { RearrangeItems, RearrangeItemsProps } from './Rearrange';
 import { withPolicyGuard } from './PolicyInfo';
 import { Space } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { successNotificationToast } from '../../../utils/helpers';
+import { withGuard } from '../utils/helpers';
 
 const RearrageItemAttribute: React.FC<{ title: string; description: any }> = ({ field, value }) => (
   <>
@@ -211,9 +214,27 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
 
 export type RearrangeIntegrationWithDataProps = RearrangeIntegrationsViewProps;
 
-const RearrangeIntegrationWithData: React.FC<RearrangeIntegrationWithDataProps> = withPolicyGuard({
-  includeIntegrationFields: integrationSourceDocumentFields.map((field) => getDocumentField(field)),
-})(RearrangeIntegrationsBody);
+const RearrangeIntegrationWithData: React.FC<RearrangeIntegrationWithDataProps> = compose(
+  withPolicyGuard({
+    includeIntegrationFields: integrationSourceDocumentFields.map((field) =>
+      getDocumentField(field)
+    ),
+  }),
+  withGuard(
+    (props) => !Boolean(props.policyDocumentData?.integrations?.length),
+    () => (
+      <EuiFlyoutBody>
+        <EuiCallOut
+          title="No integrations are available to rearrange in this space"
+          iconType="iInCircle"
+          color="primary"
+        >
+          Add integrations to enable the rearrange functionality.
+        </EuiCallOut>
+      </EuiFlyoutBody>
+    )
+  )
+)(RearrangeIntegrationsBody);
 
 export type RearrangeIntegrationsProps = RearrangeIntegrationWithDataProps & {
   onClose: () => void;
@@ -238,7 +259,7 @@ export const RearrangeIntegrations: React.FC<RearrangeIntegrationsProps> = ({
       <EuiFlyout onClose={onFlyoutClose} ownFocus>
         <EuiFlyoutHeader hasBorder={true}>
           <EuiText size="s">
-            <h2>Rearrange Integrations - {space} space</h2>
+            <h2>Rearrange integrations - {space} space</h2>
           </EuiText>
         </EuiFlyoutHeader>
         <RearrangeIntegrationWithData
