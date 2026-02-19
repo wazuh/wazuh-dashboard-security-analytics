@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
+  EuiConfirmModal,
   EuiContextMenuItem,
   EuiContextMenuPanel,
   EuiFlexGroup,
@@ -18,19 +19,29 @@ import {
   EuiSpacer,
   EuiText,
 } from '@elastic/eui';
+import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
+import {
+  errorNotificationToast,
+  formatCellValue,
+  setBreadcrumbs,
+  successNotificationToast,
+} from '../../../utils/helpers';
 import { KVDBS_PAGE_SIZE, KVDBS_SEARCH_SCHEMA, KVDBS_SORT_FIELD } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 
-export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
+interface KVDBsProps extends RouteComponentProps {
+  notifications: NotificationsStart;
+}
+
+export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -39,12 +50,15 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [searchQuery, setSearchQuery] = useState<any>(null);
-  const [refreshTick, setRefreshTick] = useState(0);
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
   const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [kvdbToDelete, setKvdbToDelete] = useState<string | null>(null);
+  const [selectedItems, setSelectedItems] = useState<KVDBItem[]>([]);
 
   const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
+  const isDeleteActionAllowed = actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
@@ -56,7 +70,6 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
       query = { match_all: {} };
     }
 
-    // Add space filter if it is selected
     if (spaceFilter) {
       query = {
         bool: {
@@ -70,15 +83,7 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
 
   const fetchKVDBs = useCallback(async () => {
     setLoading(true);
-    const sort = sortField
-      ? [
-          {
-            [sortField]: {
-              order: sortDirection,
-            },
-          },
-        ]
-      : undefined;
+    const sort = sortField ? [{ [sortField]: { order: sortDirection } }] : undefined;
 
     try {
       const response = await DataStore.kvdbs.searchKVDBs({
@@ -94,7 +99,7 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, sortField, sortDirection, buildQuery, refreshTick]);
+  }, [pageIndex, pageSize, sortField, sortDirection, buildQuery]);
 
   useEffect(() => {
     fetchKVDBs();
@@ -117,6 +122,57 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
     setPageIndex(0);
   };
 
+  const deleteKVDB = useCallback((kvdbId: string) => {
+    setKvdbToDelete(kvdbId);
+    setIsDeleteModalVisible(true);
+  }, []);
+
+  const deleteSelectedKVDBs = useCallback(() => {
+    setKvdbToDelete(null);
+    setIsDeleteModalVisible(true);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!kvdbToDelete && selectedItems.length === 0) return;
+    setLoading(true);
+    setIsDeleteModalVisible(false);
+    try {
+      let response;
+      if (kvdbToDelete) {
+        response = await DataStore.kvdbs.deleteKVDB(kvdbToDelete);
+      } else {
+        const responses = await Promise.all(
+          selectedItems.map((item) => DataStore.kvdbs.deleteKVDB(item.id))
+        );
+        response = responses.every((r) => r !== undefined) ? responses : undefined;
+      }
+
+      if (response !== undefined) {
+        successNotificationToast(
+          notifications,
+          'delete',
+          kvdbToDelete ? 'KVDB' : 'KVDBs',
+          kvdbToDelete
+            ? 'The KVDB has been deleted successfully.'
+            : 'The selected KVDBs have been deleted successfully.'
+        );
+      }
+
+      setSelectedItems([]);
+      await fetchKVDBs();
+    } catch {
+      errorNotificationToast(
+        notifications,
+        'delete',
+        'KVDB',
+        'An error occurred while deleting. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+      setKvdbToDelete(null);
+    }
+  }, [kvdbToDelete, selectedItems, notifications, fetchKVDBs]);
+
   const pagination = useMemo(
     () => ({
       pageIndex,
@@ -127,15 +183,42 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
     [pageIndex, pageSize, totalItemCount]
   );
 
-  const sorting = useMemo(
-    () => ({
-      sort: {
-        field: sortField,
-        direction: sortDirection,
-      },
-    }),
-    [sortField, sortDirection]
-  );
+  const sorting = useMemo(() => ({ sort: { field: sortField, direction: sortDirection } }), [
+    sortField,
+    sortDirection,
+  ]);
+
+  const menuItems = [
+    <EuiContextMenuItem
+      key="create"
+      icon="plusInCircle"
+      href={`#${ROUTES.KVDBS_CREATE}`}
+      disabled={isCreateActionDisabled}
+      toolTipContent={
+        isCreateActionDisabled ? `Cannot create KVDBs in the ${spaceFilter} space.` : undefined
+      }
+    >
+      Create
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="delete"
+      icon="trash"
+      onClick={() => {
+        deleteSelectedKVDBs();
+        setActionsPopoverOpen(false);
+      }}
+      disabled={selectedItems.length === 0 || !isDeleteActionAllowed}
+      toolTipContent={
+        !isDeleteActionAllowed
+          ? `Cannot delete KVDBs in the ${spaceFilter} space.`
+          : selectedItems.length === 0
+          ? 'Select KVDBs to delete'
+          : undefined
+      }
+    >
+      Delete selected ({selectedItems.length})
+    </EuiContextMenuItem>,
+  ];
 
   const columns: Array<EuiBasicTableColumn<KVDBItem>> = useMemo(
     () => [
@@ -176,16 +259,51 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
             onClick: (item: KVDBItem) => history.push(`${ROUTES.KVDBS_EDIT}/${item.id}`),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT),
           },
+          {
+            name: 'Delete',
+            description: 'Delete KVDB',
+            type: 'icon',
+            icon: 'trash',
+            color: 'danger',
+            onClick: (item: KVDBItem) => deleteKVDB(item.id),
+            available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
+          },
         ],
       },
     ],
-    [spaceFilter, history]
+    [spaceFilter, history, deleteKVDB]
   );
 
   return (
     <EuiFlexGroup direction="column" gutterSize="m">
       {selectedKVDB && (
         <KVDBDetailsFlyout kvdb={selectedKVDB} onClose={() => setSelectedKVDB(null)} />
+      )}
+      {isDeleteModalVisible && (
+        <EuiConfirmModal
+          title={
+            kvdbToDelete
+              ? 'Delete KVDB'
+              : `Delete ${selectedItems.length} KVDB${selectedItems.length !== 1 ? 's' : ''}`
+          }
+          onCancel={() => {
+            setIsDeleteModalVisible(false);
+            setKvdbToDelete(null);
+          }}
+          onConfirm={confirmDelete}
+          cancelButtonText="Cancel"
+          confirmButtonText="Delete"
+          buttonColor="danger"
+          defaultFocusedButton="cancel"
+        >
+          <p>
+            {kvdbToDelete
+              ? 'Are you sure you want to delete this KVDB? This action cannot be undone.'
+              : `Are you sure you want to delete ${selectedItems.length} KVDB${
+                  selectedItems.length !== 1 ? 's' : ''
+                }? This action cannot be undone.`}
+          </p>
+        </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
         <PageHeader>
@@ -206,40 +324,23 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
               <EuiPopover
-                id={'kvdbsActionsPopover'}
+                id="kvdbsActionsPopover"
                 button={
                   <EuiSmallButton
-                    iconType={'arrowDown'}
-                    iconSide={'right'}
+                    iconType="arrowDown"
+                    iconSide="right"
                     onClick={() => setActionsPopoverOpen((prev) => !prev)}
-                    data-test-subj={'kvdbsActionsButton'}
+                    data-test-subj="kvdbsActionsButton"
                   >
                     Actions
                   </EuiSmallButton>
                 }
                 isOpen={actionsPopoverOpen}
                 closePopover={() => setActionsPopoverOpen(false)}
-                panelPaddingSize={'none'}
-                anchorPosition={'downLeft'}
+                panelPaddingSize="none"
+                anchorPosition="downLeft"
               >
-                <EuiContextMenuPanel
-                  size="s"
-                  items={[
-                    <EuiContextMenuItem
-                      key="create"
-                      icon="plusInCircle"
-                      href={`#${ROUTES.KVDBS_CREATE}`}
-                      disabled={isCreateActionDisabled}
-                      toolTipContent={
-                        isCreateActionDisabled
-                          ? `Cannot create KVDBs in the ${spaceFilter} space.`
-                          : undefined
-                      }
-                    >
-                      Create
-                    </EuiContextMenuItem>,
-                  ]}
-                />
+                <EuiContextMenuPanel size="s" items={menuItems} />
               </EuiPopover>
             </EuiFlexItem>
           </EuiFlexGroup>
@@ -262,7 +363,7 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiSmallButton iconType="refresh" onClick={() => setRefreshTick((t) => t + 1)}>
+              <EuiSmallButton iconType="refresh" onClick={fetchKVDBs}>
                 Refresh
               </EuiSmallButton>
             </EuiFlexItem>
@@ -277,6 +378,10 @@ export const KVDBs: React.FC<RouteComponentProps> = ({ history }) => {
             onChange={onTableChange}
             itemId={(item) => item.document?.id || item.id}
             noItemsMessage="No KVDBs to display"
+            selection={{
+              selectable: () => true,
+              onSelectionChange: setSelectedItems,
+            }}
           />
         </EuiPanel>
       </EuiFlexItem>
