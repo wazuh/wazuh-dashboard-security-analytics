@@ -19,18 +19,17 @@ import {
   EuiText,
   EuiSpacer,
   EuiButtonGroup,
-  EuiCompressedFormRow,
-  EuiCompressedComboBox,
   EuiFlexGroup,
   EuiFlexItem,
   EuiSmallButton,
   EuiToolTip,
   EuiLoadingSpinner,
-  EuiCallOut,
 } from '@elastic/eui';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import FormFieldHeader from '../../../components/FormFieldHeader';
-import { getLogTypeLabel } from '../../LogTypes/utils/helpers';
+import {
+  IntegrationComboBox,
+  useIntegrationSelector,
+} from '../../../components/IntegrationComboBox';
 import { DecoderDocument } from '../../../../types/Decoders';
 import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
@@ -59,14 +58,14 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const idDecoder = props.match.params.id;
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingIntegrations, setLoadingIntegrations] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState('yaml');
   const [integrationType, setIntegrationType] = useState<string>('');
-  const [integrationTypeOptions, setIntegrationTypeOptions] = useState<
-    { value: string; label: string }[]
-  >([]);
   const [decoder, setDecoder] = useState<DecoderDocument | undefined>(undefined);
   const [initialValue, setInitialValue] = useState<DecoderFormModel>(decoderFormDefaultValue);
+
+  const { loading: loadingIntegrations, options: integrationTypeOptions } = useIntegrationSelector({
+    notifications,
+  });
 
   useEffect(() => {
     const fetchDecoder = async () => {
@@ -102,15 +101,6 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     }
   }, [action, idDecoder, notifications]);
 
-  const getIntegrationOptions = async () => {
-    const options = await DataStore.decoders.getDraftIntegrations();
-    return options.map((option) => ({
-      value: option._source.document.title,
-      label: option._source.document.title,
-      id: option._id,
-    }));
-  };
-
   useEffect(() => {
     if (action === 'create') {
       setBreadcrumbs([
@@ -119,29 +109,10 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         BREADCRUMBS.DECODERS_CREATE,
       ]);
     }
+  }, [action]);
 
-    const fetchIntegrationTypes = async () => {
-      setLoadingIntegrations(true);
-      try {
-        const options = await getIntegrationOptions();
-        setIntegrationTypeOptions(options);
-      } catch (error) {
-        errorNotificationToast(
-          notifications,
-          'retrieve',
-          'integration types',
-          'There was an error retrieving the integration types.'
-        );
-      } finally {
-        setLoadingIntegrations(false);
-      }
-    };
-
-    fetchIntegrationTypes();
-  }, [action, notifications]);
-
-  const onChange = useCallback((e) => {
-    setIntegrationType(e[0]?.id || '');
+  const onChange = useCallback((options: Array<{ id?: string }>) => {
+    setIntegrationType(options[0]?.id || '');
   }, []);
 
   const createDecoder = useCallback(
@@ -293,59 +264,14 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
 
                 {action === 'create' && (
                   <>
-                    <EuiCompressedFormRow
-                      label={
-                        <div>
-                          <FormFieldHeader headerTitle={'Integration'} />
-                          <EuiSpacer size={'s'} />
-                        </div>
-                      }
-                      fullWidth={true}
-                    >
-                      <EuiCompressedComboBox
-                        placeholder="Select integration"
-                        data-test-subj={'integration_dropdown'}
-                        options={integrationTypeOptions}
-                        singleSelection={{ asPlainText: true }}
-                        onChange={(e) => onChange(e)}
-                        isLoading={loadingIntegrations}
-                        isDisabled={loadingIntegrations || integrationTypeOptions.length === 0}
-                        selectedOptions={
-                          integrationType
-                            ? [
-                                {
-                                  value:
-                                    integrationTypeOptions.find(
-                                      (option) => option.id === integrationType
-                                    )?.value || '',
-                                  label: getLogTypeLabel(
-                                    integrationTypeOptions.find(
-                                      (option) => option.id === integrationType
-                                    )?.value || ''
-                                  ),
-                                },
-                              ]
-                            : []
-                        }
-                      />
-                    </EuiCompressedFormRow>
-
-                    {!loadingIntegrations && integrationTypeOptions.length === 0 && (
-                      <>
-                        <EuiSpacer size="m" />
-                        <EuiCallOut
-                          title="No integrations available"
-                          color="warning"
-                          iconType="alert"
-                        >
-                          <p>
-                            There are no integrations in draft status available to add decoders.
-                            Please create or draft an integration first before adding decoders.
-                          </p>
-                        </EuiCallOut>
-                      </>
-                    )}
-
+                    <IntegrationComboBox
+                      options={integrationTypeOptions}
+                      selectedId={integrationType}
+                      isLoading={loadingIntegrations}
+                      onChange={onChange}
+                      resourceName="decoders"
+                      data-test-subj="integration_dropdown"
+                    />
                     <EuiSpacer size="xl" />
                   </>
                 )}
