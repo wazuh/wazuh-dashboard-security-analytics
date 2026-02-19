@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { RuleItemInfoBase } from './Rule';
+import { RuleItemInfoBase } from "./Rule";
 
 export interface IntegrationWithRules extends Integration {
   detectionRules: RuleItemInfoBase[];
@@ -13,8 +13,8 @@ export interface IntegrationItem extends Integration {
   detectionRulesCount: number;
 }
 
-export interface Integration extends Omit<IntegrationBase, 'document'> {
-  document: IntegrationBase['document'] & {
+export interface Integration extends Omit<IntegrationBase, "document"> {
+  document: IntegrationBase["document"] & {
     id: string;
   };
 }
@@ -25,6 +25,7 @@ export interface IntegrationBase {
     author: string;
     date: string;
     description: string;
+    documentation: string;
     space: { name: string };
     category: string;
     tags: {
@@ -53,7 +54,7 @@ export interface CreateIntegrationResponse {
 
 export interface UpdateIntegrationParams {
   integrationId: string;
-  body: { resource: IntegrationBase['document'] };
+  body: { resource: IntegrationBase["document"] };
 }
 
 export interface UpdateIntegrationResponse {
@@ -69,14 +70,14 @@ export interface DeleteIntegrationResponse {}
 
 export interface PromoteIntegrationResponse {}
 
-export type UserSpace = 'draft' | 'test' | 'custom';
-export type PromoteSpaces = Omit<UserSpace, 'custom'>; // TODO: use the centralized items on constants instead
-export type PromoteNextSpaces = Omit<UserSpace, 'draft'>; // TODO: use the centralized items on constants instead
-export type NonUserSpace = 'standard';
+export type UserSpace = "draft" | "test" | "custom";
+export type PromoteSpaces = Omit<UserSpace, "custom">; // TODO: use the centralized items on constants instead
+export type PromoteNextSpaces = Omit<UserSpace, "draft">; // TODO: use the centralized items on constants instead
+export type NonUserSpace = "standard";
 export type Space = UserSpace | NonUserSpace;
 
-export type PromoteOperations = 'update' | 'add' | 'delete';
-export type PromoteOperationsPolicy = 'update';
+export type PromoteOperations = "update" | "add" | "delete";
+export type PromoteOperationsPolicy = "update";
 
 export interface PromoteChanges {
   policy: { operation: PromoteOperationsPolicy; id: string }[];
