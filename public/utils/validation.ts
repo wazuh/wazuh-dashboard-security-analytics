@@ -18,6 +18,8 @@ export const RULE_NAME_REGEX = new RegExp(/^.{1,256}$/);
 export const LOG_TYPE_NAME_REGEX = new RegExp(/^[a-z0-9_-]{2,50}$/);
 
 // This regex pattern support MIN to MAX character limit.
+// NOTE: This length constraint is strictly client-side.
+//  The backend indexer does not seem to enforce a character limit for this field.
 export const INTEGRATION_AUTHOR_REGEX = new RegExp(/^.{2,50}$/);
 
 // This regex pattern support MIN to MAX character limit, capital and lowercase letters,
