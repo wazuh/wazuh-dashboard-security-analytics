@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RouteComponentProps, useParams } from 'react-router-dom';
 import { IntegrationItem } from '../../../../types';
+import { AllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
 import {
   EuiSmallButton,
   EuiDescriptionList,
@@ -192,6 +193,12 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     setIsActionsMenuOpen(false);
   };
 
+  const spaceName = integrationDetails?.space.name.toLowerCase() ?? '';
+  const allowedActions = AllowedActionsBySpace[spaceName] ?? [];
+  const isEditDisabled = !allowedActions.includes(SPACE_ACTIONS.EDIT);
+  const isDeleteDisabled = !allowedActions.includes(SPACE_ACTIONS.DELETE);
+
+
   const actionsButton = (
     <EuiPopover
       id={'integrationsActionsPopover'}
@@ -255,7 +262,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               setIsEditMode(true);
               setSelectedTabId('details');
             }}
-            disabled={integrationDetails?.space.name.toLowerCase() === 'standard'}
+            disabled={isEditDisabled}
             data-test-subj={'editIntegrationButton'}
           >
             Edit
@@ -267,7 +274,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               setShowDeleteModal(true);
             }}
             data-test-subj={'deleteIntegrationButton'}
-            disabled={integrationDetails?.space.name.toLowerCase() === 'standard'}
+            disabled={isDeleteDisabled}
           >
             Delete
           </EuiContextMenuItem>,
