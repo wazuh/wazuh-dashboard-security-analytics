@@ -41,7 +41,7 @@ import {
   KVDBFormModel,
   mapFormToKVDBResource,
   mapKVDBToForm,
-} from '../components/mappers';
+} from '../utils/mappers';
 
 const KVDB_ACTION = {
   CREATE: 'create',
@@ -283,7 +283,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                       onChange={onIntegrationChange}
                       resourceName="KVDBs"
                     />
-                    <EuiSpacer size="xl" />
+                    <EuiSpacer size="m" />
                   </>
                 )}
                 <EuiCompressedFormRow

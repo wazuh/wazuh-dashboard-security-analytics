@@ -4,7 +4,7 @@
  */
 
 import { KVDBDocument, KVDBResource } from '../../../../types/KVDBs';
-import { ContentEntry } from './KVDBContentEditor';
+import { ContentEntry } from '../components/KVDBContentEditor';
 
 export interface KVDBFormModel {
   title: string;

@@ -17,7 +17,7 @@ import {
   EuiToolTip,
 } from '@elastic/eui';
 import { FieldArray, FormikErrors, FormikTouched, useFormikContext } from 'formik';
-import { KVDBFormModel } from './mappers';
+import { KVDBFormModel } from '../utils/mappers';
 
 export interface ContentEntry {
   key: string;
