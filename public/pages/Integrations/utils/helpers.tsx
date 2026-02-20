@@ -163,6 +163,17 @@ export const withGuardAsync = (
   );
 };
 
+export const withGuard = (
+  condition: (props: any) => boolean,
+  ComponentFulfillsCondition: React.FC
+) => (WrappedComponent: React.FC) => (props: any) => {
+  return condition(props) ? (
+    <ComponentFulfillsCondition {...props} />
+  ) : (
+    <WrappedComponent {...props} />
+  );
+};
+
 export const withWrapComponent = (WrapComponent, mapWrapComponentProps = () => {}) => (
   WrappedComponent
 ) => (props) => (
