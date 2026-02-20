@@ -15,11 +15,11 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiButtonEmpty,
-} from "@elastic/eui";
-import { ContentPanel } from "../../../components/ContentPanel";
-import React from "react";
-import { IntegrationItem } from "../../../../types";
-import { DataStore } from "../../../store/DataStore";
+} from '@elastic/eui';
+import { ContentPanel } from '../../../components/ContentPanel';
+import React from 'react';
+import { IntegrationItem } from '../../../../types';
+import { DataStore } from '../../../store/DataStore';
 
 export interface IntegrationDetailsTabProps {
   initialIntegrationDetails: IntegrationItem;
@@ -41,7 +41,7 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
   const onUpdateIntegration = async () => {
     const success = await DataStore.integrations.updateIntegration(
       integrationId,
-      integrationDetails,
+      integrationDetails
     );
     if (success) {
       setIsEditMode(false);
@@ -52,21 +52,17 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
     <ContentPanel
       title="Details"
       actions={
-        !isEditMode && [
-          <EuiSmallButton onClick={() => setIsEditMode(true)}>
-            Edit
-          </EuiSmallButton>,
-        ]
+        !isEditMode && [<EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>]
       }
     >
       <EuiDescriptionList
         type="column"
         listItems={[
           {
-            title: "Integration", // Replace Log type to Integration by Wazuh
+            title: 'Integration', // Replace Log type to Integration by Wazuh
             description: (
               <>
-                <EuiCompressedFormRow label="Name">
+                <EuiCompressedFormRow label="Title">
                   <EuiCompressedFieldText
                     value={integrationDetails?.document.title}
                     onChange={(e) =>
@@ -79,9 +75,7 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
                       })
                     }
                     placeholder="Enter name for integration" // Replace Log type to Integration by Wazuh
-                    disabled={
-                      !isEditMode || !!integrationDetails.detectionRulesCount
-                    }
+                    disabled={!isEditMode || !!integrationDetails.detectionRulesCount}
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer />
@@ -102,33 +96,30 @@ export const IntegrationDetailsTab: React.FC<IntegrationDetailsTabProps> = ({
                   />
                 </EuiCompressedFormRow>
                 {isEditMode ? (
-                  <EuiBottomBar>
-                    <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
-                      <EuiFlexItem grow={false}>
-                        <EuiButtonEmpty
-                          color="ghost"
-                          size="s"
-                          iconType="cross"
-                          onClick={() => {
-                            setIntegrationDetails(initialIntegrationDetails);
-                            setIsEditMode(false);
-                          }}
-                        >
-                          Cancel
-                        </EuiButtonEmpty>
-                      </EuiFlexItem>
-                      <EuiFlexItem grow={false}>
-                        <EuiButton
-                          color="primary"
-                          fill
-                          size="s"
-                          onClick={onUpdateIntegration}
-                        >
-                          Update
-                        </EuiButton>
-                      </EuiFlexItem>
-                    </EuiFlexGroup>
-                  </EuiBottomBar>
+                  <>
+                    <EuiBottomBar>
+                      <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
+                        <EuiFlexItem grow={false}>
+                          <EuiButtonEmpty
+                            color="ghost"
+                            size="s"
+                            iconType="cross"
+                            onClick={() => {
+                              setIntegrationDetails(initialIntegrationDetails);
+                              setIsEditMode(false);
+                            }}
+                          >
+                            Cancel
+                          </EuiButtonEmpty>
+                        </EuiFlexItem>
+                        <EuiFlexItem grow={false}>
+                          <EuiButton color="primary" fill size="s" onClick={onUpdateIntegration}>
+                            Update
+                          </EuiButton>
+                        </EuiFlexItem>
+                      </EuiFlexGroup>
+                    </EuiBottomBar>
+                  </>
                 ) : null}
               </>
             ),
