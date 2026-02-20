@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useEffect, useMemo } from "react";
-import { useHistory, useLocation } from "react-router-dom";
-import { SpaceTypes } from "../../common/constants";
+import { useEffect, useMemo } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
+import { SpaceTypes } from '../../common/constants';
 
-const SPACE_FILTER_KEY = "security_analytics_space_filter";
+const SPACE_FILTER_KEY = 'security_analytics_space_filter';
 
 export const useSpaceFilter = () => {
   const location = useLocation();
@@ -15,17 +15,17 @@ export const useSpaceFilter = () => {
 
   const spaceFilter = useMemo(
     () =>
-      new URLSearchParams(location.search).get("space") ||
+      new URLSearchParams(location.search).get('space') ||
       localStorage?.getItem(SPACE_FILTER_KEY) ||
       SpaceTypes.STANDARD.value,
-    [location.search],
+    [location.search]
   );
 
   // Add space param to URL if missing
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (!params.has("space")) {
-      params.set("space", spaceFilter);
+    if (!params.has('space')) {
+      params.set('space', spaceFilter);
       history.replace({ ...location, search: params.toString() });
     }
   }, [location.pathname]);
@@ -37,7 +37,7 @@ export const useSpaceFilter = () => {
 
   const setSpaceFilter = (id: string) => {
     const params = new URLSearchParams(location.search);
-    params.set("space", id);
+    params.set('space', id);
     history.replace({ ...location, search: params.toString() });
     localStorage?.setItem(SPACE_FILTER_KEY, id);
   };
