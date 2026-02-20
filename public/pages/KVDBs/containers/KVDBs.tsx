@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -30,7 +30,7 @@ import {
 } from "../utils/constants";
 import { KVDBDetailsFlyout } from "../components/KVDBDetailsFlyout";
 import { SpaceTypes } from "../../../../common/constants";
-import { SpaceSelector } from "../../../components/SpaceSelector/SpaceSelector";
+import { useSpaceSelector } from "../../../hooks/useSpaceSelector";
 
 export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [items, setItems] = useState<KVDBItem[]>([]);
@@ -43,7 +43,9 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [searchQuery, setSearchQuery] = useState<any>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
-  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
+  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+    onSpaceChange: () => setPageIndex(0),
+  });
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -155,8 +157,8 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
         render: (value: string) => formatCellValue(value),
       },
       {
-        field: 'document.author',
-        name: 'Author',
+        field: "document.author",
+        name: "Author",
         sortable: true,
         render: (value: string) => formatCellValue(value),
       },
@@ -186,28 +188,21 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
         />
       )}
       <EuiFlexItem grow={false}>
-      <PageHeader>
-        <EuiFlexGroup
-          gutterSize="s"
-          justifyContent="spaceBetween"
-          alignItems="center"
-        >
-          <EuiFlexItem>
-            <EuiText size="s">
-              <h1>KVDBs</h1>
-            </EuiText>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <SpaceSelector
-              selectedSpace={spaceFilter}
-              onSpaceChange={(id) => {
-                setSpaceFilter(id);
-                setPageIndex(0);
-              }}
-            />
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </PageHeader></EuiFlexItem>
+        <PageHeader>
+          <EuiFlexGroup
+            gutterSize="s"
+            justifyContent="spaceBetween"
+            alignItems="center"
+          >
+            <EuiFlexItem>
+              <EuiText size="s">
+                <h1>KVDBs</h1>
+              </EuiText>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
+          </EuiFlexGroup>
+        </PageHeader>
+      </EuiFlexItem>
       <EuiSpacer size="xs" />
       <EuiFlexItem>
         <EuiPanel>
