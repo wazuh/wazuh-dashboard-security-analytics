@@ -17,6 +17,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Renamed Log types to Integrations [#11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11)
 - Restructured Security Analytics main menu navigation [#11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11) [#14](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/14) [#18](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/18) [#36](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/36)
 - Hide Alerts/Correlations and Correlation rules from the Security Analytics navigation, leaving Findings at the root level [#8004](https://github.com/wazuh/wazuh-dashboard-plugins/pull/8004)
+- Changed rules wording from "Detection Rules" to "Rules" in the integrations section [#76](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/76)
 
 ### Removed
 
