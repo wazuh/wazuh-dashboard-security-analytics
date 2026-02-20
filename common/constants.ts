@@ -21,22 +21,23 @@ export const SpaceTypes = {
   DRAFT: {
     label: 'Draft',
     value: 'draft',
-    description: 'Staging area for creating or editing resources before testing',
+    description:
+      'Staging area for creating or editing resources before testing.',
   },
   TEST: {
     label: 'Test',
     value: 'test',
-    description: 'Controlled environment for validation before production',
+    description: 'Controlled environment for validation before production.',
   },
   CUSTOM: {
     label: 'Custom',
     value: 'custom',
-    description: 'Independent space for custom or modified content',
+    description: 'Independent space for custom or modified content.',
   },
   STANDARD: {
     label: 'Standard',
     value: 'standard',
-    description: 'Default KVDBs provided by the system',
+    description: 'Wazuh CTI provided resources.',
   },
 } as const;
 
