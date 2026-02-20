@@ -12,6 +12,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Added Integrations management feature [#40](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/40) [#48](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/48) [#64](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/64) [#71](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/71) [#72](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/72)
 - Added Log test feature [#43](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/43)
 - Added space persistence when navigate [#63](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/63)
+- Added integration counters for decoders and KVDBs [#86](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/86)
 
 ### Changed
 
