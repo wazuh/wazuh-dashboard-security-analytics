@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
@@ -16,21 +16,17 @@ import {
   EuiSpacer,
   EuiText,
   EuiToolTip,
-} from "@elastic/eui";
-import { RouteComponentProps } from "react-router-dom";
-import { KVDBItem } from "../../../../types";
-import { DataStore } from "../../../store/DataStore";
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from "../../../utils/constants";
-import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import { formatCellValue, setBreadcrumbs } from "../../../utils/helpers";
-import {
-  KVDBS_PAGE_SIZE,
-  KVDBS_SEARCH_SCHEMA,
-  KVDBS_SORT_FIELD,
-} from "../utils/constants";
-import { KVDBDetailsFlyout } from "../components/KVDBDetailsFlyout";
-import { SpaceTypes } from "../../../../common/constants";
-import { useSpaceSelector } from "../../../hooks/useSpaceSelector";
+} from '@elastic/eui';
+import { RouteComponentProps } from 'react-router-dom';
+import { KVDBItem } from '../../../../types';
+import { DataStore } from '../../../store/DataStore';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
+import { KVDBS_PAGE_SIZE, KVDBS_SEARCH_SCHEMA, KVDBS_SORT_FIELD } from '../utils/constants';
+import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
+import { SpaceTypes } from '../../../../common/constants';
+import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 
 export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [items, setItems] = useState<KVDBItem[]>([]);
@@ -39,7 +35,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [searchQuery, setSearchQuery] = useState<any>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
@@ -53,9 +49,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
   }, []);
 
   const buildQuery = useCallback(() => {
-    let query = searchQuery
-      ? EuiSearchBar.Query.toESQuery(searchQuery)
-      : { match_all: {} };
+    let query = searchQuery ? EuiSearchBar.Query.toESQuery(searchQuery) : { match_all: {} };
     if (!query || Object.keys(query).length === 0) {
       query = { match_all: {} };
     }
@@ -64,7 +58,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
     if (spaceFilter) {
       query = {
         bool: {
-          must: [query, { term: { "space.name": spaceFilter } }],
+          must: [query, { term: { 'space.name': spaceFilter } }],
         },
       };
     }
@@ -112,7 +106,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
 
     if (sort) {
       setSortField(sort.field || KVDBS_SORT_FIELD);
-      setSortDirection(sort.direction || "asc");
+      setSortDirection(sort.direction || 'asc');
     }
   };
 
@@ -128,7 +122,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
       totalItemCount,
       pageSizeOptions: [10, 25, 50, 100],
     }),
-    [pageIndex, pageSize, totalItemCount],
+    [pageIndex, pageSize, totalItemCount]
   );
 
   const sorting = useMemo(
@@ -138,33 +132,33 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
         direction: sortDirection,
       },
     }),
-    [sortField, sortDirection],
+    [sortField, sortDirection]
   );
 
   const columns: Array<EuiBasicTableColumn<KVDBItem>> = useMemo(
     () => [
       {
-        field: "document.title",
-        name: "Title",
+        field: 'document.title',
+        name: 'Title',
         sortable: true,
-        dataType: "string",
+        dataType: 'string',
         render: (value: string) => formatCellValue(value),
       },
       {
-        field: "integration.title",
-        name: "Integration",
-        dataType: "string",
+        field: 'integration.title',
+        name: 'Integration',
+        dataType: 'string',
         render: (value: string) => formatCellValue(value),
       },
       {
-        field: "document.author",
-        name: "Author",
+        field: 'document.author',
+        name: 'Author',
         sortable: true,
         render: (value: string) => formatCellValue(value),
       },
       {
-        name: "Actions",
-        align: "right",
+        name: 'Actions',
+        align: 'right',
         render: (item: KVDBItem) => (
           <EuiToolTip content="View details">
             <EuiButtonIcon
@@ -176,24 +170,17 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
         ),
       },
     ],
-    [],
+    []
   );
 
   return (
     <EuiFlexGroup direction="column" gutterSize="m">
       {selectedKVDB && (
-        <KVDBDetailsFlyout
-          kvdb={selectedKVDB}
-          onClose={() => setSelectedKVDB(null)}
-        />
+        <KVDBDetailsFlyout kvdb={selectedKVDB} onClose={() => setSelectedKVDB(null)} />
       )}
       <EuiFlexItem grow={false}>
         <PageHeader>
-          <EuiFlexGroup
-            gutterSize="s"
-            justifyContent="spaceBetween"
-            alignItems="center"
-          >
+          <EuiFlexGroup gutterSize="s" justifyContent="spaceBetween" alignItems="center">
             <EuiFlexItem>
               <EuiText size="s">
                 <h1>KVDBs</h1>
@@ -210,7 +197,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
             <EuiFlexItem>
               <EuiSearchBar
                 box={{
-                  placeholder: "Search KVDBs",
+                  placeholder: 'Search KVDBs',
                   incremental: true,
                   compressed: true,
                   schema: true,
@@ -220,10 +207,7 @@ export const KVDBs: React.FC<RouteComponentProps> = () => {
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiSmallButton
-                iconType="refresh"
-                onClick={() => setRefreshTick((t) => t + 1)}
-              >
+              <EuiSmallButton iconType="refresh" onClick={() => setRefreshTick((t) => t + 1)}>
                 Refresh
               </EuiSmallButton>
             </EuiFlexItem>
