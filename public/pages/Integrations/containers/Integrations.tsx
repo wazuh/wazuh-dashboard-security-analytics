@@ -26,10 +26,10 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { RootDecoderRequirement } from '../components/RootDecoderRequirement';
 import { PolicyInfoCard } from '../components/PolicyInfo';
+import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -43,7 +43,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 }) => {
   const isMountedRef = useRef(true);
   const [integrations, setIntegrations] = useState<Integration[]>([]);
-  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
+  const { component: spaceSelector, spaceFilter } = useSpaceSelector();
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<Integration[]>([]);
   const [itemForAction, setItemForAction] = useState<{
@@ -72,15 +72,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   }, []);
 
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
-
-  const spaceSelector = (
-    <SpaceSelector
-      selectedSpace={spaceFilter}
-      onSpaceChange={(id) => {
-        setSpaceFilter(id);
-      }}
-    />
-  );
 
   const isCreateActionDisabled = !AllowedActionsBySpace[
     SpaceTypes[spaceFilter.toUpperCase()].value
