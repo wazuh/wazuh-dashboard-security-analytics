@@ -39,12 +39,6 @@ import { SpaceTypes } from '../../../../common/constants';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 
 const DEFAULT_PAGE_SIZE = 25;
-const SORT_FIELD_MAP: Record<string, string> = {
-  'document.name': 'document.name.keyword',
-};
-const SORT_UNMAPPED_TYPE: Record<string, string> = {
-  'document.name.keyword': 'keyword',
-};
 
 interface DecodersProps {
   history: RouteComponentProps['history'];
@@ -96,13 +90,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const loadDecoders = useCallback(async () => {
     setLoading(true);
     const query = buildDecodersSearchQuery(appliedSearch);
-    const sortFieldName = SORT_FIELD_MAP[sortField] ?? sortField;
-    const sort = sortFieldName
+    const sort = sortField
       ? [
           {
-            [sortFieldName]: {
+            [sortField]: {
               order: sortDirection,
-              unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? 'keyword',
             },
           },
         ]
