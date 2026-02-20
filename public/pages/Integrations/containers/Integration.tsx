@@ -103,8 +103,12 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.title }]);
       const integrationItem = {
         ...details,
-        detectionRulesCount: details.detectionRules.length,
+        detectionRulesCount: details.detectionRules.length ?? 0,
+        decodersCount: details.document.decoders?.length ?? 0,
+        kvdbsCount: details.document.kvdbs?.length ?? 0,
       };
+      setIntegrationDetails(integrationItem);
+      setInitialIntegrationDetails(integrationItem);
       updateRules(integrationItem, integrationItem);
     };
 
@@ -235,8 +239,28 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Detection rules',
+                  title: 'Rules',
                   description: integrationDetails.detectionRulesCount,
+                },
+              ]}
+            />
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiDescriptionList
+              listItems={[
+                {
+                  title: 'Decoders',
+                  description: integrationDetails.decodersCount,
+                },
+              ]}
+            />
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiDescriptionList
+              listItems={[
+                {
+                  title: 'KVDBs',
+                  description: integrationDetails.kvdbsCount,
                 },
               ]}
             />
