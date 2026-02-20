@@ -344,8 +344,15 @@ export const integrationCategories: {
     description: 'Logs not covered in other categories',
   },
 ];
+<<<<<<< enhancement/61-resource-creation-buttons
 export const integrationsByCategories: { [category: string]: Integration[] } =
   {};
+=======
+export const integrationCategoryFilters: string[] = integrationCategories.map(
+  ({ value }) => value
+);
+export const integrationsByCategories: { [category: string]: Integration[] } = {};
+>>>>>>> main
 
 export const logTypeCategories: string[] = [];
 export const logTypesByCategories: { [category: string]: LogType[] } = {};
