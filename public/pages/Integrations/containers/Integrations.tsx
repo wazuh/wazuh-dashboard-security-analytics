@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from 'react';
 import {
   EuiSmallButton,
   EuiFlexGroup,
@@ -15,34 +15,23 @@ import {
   EuiContextMenuItem,
   EuiContextMenuPanel,
   EuiPopover,
-} from "@elastic/eui";
-import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
-import { DataSourceProps, Integration } from "../../../../types";
-import { DataStore } from "../../../store/DataStore";
-import {
-  getIntegrationsTableColumns,
-  getIntegrationsTableSearchConfig,
-} from "../utils/helpers";
-import { RouteComponentProps } from "react-router-dom";
-import { useCallback } from "react";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import {
-  setBreadcrumbs,
-  successNotificationToast,
-} from "../../../utils/helpers";
-import { DeleteIntegrationModal } from "../components/DeleteIntegrationModal";
-import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import {
-  AllowedActionsBySpace,
-  SPACE_ACTIONS,
-  SpaceTypes,
-} from "../../../../common/constants";
-import { RootDecoderRequirement } from "../components/RootDecoderRequirement";
-import { PolicyInfoCard } from "../components/PolicyInfo";
-import { useSpaceSelector } from "../../../hooks/useSpaceSelector";
+} from '@elastic/eui';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { DataSourceProps, Integration } from '../../../../types';
+import { DataStore } from '../../../store/DataStore';
+import { getIntegrationsTableColumns, getIntegrationsTableSearchConfig } from '../utils/helpers';
+import { RouteComponentProps } from 'react-router-dom';
+import { useCallback } from 'react';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
+import { RootDecoderRequirement } from '../components/RootDecoderRequirement';
+import { PolicyInfoCard } from '../components/PolicyInfo';
+import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 
-export interface IntegrationsProps
-  extends RouteComponentProps, DataSourceProps {
+export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
 }
 
@@ -63,8 +52,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   } | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const getIntegrations = async () => {
-    const integrations =
-      await DataStore.integrations.getIntegrations(spaceFilter);
+    const integrations = await DataStore.integrations.getIntegrations(spaceFilter);
     const policies = await DataStore.policies.searchPolicies(spaceFilter);
     setIntegrations(integrations);
   };
@@ -72,7 +60,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const deleteIntegration = async (id: string) => {
     const deleteSucceeded = await DataStore.integrations.deleteIntegration(id);
     if (deleteSucceeded) {
-      successNotificationToast(notifications, "deleted", "integration");
+      successNotificationToast(notifications, 'deleted', 'integration');
       getIntegrations();
     }
   };
@@ -99,9 +87,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       href={`#${ROUTES.INTEGRATIONS_CREATE}`}
       disabled={isCreateActionDisabled}
       toolTipContent={
-        isCreateActionDisabled
-          ? "Integration can only be created in the draft space."
-          : undefined
+        isCreateActionDisabled ? 'Integration can only be created in the draft space.' : undefined
       }
     >
       Create
@@ -112,7 +98,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       onClick={() => {
         const { search } = location;
         const params = new URLSearchParams(search);
-        params.set("space", spaceFilter);
+        params.set('space', spaceFilter);
         history.push({
           pathname: `${ROUTES.PROMOTE}`,
           search: `?space=${spaceFilter}`,
@@ -121,7 +107,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       disabled={isPromoteActionDisabled}
       toolTipContent={
         isPromoteActionDisabled
-          ? "Integration can only be promoted in the draft or testing space."
+          ? 'Integration can only be promoted in the draft or testing space.'
           : undefined
       }
     >
@@ -129,27 +115,26 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     </EuiContextMenuItem>,
   ];
 
-  const handlerShowActionsButton = () =>
-    setIsPopoverOpen((prevState) => !prevState);
+  const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
 
   const actionsButton = (
     <EuiPopover
-      id={"integrationsActionsPopover"}
+      id={'integrationsActionsPopover'}
       button={
         <EuiSmallButton
-          iconType={"arrowDown"}
-          iconSide={"right"}
+          iconType={'arrowDown'}
+          iconSide={'right'}
           onClick={handlerShowActionsButton}
-          data-test-subj={"integrationsActionsButton"}
+          data-test-subj={'integrationsActionsButton'}
         >
           Actions
         </EuiSmallButton>
       }
       isOpen={isPopoverOpen}
       closePopover={handlerShowActionsButton}
-      panelPaddingSize={"none"}
-      anchorPosition={"downLeft"}
-      data-test-subj={"integrationsActionsPopover"}
+      panelPaddingSize={'none'}
+      anchorPosition={'downLeft'}
+      data-test-subj={'integrationsActionsPopover'}
     >
       <EuiContextMenuPanel items={panels} size="s" />
     </EuiPopover>
@@ -184,10 +169,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   }, []);
 
   const createIntegrationAction = (
-    <EuiSmallButton
-      fill={true}
-      onClick={() => history.push(ROUTES.INTEGRATIONS_CREATE)}
-    >
+    <EuiSmallButton fill={true} onClick={() => history.push(ROUTES.INTEGRATIONS_CREATE)}>
       Create integration
     </EuiSmallButton>
   );
@@ -206,18 +188,16 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         </>
       )}
 
-      <PageHeader
-        appRightControls={[{ renderComponent: createIntegrationAction }]}
-      >
+      <PageHeader appRightControls={[{ renderComponent: createIntegrationAction }]}>
         <EuiFlexItem>
-          <EuiFlexGroup alignItems="center" justifyContent={"spaceBetween"}>
+          <EuiFlexGroup alignItems="center" justifyContent={'spaceBetween'}>
             <EuiFlexItem>
               <EuiText size="s">
                 <h1>Integrations</h1>
               </EuiText>
               <EuiText size="s" color="subdued">
-                Integrations describe the data sources to which the detection
-                rules are meant to be applied.
+                Integrations describe the data sources to which the detection rules are meant to be
+                applied.
               </EuiText>
               <EuiSpacer size="s"></EuiSpacer>
               <PolicyInfoCard space={spaceFilter} notifications={notifications} />
@@ -226,12 +206,12 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
             <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size={"m"} />
+          <EuiSpacer size={'m'} />
         </EuiFlexItem>
       </PageHeader>
       <EuiPanel>
         <EuiInMemoryTable
-          itemId={"id"}
+          itemId={'id'}
           items={integrations}
           columns={getIntegrationsTableColumns({
             showDetails: showIntegrationDetails,

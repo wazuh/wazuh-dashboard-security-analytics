@@ -1,7 +1,14 @@
 import React from 'react';
 import { withGuardAsync } from '../utils/helpers';
 import { DataStore } from '../../../store/DataStore';
-import { EuiFlexGroup, EuiFlexItem, EuiText, EuiDescriptionListTitle, EuiDescriptionListDescription, EuiDescriptionList } from '@elastic/eui';
+import {
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiText,
+  EuiDescriptionListTitle,
+  EuiDescriptionListDescription,
+  EuiDescriptionList,
+} from '@elastic/eui';
 import { DecoderSource, PolicyDocument, Space } from '../../../../types';
 import { ButtonSelectRootDecoder } from './RootDecoderRequirement';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -53,19 +60,29 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
         <EuiFlexItem>
           <EuiDescriptionList compressed type="row">
             <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>{policyDocumentData.title}</EuiDescriptionListDescription>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.title}
+            </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>{policyDocumentData.description}</EuiDescriptionListDescription>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.description}
+            </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>{policyDocumentData.author}</EuiDescriptionListDescription>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.author}
+            </EuiDescriptionListDescription>
           </EuiDescriptionList>
         </EuiFlexItem>
         <EuiFlexItem>
           <EuiDescriptionList compressed type="row">
             <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>{policyDocumentData.documentation}</EuiDescriptionListDescription>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.documentation}
+            </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>{policyDocumentData.references.join(', ')}</EuiDescriptionListDescription>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.references.join(', ')}
+            </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
               {rootDecoder?.document?.name ?? ''}
