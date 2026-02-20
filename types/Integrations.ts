@@ -27,6 +27,7 @@ export interface IntegrationBase {
     author: string;
     date: string;
     description: string;
+    documentation: string;
     space: { name: string };
     category: string;
     tags: {

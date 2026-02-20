@@ -28,6 +28,7 @@ export const defaultIntegration: IntegrationBase = {
   document: {
     title: '',
     description: '',
+    documentation: '',
     source: 'Custom', // TODO: research if we need this field
     tags: null,
     category: '',

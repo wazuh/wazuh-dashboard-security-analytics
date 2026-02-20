@@ -33,6 +33,22 @@ const INTEGRATIONS_INDEX = '.cti-integrations';
 const DECODERS_INDEX = '.cti-decoders';
 const KVDBS_INDEX = '.cti-kvdbs';
 
+/**
+ * Additional function to make sure optional params are initialized with
+ * at least a default value.
+ */
+const sanitizeIntegrationBase = (base: IntegrationBase): IntegrationBase => {
+  return {
+    ...base,
+    document: {
+      ...base.document,
+      description: base.document.description ?? '',
+      documentation: base.document.documentation ?? '',
+      references: base.document.references ?? [],
+    },
+  };
+};
+
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
     context: RequestHandlerContext,
@@ -42,7 +58,7 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<CreateIntegrationResponse> | ResponseError>
   > => {
     try {
-      const { document } = request.body;
+      const { document } = sanitizeIntegrationBase(request.body);
       const client = this.getClient(request, context);
       const createIntegrationResponse: CreateIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.CREATE_INTEGRATION,
@@ -120,7 +136,9 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<UpdateIntegrationResponse> | ResponseError>
   > => {
     try {
-      const { document: { id, date, modified, ...document } } = request.body;
+      const {
+        document: { id, date, modified, ...document },
+      } = sanitizeIntegrationBase(request.body);
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
         body: { resource: document },
