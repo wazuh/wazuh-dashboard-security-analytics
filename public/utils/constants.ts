@@ -273,9 +273,7 @@ export const ALERT_STATE = Object.freeze({
 export const logTypesWithDashboards = new Set(['network', 'cloudtrail', 's3']);
 
 export const pendingDashboardCreations: {
-  [detectorId: string]:
-    | undefined
-    | Promise<void | ServerResponse<SimpleSavedObject<unknown>>>;
+  [detectorId: string]: undefined | Promise<void | ServerResponse<SimpleSavedObject<unknown>>>;
 } = {};
 
 export const logTypeCategoryDescription: {
@@ -344,11 +342,10 @@ export const integrationCategories: {
     description: 'Logs not covered in other categories',
   },
 ];
-export const integrationCategoryFilters: string[] = integrationCategories.map(
-  ({ value }) => value
-); 
 
 export const integrationsByCategories: { [category: string]: Integration[] } = {};
+
+export const integrationCategoryFilters: string[] = integrationCategories.map(({ value }) => value);
 
 export const logTypeCategories: string[] = [];
 export const logTypesByCategories: { [category: string]: LogType[] } = {};
