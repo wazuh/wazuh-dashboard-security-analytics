@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useCallback } from "react";
-import { RulesTable } from "../../Rules/components/RulesTable/RulesTable";
-import { RuleTableItem } from "../../Rules/utils/helpers";
-import { ContentPanel } from "../../../components/ContentPanel";
+import React, { useState, useCallback } from 'react';
+import { RulesTable } from '../../Rules/components/RulesTable/RulesTable';
+import { RuleTableItem } from '../../Rules/utils/helpers';
+import { ContentPanel } from '../../../components/ContentPanel';
 import {
   EuiSmallButton,
   EuiFlexGroup,
@@ -14,8 +14,8 @@ import {
   EuiIcon,
   EuiSpacer,
   EuiText,
-} from "@elastic/eui";
-import { RuleViewerFlyout } from "../../Rules/components/RuleViewerFlyout/RuleViewerFlyout";
+} from '@elastic/eui';
+import { RuleViewerFlyout } from '../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
 
 export interface IntegrationDetectionRulesProps {
   rules: RuleTableItem[];
@@ -39,7 +39,7 @@ export const IntegrationDetectionRules: React.FC<
         <RuleViewerFlyout hideFlyout={hideFlyout} ruleTableItem={flyoutData} />
       )}
       <ContentPanel
-        title="Detection rules"
+        title='Detection rules'
         hideHeaderBorder={true}
         actions={[
           <EuiSmallButton onClick={refreshRules}>Refresh</EuiSmallButton>,
@@ -47,16 +47,16 @@ export const IntegrationDetectionRules: React.FC<
       >
         {rules.length === 0 ? (
           <EuiFlexGroup
-            justifyContent="center"
-            alignItems="center"
-            direction="column"
+            justifyContent='center'
+            alignItems='center'
+            direction='column'
           >
             <EuiFlexItem grow={false}>
-              <EuiText color="subdued" size="s">
+              <EuiText color='subdued' size='s'>
                 {/* By Wazuh */}
                 <p>
                   There are no detection rules associated with this
-                  integration.{" "}
+                  integration.{' '}
                 </p>
               </EuiText>
             </EuiFlexItem>
@@ -64,19 +64,19 @@ export const IntegrationDetectionRules: React.FC<
               <EuiSmallButton
                 fill
                 href={`opensearch_security_analytics_dashboards#/create-rule`}
-                target="_blank"
+                target='_blank'
               >
                 Create detection rule&nbsp;
-                <EuiIcon type={"popout"} />
+                <EuiIcon type={'popout'} />
               </EuiSmallButton>
-              <EuiSpacer size="xl" />
+              <EuiSpacer size='xl' />
             </EuiFlexItem>
           </EuiFlexGroup>
         ) : (
           <RulesTable
             loading={loadingRules}
             ruleItems={rules}
-            columnsToHide={["category"]}
+            columnsToHide={['category']}
             showRuleDetails={setFlyoutData}
           />
         )}

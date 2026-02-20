@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   EuiInMemoryTable,
   EuiBasicTableColumn,
@@ -12,12 +12,12 @@ import {
   EuiLink,
   EuiSmallButton,
   EuiText,
-} from "@elastic/eui";
-import { ContentPanel } from "../../../components/ContentPanel";
-import { DecoderDetailsFlyout } from "../../Decoders/components/DecoderDetailsFlyout";
-import { formatCellValue } from "../../../utils/helpers";
-import { EuiIcon } from "@elastic/eui";
-import { ROUTES } from "../../../utils/constants";
+} from '@elastic/eui';
+import { ContentPanel } from '../../../components/ContentPanel';
+import { DecoderDetailsFlyout } from '../../Decoders/components/DecoderDetailsFlyout';
+import { formatCellValue } from '../../../utils/helpers';
+import { EuiIcon } from '@elastic/eui';
+import { ROUTES } from '../../../utils/constants';
 
 export interface IntegrationDecodersProps {
   decoders: DecoderTableItem[];
@@ -46,8 +46,8 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   const columns: EuiBasicTableColumn<DecoderTableItem>[] = useMemo(
     () => [
       {
-        field: "name",
-        name: "Name",
+        field: 'name',
+        name: 'Name',
         sortable: true,
         render: (_: string, decoder: DecoderTableItem) => (
           <EuiLink onClick={() => setFlyoutDecoderId(decoder.id)}>
@@ -56,15 +56,15 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
         ),
       },
       {
-        field: "title",
-        name: "Title",
+        field: 'title',
+        name: 'Title',
         sortable: true,
         render: (_: string, decoder: DecoderTableItem) =>
           formatCellValue(decoder?.title),
       },
       {
-        field: "author",
-        name: "Author",
+        field: 'author',
+        name: 'Author',
         sortable: true,
         render: (_: string, decoder: DecoderTableItem) =>
           formatCellValue(decoder?.author),
@@ -79,7 +79,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
 
   const search = {
     box: {
-      placeholder: "Search decoders",
+      placeholder: 'Search decoders',
       schema: true,
       compressed: true,
     },
@@ -96,18 +96,18 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
       )}
 
       <ContentPanel
-        title="Decoders"
+        title='Decoders'
         hideHeaderBorder={true}
         actions={[<EuiSmallButton onClick={onRefresh}>Refresh</EuiSmallButton>]}
       >
         {decoders.length === 0 && !loading ? (
           <EuiFlexGroup
-            justifyContent="center"
-            alignItems="center"
-            direction="column"
+            justifyContent='center'
+            alignItems='center'
+            direction='column'
           >
             <EuiFlexItem grow={false}>
-              <EuiText color="subdued" size="s">
+              <EuiText color='subdued' size='s'>
                 <p>There are no decoders associated with this integration.</p>
               </EuiText>
             </EuiFlexItem>
@@ -116,10 +116,10 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
               <EuiSmallButton
                 fill
                 href={`#${ROUTES.DECODERS_CREATE}`}
-                target="_blank"
+                target='_blank'
               >
                 Create decoder&nbsp;
-                <EuiIcon type={"popout"} />
+                <EuiIcon type={'popout'} />
               </EuiSmallButton>
             </EuiFlexItem>
           </EuiFlexGroup>
@@ -134,9 +134,9 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
               pageSizeOptions: [10, 25, 50],
             }}
             sorting={{
-              sort: { field: "document.name", direction: "asc" },
+              sort: { field: 'document.name', direction: 'asc' },
             }}
-            message="No decoders found."
+            message='No decoders found.'
           />
         )}
       </ContentPanel>
