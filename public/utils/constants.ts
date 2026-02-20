@@ -346,7 +346,7 @@ export const integrationCategories: {
 ];
 export const integrationCategoryFilters: string[] = integrationCategories.map(
   ({ value }) => value
-);
+); 
 
 export const integrationsByCategories: { [category: string]: Integration[] } = {};
 
