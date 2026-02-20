@@ -36,9 +36,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   loading,
   onRefresh,
 }) => {
-  const [flyoutKvdb, setFlyoutKvdb] = useState<KVDBTableItem | undefined>(
-    undefined,
-  );
+  const [flyoutKvdb, setFlyoutKvdb] = useState<KVDBTableItem | undefined>(undefined);
 
   const columns: EuiBasicTableColumn<KVDBTableItem>[] = useMemo(
     () => [
@@ -47,20 +45,17 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
         name: 'Title',
         sortable: true,
         render: (_: string, kvdb: KVDBTableItem) => (
-          <EuiLink onClick={() => setFlyoutKvdb(kvdb)}>
-            {formatCellValue(kvdb.title)}
-          </EuiLink>
+          <EuiLink onClick={() => setFlyoutKvdb(kvdb)}>{formatCellValue(kvdb.title)}</EuiLink>
         ),
       },
       {
         field: 'author',
         name: 'Author',
         sortable: true,
-        render: (_: string, kvdb: KVDBTableItem) =>
-          formatCellValue(kvdb.author),
+        render: (_: string, kvdb: KVDBTableItem) => formatCellValue(kvdb.author),
       },
     ],
-    [],
+    []
   );
 
   const closeFlyout = useCallback(() => {
@@ -76,33 +71,23 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
 
   return (
     <>
-      {flyoutKvdb && (
-        <KVDBDetailsFlyout kvdb={flyoutKvdb} onClose={closeFlyout} />
-      )}
+      {flyoutKvdb && <KVDBDetailsFlyout kvdb={flyoutKvdb} onClose={closeFlyout} />}
 
       <ContentPanel
-        title='KVDBs'
+        title="KVDBs"
         hideHeaderBorder={true}
         actions={[<EuiSmallButton onClick={onRefresh}>Refresh</EuiSmallButton>]}
       >
         {kvdbs.length === 0 && !loading ? (
-          <EuiFlexGroup
-            justifyContent='center'
-            alignItems='center'
-            direction='column'
-          >
+          <EuiFlexGroup justifyContent="center" alignItems="center" direction="column">
             <EuiFlexItem grow={false}>
-              <EuiText color='subdued' size='s'>
+              <EuiText color="subdued" size="s">
                 <p>There are no KVDBs associated with this integration.</p>
               </EuiText>
             </EuiFlexItem>
             {/* TO DO: Create KVDB page*/}
             <EuiFlexItem grow={false}>
-              <EuiSmallButton
-                fill
-                href={`#${ROUTES.KVDBS_CREATE}`}
-                target='_blank'
-              >
+              <EuiSmallButton fill href={`#${ROUTES.KVDBS_CREATE}`} target="_blank">
                 Create KVDBs&nbsp;
                 <EuiIcon type={'popout'} />
               </EuiSmallButton>
@@ -121,7 +106,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
             sorting={{
               sort: { field: 'document.title', direction: 'asc' },
             }}
-            message='No KVDBs found.'
+            message="No KVDBs found."
           />
         )}
       </ContentPanel>
