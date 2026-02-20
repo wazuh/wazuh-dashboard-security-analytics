@@ -11,6 +11,8 @@ export interface IntegrationWithRules extends Integration {
 
 export interface IntegrationItem extends Integration {
   detectionRulesCount: number;
+  decodersCount: number;
+  kvdbsCount: number;
 }
 
 export interface Integration extends Omit<IntegrationBase, 'document'> {
