@@ -15,6 +15,7 @@ import {
   EuiContextMenuItem,
   EuiContextMenuPanel,
   EuiPopover,
+  EuiConfirmModal,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataSourceProps, Integration } from '../../../../types';
@@ -26,6 +27,8 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
+import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { PolicyInfoCard } from '../components/PolicyInfo';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
@@ -40,7 +43,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   history,
   notifications,
   dataSource,
-  location,
 }) => {
   const isMountedRef = useRef(true);
   const [integrations, setIntegrations] = useState<Integration[]>([]);
@@ -52,17 +54,24 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     action: typeof SPACE_ACTIONS.DELETE;
   } | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const getIntegrations = async () => {
-    const integrations = await DataStore.integrations.getIntegrations(spaceFilter);
-    const policies = await DataStore.policies.searchPolicies(spaceFilter);
-    setIntegrations(integrations);
-  };
+  const [isDeleteSelectedModalVisible, setIsDeleteSelectedModalVisible] = useState(false);
+  const loadIntegrations = useCallback(async () => {
+    setLoading(true);
+
+    const response = await DataStore.integrations.getIntegrations(spaceFilter);
+
+    if (!isMountedRef.current) {
+      return;
+    }
+    setIntegrations(response);
+    setLoading(false);
+  }, [spaceFilter, dataSource]);
 
   const deleteIntegration = async (id: string) => {
     const deleteSucceeded = await DataStore.integrations.deleteIntegration(id);
     if (deleteSucceeded) {
       successNotificationToast(notifications, 'deleted', 'integration');
-      getIntegrations();
+      loadIntegrations();
     }
   };
 
@@ -74,12 +83,92 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
 
-  const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
-  const isPromoteActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.PROMOTE);
-  const isRearrangeIntegrationsActionDisabled = !actionIsAllowedOnSpace(
+  const spaceSelector = (
+    <SpaceSelector
+      selectedSpace={spaceFilter}
+      onSpaceChange={(id) => {
+        setSpaceFilter(id);
+        setSelectedItems([]);
+      }}
+    />
+  );
+
+  const isCreateActionDisabled = !AllowedActionsBySpace[
+    SpaceTypes[spaceFilter.toUpperCase()].value
+  ].includes(SPACE_ACTIONS.CREATE);
+  const isPromoteActionDisabled = !AllowedActionsBySpace[
+    SpaceTypes[spaceFilter.toUpperCase()].value
+  ].includes(SPACE_ACTIONS.PROMOTE);
+  const isDeleteActionDisabledBySpace = !AllowedActionsBySpace[
+    SpaceTypes[spaceFilter.toUpperCase()].value
+  ].includes(SPACE_ACTIONS.DELETE);
+
+  const getRulesCount = (item: Integration): number => {
+    const rules = (item as any)?.rules;
+    return Array.isArray(rules) ? rules.length : 0;
+  };
+
+  const selectedItemsWithoutRules = selectedItems.filter((item) => getRulesCount(item) === 0);
+  const selectedItemsWithRulesCount = selectedItems.length - selectedItemsWithoutRules.length;
+  const isDeleteSelectedActionDisabled =
+    isDeleteActionDisabledBySpace ||
+    selectedItems.length === 0 ||
+    selectedItemsWithoutRules.length === 0;
+   const isRearrangeIntegrationsActionDisabled = !actionIsAllowedOnSpace(
     spaceFilter,
     SPACE_ACTIONS.REARRANGE_INTEGRATIONS
   );
+
+  const deleteSelectedIntegrations = useCallback(async () => {
+    if (selectedItemsWithoutRules.length === 0) return;
+    setLoading(true);
+    setIsDeleteSelectedModalVisible(false);
+
+    try {
+      const deleteResults = await Promise.all(
+        selectedItemsWithoutRules.map((item) => DataStore.integrations.deleteIntegration(item.id))
+      );
+      const deletedCount = deleteResults.filter(Boolean).length;
+      const failedCount = deleteResults.length - deletedCount;
+
+      if (deletedCount > 0) {
+        successNotificationToast(
+          notifications,
+          'deleted',
+          deletedCount === 1 ? 'integration' : 'integrations'
+        );
+      }
+
+      if (failedCount > 0) {
+        notifications.toasts.addWarning({
+          title: 'Some integrations could not be deleted',
+          text: `${failedCount} integration${failedCount !== 1 ? 's' : ''} could not be deleted.`,
+          toastLifeTimeMs: 5000,
+        });
+      }
+
+      if (selectedItemsWithRulesCount > 0) {
+        notifications.toasts.addWarning({
+          title: 'Some integrations were skipped',
+          text: `${selectedItemsWithRulesCount} integration${
+            selectedItemsWithRulesCount !== 1 ? 's were' : ' was'
+          } not deleted because ${
+            selectedItemsWithRulesCount !== 1 ? 'they have' : 'it has'
+          } associated detection rules.`,
+          toastLifeTimeMs: 5000,
+        });
+      }
+
+      await loadIntegrations();
+      if (isMountedRef.current) {
+        setSelectedItems([]);
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [selectedItemsWithoutRules, selectedItemsWithRulesCount, loadIntegrations, notifications]);
 
   const panels = [
     <EuiContextMenuItem
@@ -101,9 +190,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       key="promote"
       icon="share"
       onClick={() => {
-        const { search } = location;
-        const params = new URLSearchParams(search);
-        params.set('space', spaceFilter);
         history.push({
           pathname: `${ROUTES.PROMOTE}`,
           search: `?space=${spaceFilter}`,
@@ -121,6 +207,30 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       Promote
     </EuiContextMenuItem>,
     <EuiContextMenuItem
+      key="delete"
+      icon="trash"
+      onClick={() => {
+        setIsDeleteSelectedModalVisible(true);
+        setIsPopoverOpen(false);
+      }}
+      disabled={isDeleteSelectedActionDisabled}
+      toolTipContent={
+        isDeleteActionDisabledBySpace
+          ? 'Integrations can only be deleted in the draft space.'
+          : selectedItems.length === 0
+          ? 'Select integrations to delete.'
+          : selectedItemsWithoutRules.length === 0
+          ? 'Only integrations without associated detection rules can be deleted.'
+          : selectedItemsWithRulesCount > 0
+          ? `${selectedItemsWithRulesCount} selected integration${
+              selectedItemsWithRulesCount !== 1 ? 's have' : ' has'
+            } associated detection rules and will be skipped.`
+          : undefined
+      }
+    >
+      Delete selected ({selectedItems.length})
+    </EuiContextMenuItem>,
+  <EuiContextMenuItem
       key="rearrange_integrations"
       icon="sortable"
       onClick={() => {
@@ -168,22 +278,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   );
 
   useEffect(() => {
-    getIntegrations();
-  }, [dataSource]);
-
-  const loadIntegrations = useCallback(async () => {
-    setLoading(true);
-
-    const response = await DataStore.integrations.getIntegrations(spaceFilter);
-
-    if (!isMountedRef.current) {
-      return;
-    }
-    setIntegrations(response);
-    setLoading(false);
-  }, [spaceFilter]);
-
-  useEffect(() => {
     loadIntegrations();
   }, [loadIntegrations]);
 
@@ -207,6 +301,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         <>
           {itemForAction.action === SPACE_ACTIONS.DELETE && (
             <DeleteIntegrationModal
+              integrationID={itemForAction.item.title}
               integrationName={itemForAction.item.title}
               closeModal={() => setItemForAction(null)}
               onConfirm={() => deleteIntegration(itemForAction.item.id)}
@@ -220,6 +315,32 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             />
           )}
         </>
+      )}
+      {isDeleteSelectedModalVisible && (
+        <EuiConfirmModal
+          title={`Delete ${selectedItemsWithoutRules.length} integration${
+            selectedItemsWithoutRules.length !== 1 ? 's' : ''
+          }`}
+          onCancel={() => setIsDeleteSelectedModalVisible(false)}
+          onConfirm={deleteSelectedIntegrations}
+          cancelButtonText="Cancel"
+          confirmButtonText="Delete"
+          buttonColor="danger"
+          defaultFocusedButton="cancel"
+        >
+          <p>
+            {`Are you sure you want to delete ${selectedItemsWithoutRules.length} integration${
+              selectedItemsWithoutRules.length !== 1 ? 's' : ''
+            }? This action cannot be undone.`}
+          </p>
+          {selectedItemsWithRulesCount > 0 && (
+            <p>
+              {`${selectedItemsWithRulesCount} selected integration${
+                selectedItemsWithRulesCount !== 1 ? 's have' : ' has'
+              } associated detection rules and will be skipped.`}
+            </p>
+          )}
+        </EuiConfirmModal>
       )}
 
       <PageHeader appRightControls={[{ renderComponent: createIntegrationAction }]}>

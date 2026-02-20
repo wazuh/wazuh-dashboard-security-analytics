@@ -27,7 +27,8 @@ import { DataStore } from '../../../store/DataStore';
 
 export interface DeleteIntegrationModalProps {
   integrationName: string;
-  detectionRulesCount: number;
+  integrationID?: string;
+  detectionRulesCount?: number;
   loading?: boolean;
   closeModal: () => void;
   onConfirm: () => void;
@@ -43,11 +44,15 @@ const LoadingModal = ({closeModal}) => (
 
 export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = withGuardAsync(
   ({integrationID}) => {
+    if (!integrationID) {
+      return Promise.resolve({ ok: false, data: { detectionRulesCount: 0 } });
+    }
+
     return DataStore.rules.getAllRules({
       'rule.category': [integrationID],
     }).then(response => ({ ok: false, data: {detectionRulesCount: response.length}}))
 }, null, LoadingModal)(({
-  detectionRulesCount,
+  detectionRulesCount = 0,
   integrationName,
   closeModal,
   onConfirm,
