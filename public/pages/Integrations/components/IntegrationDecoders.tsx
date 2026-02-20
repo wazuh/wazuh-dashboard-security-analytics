@@ -39,9 +39,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   space,
   onRefresh,
 }) => {
-  const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(
-    undefined,
-  );
+  const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(undefined);
 
   const columns: EuiBasicTableColumn<DecoderTableItem>[] = useMemo(
     () => [
@@ -59,18 +57,16 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
         field: 'title',
         name: 'Title',
         sortable: true,
-        render: (_: string, decoder: DecoderTableItem) =>
-          formatCellValue(decoder?.title),
+        render: (_: string, decoder: DecoderTableItem) => formatCellValue(decoder?.title),
       },
       {
         field: 'author',
         name: 'Author',
         sortable: true,
-        render: (_: string, decoder: DecoderTableItem) =>
-          formatCellValue(decoder?.author),
+        render: (_: string, decoder: DecoderTableItem) => formatCellValue(decoder?.author),
       },
     ],
-    [],
+    []
   );
 
   const closeFlyout = useCallback(() => {
@@ -88,36 +84,24 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   return (
     <>
       {flyoutDecoderId && (
-        <DecoderDetailsFlyout
-          decoderId={flyoutDecoderId}
-          space={space}
-          onClose={closeFlyout}
-        />
+        <DecoderDetailsFlyout decoderId={flyoutDecoderId} space={space} onClose={closeFlyout} />
       )}
 
       <ContentPanel
-        title='Decoders'
+        title="Decoders"
         hideHeaderBorder={true}
         actions={[<EuiSmallButton onClick={onRefresh}>Refresh</EuiSmallButton>]}
       >
         {decoders.length === 0 && !loading ? (
-          <EuiFlexGroup
-            justifyContent='center'
-            alignItems='center'
-            direction='column'
-          >
+          <EuiFlexGroup justifyContent="center" alignItems="center" direction="column">
             <EuiFlexItem grow={false}>
-              <EuiText color='subdued' size='s'>
+              <EuiText color="subdued" size="s">
                 <p>There are no decoders associated with this integration.</p>
               </EuiText>
             </EuiFlexItem>
 
             <EuiFlexItem grow={false}>
-              <EuiSmallButton
-                fill
-                href={`#${ROUTES.DECODERS_CREATE}`}
-                target='_blank'
-              >
+              <EuiSmallButton fill href={`#${ROUTES.DECODERS_CREATE}`} target="_blank">
                 Create decoder&nbsp;
                 <EuiIcon type={'popout'} />
               </EuiSmallButton>
@@ -136,7 +120,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
             sorting={{
               sort: { field: 'document.name', direction: 'asc' },
             }}
-            message='No decoders found.'
+            message="No decoders found."
           />
         )}
       </ContentPanel>
