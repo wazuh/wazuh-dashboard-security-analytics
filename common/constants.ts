@@ -21,8 +21,7 @@ export const SpaceTypes = {
   DRAFT: {
     label: 'Draft',
     value: 'draft',
-    description:
-      'Staging area for creating or editing resources before testing.',
+    description: 'Staging area for creating or editing resources before testing.',
   },
   TEST: {
     label: 'Test',
@@ -47,6 +46,7 @@ export const SPACE_ACTIONS = {
   DELETE: 'delete',
   PROMOTE: 'promote',
   DEFINE_ROOT_DECODER: 'define_root_decoder',
+  REARRANGE_INTEGRATIONS: 'rearrange_integrations',
 };
 
 export const AllowedActionsBySpace = {
@@ -56,6 +56,7 @@ export const AllowedActionsBySpace = {
     SPACE_ACTIONS.DELETE,
     SPACE_ACTIONS.PROMOTE,
     SPACE_ACTIONS.DEFINE_ROOT_DECODER,
+    SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
   ],
   [SpaceTypes.TEST.value]: [SPACE_ACTIONS.PROMOTE],
   [SpaceTypes.CUSTOM.value]: [],
