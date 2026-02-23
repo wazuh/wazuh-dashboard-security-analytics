@@ -51,7 +51,7 @@ export default class IntegrationService {
           must: [
             {
               match: {
-                'document.id': id,
+                _id: id,
               },
             },
             {
@@ -80,7 +80,7 @@ export default class IntegrationService {
       };
     }
 
-    const queryString = JSON.stringify(query);
+    const queryString = JSON.stringify({ query, space: spaceFilter });
     return (await this.httpClient.post(url, {
       body: queryString,
       query: {

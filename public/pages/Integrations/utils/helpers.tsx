@@ -25,7 +25,7 @@ export const getIntegrationsTableColumns = ({
   setItemForAction: (options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null) => void;
 }) => [
   {
-    field: 'title',
+    field: 'document.title',
     name: 'Title',
     sortable: true,
     render: (name: string, item: Integration) => {
@@ -33,37 +33,37 @@ export const getIntegrationsTableColumns = ({
     },
   },
   {
-    field: 'description',
+    field: 'document.description',
     name: 'Description',
     truncateText: false,
   },
   {
-    field: 'category',
+    field: 'document.category',
     name: 'Category',
     truncateText: false,
   },
   {
-    field: 'space',
+    field: 'space.name',
     name: 'Space',
     render: (spaceName: string) => capitalize(spaceName),
   },
   {
-    field: 'decoders.length',
+    field: 'document.decoders',
     name: 'Decoders',
     sortable: true,
-    render: (decodersLength: number) => decodersLength,
+    render: (decoders: string[]) => decoders?.length ?? 0,
   },
   {
-    field: 'kvdbs.length',
+    field: 'document.kvdbs',
     name: 'KVDBs',
     sortable: true,
-    render: (kvdbsLength: number) => kvdbsLength,
+    render: (kvdbs: string[]) => kvdbs?.length ?? 0,
   },
   {
-    field: 'rules.length',
+    field: 'document.rules',
     name: 'Rules',
     sortable: true,
-    render: (rulesLength: number) => rulesLength,
+    render: (rules: any[]) => rules?.length ?? 0,
   },
   {
     name: 'Actions',
@@ -83,7 +83,8 @@ export const getIntegrationsTableColumns = ({
         type: 'icon',
         icon: 'trash',
         color: 'danger',
-        available: (item) => AllowedActionsBySpace?.[item.space]?.includes(SPACE_ACTIONS.DELETE),
+        available: (item) =>
+          AllowedActionsBySpace?.[item.space.name]?.includes(SPACE_ACTIONS.DELETE),
         onClick: (item) => {
           setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },
@@ -102,7 +103,7 @@ export const getIntegrationsTableSearchConfig = (): Search => {
     filters: [
       {
         type: 'field_value_selection',
-        field: 'category',
+        field: 'document.category',
         name: 'Category',
         compressed: true,
         multiSelect: 'or',

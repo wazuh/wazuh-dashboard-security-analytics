@@ -15,25 +15,30 @@ export interface IntegrationItem extends Integration {
   kvdbsCount: number;
 }
 
-export interface Integration extends Omit<IntegrationBase, 'document'> {
-  document: IntegrationBase['document'] & {
-    id: string;
-  };
+export interface Integration {
+  id: string;
+  document: IntegrationBase['document'];
+  space: IntegrationBase['space'];
 }
 
 export interface IntegrationBase {
   document: {
+    id: string;
     title: string;
     author: string;
     date: string;
     description: string;
-    space: { name: string };
     category: string;
     tags: {
       correlation_id: number;
     } | null;
     decoders?: string[];
     kvdbs?: string[];
+    references?: string[];
+    documentation?: string;
+  };
+  space: {
+    name: string;
   };
 }
 
