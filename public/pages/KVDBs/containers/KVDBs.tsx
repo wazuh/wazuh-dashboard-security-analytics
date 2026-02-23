@@ -159,6 +159,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             ? 'The KVDB has been deleted successfully.'
             : 'The selected KVDBs have been deleted successfully.'
         );
+      } else {
+        throw new Error('One or more deletions failed');
       }
 
       setSelectedItems([]);
