@@ -27,14 +27,20 @@ import { DataStore } from '../../../store/DataStore';
 
 export interface DeleteIntegrationModalProps {
   integrationName: string;
-  integrationID?: string;
+  integrationId: string;
   detectionRulesCount?: number;
+  decodersCount?: number;
+  kvdbsCount?: number;
   loading?: boolean;
   closeModal: () => void;
   onConfirm: () => void;
 }
 
-const LoadingModal = ({closeModal}) => (
+const DELETE_INTEGRATION_ASSOCIATED_ENTITIES_MESSAGE =
+  "Only integrations that don't have associated rules, decoders, or KVDBs can be deleted. Consider editing integration or deleting the associated entities.";
+
+
+const LoadingModal = ({ closeModal }) => (
   <EuiOverlayMask>
     <EuiModal onClose={closeModal}>
       <EuiLoadingSpinner size="l" />
@@ -43,95 +49,95 @@ const LoadingModal = ({closeModal}) => (
 )
 
 export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = withGuardAsync(
-  ({integrationID}) => {
-    if (!integrationID) {
-      return Promise.resolve({ ok: false, data: { detectionRulesCount: 0 } });
-    }
-
+  ({ integrationId, integrationName }) => {
+    /** ToDo: Check if is necessary validate integration existence on decoders and kvdbs */
     return DataStore.rules.getAllRules({
-      'rule.category': [integrationID],
-    }).then(response => ({ ok: false, data: {detectionRulesCount: response.length}}))
-}, null, LoadingModal)(({
-  detectionRulesCount = 0,
-  integrationName,
-  closeModal,
-  onConfirm,
-}) => {
-  const [confirmDeleteText, setConfirmDeleteText] = useState('');
+      'rule.category': [integrationName],
+    }).then(response => ({ ok: false, data: { detectionRulesCount: response.length } }))
+  }, null, LoadingModal)(({
+    detectionRulesCount = 0,
+    decodersCount = 0,
+    kvdbsCount = 0,
+    integrationName,
+    closeModal,
+    onConfirm,
+  }) => {
+    const [confirmDeleteText, setConfirmDeleteText] = useState('');
+    const hasRelatedEntities = detectionRulesCount > 0 || decodersCount > 0 || kvdbsCount > 0;
+    const relatedEntitiesMessage = DataStore.integrations.getRelatedEntitiesMessage({
+      hasRules: detectionRulesCount > 0,
+      hasDecoders: decodersCount > 0,
+      hasKVDBs: kvdbsCount > 0,
+    });
 
-  const onConfirmClick = async () => {
-    await onConfirm();
-    closeModal();
-  };
+    const onConfirmClick = async () => {
+      await onConfirm();
+      closeModal();
+    };
 
-  return (
-    <EuiOverlayMask>
-      {detectionRulesCount > 0 ? (
-        <EuiModal onClose={closeModal}>
-          <EuiModalHeader>
-            <EuiModalHeaderTitle>
+    return (
+      <EuiOverlayMask>
+        {hasRelatedEntities ? (
+          <EuiModal onClose={closeModal}>
+            <EuiModalHeader>
+              <EuiModalHeaderTitle>
+                <EuiText size="s">
+                  {/* log type replaced by integration */}
+                  <h2>This integration can't be deleted</h2>
+                </EuiText>
+              </EuiModalHeaderTitle>
+            </EuiModalHeader>
+            <EuiModalBody>
+              <EuiCallOut
+                size="s"
+                title={`This integration is associated with ${relatedEntitiesMessage}.`}
+                iconType={'iInCircle'}
+                color="warning"
+              />
+              <EuiSpacer />
               <EuiText size="s">
-                {/* log type replaced by integration */}
-                <h2>This integration can't be deleted</h2>
+                <p>{DELETE_INTEGRATION_ASSOCIATED_ENTITIES_MESSAGE}</p>
               </EuiText>
-            </EuiModalHeaderTitle>
-          </EuiModalHeader>
-          <EuiModalBody>
-            <EuiCallOut
-              size="s"
-              title={`This integration is associated with ${detectionRulesCount} detection ${
-                detectionRulesCount > 1 ? 'rules' : 'rule'
-              }.`}
-              iconType={'iInCircle'}
-              color="warning"
-            />
-            <EuiSpacer />
-            <EuiText size="s">
+            </EuiModalBody>
+            <EuiModalFooter>
+              <EuiSmallButton onClick={closeModal} fill>
+                Close
+              </EuiSmallButton>
+            </EuiModalFooter>
+          </EuiModal>
+        ) : (
+          <EuiConfirmModal
+            title={<EuiText size="s"><h2>Delete integration?</h2></EuiText>}
+            onCancel={closeModal}
+            onConfirm={onConfirmClick}
+            cancelButtonText={'Cancel'}
+            confirmButtonText={`Delete integration`}
+            buttonColor={'danger'}
+            defaultFocusedButton="confirm"
+            confirmButtonDisabled={confirmDeleteText != integrationName}
+          >
+            <EuiForm>
               <p>
-                Only integrations that don’t have any associated rules can be deleted. Consider editing
-                integration or deleting associated detection rules.
+                <EuiText size="s">
+                  The integration will be permanently deleted. This action is irreversible.
+                </EuiText>
               </p>
-            </EuiText>
-          </EuiModalBody>
-          <EuiModalFooter>
-            <EuiSmallButton onClick={closeModal} fill>
-              Close
-            </EuiSmallButton>
-          </EuiModalFooter>
-        </EuiModal>
-      ) : (
-        <EuiConfirmModal
-          title={<EuiText size="s"><h2>Delete integration?</h2></EuiText>}
-          onCancel={closeModal}
-          onConfirm={onConfirmClick}
-          cancelButtonText={'Cancel'}
-          confirmButtonText={`Delete integration`}
-          buttonColor={'danger'}
-          defaultFocusedButton="confirm"
-          confirmButtonDisabled={confirmDeleteText != integrationName}
-        >
-          <EuiForm>
-            <p>
-              <EuiText size="s">
-                The integration will be permanently deleted. This action is irreversible.
-              </EuiText>
-            </p>
-            <EuiSpacer size="s"/>
-              <p style={{marginBottom: '0.3rem'}}>
+              <EuiSpacer size="s" />
+              <p style={{ marginBottom: '0.3rem' }}>
                 <EuiText size="s">
                   Type {<b>{integrationName}</b>} to confirm
                 </EuiText>
               </p>
 
-            <EuiCompressedFormRow>
-              <EuiCompressedFieldText
-                value={confirmDeleteText}
-                onChange={(e) => setConfirmDeleteText(e.target.value)}
-              />
-            </EuiCompressedFormRow>
-          </EuiForm>
-        </EuiConfirmModal>
-      )}
-    </EuiOverlayMask>
-  );
-});
+              <EuiCompressedFormRow>
+                <EuiCompressedFieldText
+                  value={confirmDeleteText}
+                  onChange={(e) => setConfirmDeleteText(e.target.value)}
+                />
+              </EuiCompressedFormRow>
+            </EuiForm>
+          </EuiConfirmModal>
+        )}
+      </EuiOverlayMask>
+    );
+  });
