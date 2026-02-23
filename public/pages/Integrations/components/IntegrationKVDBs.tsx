@@ -16,17 +16,12 @@ import {
 import { ContentPanel } from "../../../components/ContentPanel";
 import { KVDBDetailsFlyout } from "../../KVDBs/components/KVDBDetailsFlyout";
 import { formatCellValue } from "../../../utils/helpers";
+import { KVDBItem } from "../../../../types";
 
 export interface IntegrationKVDBsProps {
-  kvdbs: KVDBTableItem[];
+  kvdbs: KVDBItem[];
   loading: boolean;
   onRefresh: () => void;
-}
-
-export interface KVDBTableItem {
-  id: string;
-  title?: string;
-  author?: string;
 }
 
 export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
@@ -34,28 +29,26 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   loading,
   onRefresh,
 }) => {
-  const [flyoutKvdb, setFlyoutKvdb] = useState<KVDBTableItem | undefined>(
-    undefined,
-  );
+  const [flyoutKvdb, setFlyoutKvdb] = useState<KVDBItem | undefined>(undefined);
 
-  const columns: EuiBasicTableColumn<KVDBTableItem>[] = useMemo(
+  const columns: EuiBasicTableColumn<KVDBItem>[] = useMemo(
     () => [
       {
-        field: "title",
+        field: "document.title",
         name: "Title",
         sortable: true,
-        render: (_: string, kvdb: KVDBTableItem) => (
+        render: (_: string, kvdb: KVDBItem) => (
           <EuiLink onClick={() => setFlyoutKvdb(kvdb)}>
-            {formatCellValue(kvdb.title)}
+            {formatCellValue(kvdb.document?.title)}
           </EuiLink>
         ),
       },
       {
-        field: "author",
+        field: "document.author",
         name: "Author",
         sortable: true,
-        render: (_: string, kvdb: KVDBTableItem) =>
-          formatCellValue(kvdb.author),
+        render: (_: string, kvdb: KVDBItem) =>
+          formatCellValue(kvdb.document?.author),
       },
     ],
     [],
@@ -103,7 +96,6 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
             pagination={{ initialPageSize: 10, pageSizeOptions: [10, 25, 50] }}
             sorting={{ sort: { field: "document.title", direction: "asc" } }}
             message="No KVDBs found."
-
           />
         )}
       </ContentPanel>
