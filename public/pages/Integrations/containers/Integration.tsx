@@ -241,7 +241,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Detection rules',
+                  title: 'Rules',
                   description: integrationDetails.detectionRulesCount,
                 },
               ]}

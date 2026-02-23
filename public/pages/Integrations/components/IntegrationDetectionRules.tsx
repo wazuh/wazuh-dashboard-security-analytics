@@ -23,53 +23,42 @@ export interface IntegrationDetectionRulesProps {
   refreshRules: () => void;
 }
 
-export const IntegrationDetectionRules: React.FC<
-  IntegrationDetectionRulesProps
-> = ({ rules, loadingRules, refreshRules }) => {
-  const [flyoutData, setFlyoutData] = useState<RuleTableItem | undefined>(
-    undefined,
-  );
+export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps> = ({
+  rules,
+  loadingRules,
+  refreshRules,
+}) => {
+  const [flyoutData, setFlyoutData] = useState<RuleTableItem | undefined>(undefined);
   const hideFlyout = useCallback(() => {
     setFlyoutData(undefined);
   }, []);
 
   return (
     <>
-      {flyoutData && (
-        <RuleViewerFlyout hideFlyout={hideFlyout} ruleTableItem={flyoutData} />
-      )}
+      {flyoutData && <RuleViewerFlyout hideFlyout={hideFlyout} ruleTableItem={flyoutData} />}
       <ContentPanel
-        title='Detection rules'
+        title="Rules"
         hideHeaderBorder={true}
-        actions={[
-          <EuiSmallButton onClick={refreshRules}>Refresh</EuiSmallButton>,
-        ]}
+        actions={[<EuiSmallButton onClick={refreshRules}>Refresh</EuiSmallButton>]}
       >
         {rules.length === 0 ? (
-          <EuiFlexGroup
-            justifyContent='center'
-            alignItems='center'
-            direction='column'
-          >
+          <EuiFlexGroup justifyContent="center" alignItems="center" direction="column">
             <EuiFlexItem grow={false}>
-              <EuiText color='subdued' size='s'>
+              <EuiText color="subdued" size="s">
                 {/* By Wazuh */}
-                <p>
-                  There are no detection rules associated with this
-                  integration.{' '}
-                </p>
+                <p>There are no rules associated with this integration. </p>
               </EuiText>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
               <EuiSmallButton
                 fill
                 href={`opensearch_security_analytics_dashboards#/create-rule`}
-                target='_blank'
+                target="_blank"
               >
-                Create detection rule&nbsp;
+                Create rule&nbsp;
                 <EuiIcon type={'popout'} />
               </EuiSmallButton>
-              <EuiSpacer size='xl' />
+              <EuiSpacer size="xl" />
             </EuiFlexItem>
           </EuiFlexGroup>
         ) : (

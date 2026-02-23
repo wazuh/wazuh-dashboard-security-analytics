@@ -140,41 +140,41 @@ export class PoliciesService extends MDSEnabledClientService {
     };
   }
 
-  private async fetchIntegrationMap(client: any, policyIds: string[]) {
-    const integrations = new Map<string, string[]>();
+  private async fetchIntegrationMap<T>(
+    client: any,
+    space: string,
+    integrationsIds: string[],
+    _source?: string[]
+  ): Promise<Map<string, T>> {
+    let integrations = new Map<string, T>();
 
-    if (!policyIds.length) {
+    if (!integrationsIds.length) {
       return integrations;
     }
+
+    const query = this.applySpaceFilter(
+      {
+        terms: {
+          'document.id': integrationsIds,
+        },
+      },
+      space,
+      (await this.getSpaceFieldCaps(client)).searchFields
+    );
 
     try {
       const integrationResponse = await client('search', {
         index: INTEGRATIONS_INDEX,
         body: {
           size: 10000,
-          query: {
-            terms: {
-              'document.policies': policyIds,
-            },
-          },
-          _source: ['document.title', 'document.policies'],
+          query: query,
+          _source: _source,
         },
       });
 
       const hits = integrationResponse?.hits?.hits ?? [];
-      hits.forEach((hit: any) => {
-        const title = hit?._source?.document?.title;
-        const policyRefs = hit?._source?.document?.policies;
-        const policyList = Array.isArray(policyRefs) ? policyRefs : policyRefs ? [policyRefs] : [];
-        policyList.forEach((policyId: string) => {
-          if (!integrations.has(policyId)) {
-            integrations.set(policyId, []);
-          }
-          if (title && !integrations.get(policyId)!.includes(title)) {
-            integrations.get(policyId)!.push(title);
-          }
-        });
-      });
+
+      integrations = new Map(hits.map((hit: any) => [hit?._source?.document?.id, hit._source]));
     } catch (error: any) {
       console.warn('Security Analytics - PoliciesService - fetchIntegrationMap:', error?.message);
     }
@@ -192,7 +192,7 @@ export class PoliciesService extends MDSEnabledClientService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source } = body;
+      const { from = 0, size = 25, sort, query, _source, includeIntegrationFields } = body;
       const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
@@ -208,12 +208,23 @@ export class PoliciesService extends MDSEnabledClientService {
       });
 
       const hits = searchResponse?.hits?.hits ?? [];
-      const policyIds = hits.map((hit: any) => hit._id);
-      const integrationMap = await this.fetchIntegrationMap(client, policyIds);
+      const integrationsIds = [
+        ...hits.map((hit: any) => hit?._source?.document?.integrations),
+      ].flat();
+      const integrationMap = await this.fetchIntegrationMap(
+        client,
+        space,
+        integrationsIds,
+        includeIntegrationFields
+      );
+
       const items: PolicyItem[] = hits.map((hit: any) => ({
         id: hit._id,
         ...hit._source,
-        integrations: integrationMap.get(hit._id) ?? [],
+        integrationsMap: Object.fromEntries(
+          hit._source?.document?.integrations?.map?.((id) => [id, integrationMap.get(id) ?? {}]) ??
+            []
+        ),
       }));
       const total =
         typeof searchResponse?.hits?.total === 'number'
@@ -252,13 +263,15 @@ export class PoliciesService extends MDSEnabledClientService {
       const space = (request.query as { space?: string })?.space;
       const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
-      const searchResponse = await client('search', {
+      const query = {
         index: POLICIES_INDEX,
         body: {
           size: 1,
           query: this.applySpaceFilter({ ids: { values: [policyId] } }, space, searchFields),
         },
-      });
+      };
+
+      const searchResponse = await client('search', query);
 
       const hit = searchResponse?.hits?.hits?.[0];
       if (!hit) {
