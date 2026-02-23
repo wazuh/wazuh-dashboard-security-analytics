@@ -18,7 +18,11 @@ import {
 } from '@elastic/eui';
 import { IntegrationItem } from '../../../../types';
 import React from 'react';
-import { LOG_TYPE_NAME_REGEX, validateName } from '../../../utils/validation';
+import {
+  INTEGRATION_AUTHOR_REGEX,
+  LOG_TYPE_NAME_REGEX,
+  validateName,
+} from '../../../utils/validation';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { useState } from 'react';
 import { getIntegrationCategoryOptions } from '../../../utils/helpers';
@@ -38,8 +42,7 @@ const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({
   <EuiText
     size="s"
     style={{
-      minHeight: isTextArea ? '88px' : '32px',
-      padding: isTextArea ? '6px 0' : '6px 0',
+      padding: '6px 0',
       lineHeight: isTextArea ? '1.5' : '20px',
       whiteSpace: isTextArea ? 'pre-wrap' : 'nowrap',
       overflow: 'hidden',
@@ -82,7 +85,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
     );
     const authorInvalid = !validateName(
       details.document.author,
-      LOG_TYPE_NAME_REGEX,
+      INTEGRATION_AUTHOR_REGEX,
       false /* shouldTrim */
     );
     const categoryInvalid = (categoryTouched || onSubmit) && !details.document.category;
@@ -225,7 +228,16 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         )}
       </EuiCompressedFormRow>
       <EuiCompressedFormRow
-        label="Documentation"
+        label={
+          isEditMode ? (
+            <>
+              {'Documentation - '}
+              <em>optional</em>
+            </>
+          ) : (
+            'Documentation'
+          )
+        }
         helpText={isEditMode && 'Must contain 2-100 characters.'}
       >
         {isEditMode ? (
@@ -290,28 +302,20 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         )
       )}
       {isEditMode ? (
-        <div style={{ padding: '30px 0px' }}>
-          <EuiBottomBar>
-            <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
-              <EuiFlexItem grow={false}>
-                <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={onCancel}>
-                  Cancel
-                </EuiButtonEmpty>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiButton
-                  color="primary"
-                  fill
-                  iconType="check"
-                  size="s"
-                  onClick={onConfirmClicked}
-                >
-                  {confirmButtonText}
-                </EuiButton>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiBottomBar>
-        </div>
+        <EuiBottomBar>
+          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={onCancel}>
+                Cancel
+              </EuiButtonEmpty>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButton color="primary" fill iconType="check" size="s" onClick={onConfirmClicked}>
+                {confirmButtonText}
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiBottomBar>
       ) : null}
     </>
   );
