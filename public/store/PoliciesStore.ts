@@ -7,6 +7,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   PolicyItem,
   SearchPoliciesResponse,
+  SearchPolicyOptions,
   UpdatePolicyRequestBody,
   UpdatePolicyResponse,
 } from '../../types';
@@ -24,8 +25,11 @@ export interface PoliciesSearchParams {
 export class PoliciesStore {
   constructor(private service: PoliciesService, private notifications: NotificationsStart) {}
 
-  public async searchPolicies(space: string): Promise<SearchPoliciesResponse> {
-    const response = await this.service.searchPolicies(space);
+  public async searchPolicies(
+    space: string,
+    options: SearchPolicyOptions
+  ): Promise<SearchPoliciesResponse> {
+    const response = await this.service.searchPolicies(space, options);
     if (!response.ok) {
       if (
         response.error?.includes('index_not_found_exception') ||
