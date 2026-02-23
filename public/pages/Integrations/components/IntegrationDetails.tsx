@@ -31,16 +31,13 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   setIntegrationDetails,
   integrationId,
 }) => {
-  const onUpdateIntegration = async () => {
-    const success = await DataStore.integrations.updateIntegration(
-      integrationId,
-      integrationDetails
-    );
+  const onUpdateIntegration = async (integrationData: IntegrationItem) => {
+    const success = await DataStore.integrations.updateIntegration(integrationId, integrationData);
     if (success) {
       successNotificationToast(
         notifications,
         'updated',
-        `integration ${integrationDetails.document.title}`
+        `integration ${integrationData.document.title}`
       );
       setIsEditMode(false);
     }
