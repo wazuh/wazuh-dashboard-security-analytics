@@ -13,7 +13,6 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { successNotificationToast } from '../../../utils/helpers';
 
 export interface IntegrationDetailsProps {
-  initialIntegrationDetails: IntegrationItem;
   integrationDetails: IntegrationItem;
   isEditMode: boolean;
   notifications: NotificationsStart;
@@ -23,7 +22,6 @@ export interface IntegrationDetailsProps {
 }
 
 export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
-  initialIntegrationDetails,
   integrationDetails,
   isEditMode,
   notifications,
@@ -34,6 +32,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   const onUpdateIntegration = async (integrationData: IntegrationItem) => {
     const success = await DataStore.integrations.updateIntegration(integrationId, integrationData);
     if (success) {
+      setIntegrationDetails(integrationData);
       successNotificationToast(
         notifications,
         'updated',
@@ -64,7 +63,6 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
                 notifications={notifications}
                 setIntegrationDetails={setIntegrationDetails}
                 onCancel={() => {
-                  setIntegrationDetails(initialIntegrationDetails);
                   setIsEditMode(false);
                 }}
                 onConfirm={onUpdateIntegration}
