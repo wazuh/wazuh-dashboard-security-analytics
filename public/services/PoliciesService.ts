@@ -10,6 +10,7 @@ import {
   GetPolicyResponse,
   PolicyDocument,
   SearchPoliciesResponse,
+  SearchPolicyOptions,
   UpdatePolicyResponse,
 } from '../../types';
 
@@ -20,12 +21,16 @@ export default class PoliciesService {
     this.httpClient = httpClient;
   }
 
-  searchPolicies = async (space: string): Promise<ServerResponse<SearchPoliciesResponse>> => {
+  searchPolicies = async (
+    space: string,
+    options: SearchPolicyOptions = {}
+  ): Promise<ServerResponse<SearchPoliciesResponse>> => {
     const url = `..${API.POLICIES_BASE}/_search`;
 
     const query = { space };
     return (await this.httpClient.post(url, {
       query,
+      body: JSON.stringify(options),
     })) as ServerResponse<SearchPoliciesResponse>;
   };
 

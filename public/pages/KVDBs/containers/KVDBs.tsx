@@ -23,7 +23,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import {
   errorNotificationToast,
@@ -35,7 +35,8 @@ import { KVDBS_PAGE_SIZE, KVDBS_SEARCH_SCHEMA, KVDBS_SORT_FIELD } from '../utils
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
-import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
+import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
+
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -51,7 +52,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [searchQuery, setSearchQuery] = useState<any>(null);
   const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
-  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
+  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+    onSpaceChange: () => setPageIndex(0),
+  });
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [kvdbToDelete, setKvdbToDelete] = useState<string | null>(null);
@@ -183,10 +186,15 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     [pageIndex, pageSize, totalItemCount]
   );
 
-  const sorting = useMemo(() => ({ sort: { field: sortField, direction: sortDirection } }), [
-    sortField,
-    sortDirection,
-  ]);
+    const sorting = useMemo(
+    () => ({
+      sort: {
+        field: sortField,
+        direction: sortDirection,
+      },
+    }),
+    [sortField, sortDirection]
+  );
 
   const menuItems = [
     <EuiContextMenuItem
@@ -243,6 +251,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       },
       {
         name: 'Actions',
+        align: 'right',
         actions: [
           {
             name: 'View',
@@ -313,15 +322,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                 <h1>KVDBs</h1>
               </EuiText>
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <SpaceSelector
-                selectedSpace={spaceFilter}
-                onSpaceChange={(id) => {
-                  setSpaceFilter(id);
-                  setPageIndex(0);
-                }}
-              />
-            </EuiFlexItem>
+            <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
             <EuiFlexItem grow={false}>
               <EuiPopover
                 id="kvdbsActionsPopover"

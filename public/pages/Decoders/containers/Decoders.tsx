@@ -36,15 +36,9 @@ import {
 import { buildDecodersSearchQuery } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
 import { SpaceTypes } from '../../../../common/constants';
-import { SpaceSelector } from '../../../components/SpaceSelector';
+import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 
 const DEFAULT_PAGE_SIZE = 25;
-const SORT_FIELD_MAP: Record<string, string> = {
-  'document.name': 'document.name.keyword',
-};
-const SORT_UNMAPPED_TYPE: Record<string, string> = {
-  'document.name.keyword': 'keyword',
-};
 
 interface DecodersProps {
   history: RouteComponentProps['history'];
@@ -62,8 +56,9 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('document.name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
-  const [spacesLoading, setSpacesLoading] = useState(false);
+  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+    onSpaceChange: () => setPageIndex(0),
+  });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedDecoder, setSelectedDecoder] = useState<{
     id: string;
@@ -95,13 +90,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const loadDecoders = useCallback(async () => {
     setLoading(true);
     const query = buildDecodersSearchQuery(appliedSearch);
-    const sortFieldName = SORT_FIELD_MAP[sortField] ?? sortField;
-    const sort = sortFieldName
+    const sort = sortField
       ? [
           {
-            [sortFieldName]: {
+            [sortField]: {
               order: sortDirection,
-              unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? 'keyword',
             },
           },
         ]
@@ -252,17 +245,6 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       },
     ],
     [spaceFilter, deleteDecoder]
-  );
-
-  const spaceSelector = (
-    <SpaceSelector
-      selectedSpace={spaceFilter}
-      onSpaceChange={(id) => {
-        setSpaceFilter(id);
-        setPageIndex(0);
-      }}
-      isDisabled={spacesLoading}
-    />
   );
 
   const panels = [
