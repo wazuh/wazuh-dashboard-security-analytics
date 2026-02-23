@@ -7,7 +7,14 @@ import React, { useState, useCallback } from 'react';
 import { RulesTable } from '../../Rules/components/RulesTable/RulesTable';
 import { RuleTableItem } from '../../Rules/utils/helpers';
 import { ContentPanel } from '../../../components/ContentPanel';
-import { EuiSmallButton, EuiFlexGroup, EuiFlexItem, EuiIcon, EuiSpacer, EuiText } from '@elastic/eui';
+import {
+  EuiSmallButton,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiIcon,
+  EuiSpacer,
+  EuiText,
+} from '@elastic/eui';
 import { RuleViewerFlyout } from '../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
 
 export interface IntegrationDetectionRulesProps {
@@ -30,7 +37,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     <>
       {flyoutData && <RuleViewerFlyout hideFlyout={hideFlyout} ruleTableItem={flyoutData} />}
       <ContentPanel
-        title="Detection rules"
+        title="Rules"
         hideHeaderBorder={true}
         actions={[<EuiSmallButton onClick={refreshRules}>Refresh</EuiSmallButton>]}
       >
@@ -39,7 +46,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
             <EuiFlexItem grow={false}>
               <EuiText color="subdued" size="s">
                 {/* By Wazuh */}
-                <p>There are no detection rules associated with this integration. </p>
+                <p>There are no rules associated with this integration. </p>
               </EuiText>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
@@ -48,7 +55,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
                 href={`opensearch_security_analytics_dashboards#/create-rule`}
                 target="_blank"
               >
-                Create detection rule&nbsp;
+                Create rule&nbsp;
                 <EuiIcon type={'popout'} />
               </EuiSmallButton>
               <EuiSpacer size="xl" />
