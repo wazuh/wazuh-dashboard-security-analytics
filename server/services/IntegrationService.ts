@@ -28,6 +28,7 @@ import {
 import { CLIENT_INTEGRATION_METHODS } from '../utils/constants';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 import { get, sortBy } from 'lodash';
+import { defaultIntegration } from '../../common/constants';
 
 const INTEGRATIONS_INDEX = '.cti-integrations';
 const DECODERS_INDEX = '.cti-decoders';
@@ -35,18 +36,23 @@ const KVDBS_INDEX = '.cti-kvdbs';
 
 /**
  * Additional function to make sure optional params are initialized with
- * at least a default value.
+ * at least a default value, checking all values defined in the defaultIntegration.
  */
 const sanitizeIntegrationBase = (base: IntegrationBase): IntegrationBase => {
-  return {
-    ...base,
-    document: {
-      ...base.document,
-      description: base.document.description ?? '',
-      documentation: base.document.documentation ?? '',
-      references: base.document.references ?? [],
-    },
-  };
+  const completeIntegration = { ...base };
+
+  (
+    Object.keys(defaultIntegration.document) as Array<keyof typeof defaultIntegration.document>
+  ).forEach((key) => {
+    if (
+      completeIntegration.document[key] === undefined ||
+      completeIntegration.document[key] === null
+    ) {
+      (completeIntegration.document[key] as any) = defaultIntegration.document[key];
+    }
+  });
+
+  return completeIntegration;
 };
 
 export class IntegrationService extends MDSEnabledClientService {
