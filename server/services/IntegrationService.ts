@@ -76,7 +76,19 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<SearchIntegrationsResponse> | ResponseError>
   > => {
     try {
-      const query = request.body;
+      let query: any = request.body;
+      let space: string | undefined;
+
+      if (
+        request.body &&
+        typeof request.body === 'object' &&
+        ('query' in request.body || 'space' in request.body)
+      ) {
+        const payload = request.body as { query?: any; space?: string };
+        query = payload.query;
+        space = payload.space;
+      }
+
       const client = this.getClient(request, context);
       const searchIntegrationsResponse: SearchIntegrationsResponse = await client(
         // CLIENT_INTEGRATION_METHODS.SEARCH_INTEGRATIONS,
@@ -85,13 +97,55 @@ export class IntegrationService extends MDSEnabledClientService {
           index: INTEGRATIONS_INDEX,
           body: {
             size: 10000,
-            // query: query ?? {
             query: query ?? {
               match_all: {},
             },
           },
         }
       );
+
+      // Order by policy if space is provided
+      if (space && searchIntegrationsResponse.hits?.hits?.length > 0) {
+        try {
+          const policiesResponse = await client('search', {
+            index: '.cti-policies',
+            body: {
+              size: 1,
+              query: {
+                bool: {
+                  must: [{ term: { 'space.name': space } }],
+                },
+              },
+            },
+          });
+
+          const policyOrder: string[] =
+            policiesResponse?.hits?.hits?.[0]?._source?.document?.integrations;
+
+          if (Array.isArray(policyOrder)) {
+            const orderMap = new Map<string, number>();
+            policyOrder.forEach((id, index) => orderMap.set(id, index));
+
+            searchIntegrationsResponse.hits.hits.sort((a, b) => {
+              const idA = a._source?.document?.id;
+              const idB = b._source?.document?.id;
+
+              if (!idA || !idB) return 0;
+
+              const indexA = orderMap.has(idA) ? orderMap.get(idA)! : 9999;
+              const indexB = orderMap.has(idB) ? orderMap.get(idB)! : 9999;
+
+              return indexA - indexB;
+            });
+          }
+        } catch (err) {
+          const error = err as Error;
+          console.warn(
+            'Security Analytics - IntegrationService - policy sort error:',
+            error.message
+          );
+        }
+      }
 
       return response.custom({
         statusCode: 200,
@@ -120,7 +174,9 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<UpdateIntegrationResponse> | ResponseError>
   > => {
     try {
-      const { document: { id, date, modified, ...document } } = request.body;
+      const {
+        document: { id, date, modified, ...document },
+      } = request.body;
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
         body: { resource: document },

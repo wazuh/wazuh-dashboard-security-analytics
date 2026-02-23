@@ -52,17 +52,24 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     action: typeof SPACE_ACTIONS.DELETE;
   } | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const getIntegrations = async () => {
+  const loadIntegrations = useCallback(async () => {
+    setLoading(true);
+
     const integrations = await DataStore.integrations.getIntegrations(spaceFilter);
-    const policies = await DataStore.policies.searchPolicies(spaceFilter);
+
+    if (!isMountedRef.current) {
+      return;
+    }
+
     setIntegrations(integrations);
-  };
+    setLoading(false);
+  }, [spaceFilter]);
 
   const deleteIntegration = async (id: string) => {
     const deleteSucceeded = await DataStore.integrations.deleteIntegration(id);
     if (deleteSucceeded) {
       successNotificationToast(notifications, 'deleted', 'integration');
-      getIntegrations();
+      await loadIntegrations();
     }
   };
 
@@ -72,7 +79,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     };
   }, []);
 
-  setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
+  useEffect(() => {
+    setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
+  }, []);
 
   const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
   const isPromoteActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.PROMOTE);
@@ -168,24 +177,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   );
 
   useEffect(() => {
-    getIntegrations();
-  }, [dataSource]);
-
-  const loadIntegrations = useCallback(async () => {
-    setLoading(true);
-
-    const response = await DataStore.integrations.getIntegrations(spaceFilter);
-
-    if (!isMountedRef.current) {
-      return;
-    }
-    setIntegrations(response);
-    setLoading(false);
-  }, [spaceFilter]);
-
-  useEffect(() => {
     loadIntegrations();
-  }, [loadIntegrations]);
+  }, [dataSource, spaceFilter, loadIntegrations]);
 
   const onSelectionChange = (selectedItems: Integration[]) => {
     setSelectedItems(selectedItems);
@@ -210,7 +203,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         <>
           {itemForAction.action === SPACE_ACTIONS.DELETE && (
             <DeleteIntegrationModal
-              integrationName={itemForAction.item.title}
+              integrationName={itemForAction.item.document.title}
               closeModal={() => setItemForAction(null)}
               onConfirm={() => deleteIntegration(itemForAction.item.id)}
             />
@@ -218,7 +211,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           {itemForAction.action === SPACE_ACTIONS.REARRANGE_INTEGRATIONS && (
             <RearrangeIntegrations
               space={spaceFilter}
-              onClose={() => setItemForAction(null)}
+              onClose={() => {
+                setItemForAction(null);
+                loadIntegrations();
+              }}
               notifications={notifications}
             />
           )}
