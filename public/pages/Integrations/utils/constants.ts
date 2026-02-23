@@ -12,7 +12,7 @@ export const integrationDetailsTabs = [
   },
   {
     id: 'detection_rules',
-    name: 'Detection rules',
+    name: 'Rules',
   },
   {
     id: 'decoders',
