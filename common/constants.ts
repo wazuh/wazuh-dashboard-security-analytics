@@ -24,50 +24,36 @@ export const SpaceTypes = {
       defaultMessage: 'Draft',
     }),
     value: 'draft',
-    description: i18n.translate(
-      'securityAnalytics.spaceTypes.draftDescription',
-      {
-        defaultMessage:
-          'Staging area for creating or editing resources before testing.',
-      },
-    ),
+    description: i18n.translate('securityAnalytics.spaceTypes.draftDescription', {
+      defaultMessage: 'Staging area for creating or editing resources before testing.',
+    }),
   },
   TEST: {
     label: i18n.translate('securityAnalytics.spaceTypes.testLabel', {
       defaultMessage: 'Test',
     }),
     value: 'test',
-    description: i18n.translate(
-      'securityAnalytics.spaceTypes.testDescription',
-      {
-        defaultMessage:
-          'Controlled environment for validation before production.',
-      },
-    ),
+    description: i18n.translate('securityAnalytics.spaceTypes.testDescription', {
+      defaultMessage: 'Controlled environment for validation before production.',
+    }),
   },
   CUSTOM: {
     label: i18n.translate('securityAnalytics.spaceTypes.customLabel', {
       defaultMessage: 'Custom',
     }),
     value: 'custom',
-    description: i18n.translate(
-      'securityAnalytics.spaceTypes.customDescription',
-      {
-        defaultMessage: 'Independent space for custom or modified content.',
-      },
-    ),
+    description: i18n.translate('securityAnalytics.spaceTypes.customDescription', {
+      defaultMessage: 'Independent space for custom or modified content.',
+    }),
   },
   STANDARD: {
     label: i18n.translate('securityAnalytics.spaceTypes.standardLabel', {
       defaultMessage: 'Standard',
     }),
     value: 'standard',
-    description: i18n.translate(
-      'securityAnalytics.spaceTypes.standardDescription',
-      {
-        defaultMessage: 'Wazuh CTI provided resources.',
-      },
-    ),
+    description: i18n.translate('securityAnalytics.spaceTypes.standardDescription', {
+      defaultMessage: 'Wazuh CTI provided resources.',
+    }),
   },
 } as const;
 
