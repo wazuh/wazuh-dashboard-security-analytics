@@ -79,13 +79,14 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       }));
       setRules(ruleItems);
       setLoadingRules(false);
+      const rulesCount = details?.document?.rules?.length ?? 0;
       setIntegrationDetails({
         ...details,
-        detectionRulesCount: ruleItems.length,
+        detectionRulesCount: rulesCount,
       });
       setInitialIntegrationDetails({
         ...intialDetails,
-        detectionRulesCount: ruleItems.length,
+        detectionRulesCount: rulesCount,
       });
     },
     []
@@ -103,7 +104,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.title }]);
       const integrationItem = {
         ...details,
-        detectionRulesCount: details.detectionRules.length ?? 0,
+        detectionRulesCount: details.document?.rules?.length ?? 0,
         decodersCount: details.document.decoders?.length ?? 0,
         kvdbsCount: details.document.kvdbs?.length ?? 0,
       };
@@ -203,8 +204,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     <>
       {showDeleteModal && (
         <DeleteIntegrationModal
+          integrationId={integrationDetails.id}
           integrationName={integrationDetails.document.title}
           detectionRulesCount={integrationDetails.detectionRulesCount} // TODO: refactor to avoid passing this prop
+          decodersCount={integrationDetails.decodersCount}
+          kvdbsCount={integrationDetails.kvdbsCount}
           closeModal={() => setShowDeleteModal(false)}
           onConfirm={deleteIntegration}
         />
