@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 import {
   EuiSmallButton,
@@ -27,32 +27,41 @@ import { DataStore } from '../../../store/DataStore';
 
 export interface DeleteIntegrationModalProps {
   integrationName: string;
-  detectionRulesCount: number;
+  integrationId: string;
+  detectionRulesCount?: number;
+  decodersCount?: number;
+  kvdbsCount?: number;
   loading?: boolean;
   closeModal: () => void;
   onConfirm: () => void;
 }
 
-const LoadingModal = ({closeModal}) => (
+const DELETE_INTEGRATION_ASSOCIATED_ENTITIES_MESSAGE =
+  "Only integrations that don't have associated rules, decoders, or KVDBs can be deleted. Consider editing integration or deleting the associated entities.";
+
+const LoadingModal = ({ closeModal }) => (
   <EuiOverlayMask>
     <EuiModal onClose={closeModal}>
       <EuiLoadingSpinner size="l" />
     </EuiModal>
   </EuiOverlayMask>
-)
+);
 
-export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = withGuardAsync(
-  ({integrationID}) => {
-    return DataStore.rules.getAllRules({
-      'rule.category': [integrationID],
-    }).then(response => ({ ok: false, data: {detectionRulesCount: response.length}}))
-}, null, LoadingModal)(({
-  detectionRulesCount,
+export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
+  detectionRulesCount = 0,
+  decodersCount = 0,
+  kvdbsCount = 0,
   integrationName,
   closeModal,
   onConfirm,
 }) => {
   const [confirmDeleteText, setConfirmDeleteText] = useState('');
+  const hasRelatedEntities = detectionRulesCount > 0 || decodersCount > 0 || kvdbsCount > 0;
+  const relatedEntitiesMessage = DataStore.integrations.getRelatedEntitiesMessage({
+    hasRules: detectionRulesCount > 0,
+    hasDecoders: decodersCount > 0,
+    hasKVDBs: kvdbsCount > 0,
+  });
 
   const onConfirmClick = async () => {
     await onConfirm();
@@ -61,7 +70,7 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = wit
 
   return (
     <EuiOverlayMask>
-      {detectionRulesCount > 0 ? (
+      {hasRelatedEntities ? (
         <EuiModal onClose={closeModal}>
           <EuiModalHeader>
             <EuiModalHeaderTitle>
@@ -74,18 +83,13 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = wit
           <EuiModalBody>
             <EuiCallOut
               size="s"
-              title={`This integration is associated with ${detectionRulesCount} detection ${
-                detectionRulesCount > 1 ? 'rules' : 'rule'
-              }.`}
+              title={`This integration is associated with ${relatedEntitiesMessage}.`}
               iconType={'iInCircle'}
               color="warning"
             />
             <EuiSpacer />
             <EuiText size="s">
-              <p>
-                Only integrations that don’t have any associated rules can be deleted. Consider editing
-                integration or deleting associated detection rules.
-              </p>
+              <p>{DELETE_INTEGRATION_ASSOCIATED_ENTITIES_MESSAGE}</p>
             </EuiText>
           </EuiModalBody>
           <EuiModalFooter>
@@ -96,7 +100,11 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = wit
         </EuiModal>
       ) : (
         <EuiConfirmModal
-          title={<EuiText size="s"><h2>Delete integration?</h2></EuiText>}
+          title={
+            <EuiText size="s">
+              <h2>Delete integration?</h2>
+            </EuiText>
+          }
           onCancel={closeModal}
           onConfirm={onConfirmClick}
           cancelButtonText={'Cancel'}
@@ -111,12 +119,10 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = wit
                 The integration will be permanently deleted. This action is irreversible.
               </EuiText>
             </p>
-            <EuiSpacer size="s"/>
-              <p style={{marginBottom: '0.3rem'}}>
-                <EuiText size="s">
-                  Type {<b>{integrationName}</b>} to confirm
-                </EuiText>
-              </p>
+            <EuiSpacer size="s" />
+            <p style={{ marginBottom: '0.3rem' }}>
+              <EuiText size="s">Type {<b>{integrationName}</b>} to confirm</EuiText>
+            </p>
 
             <EuiCompressedFormRow>
               <EuiCompressedFieldText
@@ -129,4 +135,4 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = wit
       )}
     </EuiOverlayMask>
   );
-});
+};

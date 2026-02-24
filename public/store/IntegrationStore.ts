@@ -27,6 +27,22 @@ import { getIntegrationLabel } from '../pages/Integrations/utils/helpers';
 export class IntegrationStore {
   constructor(private service: IntegrationService, private notifications: NotificationsStart) {}
 
+  private formatRelatedEntitiesList(entities: string[]): string {
+    if (entities.length === 0) {
+      return 'related entities';
+    }
+
+    if (entities.length === 1) {
+      return entities[0];
+    }
+
+    if (entities.length === 2) {
+      return `${entities[0]} and ${entities[1]}`;
+    }
+
+    return `${entities.slice(0, -1).join(', ')}, and ${entities[entities.length - 1]}`;
+  }
+
   public async getIntegration(
     id: string,
     spaceFilter?: string | null
@@ -190,5 +206,37 @@ export class IntegrationStore {
     }
 
     return promoteRes.ok;
+  }
+
+  /**
+   * This method checks if an integration can be deleted.
+   * An integration can be deleted if it has no associated rules, decoders or KVDB items.
+   */
+  public canDeleteIntegration(integration: Integration): boolean {
+    const rules = (integration as Integration & { rules?: unknown }).rules;
+    const decoders = (integration as Integration & { decoders?: unknown }).decoders;
+    const kvdbs = (integration as Integration & { kvdbs?: unknown }).kvdbs;
+    const rulesCount = Array.isArray(rules) ? rules.length : 0;
+    const decodersCount = Array.isArray(decoders) ? decoders.length : 0;
+    const kvdbsCount = Array.isArray(kvdbs) ? kvdbs.length : 0;
+    return rulesCount === 0 && decodersCount === 0 && kvdbsCount === 0;
+  }
+
+  public getRelatedEntitiesMessage({
+    hasRules,
+    hasDecoders,
+    hasKVDBs,
+  }: {
+    hasRules: boolean;
+    hasDecoders: boolean;
+    hasKVDBs: boolean;
+  }): string {
+    const relatedEntities = [
+      hasRules ? 'detection rules' : null,
+      hasDecoders ? 'decoders' : null,
+      hasKVDBs ? 'KVDBs' : null,
+    ].filter(Boolean) as string[];
+
+    return this.formatRelatedEntitiesList(relatedEntities);
   }
 }
