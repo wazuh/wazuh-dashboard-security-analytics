@@ -86,7 +86,8 @@ export const ROUTES = Object.freeze({
   DECODERS_CREATE: '/create-decoder',
   DECODERS_EDIT: '/edit-decoder',
   KVDBS: '/kvdbs',
-  KVDBS_CREATE: '/create-kvdb', // TO DO: Create KVDB page
+  KVDBS_CREATE: '/create-kvdb',
+  KVDBS_EDIT: '/edit-kvdb',
   LOG_TEST: '/log-test',
 
   get LANDING_PAGE(): string {
@@ -161,6 +162,8 @@ export const BREADCRUMBS = Object.freeze({
   DECODERS_CREATE: { text: 'Create', href: `#${ROUTES.DECODERS_CREATE}` },
   DECODERS_EDIT: { text: 'Edit' },
   KVDBS: { text: 'KVDBs', href: `#${ROUTES.KVDBS}` },
+  KVDBS_CREATE: { text: 'Create', href: `#${ROUTES.KVDBS_CREATE}` },
+  KVDBS_EDIT: { text: 'Edit' },
   LOG_TEST: { text: 'Log test', href: `#${ROUTES.LOG_TEST}` },
   THREAT_INTEL_OVERVIEW: {
     text: 'Threat intelligence',
@@ -280,25 +283,25 @@ export const logTypeCategoryDescription: {
   name: string;
   description: string;
 }[] = [
-  {
-    name: 'Access Management',
-    description: 'User access, authentication, group management',
-  },
-  {
-    name: 'Applications',
-    description: 'Application lifecycle, API, and web resources activities',
-  },
-  {
-    name: 'Cloud Services',
-    description: 'Services managed by cloud providers',
-  },
-  {
-    name: 'Network Activity',
-    description: 'DNS, HTTP, Email, SSH, FTP, DHCP, RDP',
-  },
-  { name: 'System Activity', description: 'System monitoring logs' },
-  { name: 'Other', description: 'Logs not covered in other categories' },
-];
+    {
+      name: 'Access Management',
+      description: 'User access, authentication, group management',
+    },
+    {
+      name: 'Applications',
+      description: 'Application lifecycle, API, and web resources activities',
+    },
+    {
+      name: 'Cloud Services',
+      description: 'Services managed by cloud providers',
+    },
+    {
+      name: 'Network Activity',
+      description: 'DNS, HTTP, Email, SSH, FTP, DHCP, RDP',
+    },
+    { name: 'System Activity', description: 'System monitoring logs' },
+    { name: 'Other', description: 'Logs not covered in other categories' },
+  ];
 
 /* Wazuh: Replaced log types with integrations categories. */
 export const integrationCategories: {
@@ -306,42 +309,42 @@ export const integrationCategories: {
   value: string;
   description: string;
 }[] = [
-  {
-    label: 'Access Management',
-    value: 'access-management',
-    description: 'User access, authentication, group management',
-  },
-  {
-    label: 'Applications',
-    value: 'applications',
-    description: 'Application lifecycle, API, and web resources activities',
-  },
-  {
-    label: 'Cloud Services',
-    value: 'cloud-services',
-    description: 'Services managed by cloud providers',
-  },
-  {
-    label: 'Network Activity',
-    value: 'network-activity',
-    description: 'DNS, HTTP, Email, SSH, FTP, DHCP, RDP',
-  },
-  {
-    label: 'System Activity',
-    value: 'system-activity',
-    description: 'System monitoring logs',
-  },
-  {
-    label: 'Security',
-    value: 'security',
-    description: 'Security-related logs and events',
-  },
-  {
-    label: 'Other',
-    value: 'other',
-    description: 'Logs not covered in other categories',
-  },
-];
+    {
+      label: 'Access Management',
+      value: 'access-management',
+      description: 'User access, authentication, group management',
+    },
+    {
+      label: 'Applications',
+      value: 'applications',
+      description: 'Application lifecycle, API, and web resources activities',
+    },
+    {
+      label: 'Cloud Services',
+      value: 'cloud-services',
+      description: 'Services managed by cloud providers',
+    },
+    {
+      label: 'Network Activity',
+      value: 'network-activity',
+      description: 'DNS, HTTP, Email, SSH, FTP, DHCP, RDP',
+    },
+    {
+      label: 'System Activity',
+      value: 'system-activity',
+      description: 'System monitoring logs',
+    },
+    {
+      label: 'Security',
+      value: 'security',
+      description: 'Security-related logs and events',
+    },
+    {
+      label: 'Other',
+      value: 'other',
+      description: 'Logs not covered in other categories',
+    },
+  ];
 
 export const integrationsByCategories: { [category: string]: Integration[] } = {};
 
