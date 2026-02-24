@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
@@ -25,24 +25,24 @@ import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import {
-  errorNotificationToast,
-  formatCellValue,
-  setBreadcrumbs,
-  successNotificationToast,
-} from '../../../utils/helpers';
+import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { KVDBS_PAGE_SIZE, KVDBS_SEARCH_SCHEMA, KVDBS_SORT_FIELD } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
-
+import {
+  DELETE_ACTION,
+  DELETE_SELECTED_ACTION,
+  useDeleteItems,
+} from '../../../hooks/useDeleteItems';
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
 }
 
 export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
+  const isMountedRef = useRef(true);
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -56,12 +56,16 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     onSpaceChange: () => setPageIndex(0),
   });
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [kvdbToDelete, setKvdbToDelete] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<KVDBItem[]>([]);
 
   const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
   const isDeleteActionAllowed = actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
@@ -108,6 +112,21 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     fetchKVDBs();
   }, [fetchKVDBs]);
 
+  const {
+    itemForAction,
+    setItemForAction,
+    isDeleting,
+    confirmDeleteSingle,
+    confirmDeleteSelected,
+  } = useDeleteItems({
+    deleteOne: (id) => DataStore.kvdbs.deleteKVDB(id),
+    reload: fetchKVDBs,
+    notifications,
+    entityName: 'KVDB',
+    entityNamePlural: 'KVDBs',
+    isMountedRef,
+  });
+
   const onTableChange = ({ page, sort }: any) => {
     if (page) {
       setPageIndex(page.index);
@@ -125,59 +144,6 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     setPageIndex(0);
   };
 
-  const deleteKVDB = useCallback((kvdbId: string) => {
-    setKvdbToDelete(kvdbId);
-    setIsDeleteModalVisible(true);
-  }, []);
-
-  const deleteSelectedKVDBs = useCallback(() => {
-    setKvdbToDelete(null);
-    setIsDeleteModalVisible(true);
-  }, []);
-
-  const confirmDelete = useCallback(async () => {
-    if (!kvdbToDelete && selectedItems.length === 0) return;
-    setLoading(true);
-    setIsDeleteModalVisible(false);
-    try {
-      let response;
-      if (kvdbToDelete) {
-        response = await DataStore.kvdbs.deleteKVDB(kvdbToDelete);
-      } else {
-        const responses = await Promise.all(
-          selectedItems.map((item) => DataStore.kvdbs.deleteKVDB(item.id))
-        );
-        response = responses.every((r) => r !== undefined) ? responses : undefined;
-      }
-
-      if (response !== undefined) {
-        successNotificationToast(
-          notifications,
-          'delete',
-          kvdbToDelete ? 'KVDB' : 'KVDBs',
-          kvdbToDelete
-            ? 'The KVDB has been deleted successfully.'
-            : 'The selected KVDBs have been deleted successfully.'
-        );
-      } else {
-        throw new Error('One or more deletions failed');
-      }
-
-      setSelectedItems([]);
-      await fetchKVDBs();
-    } catch {
-      errorNotificationToast(
-        notifications,
-        'delete',
-        'KVDB',
-        'An error occurred while deleting. Please try again.'
-      );
-    } finally {
-      setLoading(false);
-      setKvdbToDelete(null);
-    }
-  }, [kvdbToDelete, selectedItems, notifications, fetchKVDBs]);
-
   const pagination = useMemo(
     () => ({
       pageIndex,
@@ -188,7 +154,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     [pageIndex, pageSize, totalItemCount]
   );
 
-    const sorting = useMemo(
+  const sorting = useMemo(
     () => ({
       sort: {
         field: sortField,
@@ -214,7 +180,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       key="delete"
       icon="trash"
       onClick={() => {
-        deleteSelectedKVDBs();
+        setItemForAction({ action: DELETE_SELECTED_ACTION });
         setActionsPopoverOpen(false);
       }}
       disabled={selectedItems.length === 0 || !isDeleteActionAllowed}
@@ -276,13 +242,13 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             type: 'icon',
             icon: 'trash',
             color: 'danger',
-            onClick: (item: KVDBItem) => deleteKVDB(item.id),
+            onClick: (item: KVDBItem) => setItemForAction({ action: DELETE_ACTION, id: item.id }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
         ],
       },
     ],
-    [spaceFilter, history, deleteKVDB]
+    [spaceFilter, history]
   );
 
   return (
@@ -290,30 +256,32 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       {selectedKVDB && (
         <KVDBDetailsFlyout kvdb={selectedKVDB} onClose={() => setSelectedKVDB(null)} />
       )}
-      {isDeleteModalVisible && (
+      {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
-          title={
-            kvdbToDelete
-              ? 'Delete KVDB'
-              : `Delete ${selectedItems.length} KVDB${selectedItems.length !== 1 ? 's' : ''}`
-          }
-          onCancel={() => {
-            setIsDeleteModalVisible(false);
-            setKvdbToDelete(null);
-          }}
-          onConfirm={confirmDelete}
+          title="Delete KVDB"
+          onCancel={() => setItemForAction(null)}
+          onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
         >
-          <p>
-            {kvdbToDelete
-              ? 'Are you sure you want to delete this KVDB? This action cannot be undone.'
-              : `Are you sure you want to delete ${selectedItems.length} KVDB${
-                  selectedItems.length !== 1 ? 's' : ''
-                }? This action cannot be undone.`}
-          </p>
+          <p>Are you sure you want to delete this KVDB? This action cannot be undone.</p>
+        </EuiConfirmModal>
+      )}
+      {itemForAction?.action === DELETE_SELECTED_ACTION && (
+        <EuiConfirmModal
+          title={`Delete ${selectedItems.length} KVDB${selectedItems.length !== 1 ? 's' : ''}`}
+          onCancel={() => setItemForAction(null)}
+          onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
+          cancelButtonText="Cancel"
+          confirmButtonText="Delete"
+          buttonColor="danger"
+          defaultFocusedButton="cancel"
+        >
+          <p>{`Are you sure you want to delete ${selectedItems.length} KVDB${
+            selectedItems.length !== 1 ? 's' : ''
+          }? This action cannot be undone.`}</p>
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
@@ -375,7 +343,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           <EuiBasicTable
             items={items}
             columns={columns}
-            loading={loading}
+            loading={loading || isDeleting}
             pagination={pagination}
             sorting={sorting}
             onChange={onTableChange}
