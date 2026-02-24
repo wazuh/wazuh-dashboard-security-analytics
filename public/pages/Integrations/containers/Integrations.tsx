@@ -27,8 +27,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
-import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
+import { SPACE_ACTIONS } from '../../../../common/constants';
 import { PolicyInfoCard } from '../components/PolicyInfo';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
@@ -91,28 +90,19 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
 
-  const isCreateActionDisabled = !AllowedActionsBySpace[
-    SpaceTypes[spaceFilter.toUpperCase()].value
-  ].includes(SPACE_ACTIONS.CREATE);
-  const isPromoteActionDisabled = !AllowedActionsBySpace[
-    SpaceTypes[spaceFilter.toUpperCase()].value
-  ].includes(SPACE_ACTIONS.PROMOTE);
-  const isDeleteActionDisabledBySpace = !AllowedActionsBySpace[
-    SpaceTypes[spaceFilter.toUpperCase()].value
-  ].includes(SPACE_ACTIONS.DELETE);
+  const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
+  const isPromoteActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.PROMOTE);
+  const isDeleteActionDisabledBySpace = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
 
-  const hasRelatedEntity = (
-    item: Integration,
-    entity: 'rules' | 'decoders' | 'kvdbs'
-  ): boolean => {
+  const hasRelatedEntity = (item: Integration, entity: 'rules' | 'decoders' | 'kvdbs'): boolean => {
     const values = (item as Integration & { rules?: unknown; decoders?: unknown; kvdbs?: unknown })[
       entity
     ];
     return Array.isArray(values) && values.length > 0;
   };
 
-  const selectedItemsWithoutRelatedEntities = selectedItems.filter(
-    (item) => DataStore.integrations.canDeleteIntegration(item)
+  const selectedItemsWithoutRelatedEntities = selectedItems.filter((item) =>
+    DataStore.integrations.canDeleteIntegration(item)
   );
   const selectedItemsWithRelatedEntities = selectedItems.filter(
     (item) => !DataStore.integrations.canDeleteIntegration(item)
@@ -120,7 +110,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const selectedItemsWithRelatedEntitiesCount = selectedItemsWithRelatedEntities.length;
   const selectedItemsRelatedEntitiesMessage = DataStore.integrations.getRelatedEntitiesMessage({
     hasRules: selectedItemsWithRelatedEntities.some((item) => hasRelatedEntity(item, 'rules')),
-    hasDecoders: selectedItemsWithRelatedEntities.some((item) => hasRelatedEntity(item, 'decoders')),
+    hasDecoders: selectedItemsWithRelatedEntities.some((item) =>
+      hasRelatedEntity(item, 'decoders')
+    ),
     hasKVDBs: selectedItemsWithRelatedEntities.some((item) => hasRelatedEntity(item, 'kvdbs')),
   });
 
@@ -200,8 +192,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       toolTipContent={
         isCreateActionDisabled
           ? `Integration can only be created in the spaces: ${getSpacesAllowAction(
-            SPACE_ACTIONS.CREATE
-          ).join(', ')}`
+              SPACE_ACTIONS.CREATE
+            ).join(', ')}`
           : undefined
       }
     >
@@ -220,8 +212,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       toolTipContent={
         isPromoteActionDisabled
           ? `Integration can only be promoted in the spaces: ${getSpacesAllowAction(
-            SPACE_ACTIONS.PROMOTE
-          ).join(', ')}`
+              SPACE_ACTIONS.PROMOTE
+            ).join(', ')}`
           : undefined
       }
     >
@@ -237,16 +229,18 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       disabled={isDeleteSelectedActionDisabled}
       toolTipContent={
         isDeleteActionDisabledBySpace
-          ? 'Integrations can only be deleted in the draft space.'
+          ? `Integrations can only be deleted in the space: ${getSpacesAllowAction(
+              SPACE_ACTIONS.DELETE
+            ).join(', ')}`
           : selectedItems.length === 0
-            ? 'Select integrations to delete.'
-            : selectedItemsWithoutRelatedEntities.length === 0
-              ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
-              : selectedItemsWithRelatedEntitiesCount > 0
-                ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
-                    selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
-                  } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
-                : undefined
+          ? 'Select integrations to delete.'
+          : selectedItemsWithoutRelatedEntities.length === 0
+          ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
+          : selectedItemsWithRelatedEntitiesCount > 0
+          ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
+              selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
+            } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
+          : undefined
       }
     >
       Delete selected ({selectedItems.length})
@@ -264,13 +258,13 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       toolTipContent={
         isRearrangeIntegrationsActionDisabled
           ? `Integration can only be rearranged in the spaces: ${getSpacesAllowAction(
-            SPACE_ACTIONS.REARRANGE_INTEGRATIONS
-          ).join(', ')}`
+              SPACE_ACTIONS.REARRANGE_INTEGRATIONS
+            ).join(', ')}`
           : undefined
       }
     >
       Rearrange
-    </EuiContextMenuItem>
+    </EuiContextMenuItem>,
   ];
 
   const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
@@ -352,7 +346,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           defaultFocusedButton="cancel"
         >
           <p>
-            {`Are you sure you want to delete ${selectedItemsWithoutRelatedEntities.length} integration${
+            {`Are you sure you want to delete ${
+              selectedItemsWithoutRelatedEntities.length
+            } integration${
               selectedItemsWithoutRelatedEntities.length !== 1 ? 's' : ''
             }? This action cannot be undone.`}
           </p>
