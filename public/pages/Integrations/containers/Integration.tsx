@@ -5,8 +5,9 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
-import { IntegrationItem } from '../../../../types';
-import { AllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
+import { IntegrationItem, Space } from '../../../../types';
+import { SPACE_ACTIONS } from '../../../../common/constants';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import {
   EuiSmallButton,
   EuiDescriptionList,
@@ -193,7 +194,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
 
   const deleteIntegration = async () => {
     const { ok } = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
-    
+
     if (ok) {
       successNotificationToast(notifications, 'deleted', 'integration');
       history.push(ROUTES.INTEGRATIONS);
@@ -208,11 +209,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     setIsActionsMenuOpen(false);
   };
 
-  const spaceName = integrationDetails?.space.name.toLowerCase() ?? '';
-  const allowedActions = AllowedActionsBySpace[spaceName] ?? [];
-  const isEditDisabled = !allowedActions.includes(SPACE_ACTIONS.EDIT);
-  const isDeleteDisabled = !allowedActions.includes(SPACE_ACTIONS.DELETE);
-
+  const spaceName = (integrationDetails?.space.name ?? '') as Space;
+  const isEditDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.EDIT);
+  const isDeleteDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.DELETE);
 
   const actionsButton = (
     <EuiPopover
@@ -238,7 +237,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         items={[
           <EuiContextMenuItem
             key={'createRule'}
-            href={"detection_rules#/create-rule"}
+            href={'detection_rules#/create-rule'}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -249,7 +248,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'createDecoder'}
-            href={"decoders#/create-decoder"}
+            href={'decoders#/create-decoder'}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -260,7 +259,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'createKVDB'}
-            href={"kvdbs#/create-kvdb"}
+            href={'kvdbs#/create-kvdb'}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -324,9 +323,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
-              <EuiFlexItem grow={false}>
-                {actionsButton}
-              </EuiFlexItem>
+              <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
         </EuiFlexGroup>
