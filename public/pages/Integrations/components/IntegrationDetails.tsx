@@ -11,6 +11,8 @@ import { DataStore } from '../../../store/DataStore';
 import { IntegrationForm } from './IntegrationForm';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { successNotificationToast } from '../../../utils/helpers';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { SPACE_ACTIONS } from '../../../../common/constants';
 
 export interface IntegrationDetailsProps {
   initialIntegrationDetails: IntegrationItem;
@@ -50,10 +52,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
     <ContentPanel
       title="Details"
       actions={
-        !isEditMode &&
-        integrationDetails?.space?.name.toLocaleLowerCase() !== 'standard' && [
-          <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>,
-        ]
+        actionIsAllowedOnSpace(integrationDetails?.space?.name, SPACE_ACTIONS.EDIT) && !isEditMode
       }
     >
       <EuiDescriptionList
