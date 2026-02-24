@@ -15,7 +15,6 @@ import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 
 export interface IntegrationDetailsProps {
-  initialIntegrationDetails: IntegrationItem;
   integrationDetails: IntegrationItem;
   isEditMode: boolean;
   notifications: NotificationsStart;
@@ -25,7 +24,6 @@ export interface IntegrationDetailsProps {
 }
 
 export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
-  initialIntegrationDetails,
   integrationDetails,
   isEditMode,
   notifications,
@@ -33,16 +31,14 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   setIntegrationDetails,
   integrationId,
 }) => {
-  const onUpdateIntegration = async () => {
-    const success = await DataStore.integrations.updateIntegration(
-      integrationId,
-      integrationDetails
-    );
+  const onUpdateIntegration = async (integrationData: IntegrationItem) => {
+    const success = await DataStore.integrations.updateIntegration(integrationId, integrationData);
     if (success) {
+      setIntegrationDetails(integrationData);
       successNotificationToast(
         notifications,
         'updated',
-        `integration ${integrationDetails.document.title}`
+        `integration ${integrationData.document.title}`
       );
       setIsEditMode(false);
     }
@@ -64,9 +60,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
                 isEditMode={isEditMode}
                 confirmButtonText={'Update'}
                 notifications={notifications}
-                setIntegrationDetails={setIntegrationDetails}
                 onCancel={() => {
-                  setIntegrationDetails(initialIntegrationDetails);
                   setIsEditMode(false);
                 }}
                 onConfirm={onUpdateIntegration}
