@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DataStore } from "../../../store/DataStore";
-import { KVDBTableItem } from "../../Integrations/components/IntegrationKVDBs";
+import { KVDBItem } from "../../../../types";
 
 export interface useIntegrationKVDBsParams {
   kvdbIds: string[];
 }
 
 export function useIntegrationKVDBs({ kvdbIds }: useIntegrationKVDBsParams) {
-  const [items, setItems] = useState<KVDBTableItem[]>([]);
+  const [items, setItems] = useState<KVDBItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
@@ -33,13 +33,7 @@ export function useIntegrationKVDBs({ kvdbIds }: useIntegrationKVDBsParams) {
       })
       .then((response) => {
         if (!cancelled) {
-          setItems(
-            response.items.map((item) => ({
-              id: item.id,
-              title: item.document?.title,
-              author: item.document?.author,
-            })),
-          );
+          setItems(response.items);
         }
       })
       .catch(() => {

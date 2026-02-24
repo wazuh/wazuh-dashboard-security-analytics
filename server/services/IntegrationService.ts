@@ -76,7 +76,8 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<SearchIntegrationsResponse> | ResponseError>
   > => {
     try {
-      const query = request.body;
+      let query: any = request.body;
+
       const client = this.getClient(request, context);
       const searchIntegrationsResponse: SearchIntegrationsResponse = await client(
         // CLIENT_INTEGRATION_METHODS.SEARCH_INTEGRATIONS,
@@ -85,7 +86,6 @@ export class IntegrationService extends MDSEnabledClientService {
           index: INTEGRATIONS_INDEX,
           body: {
             size: 10000,
-            // query: query ?? {
             query: query ?? {
               match_all: {},
             },
@@ -120,7 +120,9 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<UpdateIntegrationResponse> | ResponseError>
   > => {
     try {
-      const { document: { id, date, modified, ...document } } = request.body;
+      const {
+        document: { id, date, modified, ...document },
+      } = request.body;
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
         body: { resource: document },

@@ -5,7 +5,7 @@
 
 import _ from 'lodash';
 import { DEFAULT_METRICS_COUNTER } from '../server/utils/constants';
-import { MetricsCounter, PartialMetricsCounter } from '../types';
+import { MetricsCounter, PartialMetricsCounter, Space } from '../types';
 import { SecurityAnalyticsPluginConfigType } from '../config';
 import { Get, Set } from '../../../src/plugins/opensearch_dashboards_utils/common';
 // Wazuh
@@ -80,6 +80,12 @@ export function createNullableGetterSetter<T>(): [Get<T | undefined>, Set<T>] {
 }
 
 // Wazuh
-export function actionIsAllowedOnSpace(space: string, action: string): Boolean {
+export function actionIsAllowedOnSpace(space: Space, action: string): Boolean {
   return AllowedActionsBySpace?.[SpaceTypes[space.toUpperCase()]?.value]?.includes(action);
+}
+
+export function getSpacesAllowAction(action: string): Space[] {
+  return Object.entries(AllowedActionsBySpace)
+    .filter(([_, allowedActions]) => allowedActions.includes(action))
+    .map(([space]) => space) as Space[];
 }

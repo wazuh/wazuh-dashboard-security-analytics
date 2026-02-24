@@ -12,7 +12,7 @@ export const integrationDetailsTabs = [
   },
   {
     id: 'detection_rules',
-    name: 'Detection rules',
+    name: 'Rules',
   },
   {
     id: 'decoders',
@@ -32,6 +32,7 @@ export const defaultIntegration: IntegrationBase = {
     tags: null,
     category: '',
     author: '',
+    references: [],
   },
 };
 

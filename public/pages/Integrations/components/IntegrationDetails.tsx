@@ -3,17 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { EuiSmallButton, EuiDescriptionList } from "@elastic/eui";
-import { ContentPanel } from "../../../components/ContentPanel";
-import React from "react";
-import { IntegrationItem } from "../../../../types";
-import { DataStore } from "../../../store/DataStore";
-import { IntegrationForm } from "./IntegrationForm";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import { successNotificationToast } from "../../../utils/helpers";
+import { EuiSmallButton, EuiDescriptionList } from '@elastic/eui';
+import { ContentPanel } from '../../../components/ContentPanel';
+import React from 'react';
+import { IntegrationItem } from '../../../../types';
+import { DataStore } from '../../../store/DataStore';
+import { IntegrationForm } from './IntegrationForm';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { successNotificationToast } from '../../../utils/helpers';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { SPACE_ACTIONS } from '../../../../common/constants';
 
 export interface IntegrationDetailsProps {
-  initialIntegrationDetails: IntegrationItem;
   integrationDetails: IntegrationItem;
   isEditMode: boolean;
   notifications: NotificationsStart;
@@ -23,7 +24,6 @@ export interface IntegrationDetailsProps {
 }
 
 export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
-  initialIntegrationDetails,
   integrationDetails,
   isEditMode,
   notifications,
@@ -31,16 +31,14 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   setIntegrationDetails,
   integrationId,
 }) => {
-  const onUpdateIntegration = async () => {
-    const success = await DataStore.integrations.updateIntegration(
-      integrationId,
-      integrationDetails,
-    );
+  const onUpdateIntegration = async (integrationData: IntegrationItem) => {
+    const success = await DataStore.integrations.updateIntegration(integrationId, integrationData);
     if (success) {
+      setIntegrationDetails(integrationData);
       successNotificationToast(
         notifications,
-        "updated",
-        `integration ${integrationDetails.document.title}`,
+        'updated',
+        `integration ${integrationData.document.title}`
       );
       setIsEditMode(false);
     }
@@ -65,11 +63,9 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
               <IntegrationForm
                 integrationDetails={integrationDetails}
                 isEditMode={isEditMode}
-                confirmButtonText={"Update"}
+                confirmButtonText={'Update'}
                 notifications={notifications}
-                setIntegrationDetails={setIntegrationDetails}
                 onCancel={() => {
-                  setIntegrationDetails(initialIntegrationDetails);
                   setIsEditMode(false);
                 }}
                 onConfirm={onUpdateIntegration}

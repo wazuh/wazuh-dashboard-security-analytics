@@ -17,6 +17,7 @@ import { addThreatIntelMethods } from './addThreatIntelMethods';
 import { addIntegrationsMethods } from './addIntegrationsMethods';
 import { addPoliciesMethods } from './addPoliciesMethods';
 import { addDecoderMethods } from './addDecoderMethods';
+import { addKVDBsMethods } from './addKVDBsMethods';
 import { addLogTestMethods } from './addLogTestMethods';
 
 export function securityAnalyticsPlugin(Client: any, config: any, components: any) {
@@ -38,5 +39,6 @@ export function securityAnalyticsPlugin(Client: any, config: any, components: an
   addIntegrationsMethods(securityAnalytics, createAction);
   addPoliciesMethods(securityAnalytics, createAction);
   addDecoderMethods(securityAnalytics, createAction);
+  addKVDBsMethods(securityAnalytics, createAction);
   addLogTestMethods(securityAnalytics, createAction);
 }

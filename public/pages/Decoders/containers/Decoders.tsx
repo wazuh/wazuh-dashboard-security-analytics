@@ -27,24 +27,18 @@ import { DataStore } from '../../../store/DataStore';
 import { DecoderDocument, DecoderItem } from '../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import {
-  errorNotificationToast,
-  formatCellValue,
-  setBreadcrumbs,
-  successNotificationToast,
-} from '../../../utils/helpers';
+import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
 import { SpaceTypes } from '../../../../common/constants';
-import { SpaceSelector } from '../../../components/SpaceSelector';
+import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
+import {
+  DELETE_ACTION,
+  DELETE_SELECTED_ACTION,
+  useDeleteItems,
+} from '../../../hooks/useDeleteItems';
 
 const DEFAULT_PAGE_SIZE = 25;
-const SORT_FIELD_MAP: Record<string, string> = {
-  'document.name': 'document.name.keyword',
-};
-const SORT_UNMAPPED_TYPE: Record<string, string> = {
-  'document.name.keyword': 'keyword',
-};
 
 interface DecodersProps {
   history: RouteComponentProps['history'];
@@ -62,15 +56,14 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('document.name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [spaceFilter, setSpaceFilter] = useState<string>(SpaceTypes.STANDARD.value);
-  const [spacesLoading, setSpacesLoading] = useState(false);
+  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+    onSpaceChange: () => setPageIndex(0),
+  });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedDecoder, setSelectedDecoder] = useState<{
     id: string;
     space?: string;
   } | null>(null);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [decoderToDelete, setDecoderToDelete] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<DecoderItem[]>([]);
 
   useEffect(() => {
@@ -95,13 +88,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const loadDecoders = useCallback(async () => {
     setLoading(true);
     const query = buildDecodersSearchQuery(appliedSearch);
-    const sortFieldName = SORT_FIELD_MAP[sortField] ?? sortField;
-    const sort = sortFieldName
+    const sort = sortField
       ? [
           {
-            [sortFieldName]: {
+            [sortField]: {
               order: sortDirection,
-              unmapped_type: SORT_UNMAPPED_TYPE[sortFieldName] ?? 'keyword',
             },
           },
         ]
@@ -130,6 +121,21 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     loadDecoders();
   }, [loadDecoders]);
 
+  const {
+    itemForAction,
+    setItemForAction,
+    isDeleting,
+    confirmDeleteSingle,
+    confirmDeleteSelected,
+  } = useDeleteItems({
+    deleteOne: (id) => DataStore.decoders.deleteDecoder(id),
+    reload: loadDecoders,
+    notifications,
+    entityName: 'decoder',
+    entityNamePlural: 'decoders',
+    isMountedRef,
+  });
+
   const onTableChange = ({ page, sort }: { page: any; sort?: any }) => {
     if (page) {
       setPageIndex(page.index);
@@ -140,62 +146,6 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       setSortDirection(sort.direction);
     }
   };
-
-  const confirmDeleteDecoder = useCallback(async () => {
-    if (!decoderToDelete && selectedItems.length === 0) return;
-    setLoading(true);
-    setIsDeleteModalVisible(false);
-    try {
-      let response;
-      if (decoderToDelete) {
-        response = await DataStore.decoders.deleteDecoder(decoderToDelete);
-      } else {
-        const responses = await Promise.all(
-          selectedItems.map((item) => DataStore.decoders.deleteDecoder(item.id))
-        );
-        response = responses.every((r) => r !== undefined) ? responses : undefined;
-      }
-
-      if (response !== undefined) {
-        successNotificationToast(
-          notifications,
-          'delete',
-          decoderToDelete ? 'Decoder deleted' : 'Decoders deleted',
-          decoderToDelete
-            ? 'The decoder has been deleted successfully.'
-            : 'The selected decoders have been deleted successfully.'
-        );
-      }
-
-      await loadDecoders();
-      if (!isMountedRef.current) {
-        return;
-      }
-      setSelectedItems([]);
-    } catch (error) {
-      errorNotificationToast(
-        notifications,
-        'retrieve',
-        'Error deleting decoder(s)',
-        'An error occurred while deleting the decoder(s). Please try again.'
-      );
-    } finally {
-      if (isMountedRef.current) {
-        setLoading(false);
-        setDecoderToDelete(null);
-      }
-    }
-  }, [decoderToDelete, selectedItems, loadDecoders]);
-
-  const deleteDecoder = useCallback((decoderId: string) => {
-    setDecoderToDelete(decoderId);
-    setIsDeleteModalVisible(true);
-  }, []);
-
-  const deleteSelectedDecoders = useCallback(() => {
-    setDecoderToDelete(null);
-    setIsDeleteModalVisible(true);
-  }, []);
 
   const columns: Array<EuiBasicTableColumn<DecoderItem>> = useMemo(
     () => [
@@ -243,26 +193,14 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
             description: 'Delete decoder',
             type: 'icon',
             icon: 'trash',
-            onClick: (item: DecoderItem) => {
-              deleteDecoder(item.id);
-            },
+            onClick: (item: DecoderItem) =>
+              setItemForAction({ action: DELETE_ACTION, id: item.id }),
             // available: () => spaceFilter === SpaceTypes.DRAFT.value,
           },
         ],
       },
     ],
-    [spaceFilter, deleteDecoder]
-  );
-
-  const spaceSelector = (
-    <SpaceSelector
-      selectedSpace={spaceFilter}
-      onSpaceChange={(id) => {
-        setSpaceFilter(id);
-        setPageIndex(0);
-      }}
-      isDisabled={spacesLoading}
-    />
+    [spaceFilter, history]
   );
 
   const panels = [
@@ -283,7 +221,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       key="delete"
       icon="trash"
       onClick={() => {
-        deleteSelectedDecoders();
+        setItemForAction({ action: DELETE_SELECTED_ACTION });
         setIsPopoverOpen(false);
       }}
       disabled={selectedItems.length === 0 || spaceFilter !== SpaceTypes.DRAFT.value}
@@ -333,30 +271,32 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
           onClose={() => setSelectedDecoder(null)}
         />
       )}
-      {isDeleteModalVisible && (
+      {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
-          title={
-            decoderToDelete
-              ? 'Delete decoder'
-              : `Delete ${selectedItems.length} decoder${selectedItems.length !== 1 ? 's' : ''}`
-          }
-          onCancel={() => {
-            setIsDeleteModalVisible(false);
-            setDecoderToDelete(null);
-          }}
-          onConfirm={confirmDeleteDecoder}
+          title="Delete decoder"
+          onCancel={() => setItemForAction(null)}
+          onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
         >
-          <p>
-            {decoderToDelete
-              ? 'Are you sure you want to delete this decoder? This action cannot be undone.'
-              : `Are you sure you want to delete ${selectedItems.length} decoder${
-                  selectedItems.length !== 1 ? 's' : ''
-                }? This action cannot be undone.`}
-          </p>
+          <p>Are you sure you want to delete this decoder? This action cannot be undone.</p>
+        </EuiConfirmModal>
+      )}
+      {itemForAction?.action === DELETE_SELECTED_ACTION && (
+        <EuiConfirmModal
+          title={`Delete ${selectedItems.length} decoder${selectedItems.length !== 1 ? 's' : ''}`}
+          onCancel={() => setItemForAction(null)}
+          onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
+          cancelButtonText="Cancel"
+          confirmButtonText="Delete"
+          buttonColor="danger"
+          defaultFocusedButton="cancel"
+        >
+          <p>{`Are you sure you want to delete ${selectedItems.length} decoder${
+            selectedItems.length !== 1 ? 's' : ''
+          }? This action cannot be undone.`}</p>
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
@@ -401,7 +341,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
           <EuiBasicTable
             items={decoders}
             columns={columns}
-            loading={loading}
+            loading={loading || isDeleting}
             pagination={{
               pageIndex,
               pageSize,
