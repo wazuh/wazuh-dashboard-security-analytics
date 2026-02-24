@@ -164,7 +164,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       default:
         return (
           <IntegrationDetails
-            initialIntegrationDetails={initialIntegrationDetails!}
             integrationDetails={integrationDetails!}
             isEditMode={isEditMode}
             notifications={notifications}
