@@ -4,7 +4,6 @@
  */
 
 import {
-  EuiCompressedComboBox,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSwitch,
@@ -27,6 +26,7 @@ import {
   useIntegrationSelector,
 } from '../../../components/IntegrationComboBox';
 import FormFieldHeader from '../../../components/FormFieldHeader';
+import { FormFieldArray } from '../../../components/FormFieldArray';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -338,31 +338,13 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
-                <EuiCompressedFormRow
+                <FormFieldArray
                   label={<FormFieldHeader headerTitle={'References'} />}
-                  fullWidth={true}
-                >
-                  <EuiCompressedComboBox
-                    placeholder="Type a reference URL and press Enter"
-                    noSuggestions
-                    selectedOptions={formikProps.values.references.map((ref) => ({
-                      label: ref,
-                    }))}
-                    onCreateOption={(value) => {
-                      formikProps.setFieldValue('references', [
-                        ...formikProps.values.references,
-                        value,
-                      ]);
-                    }}
-                    onChange={(options) => {
-                      formikProps.setFieldValue(
-                        'references',
-                        options.map((opt) => opt.label)
-                      );
-                    }}
-                  />
-                </EuiCompressedFormRow>
-                <EuiSpacer size="m" />
+                  values={formikProps.values.references}
+                  placeholder="https://example.com/reference"
+                  addButtonLabel="Add reference"
+                  onChange={(references) => formikProps.setFieldValue('references', references)}
+                />
                 <EuiCompressedFormRow
                   label={<FormFieldHeader headerTitle={'Enabled'} />}
                   fullWidth={true}
