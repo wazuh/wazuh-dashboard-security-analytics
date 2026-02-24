@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { RouteComponentProps, useParams } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
 import { IntegrationItem } from '../../../../types';
 import {
   EuiSmallButtonIcon,
@@ -43,6 +43,7 @@ export interface IntegrationProps extends RouteComponentProps {
 }
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
+  const isMountedRef = useRef(true);
   const { integrationId } = useParams<{ integrationId: string }>();
   const [selectedTabId, setSelectedTabId] = useState('details');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -62,6 +63,12 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   const [isEditMode, setIsEditMode] = useState(false);
   const [rules, setRules] = useState<RuleTableItem[]>([]);
   const [loadingRules, setLoadingRules] = useState(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const updateRules = useCallback(
     async (details: IntegrationItem, intialDetails: IntegrationItem) => {
@@ -96,6 +103,10 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     const getIntegrationDetails = async () => {
       const details = await DataStore.integrations.getIntegration(integrationId);
 
+      if (!isMountedRef.current) {
+        return;
+      }
+
       if (!details) {
         setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
         return;
@@ -114,7 +125,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     };
 
     getIntegrationDetails();
-  }, []);
+  }, [integrationId, updateRules]);
 
   const refreshRules = useCallback(() => {
     updateRules(integrationDetails!, initialIntegrationDetails!);
@@ -235,7 +246,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         <EuiSpacer />
         <EuiFlexGroup>
           <EuiFlexItem>
-            <EuiDescriptionList listItems={[{ title: 'ID', description: integrationDetails.id }]} />
+            <EuiDescriptionList
+              listItems={[{ title: 'ID', description: integrationDetails.document.id }]}
+            />
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiDescriptionList

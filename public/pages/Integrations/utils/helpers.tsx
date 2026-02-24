@@ -6,16 +6,50 @@
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel } from '@elastic/eui';
 import { Integration } from '../../../../types';
-import {
-  SpaceTypes,
-  AllowedActionsBySpace,
-  SPACE_ACTIONS,
-  UserSpacesOrder,
-} from '../../../../common/constants';
+import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { capitalize, startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { DEFAULT_EMPTY_DATA, integrationCategoryFilters } from '../../../utils/constants';
 import { integrationLabels } from './constants';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { IntegrationBase, PolicyItem } from '../../../../types';
+
+export interface IntegrationTableItem {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  space: string;
+  decoders?: string[];
+  kvdbs?: string[];
+  rules?: any[];
+}
+
+export const mapPolicyToIntegrationTableItems = (
+  policy: PolicyItem | undefined
+): IntegrationTableItem[] => {
+  if (!policy) return [];
+
+  return Object.values(policy.integrationsMap ?? {})
+    .filter((source): source is IntegrationBase & { _id: string } => Boolean(source && source._id))
+    .map((source) => ({
+      id: source._id,
+      title: source.document.title,
+      description: source.document.description,
+      category: source.document.category,
+      space: source.space.name,
+      decoders: source.document.decoders,
+      kvdbs: source.document.kvdbs,
+      rules: (source.document as any).rules,
+    }));
+};
+
+export const hasRelatedEntity = (
+  item: IntegrationTableItem,
+  entity: 'rules' | 'decoders' | 'kvdbs'
+): boolean => {
+  return Array.isArray(item[entity]) && (item[entity] as any[]).length > 0;
+};
 
 export const getIntegrationsTableColumns = ({
   showDetails,
@@ -48,22 +82,22 @@ export const getIntegrationsTableColumns = ({
     render: (spaceName: string) => capitalize(spaceName),
   },
   {
-    field: 'decoders.length',
+    field: 'decoders',
     name: 'Decoders',
     sortable: true,
-    render: (decodersLength: number) => decodersLength,
+    render: (decoders: string[]) => decoders?.length ?? 0,
   },
   {
-    field: 'kvdbs.length',
+    field: 'kvdbs',
     name: 'KVDBs',
     sortable: true,
-    render: (kvdbsLength: number) => kvdbsLength,
+    render: (kvdbs: string[]) => kvdbs?.length ?? 0,
   },
   {
-    field: 'rules.length',
+    field: 'rules',
     name: 'Rules',
     sortable: true,
-    render: (rulesLength: number) => rulesLength,
+    render: (rules: any[]) => rules?.length ?? 0,
   },
   {
     name: 'Actions',
@@ -83,7 +117,7 @@ export const getIntegrationsTableColumns = ({
         type: 'icon',
         icon: 'trash',
         color: 'danger',
-        available: (item) => AllowedActionsBySpace?.[item.space]?.includes(SPACE_ACTIONS.DELETE),
+        available: (item) => actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.DELETE),
         onClick: (item) => {
           setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },
