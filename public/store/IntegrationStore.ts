@@ -43,8 +43,11 @@ export class IntegrationStore {
     return `${entities.slice(0, -1).join(', ')}, and ${entities[entities.length - 1]}`;
   }
 
-  public async getIntegration(id: string): Promise<IntegrationWithRules | undefined> {
-    const integrationsRes = await this.service.searchIntegrations({ id });
+  public async getIntegration(
+    id: string,
+    spaceFilter?: string | null
+  ): Promise<IntegrationWithRules | undefined> {
+    const integrationsRes = await this.service.searchIntegrations({ id, spaceFilter });
     if (integrationsRes.ok) {
       const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
         return {
@@ -77,8 +80,8 @@ export class IntegrationStore {
         const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
           return {
             id: hit._id,
-            ...hit._source.document,
-            space: hit._source.space.name,
+            ...hit._source,
+            space: hit._source.space,
           };
         });
 
@@ -86,7 +89,7 @@ export class IntegrationStore {
           0,
           ruleTypes.length,
           ...integrations
-            .map(({ category, id, title, space }) => ({
+            .map(({ id, document: { category, title }, space }) => ({
               label: getIntegrationLabel(title),
               value: title,
               id,
@@ -103,9 +106,9 @@ export class IntegrationStore {
           delete integrationsByCategories[key];
         }
         integrations.forEach((integration) => {
-          integrationsByCategories[integration.category] =
-            integrationsByCategories[integration.category] || [];
-          integrationsByCategories[integration.category].push(integration);
+          integrationsByCategories[integration.document.category] =
+            integrationsByCategories[integration.document.category] || [];
+          integrationsByCategories[integration.document.category].push(integration);
         });
         integrationCategoryFilters.splice(
           0,
@@ -236,5 +239,4 @@ export class IntegrationStore {
 
     return this.formatRelatedEntitiesList(relatedEntities);
   }
-
 }

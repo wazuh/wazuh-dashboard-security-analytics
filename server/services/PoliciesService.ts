@@ -174,7 +174,9 @@ export class PoliciesService extends MDSEnabledClientService {
 
       const hits = integrationResponse?.hits?.hits ?? [];
 
-      integrations = new Map(hits.map((hit: any) => [hit?._source?.document?.id, hit._source]));
+      integrations = new Map(
+        hits.map((hit: any) => [hit?._source?.document?.id, { _id: hit._id, ...hit._source }])
+      );
     } catch (error: any) {
       console.warn('Security Analytics - PoliciesService - fetchIntegrationMap:', error?.message);
     }
