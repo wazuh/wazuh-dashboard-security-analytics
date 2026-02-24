@@ -318,6 +318,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             <DeleteIntegrationModal
               integrationId={itemForAction.item.id}
               integrationName={itemForAction.item.title}
+              detectionRulesCount={itemForAction.item.rules?.length ?? 0}
               decodersCount={itemForAction.item.decoders?.length ?? 0}
               kvdbsCount={itemForAction.item.kvdbs?.length ?? 0}
               closeModal={() => setItemForAction(null)}
