@@ -6,6 +6,7 @@
 import React, { useCallback } from 'react';
 import { SpaceSelector } from '../components/SpaceSelector/SpaceSelector';
 import { useSpaceFilter } from './useSpaceFilter';
+import { Space } from '../../types';
 
 interface UseSpaceSelectorOptions {
   isDisabled?: boolean;
@@ -13,7 +14,9 @@ interface UseSpaceSelectorOptions {
   onSpaceChange?: (spaceId: string) => void;
 }
 
-export const useSpaceSelector = (options: UseSpaceSelectorOptions = {}) => {
+export const useSpaceSelector = (
+  options: UseSpaceSelectorOptions = {}
+): { component: React.ReactComponentElement; spaceFilter: Space } => {
   const { isDisabled, documentationUrl, onSpaceChange } = options;
   const [spaceFilter, setSpaceFilter] = useSpaceFilter();
 
