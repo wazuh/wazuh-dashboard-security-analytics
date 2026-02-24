@@ -61,7 +61,6 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
                 isEditMode={isEditMode}
                 confirmButtonText={'Update'}
                 notifications={notifications}
-                setIntegrationDetails={setIntegrationDetails}
                 onCancel={() => {
                   setIsEditMode(false);
                 }}

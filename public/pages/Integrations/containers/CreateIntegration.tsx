@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { IntegrationForm } from '../components/IntegrationForm';
-import { IntegrationBase } from '../../../../types';
+import { IntegrationBase, IntegrationItem } from '../../../../types';
 import { defaultIntegration } from '../utils/constants';
 import { RouteComponentProps } from 'react-router-dom';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -20,14 +20,24 @@ export interface CreateIntegrationProps extends RouteComponentProps {
 }
 
 export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, notifications }) => {
-  const [integrationDetails, setIntegrationDetails] = useState<IntegrationBase>({
-    ...defaultIntegration,
-  });
+  const integrationDetails: IntegrationBase = { ...defaultIntegration };
 
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, BREADCRUMBS.INTEGRATIONS_CREATE]);
 
   const description =
     'Create integration to categorize and identify detection rules for your data sources.'; // Replace Log Type is replaced with Integration by Wazuh
+
+  const onCreateIntegration = async (integrationData: IntegrationItem) => {
+    const success = await DataStore.integrations.createIntegration(integrationData);
+    if (success) {
+      successNotificationToast(
+        notifications,
+        'created',
+        `integration ${integrationData.document.title}`
+      );
+      history.push(ROUTES.INTEGRATIONS);
+    }
+  };
 
   return (
     <EuiPanel>
@@ -50,19 +60,8 @@ export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, n
         isEditMode={true}
         confirmButtonText={'Create integration'} // Replace Log Type to Integration by Wazuh
         notifications={notifications}
-        setIntegrationDetails={setIntegrationDetails}
         onCancel={() => history.push(ROUTES.INTEGRATIONS)}
-        onConfirm={async (integrationData) => {
-          const success = await DataStore.integrations.createIntegration(integrationData);
-          if (success) {
-            successNotificationToast(
-              notifications,
-              'created',
-              `integration ${integrationData.document.title}`
-            );
-            history.push(ROUTES.INTEGRATIONS);
-          }
-        }}
+        onConfirm={onCreateIntegration}
       />
     </EuiPanel>
   );

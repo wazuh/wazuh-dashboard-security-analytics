@@ -58,7 +58,6 @@ export interface IntegrationFormProps {
   isEditMode: boolean;
   confirmButtonText: string;
   notifications: NotificationsStart;
-  setIntegrationDetails: (integration: IntegrationItem) => void;
   onCancel: () => void;
   onConfirm: (integrationData: IntegrationItem) => void;
 }
@@ -68,7 +67,6 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   isEditMode,
   confirmButtonText,
   notifications,
-  setIntegrationDetails,
   onCancel,
   onConfirm,
 }) => {
@@ -124,9 +122,8 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       });
       return;
     }
-    setIntegrationDetails(editingIntegration);
     onConfirm(editingIntegration);
-  }, [editingIntegration, notifications, confirmButtonText, setIntegrationDetails, onConfirm]);
+  }, [editingIntegration, notifications, confirmButtonText, onConfirm]);
 
   const onCancelClicked = useCallback(() => {
     setEditingIntegration(integrationDetails);
