@@ -12,6 +12,44 @@ import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { DEFAULT_EMPTY_DATA, integrationCategoryFilters } from '../../../utils/constants';
 import { integrationLabels } from './constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { IntegrationBase, PolicyItem } from '../../../../types';
+
+export interface IntegrationTableItem {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  space: string;
+  decoders?: string[];
+  kvdbs?: string[];
+  rules?: any[];
+}
+
+export const mapPolicyToIntegrationTableItems = (
+  policy: PolicyItem | undefined
+): IntegrationTableItem[] => {
+  if (!policy) return [];
+
+  return Object.values(policy.integrationsMap ?? {})
+    .filter((source): source is IntegrationBase & { _id: string } => Boolean(source && source._id))
+    .map((source) => ({
+      id: source._id,
+      title: source.document.title,
+      description: source.document.description,
+      category: source.document.category,
+      space: source.space.name,
+      decoders: source.document.decoders,
+      kvdbs: source.document.kvdbs,
+      rules: (source.document as any).rules,
+    }));
+};
+
+export const hasRelatedEntity = (
+  item: IntegrationTableItem,
+  entity: 'rules' | 'decoders' | 'kvdbs'
+): boolean => {
+  return Array.isArray(item[entity]) && (item[entity] as any[]).length > 0;
+};
 
 export const getIntegrationsTableColumns = ({
   showDetails,
@@ -21,7 +59,7 @@ export const getIntegrationsTableColumns = ({
   setItemForAction: (options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null) => void;
 }) => [
   {
-    field: 'document.title',
+    field: 'title',
     name: 'Title',
     sortable: true,
     render: (name: string, item: Integration) => {
@@ -29,34 +67,34 @@ export const getIntegrationsTableColumns = ({
     },
   },
   {
-    field: 'document.description',
+    field: 'description',
     name: 'Description',
     truncateText: false,
   },
   {
-    field: 'document.category',
+    field: 'category',
     name: 'Category',
     truncateText: false,
   },
   {
-    field: 'space.name',
+    field: 'space',
     name: 'Space',
     render: (spaceName: string) => capitalize(spaceName),
   },
   {
-    field: 'document.decoders',
+    field: 'decoders',
     name: 'Decoders',
     sortable: true,
     render: (decoders: string[]) => decoders?.length ?? 0,
   },
   {
-    field: 'document.kvdbs',
+    field: 'kvdbs',
     name: 'KVDBs',
     sortable: true,
     render: (kvdbs: string[]) => kvdbs?.length ?? 0,
   },
   {
-    field: 'document.rules',
+    field: 'rules',
     name: 'Rules',
     sortable: true,
     render: (rules: any[]) => rules?.length ?? 0,
@@ -79,7 +117,7 @@ export const getIntegrationsTableColumns = ({
         type: 'icon',
         icon: 'trash',
         color: 'danger',
-        available: (item) => actionIsAllowedOnSpace(item.space.name, SPACE_ACTIONS.DELETE),
+        available: (item) => actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.DELETE),
         onClick: (item) => {
           setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },
@@ -98,7 +136,7 @@ export const getIntegrationsTableSearchConfig = (): Search => {
     filters: [
       {
         type: 'field_value_selection',
-        field: 'document.category',
+        field: 'category',
         name: 'Category',
         compressed: true,
         multiSelect: 'or',

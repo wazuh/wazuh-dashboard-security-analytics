@@ -62,7 +62,7 @@ export default class IntegrationService {
       };
     }
 
-    const queryString = JSON.stringify({ query, space: spaceFilter });
+    const queryString = JSON.stringify(query);
     return (await this.httpClient.post(url, {
       body: queryString,
       query: {

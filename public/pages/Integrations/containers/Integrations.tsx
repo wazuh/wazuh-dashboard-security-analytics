@@ -18,9 +18,15 @@ import {
   EuiConfirmModal,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { DataSourceProps, Integration } from '../../../../types';
+import { DataSourceProps, IntegrationBase } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import { getIntegrationsTableColumns, getIntegrationsTableSearchConfig } from '../utils/helpers';
+import {
+  getIntegrationsTableColumns,
+  getIntegrationsTableSearchConfig,
+  IntegrationTableItem,
+  mapPolicyToIntegrationTableItems,
+  hasRelatedEntity,
+} from '../utils/helpers';
 import { RouteComponentProps } from 'react-router-dom';
 import { useCallback } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -38,9 +44,10 @@ export interface IntegrationsProps extends RouteComponentProps, DataSourceProps 
 }
 
 const DELETE_SELECTED_ACTION = 'delete_selected' as const;
+
 type ItemForAction =
   | {
-      item: Integration;
+      item: IntegrationTableItem;
       action: typeof SPACE_ACTIONS.DELETE;
     }
   | {
@@ -56,16 +63,20 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   dataSource,
 }) => {
   const isMountedRef = useRef(true);
-  const [integrations, setIntegrations] = useState<Integration[]>([]);
+  const [integrations, setIntegrations] = useState<IntegrationTableItem[]>([]);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector();
   const [loading, setLoading] = useState<boolean>(false);
-  const [selectedItems, setSelectedItems] = useState<Integration[]>([]);
+  const [selectedItems, setSelectedItems] = useState<IntegrationTableItem[]>([]);
   const [itemForAction, setItemForAction] = useState<ItemForAction | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const loadIntegrations = useCallback(async () => {
     setLoading(true);
 
-    const integrations = await DataStore.integrations.getIntegrations(spaceFilter);
+    const policiesResult = await DataStore.policies.searchPolicies(spaceFilter, {
+      includeIntegrationFields: ['document', 'space'],
+    });
+    const policy = policiesResult.items[0];
+    const integrations = mapPolicyToIntegrationTableItems(policy);
 
     if (!isMountedRef.current) {
       return;
@@ -96,18 +107,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const isPromoteActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.PROMOTE);
   const isDeleteActionDisabledBySpace = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
 
-  const hasRelatedEntity = (item: Integration, entity: 'rules' | 'decoders' | 'kvdbs'): boolean => {
-    const values = (item as Integration & { rules?: unknown; decoders?: unknown; kvdbs?: unknown })[
-      entity
-    ];
-    return Array.isArray(values) && values.length > 0;
-  };
-
-  const selectedItemsWithoutRelatedEntities = selectedItems.filter((item) =>
-    DataStore.integrations.canDeleteIntegration(item)
+  const selectedItemsWithoutRelatedEntities = selectedItems.filter(
+    (item) => !item.rules?.length && !item.decoders?.length && !item.kvdbs?.length
   );
   const selectedItemsWithRelatedEntities = selectedItems.filter(
-    (item) => !DataStore.integrations.canDeleteIntegration(item)
+    (item) => item.rules?.length || item.decoders?.length || item.kvdbs?.length
   );
   const selectedItemsWithRelatedEntitiesCount = selectedItemsWithRelatedEntities.length;
   const selectedItemsRelatedEntitiesMessage = DataStore.integrations.getRelatedEntitiesMessage({
@@ -298,7 +302,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     loadIntegrations();
   }, [dataSource, spaceFilter, loadIntegrations]);
 
-  const onSelectionChange = (selectedItems: Integration[]) => {
+  const onSelectionChange = (selectedItems: IntegrationTableItem[]) => {
     setSelectedItems(selectedItems);
   };
 
@@ -321,10 +325,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         <>
           {itemForAction.action === SPACE_ACTIONS.DELETE && (
             <DeleteIntegrationModal
-              integrationName={itemForAction.item.document.title}
-              detectionRulesCount={itemForAction.item.document.rules?.length ?? 0}
-              decodersCount={itemForAction.item.document.decoders?.length ?? 0}
-              kvdbsCount={itemForAction.item.document.kvdbs?.length ?? 0}
+              integrationName={itemForAction.item.title}
+              detectionRulesCount={itemForAction.item.rules?.length ?? 0}
+              decodersCount={itemForAction.item.decoders?.length ?? 0}
+              kvdbsCount={itemForAction.item.kvdbs?.length ?? 0}
               closeModal={() => setItemForAction(null)}
               onConfirm={() => deleteIntegration(itemForAction.item.id)}
             />
