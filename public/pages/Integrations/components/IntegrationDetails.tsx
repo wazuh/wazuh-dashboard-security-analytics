@@ -48,7 +48,10 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
     <ContentPanel
       title="Details"
       actions={
-        actionIsAllowedOnSpace(integrationDetails?.space?.name, SPACE_ACTIONS.EDIT) && !isEditMode
+        actionIsAllowedOnSpace(integrationDetails?.space?.name, SPACE_ACTIONS.EDIT) &&
+        !isEditMode ? (
+          <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>
+        ) : null
       }
     >
       <EuiDescriptionList
