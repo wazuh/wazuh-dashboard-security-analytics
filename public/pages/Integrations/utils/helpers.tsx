@@ -6,16 +6,12 @@
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel } from '@elastic/eui';
 import { Integration } from '../../../../types';
-import {
-  SpaceTypes,
-  AllowedActionsBySpace,
-  SPACE_ACTIONS,
-  UserSpacesOrder,
-} from '../../../../common/constants';
+import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { capitalize, startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { DEFAULT_EMPTY_DATA, integrationCategoryFilters } from '../../../utils/constants';
 import { integrationLabels } from './constants';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 
 export const getIntegrationsTableColumns = ({
   showDetails,
@@ -83,8 +79,7 @@ export const getIntegrationsTableColumns = ({
         type: 'icon',
         icon: 'trash',
         color: 'danger',
-        available: (item) =>
-          AllowedActionsBySpace?.[item.space.name]?.includes(SPACE_ACTIONS.DELETE),
+        available: (item) => actionIsAllowedOnSpace(item.space.name, SPACE_ACTIONS.DELETE),
         onClick: (item) => {
           setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },

@@ -44,25 +44,7 @@ export default class IntegrationService {
     const url = `..${API.INTEGRATION_BASE}/_search`;
     let query;
 
-    if (id && spaceFilter) {
-      // When both id and spaceFilter are provided, use bool query with must clauses
-      query = {
-        bool: {
-          must: [
-            {
-              match: {
-                _id: id,
-              },
-            },
-            {
-              match: {
-                'space.name': spaceFilter,
-              },
-            },
-          ],
-        },
-      };
-    } else if (id) {
+    if (id) {
       // Only id provided - search by id only
       query = {
         terms: { _id: [id] },
