@@ -252,7 +252,7 @@ export class SecurityAnalyticsPlugin
     core.application.register({
       id: LOG_TEST_NAV_ID,
       title: 'Log test',
-      order: 7008,
+      order: 7011,
       category: {
         id: 'security_analytics',
         label: 'Security Analytics',
@@ -395,6 +395,7 @@ export class SecurityAnalyticsPlugin
         // { id: CORRELATIONS_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
         // Wazuh does not use Threat Intelligence
         // { id: THREAT_INTEL_NAV_ID, showInAllNavGroup: true },
+        { id: LOG_TEST_NAV_ID, showInAllNavGroup: true, order: 7011 },
       ];
 
       core.chrome.navGroup.addNavLinksToGroup(DEFAULT_NAV_GROUPS['security-analytics'], navlinks);
