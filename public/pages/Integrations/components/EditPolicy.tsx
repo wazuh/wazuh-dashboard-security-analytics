@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import {
   EuiFlyout,
   EuiFlyoutHeader,
@@ -26,6 +26,7 @@ import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validatio
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
 
 const DECODER_SEARCH_SIZE = 25;
+const DELAY_ON_SEARCH = 300; // ms
 
 const EditForm: React.FC<{}> = withPolicyGuard({
   includeIntegrationFields: ['document'],
@@ -66,6 +67,22 @@ const EditFormBody: React.FC<{
   const [decoderList, setDecoderList] = useState<Array<{ label: string; value: DecoderSource }>>(
     []
   );
+
+  const [decoderSearch, setDecoderSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(decoderSearch);
+    }, DELAY_ON_SEARCH);
+
+    return () => clearTimeout(handler);
+  }, [decoderSearch]);
+
+  // Fetch when debounced search changes
+  useEffect(() => {
+    fetchDecoders(debouncedSearch);
+  }, [debouncedSearch]);
 
   // If the policy has a root decoder set it as the initial value
   const [selectedDecoder, setSelectedDecoder] = useState<
@@ -251,12 +268,7 @@ const EditFormBody: React.FC<{
             singleSelection={{ asPlainText: true }}
             options={decoderList}
             selectedOptions={selectedDecoder}
-            onSearchChange={fetchDecoders}
-            onFocus={() => {
-              if (decoderList.length === 0) {
-                fetchDecoders('');
-              }
-            }}
+            onSearchChange={(searchValue) => setDecoderSearch(searchValue)}
             onChange={(selected) => {
               setSelectedDecoder(selected);
               const newPolicy = {
@@ -266,7 +278,7 @@ const EditFormBody: React.FC<{
               setPolicyDetails(newPolicy);
               updateErrors(newPolicy);
               if (selected.length === 0) {
-                fetchDecoders('');
+                setDecoderSearch('');
               }
             }}
             async
