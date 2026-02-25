@@ -54,8 +54,6 @@ export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, n
       <IntegrationForm
         integrationDetails={{
           ...integrationDetails,
-          id: '',
-          detectionRulesCount: 0,
         }}
         isEditMode={true}
         confirmButtonText={'Create integration'} // Replace Log Type to Integration by Wazuh
