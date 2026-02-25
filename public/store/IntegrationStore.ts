@@ -5,10 +5,10 @@
 
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
+  CreateIntegrationRequestBody,
   GetPromote,
   GetPromoteBySpaceResponse,
   Integration,
-  IntegrationBase,
   IntegrationWithRules,
   PromoteIntegrationRequestBody,
   RuleItemInfoBase,
@@ -143,7 +143,7 @@ export class IntegrationStore {
     }
   }
 
-  public async createIntegration(integration: IntegrationBase): Promise<boolean> {
+  public async createIntegration(integration: CreateIntegrationRequestBody): Promise<boolean> {
     const createRes = await this.service.createIntegration(integration);
 
     if (!createRes.ok) {

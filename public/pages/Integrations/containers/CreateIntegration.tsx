@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { IntegrationForm } from '../components/IntegrationForm';
-import { IntegrationBase, IntegrationItem } from '../../../../types';
+import { CreateIntegrationRequestBody, IntegrationDocumentCreate } from '../../../../types';
 import { defaultIntegration } from '../../../../common/constants';
 import { RouteComponentProps } from 'react-router-dom';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -20,14 +20,14 @@ export interface CreateIntegrationProps extends RouteComponentProps {
 }
 
 export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, notifications }) => {
-  const integrationDetails: IntegrationBase = { ...defaultIntegration };
+  const integrationDetails: CreateIntegrationRequestBody = { ...defaultIntegration };
 
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, BREADCRUMBS.INTEGRATIONS_CREATE]);
 
   const description =
     'Create integration to categorize and identify detection rules for your data sources.'; // Replace Log Type is replaced with Integration by Wazuh
 
-  const onCreateIntegration = async (integrationData: IntegrationItem) => {
+  const onCreateIntegration = async (integrationData: CreateIntegrationRequestBody) => {
     const success = await DataStore.integrations.createIntegration(integrationData);
     if (success) {
       successNotificationToast(

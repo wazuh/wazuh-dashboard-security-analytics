@@ -27,33 +27,11 @@ import {
 } from '../../types';
 import { CLIENT_INTEGRATION_METHODS } from '../utils/constants';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
-import { get, sortBy } from 'lodash';
-import { defaultIntegration } from '../../common/constants';
+import { get } from 'lodash';
 
 const INTEGRATIONS_INDEX = '.cti-integrations';
 const DECODERS_INDEX = '.cti-decoders';
 const KVDBS_INDEX = '.cti-kvdbs';
-
-/**
- * Additional function to make sure optional params are initialized with
- * at least a default value, checking all values defined in the defaultIntegration.
- */
-const sanitizeIntegrationBase = (base: IntegrationBase): IntegrationBase => {
-  const completeIntegration = { ...base };
-
-  (Object.keys(defaultIntegration.document) as Array<
-    keyof typeof defaultIntegration.document
-  >).forEach((key) => {
-    if (
-      completeIntegration.document[key] === undefined ||
-      completeIntegration.document[key] === null
-    ) {
-      (completeIntegration.document[key] as any) = defaultIntegration.document[key];
-    }
-  });
-
-  return completeIntegration;
-};
 
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
@@ -64,7 +42,7 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<CreateIntegrationResponse> | ResponseError>
   > => {
     try {
-      const { document } = sanitizeIntegrationBase(request.body);
+      const { document } = request.body;
       const client = this.getClient(request, context);
       const createIntegrationResponse: CreateIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.CREATE_INTEGRATION,
@@ -142,9 +120,7 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<UpdateIntegrationResponse> | ResponseError>
   > => {
     try {
-      const {
-        document: { id, date, modified, ...document },
-      } = sanitizeIntegrationBase(request.body);
+      const { document } = request.body;
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
         body: { resource: document },

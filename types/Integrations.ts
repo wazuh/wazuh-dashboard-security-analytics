@@ -56,7 +56,7 @@ export interface SearchIntegrationsResponse {
   };
 }
 
-export interface CreateIntegrationRequestBody extends IntegrationBase {}
+export type CreateIntegrationRequestBody = { document: IntegrationDocumentCreate };
 
 export interface CreateIntegrationResponse {
   _id: string;
