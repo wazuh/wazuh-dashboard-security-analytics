@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
 import { IntegrationItem, Space } from '../../../../types';
 import { SPACE_ACTIONS } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import {
   EuiSmallButton,
   EuiDescriptionList,
@@ -278,6 +278,13 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             }}
             disabled={isEditDisabled}
             data-test-subj={'editIntegrationButton'}
+            toolTipContent={
+              isEditDisabled
+                ? `Integration can only be edited in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.EDIT
+                  ).join(', ')}`
+                : undefined
+            }
           >
             Edit
           </EuiContextMenuItem>,
@@ -289,6 +296,13 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             }}
             data-test-subj={'deleteIntegrationButton'}
             disabled={isDeleteDisabled}
+            toolTipContent={
+              isDeleteDisabled
+                ? `Integration can only be deleted in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.DELETE
+                  ).join(', ')}`
+                : undefined
+            }
           >
             Delete
           </EuiContextMenuItem>,
