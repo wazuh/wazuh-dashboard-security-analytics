@@ -92,6 +92,7 @@ export interface PromoteChanges {
   kvdbs: { operation: PromoteOperations; id: string }[];
   decoders: { operation: PromoteOperations; id: string }[];
   filters: { operation: PromoteOperations; id: string }[];
+  rules: { operation: PromoteOperations; id: string }[];
 }
 
 export type PromoteChangeGroup = keyof PromoteChanges;
@@ -116,6 +117,7 @@ export interface GetPromoteBySpaceResponse {
       integrations: PromoteAvailablePromotionsMap;
       decoders: PromoteAvailablePromotionsMap;
       kvdbs: PromoteAvailablePromotionsMap;
+      rules: PromoteAvailablePromotionsMap;
     };
   };
 }

@@ -104,6 +104,8 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
           <PromoteEntity label="Decoders" entity="decoders" data={promote} />
           <EuiSpacer size="s" />
           <PromoteEntity label="KVDBs" entity="kvdbs" data={promote} />
+          <EuiSpacer size="s" />
+          <PromoteEntity label="Rules" entity="rules" data={promote} />
           <EuiSpacer size="m" />
 
           <p style={{ marginBottom: '0.3rem' }}>
