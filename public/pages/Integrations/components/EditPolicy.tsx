@@ -85,7 +85,7 @@ const EditFormBody: React.FC<{
     const success = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
     // success seems to be an array
     if (success[0]) {
-      successNotificationToast(notifications, 'updated', `[${space}] policy`);
+      successNotificationToast(notifications, 'updated', `[${space}] space`);
       window.dispatchEvent(new Event(POLICY_UPDATED));
     }
     onClose();
@@ -225,7 +225,7 @@ export const EditPolicy: React.FC<EditPolicyProps> = ({ onClose, space, notifica
       <EuiFlyout onClose={onClose} ownFocus size="s">
         <EuiFlyoutHeader hasBorder={true}>
           <EuiText size="s">
-            <h2>Edit policy fields</h2>
+            <h2>Edit space fields</h2>
           </EuiText>
         </EuiFlyoutHeader>
         <EditForm space={space} notifications={notifications} onClose={onClose} />

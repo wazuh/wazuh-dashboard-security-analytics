@@ -294,7 +294,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           : undefined
       }
     >
-      Edit fields
+      Edit space fields
     </EuiContextMenuItem>,
   ];
 
