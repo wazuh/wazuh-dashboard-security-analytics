@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   EuiFlyout,
   EuiFlyoutHeader,
@@ -56,6 +56,10 @@ const EditFormBody: React.FC<{
   const [titleError, setTitleError] = useState('');
   const [authorError, setAuthorError] = useState('');
 
+  const hasChanges = useMemo(() => {
+    return JSON.stringify(policyDetails) !== JSON.stringify(policyDocumentData);
+  }, [policyDetails, policyDocumentData]);
+
   const updateErrors = (details: PolicyDocument) => {
     const titleInvalid = !validateName(details.title, INTEGRATION_AUTHOR_REGEX);
     const authorInvalid = !validateName(details.author, INTEGRATION_AUTHOR_REGEX);
@@ -79,11 +83,12 @@ const EditFormBody: React.FC<{
   const onConfirm = async () => {
     const payload = sanitizatePolicy(policyDetails);
     const success = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
-    if (success) {
+    // success seems to be an array
+    if (success[0]) {
       successNotificationToast(notifications, 'updated', `[${space}] policy`);
       window.dispatchEvent(new Event(POLICY_UPDATED));
-      onClose();
     }
+    onClose();
   };
 
   const onConfirmClicked = useCallback(() => {
@@ -198,7 +203,7 @@ const EditFormBody: React.FC<{
             <EuiButtonEmpty onClick={onClose}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton fill onClick={onConfirmClicked}>
+            <EuiButton fill onClick={onConfirmClicked} isDisabled={!hasChanges}>
               Save
             </EuiButton>
           </EuiFlexItem>
