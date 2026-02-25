@@ -1,0 +1,230 @@
+import React, { useCallback, useState } from 'react';
+import {
+  EuiFlyout,
+  EuiFlyoutHeader,
+  EuiFlyoutBody,
+  EuiFlyoutFooter,
+  EuiText,
+  EuiCompressedFormRow,
+  EuiCompressedFieldText,
+  EuiCompressedTextArea,
+  EuiFlexItem,
+  EuiFlexGroup,
+  EuiButton,
+  EuiButtonEmpty,
+} from '@elastic/eui';
+
+import { withPolicyGuard } from './PolicyInfo';
+import { PolicyDocument, Space } from '../../../../types';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { DataStore } from '../../../store/DataStore';
+import { successNotificationToast } from '../../../utils/helpers';
+import { POLICY_UPDATED } from '../utils/constants';
+import { FormFieldArray } from '../../../components/FormFieldArray';
+import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validation';
+
+const EditForm: React.FC<{}> = withPolicyGuard({
+  includeIntegrationFields: ['document'],
+})(({
+  policyDocumentData,
+  notifications,
+  space,
+  onClose,
+}: {
+  policyDocumentData: PolicyDocument;
+  notifications: NotificationsStart;
+  space: Space;
+  onClose: () => void;
+}) => {
+  return (
+    <EditFormBody
+      policyDocumentData={policyDocumentData}
+      notifications={notifications}
+      space={space}
+      onClose={onClose}
+    />
+  );
+});
+
+const EditFormBody: React.FC<{
+  policyDocumentData: PolicyDocument;
+  notifications: NotificationsStart;
+  space: Space;
+  onClose: () => void;
+}> = ({ policyDocumentData, notifications, space, onClose }) => {
+  const [policyDetails, setPolicyDetails] = useState<PolicyDocument>(policyDocumentData);
+  const [titleError, setTitleError] = useState('');
+  const [authorError, setAuthorError] = useState('');
+
+  const updateErrors = (details: PolicyDocument) => {
+    const titleInvalid = !validateName(details.title, INTEGRATION_AUTHOR_REGEX);
+    const authorInvalid = !validateName(details.author, INTEGRATION_AUTHOR_REGEX);
+    setTitleError(titleInvalid ? 'Invalid title' : '');
+    setAuthorError(authorInvalid ? 'Invalid author' : '');
+
+    return { titleInvalid, authorInvalid };
+  };
+
+  const sanitizatePolicy = (details: PolicyDocument) => {
+    // Make sure optional fields have default value
+    const completePolicy = {
+      ...details,
+      references: details.references?.filter((ref) => ref.trim() !== '') ?? [],
+      documentation: details.documentation ?? '',
+      description: details.description ?? '',
+    };
+    return completePolicy;
+  };
+
+  const onConfirm = async () => {
+    const payload = sanitizatePolicy(policyDetails);
+    const success = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
+    if (success) {
+      successNotificationToast(notifications, 'updated', `[${space}] policy`);
+      window.dispatchEvent(new Event(POLICY_UPDATED));
+      onClose();
+    }
+  };
+
+  const onConfirmClicked = useCallback(() => {
+    const { titleInvalid, authorInvalid } = updateErrors(policyDetails);
+
+    if (titleInvalid || authorInvalid) {
+      notifications?.toasts.addDanger({
+        title: `Failed to update`,
+        text: `Fix the marked errors.`,
+        toastLifeTimeMs: 3000,
+      });
+      return;
+    }
+    onConfirm();
+  }, [onConfirm, notifications, policyDetails]);
+
+  return (
+    <>
+      <EuiFlyoutBody>
+        <EuiCompressedFormRow label="Title" isInvalid={!!titleError} error={titleError}>
+          <EuiCompressedFieldText
+            value={policyDetails.title}
+            onChange={(e) => {
+              const newPolicy = {
+                ...policyDetails,
+                title: e.target.value,
+              };
+              setPolicyDetails({ ...policyDetails, title: e.target.value });
+              updateErrors(newPolicy);
+            }}
+          />
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow
+          label={
+            <>
+              {'Description - '}
+              <em>optional</em>
+            </>
+          }
+        >
+          <EuiCompressedTextArea
+            value={policyDetails.description || ''}
+            onChange={(e) => {
+              const newPolicy = {
+                ...policyDetails,
+                description: e.target.value,
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+            }}
+          />
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow label="Author" isInvalid={!!authorError} error={authorError}>
+          <EuiCompressedFieldText
+            value={policyDetails.author}
+            onChange={(e) => {
+              const newPolicy = {
+                ...policyDetails,
+                author: e.target.value,
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+            }}
+          />
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow
+          label={
+            <>
+              {'Documentation - '}
+              <em>optional</em>
+            </>
+          }
+        >
+          <EuiCompressedFieldText
+            value={policyDetails.documentation || ''}
+            onChange={(e) => {
+              const newPolicy = {
+                ...policyDetails,
+                documentation: e.target.value,
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+            }}
+          />
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow>
+          <FormFieldArray
+            label={
+              <>
+                {'References - '}
+                <em>optional</em>
+              </>
+            }
+            values={policyDetails.references || []}
+            placeholder="https://example.com/reference"
+            readOnly={false}
+            addButtonLabel="Add reference"
+            onChange={(references) => {
+              const newPolicy = {
+                ...policyDetails,
+                references,
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+            }}
+          />
+        </EuiCompressedFormRow>
+      </EuiFlyoutBody>
+      <EuiFlyoutFooter>
+        <EuiFlexGroup justifyContent="spaceBetween">
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty onClick={onClose}>Cancel</EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiButton fill onClick={onConfirmClicked}>
+              Save
+            </EuiButton>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiFlyoutFooter>
+    </>
+  );
+};
+
+export type EditPolicyProps = {
+  onClose: () => void;
+  space: Space;
+  notifications: NotificationsStart;
+};
+
+export const EditPolicy: React.FC<EditPolicyProps> = ({ onClose, space, notifications }) => {
+  return (
+    <>
+      <EuiFlyout onClose={onClose} ownFocus size="s">
+        <EuiFlyoutHeader hasBorder={true}>
+          <EuiText size="s">
+            <h2>Edit policy fields</h2>
+          </EuiText>
+        </EuiFlyoutHeader>
+        <EditForm space={space} notifications={notifications} onClose={onClose} />
+      </EuiFlyout>
+    </>
+  );
+};

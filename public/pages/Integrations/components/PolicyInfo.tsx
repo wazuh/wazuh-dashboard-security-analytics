@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { withGuardAsync } from '../utils/helpers';
 import { DataStore } from '../../../store/DataStore';
 import {
@@ -14,6 +14,7 @@ import { ButtonSelectRootDecoder } from './RootDecoderRequirement';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { POLICY_UPDATED } from '../utils/constants';
 
 export const withPolicyGuard: <T>(
   searchPolicyOptions: SearchPolicyOptions
@@ -24,10 +25,14 @@ export const withPolicyGuard: <T>(
     async ({ space }: { space: Space }) => {
       try {
         const response = await DataStore.policies.searchPolicies(space, searchPolicyOptions);
-
         const item = response.items?.[0] || {};
 
-        const { document: policyDocumentData, space: spaceData, id, ...rest } = item as {
+        const {
+          document: policyDocumentData,
+          space: spaceData,
+          id,
+          ...rest
+        } = item as {
           document?: PolicyDocument;
           [key: string]: any;
         };
@@ -56,66 +61,68 @@ export const withPolicyGuard: <T>(
 
 export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
   includeIntegrationFields: ['document'],
-})(
-  ({
-    policyDocumentData,
-    rootDecoder,
-    notifications,
-    space,
-    check,
-  }: {
-    policyDocumentData: PolicyDocument;
-    rootDecoder: DecoderSource;
-    notifications: NotificationsStart;
-    space: Space;
-    check;
-  }) => {
-    return (
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiDescriptionList compressed type="row">
-            <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.title}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.description}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.author}
-            </EuiDescriptionListDescription>
-          </EuiDescriptionList>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiDescriptionList compressed type="row">
-            <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.documentation}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.references.join(', ')}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {rootDecoder?.document?.name ?? ''}
-              {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
-                <ButtonSelectRootDecoder
-                  notifications={notifications}
-                  space={space}
-                  type="icon"
-                  buttonProps={{ iconType: 'pencil', 'aria-label': 'Edit root decoder' }}
-                  policyDocumentData={policyDocumentData}
-                  rootDecoderSource={rootDecoder}
-                  onConfirm={check}
-                ></ButtonSelectRootDecoder>
-              )}
-            </EuiDescriptionListDescription>
-          </EuiDescriptionList>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    );
-  }
-);
+})(({
+  policyDocumentData,
+  rootDecoder,
+  notifications,
+  space,
+  check,
+}: {
+  policyDocumentData: PolicyDocument;
+  rootDecoder: DecoderSource;
+  notifications: NotificationsStart;
+  space: Space;
+  check;
+}) => {
+  // Listen and update when changes are made in the edit form
+  useEffect(() => {
+    const handlePolicyUpdated = () => check();
+    window.addEventListener(POLICY_UPDATED, handlePolicyUpdated);
+    return () => {
+      window.removeEventListener(POLICY_UPDATED, handlePolicyUpdated);
+    };
+  }, [check]);
+  return (
+    <EuiFlexGroup>
+      <EuiFlexItem>
+        <EuiDescriptionList compressed type="row">
+          <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>{policyDocumentData.title}</EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {policyDocumentData.description}
+          </EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>{policyDocumentData.author}</EuiDescriptionListDescription>
+        </EuiDescriptionList>
+      </EuiFlexItem>
+      <EuiFlexItem>
+        <EuiDescriptionList compressed type="row">
+          <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {policyDocumentData.documentation}
+          </EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {policyDocumentData.references?.join(', ') ?? ''}
+          </EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {rootDecoder?.document?.name ?? ''}
+            {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
+              <ButtonSelectRootDecoder
+                notifications={notifications}
+                space={space}
+                type="icon"
+                buttonProps={{ iconType: 'pencil', 'aria-label': 'Edit root decoder' }}
+                policyDocumentData={policyDocumentData}
+                rootDecoderSource={rootDecoder}
+                onConfirm={check}
+              ></ButtonSelectRootDecoder>
+            )}
+          </EuiDescriptionListDescription>
+        </EuiDescriptionList>
+      </EuiFlexItem>
+    </EuiFlexGroup>
+  );
+});

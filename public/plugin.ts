@@ -11,7 +11,7 @@ import {
   DEFAULT_NAV_GROUPS,
   Plugin,
   PluginInitializerContext,
-  AppNavLinkStatus
+  AppNavLinkStatus,
 } from '../../../src/core/public';
 import {
   // Wazuh: hide Correlations app in Security Analytics nav.
@@ -73,17 +73,15 @@ export interface SecurityAnalyticsPluginStartDeps {
   contentManagement: ContentManagementPluginStart;
 }
 
-export class SecurityAnalyticsPlugin
-  implements
-    Plugin<
-      SecurityAnalyticsPluginSetup,
-      SecurityAnalyticsPluginStart,
-      SecurityAnalyticsPluginSetupDeps,
-      SecurityAnalyticsPluginStartDeps
-    > {
+export class SecurityAnalyticsPlugin implements Plugin<
+  SecurityAnalyticsPluginSetup,
+  SecurityAnalyticsPluginStart,
+  SecurityAnalyticsPluginSetupDeps,
+  SecurityAnalyticsPluginStartDeps
+> {
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
-  ) { }
+  ) {}
 
   private updateDefaultRouteOfManagementApplications: AppUpdater = () => {
     const dataSourceValue = dataSourceObservable.value?.id;
@@ -134,21 +132,38 @@ export class SecurityAnalyticsPlugin
       },
     });
 
+    // Wazuh: hide Overview app to be substituted by the Integrations app
+    // core.application.register({
+    //   id: OVERVIEW_NAV_ID,
+    //   title: 'Overview',
+    //   order: 7000,
+    //   category: {
+    //     id: 'security_analytics',
+    //     label: 'Security analytics',
+    //     order: 550,
+    //     euiIconType: 'securityAnalyticsApp',
+    //   },
+    //   updater$: this.appStateUpdater,
+    //   mount: async (params: AppMountParameters) => {
+    //     const { renderApp } = await import('./security_analytics_app');
+    //     const [coreStart, depsStart] = await core.getStartServices();
+    //     return renderApp(coreStart, params, ROUTES.LANDING_PAGE, depsStart, dataSourceManagement);
+    //   },
+    // });
+
     core.application.register({
-      id: OVERVIEW_NAV_ID,
+      id: INTEGRATIONS_NAV_ID,
       title: 'Overview',
       order: 7000,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Security Analytics',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
-        const { renderApp } = await import('./security_analytics_app');
-        const [coreStart, depsStart] = await core.getStartServices();
-        return renderApp(coreStart, params, ROUTES.LANDING_PAGE, depsStart, dataSourceManagement);
+        return mountWrapper(params, ROUTES.INTEGRATIONS);
       },
     });
 
@@ -202,21 +217,22 @@ export class SecurityAnalyticsPlugin
     //   },
     // });
 
-    core.application.register({
-      id: INTEGRATIONS_NAV_ID,
-      title: 'Integrations',
-      order: 7004,
-      category: {
-        id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 550,
-        euiIconType: 'securityAnalyticsApp',
-      },
-      updater$: this.appStateUpdater,
-      mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.INTEGRATIONS);
-      },
-    });
+    // Wazuh: hide old Integrations app placement
+    // core.application.register({
+    //   id: INTEGRATIONS_NAV_ID,
+    //   title: 'Integrations',
+    //   order: 7004,
+    //   category: {
+    //     id: 'security_analytics',
+    //     label: 'Security Analytics',
+    //     order: 550,
+    //     euiIconType: 'securityAnalyticsApp',
+    //   },
+    //   updater$: this.appStateUpdater,
+    //   mount: async (params: AppMountParameters) => {
+    //     return mountWrapper(params, ROUTES.INTEGRATIONS);
+    //   },
+    // });
 
     core.application.register({
       id: DECODERS_NAV_ID,
@@ -232,7 +248,7 @@ export class SecurityAnalyticsPlugin
         return mountWrapper(params, ROUTES.DECODERS);
       },
     });
-    
+
     core.application.register({
       id: KVDBS_NAV_ID,
       title: 'KVDBs',
@@ -334,20 +350,20 @@ export class SecurityAnalyticsPlugin
       // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
         id: DETECTION_NAV_ID,
-        title: "Detection",
+        title: 'Detection',
         mount: async () => {
           return () => {};
-        }
-      })
+        },
+      });
 
       // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
         id: NORMALIZATION_NAV_ID,
-        title: "Normalization",
+        title: 'Normalization',
         mount: async () => {
           return () => {};
-        }
-      })
+        },
+      });
 
       const navlinks = [
         { id: OVERVIEW_NAV_ID, showInAllNavGroup: true },
@@ -367,7 +383,7 @@ export class SecurityAnalyticsPlugin
         { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7004 },
         {
           id: NORMALIZATION_NAV_ID,
-          title: "Normalization",
+          title: 'Normalization',
           showInAllNavGroup: true,
           order: 7003,
         },
@@ -385,7 +401,7 @@ export class SecurityAnalyticsPlugin
         },
         {
           id: DETECTION_NAV_ID,
-          title: "Detection",
+          title: 'Detection',
           showInAllNavGroup: true,
           order: 7009,
         },

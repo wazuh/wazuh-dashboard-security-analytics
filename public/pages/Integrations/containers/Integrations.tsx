@@ -38,6 +38,7 @@ import { PolicyInfoCard } from '../components/PolicyInfo';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
+import { EditPolicy } from '../components/EditPolicy';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -129,6 +130,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const isRearrangeIntegrationsActionDisabled = !actionIsAllowedOnSpace(
     spaceFilter,
     SPACE_ACTIONS.REARRANGE_INTEGRATIONS
+  );
+  const isEditPolicyActionDisabled = !actionIsAllowedOnSpace(
+    spaceFilter,
+    SPACE_ACTIONS.EDIT_POLICY
   );
 
   const deleteSelectedIntegrations = useCallback(async () => {
@@ -239,14 +244,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               SPACE_ACTIONS.DELETE
             ).join(', ')}`
           : selectedItems.length === 0
-          ? 'Select integrations to delete.'
-          : selectedItemsWithoutRelatedEntities.length === 0
-          ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
-          : selectedItemsWithRelatedEntitiesCount > 0
-          ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
-              selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
-            } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
-          : undefined
+            ? 'Select integrations to delete.'
+            : selectedItemsWithoutRelatedEntities.length === 0
+              ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
+              : selectedItemsWithRelatedEntitiesCount > 0
+                ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
+                    selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
+                  } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
+                : undefined
       }
     >
       Delete selected ({selectedItems.length})
@@ -270,6 +275,26 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       }
     >
       Rearrange
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="edit_policy"
+      icon="pencil"
+      onClick={() => {
+        setItemForAction({
+          action: SPACE_ACTIONS.EDIT_POLICY,
+        });
+        setIsPopoverOpen(false);
+      }}
+      disabled={isEditPolicyActionDisabled}
+      toolTipContent={
+        isEditPolicyActionDisabled
+          ? `The properties are editable only in the spaces: ${getSpacesAllowAction(
+              SPACE_ACTIONS.EDIT_POLICY
+            ).join(', ')}`
+          : undefined
+      }
+    >
+      Edit fields
     </EuiContextMenuItem>,
   ];
 
@@ -341,6 +366,13 @@ export const Integrations: React.FC<IntegrationsProps> = ({
                 loadIntegrations();
               }}
               notifications={notifications}
+            />
+          )}
+          {itemForAction.action === SPACE_ACTIONS.EDIT_POLICY && (
+            <EditPolicy
+              space={spaceFilter}
+              notifications={notifications}
+              onClose={() => setItemForAction(null)}
             />
           )}
         </>
