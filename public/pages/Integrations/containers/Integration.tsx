@@ -167,13 +167,19 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         );
       case 'kvdbs':
         return (
-          <IntegrationKVDBs kvdbs={kvdbItems} loading={loadingKvdbs} onRefresh={refreshKvdbs} />
+          <IntegrationKVDBs
+            kvdbs={kvdbItems}
+            loading={loadingKvdbs}
+            space={integrationDetails?.space?.name ?? ''}
+            onRefresh={refreshKvdbs}
+          />
         );
       case 'detection_rules':
         return (
           <IntegrationDetectionRules
             loadingRules={loadingRules}
             rules={rules}
+            space={integrationDetails?.space?.name ?? ''}
             refreshRules={refreshRules}
           />
         );
@@ -210,6 +216,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   };
 
   const spaceName = (integrationDetails?.space.name ?? '') as Space;
+  const isCreateDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.CREATE);
   const isEditDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.EDIT);
   const isDeleteDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.DELETE);
 
@@ -243,6 +250,14 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               closeActionsPopover();
             }}
             data-test-subj={'createRuleButton'}
+            disabled={isCreateDisabled}
+            toolTipContent={
+              isCreateDisabled
+                ? `Rule can only be created in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
+                : undefined
+            }
           >
             Create rule
           </EuiContextMenuItem>,
@@ -254,6 +269,14 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               closeActionsPopover();
             }}
             data-test-subj={'createDecoderButton'}
+            disabled={isCreateDisabled}
+            toolTipContent={
+              isCreateDisabled
+                ? `Decoder can only be created in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
+                : undefined
+            }
           >
             Create decoder
           </EuiContextMenuItem>,
@@ -265,6 +288,14 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               closeActionsPopover();
             }}
             data-test-subj={'createKVDBButton'}
+            disabled={isCreateDisabled}
+            toolTipContent={
+              isCreateDisabled
+                ? `KVDB can only be created in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
+                : undefined
+            }
           >
             Create KVDB
           </EuiContextMenuItem>,
