@@ -21,22 +21,27 @@ export interface Integration {
   space: IntegrationBase['space'];
 }
 
+export interface IntegrationDocumentCreate {
+  author: string;
+  category: string;
+  description: string;
+  documentation: string;
+  tags: {
+    correlation_id: number;
+  } | null;
+  title: string;
+}
+
+export type IntegrationDocument = IntegrationDocumentCreate & {
+  id: string;
+  date: string;
+  references?: string[];
+  decoders?: string[];
+  kvdbs?: string[];
+  rules?: string[];
+};
 export interface IntegrationBase {
-  document: {
-    id: string;
-    title: string;
-    author: string;
-    date: string;
-    description: string;
-    category: string;
-    documentation?: string;
-    references?: string[];
-    tags: {
-      correlation_id: number;
-    } | null;
-    decoders?: string[];
-    kvdbs?: string[];
-  };
+  document: IntegrationDocument;
   space: {
     name: string;
   };
