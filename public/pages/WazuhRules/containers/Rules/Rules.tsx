@@ -47,7 +47,6 @@ const SORT_FIELD_TO_OS: Record<string, string | undefined> = {
   title: 'document.title',
   level: 'document.level',
   category: 'document.logsource.category',
-  source: 'space.name',
 };
 
 interface RulesProps {
@@ -183,13 +182,14 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       },
       {
         field: 'category',
-        name: 'Category',
+        name: 'Integration',
         sortable: true,
       },
       {
-        field: 'source',
-        name: 'Source',
-        sortable: true,
+        field: 'description',
+        name: 'Description',
+        sortable: false,
+        truncateText: true,
       },
       {
         name: 'Actions',
