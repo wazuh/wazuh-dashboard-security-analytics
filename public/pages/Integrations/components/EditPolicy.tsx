@@ -12,26 +12,32 @@ import {
   EuiFlexGroup,
   EuiButton,
   EuiButtonEmpty,
+  EuiComboBox,
 } from '@elastic/eui';
 
 import { withPolicyGuard } from './PolicyInfo';
-import { PolicyDocument, Space } from '../../../../types';
+import { DecoderSource, PolicyDocument, Space } from '../../../../types';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DataStore } from '../../../store/DataStore';
 import { successNotificationToast } from '../../../utils/helpers';
 import { POLICY_UPDATED } from '../utils/constants';
 import { FormFieldArray } from '../../../components/FormFieldArray';
 import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validation';
+import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
+
+const DECODER_SEARCH_SIZE = 25;
 
 const EditForm: React.FC<{}> = withPolicyGuard({
   includeIntegrationFields: ['document'],
 })(({
   policyDocumentData,
+  rootDecoder,
   notifications,
   space,
   onClose,
 }: {
   policyDocumentData: PolicyDocument;
+  rootDecoder: DecoderSource;
   notifications: NotificationsStart;
   space: Space;
   onClose: () => void;
@@ -39,6 +45,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
   return (
     <EditFormBody
       policyDocumentData={policyDocumentData}
+      rootDecoder={rootDecoder}
       notifications={notifications}
       space={space}
       onClose={onClose}
@@ -48,13 +55,32 @@ const EditForm: React.FC<{}> = withPolicyGuard({
 
 const EditFormBody: React.FC<{
   policyDocumentData: PolicyDocument;
+  rootDecoder: DecoderSource;
   notifications: NotificationsStart;
   space: Space;
   onClose: () => void;
-}> = ({ policyDocumentData, notifications, space, onClose }) => {
+}> = ({ policyDocumentData, rootDecoder, notifications, space, onClose }) => {
   const [policyDetails, setPolicyDetails] = useState<PolicyDocument>(policyDocumentData);
   const [titleError, setTitleError] = useState('');
   const [authorError, setAuthorError] = useState('');
+  const [decoderList, setDecoderList] = useState<Array<{ label: string; value: DecoderSource }>>(
+    []
+  );
+
+  // If the policy has a root decoder set it as the initial value
+  const [selectedDecoder, setSelectedDecoder] = useState<
+    Array<{ label: string; value: DecoderSource }>
+  >(() => {
+    if (rootDecoder?.document) {
+      return [
+        {
+          label: rootDecoder.document.name,
+          value: rootDecoder,
+        },
+      ];
+    }
+    return [];
+  });
 
   const hasChanges = useMemo(() => {
     return JSON.stringify(policyDetails) !== JSON.stringify(policyDocumentData);
@@ -70,7 +96,6 @@ const EditFormBody: React.FC<{
   };
 
   const sanitizatePolicy = (details: PolicyDocument) => {
-    // Make sure optional fields have default value
     const completePolicy = {
       ...details,
       references: details.references?.filter((ref) => ref.trim() !== '') ?? [],
@@ -78,6 +103,30 @@ const EditFormBody: React.FC<{
       description: details.description ?? '',
     };
     return completePolicy;
+  };
+
+  const fetchDecoders = async (search: string) => {
+    try {
+      const query = buildDecodersSearchQuery(search);
+      const response = await DataStore.decoders.searchDecoders(
+        {
+          from: 0,
+          size: DECODER_SEARCH_SIZE,
+          sort: [{ ['document.name']: { order: 'asc', unmapped_type: 'keyword' } }],
+          query,
+          _source: { includes: ['document.id', 'document.name'] },
+        },
+        space
+      );
+      setDecoderList(
+        response.items.map((item) => ({
+          label: item?.document?.name ?? item?.document?.id,
+          value: item,
+        }))
+      );
+    } catch {
+      setDecoderList([]);
+    }
   };
 
   const onConfirm = async () => {
@@ -194,6 +243,33 @@ const EditFormBody: React.FC<{
               setPolicyDetails(newPolicy);
               updateErrors(newPolicy);
             }}
+          />
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow label="Root decoder">
+          <EuiComboBox
+            placeholder="Search and select a decoder"
+            singleSelection={{ asPlainText: true }}
+            options={decoderList}
+            selectedOptions={selectedDecoder}
+            onSearchChange={fetchDecoders}
+            onFocus={() => {
+              if (decoderList.length === 0) {
+                fetchDecoders('');
+              }
+            }}
+            onChange={(selected) => {
+              setSelectedDecoder(selected);
+              const newPolicy = {
+                ...policyDetails,
+                root_decoder: selected.length > 0 ? selected[0].value?.document?.id : '',
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+              if (selected.length === 0) {
+                fetchDecoders('');
+              }
+            }}
+            async
           />
         </EuiCompressedFormRow>
       </EuiFlyoutBody>
