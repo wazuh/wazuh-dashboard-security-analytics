@@ -5,6 +5,10 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiText,
+  EuiTitle,
+  EuiToolTip,
+  EuiCard,
+  EuiButtonIcon,
   EuiDescriptionListTitle,
   EuiDescriptionListDescription,
   EuiDescriptionList,
@@ -83,46 +87,66 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
     };
   }, [check]);
   return (
-    <EuiFlexGroup>
-      <EuiFlexItem>
-        <EuiDescriptionList compressed type="row">
-          <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>{policyDocumentData.title}</EuiDescriptionListDescription>
-          <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>
-            {policyDocumentData.description}
-          </EuiDescriptionListDescription>
-          <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>{policyDocumentData.author}</EuiDescriptionListDescription>
-        </EuiDescriptionList>
-      </EuiFlexItem>
-      <EuiFlexItem>
-        <EuiDescriptionList compressed type="row">
-          <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>
-            {policyDocumentData.documentation}
-          </EuiDescriptionListDescription>
-          <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>
-            {policyDocumentData.references?.join(', ') ?? ''}
-          </EuiDescriptionListDescription>
-          <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>
-            {rootDecoder?.document?.name ?? ''}
-            {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
-              <ButtonSelectRootDecoder
-                notifications={notifications}
-                space={space}
-                type="icon"
-                buttonProps={{ iconType: 'pencil', 'aria-label': 'Edit root decoder' }}
-                policyDocumentData={policyDocumentData}
-                rootDecoderSource={rootDecoder}
-                onConfirm={check}
-              ></ButtonSelectRootDecoder>
-            )}
-          </EuiDescriptionListDescription>
-        </EuiDescriptionList>
-      </EuiFlexItem>
-    </EuiFlexGroup>
+    <EuiCard
+      textAlign="left"
+      paddingSize="m"
+      title={
+      <EuiFlexGroup justifyContent="spaceBetween" gutterSize="none">
+        <EuiFlexItem>
+          <EuiTitle size="s">
+            <h3>Space details</h3>
+          </EuiTitle>
+        </EuiFlexItem>
+        <EuiFlexItem grow={false}>
+          {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
+            <EuiToolTip content={'Edit space details'}>
+              <EuiButtonIcon iconType="pencil" aria-label="Edit space details" />
+            </EuiToolTip>
+          )}
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    }>          
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiDescriptionList compressed type="row">
+            <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>{policyDocumentData.title}</EuiDescriptionListDescription>
+            <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.description}
+            </EuiDescriptionListDescription>
+            <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>{policyDocumentData.author}</EuiDescriptionListDescription>
+          </EuiDescriptionList>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiDescriptionList compressed type="row">
+            <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.documentation}
+            </EuiDescriptionListDescription>
+            <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.references?.join(', ') ?? ''}
+            </EuiDescriptionListDescription>
+            <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {rootDecoder?.document?.name ?? ''}
+              {/* {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
+                <ButtonSelectRootDecoder
+                  notifications={notifications}
+                  space={space}
+                  type="icon"
+                  buttonProps={{ iconType: 'pencil', 'aria-label': 'Edit root decoder' }}
+                  policyDocumentData={policyDocumentData}
+                  rootDecoderSource={rootDecoder}
+                  onConfirm={check}
+                ></ButtonSelectRootDecoder>
+              )} */}
+            </EuiDescriptionListDescription>
+          </EuiDescriptionList>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </EuiCard>
   );
 });

@@ -9,9 +9,12 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiInMemoryTable,
-  EuiPanel,
+  EuiToolTip,
   EuiSpacer,
   EuiText,
+  EuiTitle,
+  EuiCard,
+  EuiButtonIcon,
   EuiContextMenuItem,
   EuiContextMenuPanel,
   EuiPopover,
@@ -411,23 +414,25 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           <EuiFlexGroup alignItems="center" justifyContent={'spaceBetween'}>
             <EuiFlexItem>
               <EuiText size="s">
-                <h1>Integrations</h1>
+                <h1>Overview</h1>
               </EuiText>
               <EuiText size="s" color="subdued">
                 Integrations describe the data sources to which the detection rules are meant to be
                 applied.
               </EuiText>
               <EuiSpacer size="s"></EuiSpacer>
-              <PolicyInfoCard space={spaceFilter} notifications={notifications} />
+              
             </EuiFlexItem>
-            {/* <EuiFlexItem grow={false}>{createIntegrationAction}</EuiFlexItem> */}
             <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
             <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size={'m'} />
+          <EuiSpacer size={'s'} />
         </EuiFlexItem>
       </PageHeader>
-      <EuiPanel>
+        <PolicyInfoCard space={spaceFilter} notifications={notifications} />
+      {/* </EuiCard> */}
+      <EuiSpacer size={'m'} />
+      <EuiCard textAlign="left" paddingSize="m" title="Integrations">
         <EuiInMemoryTable
           itemId={'id'}
           items={integrations}
@@ -447,7 +452,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           sorting={true}
           loading={loading}
         />
-      </EuiPanel>
+      </EuiCard>
     </>
   );
 };
