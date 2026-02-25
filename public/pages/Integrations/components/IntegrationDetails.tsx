@@ -47,17 +47,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   };
 
   return (
-    <ContentPanel
-      title="Details"
-      // actions={
-      //   !isEditMode &&
-      //   integrationDetails.space.name.toLocaleLowerCase() !== "standard" && [
-      //     <EuiSmallButton onClick={() => setIsEditMode(true)}>
-      //       Edit
-      //     </EuiSmallButton>,
-      //   ]
-      // }
-    >
+    <ContentPanel title="Details">
       <EuiDescriptionList
         listItems={[
           {

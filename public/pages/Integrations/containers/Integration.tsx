@@ -202,7 +202,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   };
 
   const toggleActionsMenu = () => {
-    setIsActionsMenuOpen(!isActionsMenuOpen);
+    setIsActionsMenuOpen((state) => !state);
   };
 
   const closeActionsPopover = () => {

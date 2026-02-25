@@ -87,7 +87,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
   const deleteIntegration = async (id: string) => {
     const { ok } = await DataStore.integrations.deleteIntegration(id);
-    
+
     if (ok) {
       successNotificationToast(notifications, 'deleted', 'integration');
       await loadIntegrations();
@@ -137,9 +137,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
     try {
       const deleteResults = await Promise.all(
-        selectedItemsWithoutRelatedEntities.map((item) =>
-          DataStore.integrations.deleteIntegration(item?.id)
-        )
+        selectedItemsWithoutRelatedEntities.map(async (item) => {
+          const { ok } = await DataStore.integrations.deleteIntegration(item?.id);
+          return ok;
+        })
       );
       const deletedCount = deleteResults.filter(Boolean).length;
       const failedCount = deleteResults.length - deletedCount;
