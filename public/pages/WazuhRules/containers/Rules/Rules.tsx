@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import {
+  EuiBadge,
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
@@ -30,6 +31,7 @@ import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import { buildRulesSearchQuery } from '../../utils/constants';
 import { RuleTableItem } from '../../utils/helpers';
+import { getSeverityColor, getSeverityLabel } from '../../../Correlations/utils/constants';
 import { RuleViewerFlyout } from '../../components/RuleViewerFlyout/RuleViewerFlyout';
 import { SpaceTypes } from '../../../../../common/constants';
 import { useSpaceSelector } from '../../../../hooks/useSpaceSelector';
@@ -170,6 +172,14 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         field: 'level',
         name: 'Severity',
         sortable: true,
+        render: (level: string) => {
+          const { text, background } = getSeverityColor(level);
+          return (
+            <EuiBadge style={{ color: text }} color={background}>
+              {getSeverityLabel(level)}
+            </EuiBadge>
+          );
+        },
       },
       {
         field: 'category',
