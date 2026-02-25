@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, FormikErrors } from 'formik';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
@@ -19,7 +19,6 @@ import {
   EuiText,
   EuiTitle,
   EuiPanel,
-  EuiCallOut,
   EuiLink,
 } from '@elastic/eui';
 import { FieldTextArray } from '../../../Rules/components/RuleEditor/components/FieldTextArray';
@@ -41,7 +40,10 @@ import { DetectionVisualEditor } from '../../../Rules/components/RuleEditor/Dete
 import { getSeverityLabel } from '../../../Correlations/utils/constants';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { TopNavControlLinkData } from '../../../../../../../src/plugins/navigation/public';
-import { DataStore } from '../../../../store/DataStore';
+import {
+  IntegrationComboBox,
+  useIntegrationSelector,
+} from '../../../../components/IntegrationComboBox';
 
 export interface VisualRuleEditorProps {
   initialValue: RuleEditorFormModel;
@@ -81,28 +83,10 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   const [isDetectionInvalid, setIsDetectionInvalid] = useState(false);
   const [integrationId, setIntegrationId] = useState('');
 
-  const [integrationOptions, setIntegrationOptions] = useState<
-    { value: string; label: string; id: string }[]
-  >([]);
-  const [loadingIntegrations, setLoadingIntegrations] = useState(false);
-
-  useEffect(() => {
-    if (mode !== 'create') return;
-    setLoadingIntegrations(true);
-    DataStore.decoders
-      .getDraftIntegrations()
-      .then((options: any[]) =>
-        setIntegrationOptions(
-          options.map((opt) => ({
-            value: opt._source?.document?.title ?? opt._id,
-            label: opt._source?.document?.title ?? opt._id,
-            id: opt._id,
-          }))
-        )
-      )
-      .catch(() => {})
-      .finally(() => setLoadingIntegrations(false));
-  }, [mode]);
+  const { loading: loadingIntegrations, options: integrationOptions } = useIntegrationSelector({
+    notifications: notifications!,
+    enabled: mode === 'create',
+  });
 
   const validateTags = (fields: string[]) => {
     let isValid = true;
@@ -313,57 +297,39 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                 </EuiTitle>
 
                 <EuiSpacer />
-                <EuiCompressedFormRow
-                  label={
-                    <EuiText size={'s'}>
-                      <strong>Integration</strong>
-                    </EuiText>
-                  }
-                  isInvalid={
-                    (validateOnMount || props.touched.integration) && !!props.errors?.integration
-                  }
-                  error={props.errors.integration}
-                >
-                  {mode === 'create' ? (
-                    <EuiCompressedComboBox
-                      isInvalid={
-                        (validateOnMount || props.touched.integration) &&
-                        !!props.errors?.integration
-                      }
-                      placeholder="Select integration"
-                      data-test-subj={'rule_integration_dropdown'}
-                      options={integrationOptions}
-                      singleSelection={{ asPlainText: true }}
-                      isLoading={loadingIntegrations}
-                      isDisabled={loadingIntegrations}
-                      onChange={(selected) => {
-                        const option = selected[0] ?? null;
-                        setIntegrationId(option?.id ?? '');
-                        props.handleChange('integration')(option?.label ?? '');
-                        props.setFieldTouched('integration', true);
-                      }}
-                      onBlur={props.handleBlur('integration')}
-                      selectedOptions={integrationOptions.filter((o) => o.id === integrationId)}
-                    />
-                  ) : (
+                {mode === 'create' ? (
+                  <IntegrationComboBox
+                    options={integrationOptions}
+                    selectedId={integrationId}
+                    isLoading={loadingIntegrations}
+                    data-test-subj={'rule_integration_dropdown'}
+                    resourceName="rules"
+                    isInvalid={
+                      (validateOnMount || props.touched.integration) &&
+                      !!props.errors?.integration
+                    }
+                    error={props.errors.integration}
+                    onChange={(selected) => {
+                      const option = selected[0] ?? null;
+                      setIntegrationId(option?.id ?? '');
+                      props.setFieldValue('integration', option?.label ?? '', true);
+                      props.setFieldTouched('integration', true, false);
+                    }}
+                  />
+                ) : (
+                  <EuiCompressedFormRow
+                    label={
+                      <EuiText size={'s'}>
+                        <strong>Integration</strong>
+                      </EuiText>
+                    }
+                  >
                     <EuiCompressedFieldText
                       value={props.values.integration}
                       readOnly
                       data-test-subj={'rule_integration_field'}
                     />
-                  )}
-                </EuiCompressedFormRow>
-
-                {mode === 'create' && !loadingIntegrations && integrationOptions.length === 0 && (
-                  <>
-                    <EuiSpacer size="m" />
-                    <EuiCallOut title="No integrations available" color="warning" iconType="alert">
-                      <p>
-                        There are no integrations in draft status available. Please create or draft
-                        an integration first before adding rules.
-                      </p>
-                    </EuiCallOut>
-                  </>
+                  </EuiCompressedFormRow>
                 )}
 
                 <EuiSpacer />
