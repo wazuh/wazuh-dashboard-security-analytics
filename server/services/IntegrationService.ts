@@ -41,9 +41,9 @@ const KVDBS_INDEX = '.cti-kvdbs';
 const sanitizeIntegrationBase = (base: IntegrationBase): IntegrationBase => {
   const completeIntegration = { ...base };
 
-  (
-    Object.keys(defaultIntegration.document) as Array<keyof typeof defaultIntegration.document>
-  ).forEach((key) => {
+  (Object.keys(defaultIntegration.document) as Array<
+    keyof typeof defaultIntegration.document
+  >).forEach((key) => {
     if (
       completeIntegration.document[key] === undefined ||
       completeIntegration.document[key] === null
@@ -98,7 +98,8 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<SearchIntegrationsResponse> | ResponseError>
   > => {
     try {
-      const query = request.body;
+      let query: any = request.body;
+
       const client = this.getClient(request, context);
       const searchIntegrationsResponse: SearchIntegrationsResponse = await client(
         // CLIENT_INTEGRATION_METHODS.SEARCH_INTEGRATIONS,
@@ -107,7 +108,6 @@ export class IntegrationService extends MDSEnabledClientService {
           index: INTEGRATIONS_INDEX,
           body: {
             size: 10000,
-            // query: query ?? {
             query: query ?? {
               match_all: {},
             },

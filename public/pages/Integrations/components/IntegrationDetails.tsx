@@ -11,9 +11,10 @@ import { DataStore } from '../../../store/DataStore';
 import { IntegrationForm } from './IntegrationForm';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { successNotificationToast } from '../../../utils/helpers';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { SPACE_ACTIONS } from '../../../../common/constants';
 
 export interface IntegrationDetailsProps {
-  initialIntegrationDetails: IntegrationItem;
   integrationDetails: IntegrationItem;
   isEditMode: boolean;
   notifications: NotificationsStart;
@@ -23,7 +24,6 @@ export interface IntegrationDetailsProps {
 }
 
 export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
-  initialIntegrationDetails,
   integrationDetails,
   isEditMode,
   notifications,
@@ -31,16 +31,14 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   setIntegrationDetails,
   integrationId,
 }) => {
-  const onUpdateIntegration = async () => {
-    const success = await DataStore.integrations.updateIntegration(
-      integrationId,
-      integrationDetails
-    );
+  const onUpdateIntegration = async (integrationData: IntegrationItem) => {
+    const success = await DataStore.integrations.updateIntegration(integrationId, integrationData);
     if (success) {
+      setIntegrationDetails(integrationData);
       successNotificationToast(
         notifications,
         'updated',
-        `integration ${integrationDetails.document.title}`
+        `integration ${integrationData.document.title}`
       );
       setIsEditMode(false);
     }
@@ -50,10 +48,10 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
     <ContentPanel
       title="Details"
       actions={
-        !isEditMode &&
-        integrationDetails.space.name.toLocaleLowerCase() !== 'standard' && [
-          <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>,
-        ]
+        actionIsAllowedOnSpace(integrationDetails?.space?.name, SPACE_ACTIONS.EDIT) &&
+        !isEditMode ? (
+          <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>
+        ) : null
       }
     >
       <EuiDescriptionList
@@ -65,9 +63,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
                 isEditMode={isEditMode}
                 confirmButtonText={'Update'}
                 notifications={notifications}
-                setIntegrationDetails={setIntegrationDetails}
                 onCancel={() => {
-                  setIntegrationDetails(initialIntegrationDetails);
                   setIsEditMode(false);
                 }}
                 onConfirm={onUpdateIntegration}

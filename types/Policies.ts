@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { IntegrationBase } from './Integrations';
+
 export interface PolicySpace {
   name: string;
   hash: PolicyHash;
@@ -33,7 +35,7 @@ export interface PolicySource {
 
 export interface PolicyItem extends PolicySource {
   id: string;
-  integrationsMap?: Map<string, { title: string; id: string }>;
+  integrationsMap?: Record<string, IntegrationBase & { _id: string }>;
 }
 
 export interface SearchPolicyOptions {

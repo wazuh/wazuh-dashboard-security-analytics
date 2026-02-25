@@ -176,9 +176,19 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
   }, [areIntegrationsInOrder]);
 
   const onConfirmEnhanced = async () => {
+    // Re-fetch the current policy just before saving to guard against race conditions
+    // (e.g. an integration deleted in another tab while this flyout was open).
+    const latestPolicy = await DataStore.policies.searchPolicies(space, {});
+    const latestIntegrationIds = new Set(latestPolicy.items[0]?.document?.integrations ?? []);
+
+    // Drop any integration that no longer exists in the latest policy state
+    const validIntegrations = rearrangedIntegrations.filter(({ id }) =>
+      latestIntegrationIds.has(id)
+    );
+
     const payload = {
       ...policyDocumentData,
-      integrations: rearrangedIntegrations.map((integration) => integration.id),
+      integrations: validIntegrations.map(({ id }) => id),
     };
     const [success] = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
 

@@ -6,6 +6,7 @@
 import { useEffect, useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { SpaceTypes } from '../../common/constants';
+import { Space } from '../../types';
 
 const SPACE_FILTER_KEY = 'security_analytics_space_filter';
 
@@ -42,5 +43,5 @@ export const useSpaceFilter = () => {
     localStorage?.setItem(SPACE_FILTER_KEY, id);
   };
 
-  return [spaceFilter, setSpaceFilter] as const;
+  return [spaceFilter as Space, setSpaceFilter] as const;
 };
