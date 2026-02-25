@@ -23,7 +23,7 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
             category: schema.string(),
             description: schema.string(),
             documentation: schema.string(),
-            references: schema.arrayOf(schema.string()),
+            references: schema.maybe(schema.arrayOf(schema.string())),
             tags: schema.nullable(
               schema.object({
                 correlation_id: schema.number(),
@@ -65,7 +65,7 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
             documentation: schema.string(),
             enabled: schema.maybe(schema.boolean()), // TODO: adapt if this can be configured by user in UI
             kvdbs: schema.arrayOf(schema.string()),
-            references: schema.arrayOf(schema.string()),
+            references: schema.maybe(schema.arrayOf(schema.string())),
             rules: schema.arrayOf(schema.string()),
             tags: schema.nullable(
               schema.object({

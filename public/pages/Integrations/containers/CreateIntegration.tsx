@@ -28,7 +28,21 @@ export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, n
     'Create integration to categorize and identify detection rules for your data sources.'; // Replace Log Type is replaced with Integration by Wazuh
 
   const onCreateIntegration = async (integrationData: CreateIntegrationRequestBody) => {
-    const success = await DataStore.integrations.createIntegration(integrationData);
+    const { document } = integrationData;
+    const integrationDocumentBody: IntegrationDocumentCreate = Object.fromEntries(
+      [
+        'author',
+        'category',
+        'description',
+        'documentation',
+        'references',
+        'tags',
+        'title',
+      ].map((field) => [field, document[field as keyof typeof integrationData.document]])
+    ) as IntegrationDocumentCreate;
+    const success = await DataStore.integrations.createIntegration({
+      document: integrationDocumentBody,
+    });
     if (success) {
       successNotificationToast(
         notifications,
@@ -54,6 +68,7 @@ export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, n
       <IntegrationForm
         integrationDetails={{
           ...integrationDetails,
+          detectionRulesCount: 0,
         }}
         isEditMode={true}
         confirmButtonText={'Create integration'} // Replace Log Type to Integration by Wazuh
