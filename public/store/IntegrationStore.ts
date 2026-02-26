@@ -202,7 +202,7 @@ export class IntegrationStore {
   public async promoteIntegration(data: PromoteIntegrationRequestBody) {
     const promoteRes = await this.service.promoteIntegration(data);
     if (!promoteRes.ok) {
-      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
+      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes?.error?.message || promoteRes.error);
     }
 
     return promoteRes.ok;

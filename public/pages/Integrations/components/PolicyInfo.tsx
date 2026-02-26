@@ -143,17 +143,22 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
             <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
               {rootDecoder?.document?.name ?? ''}
-              {/* {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
-                <ButtonSelectRootDecoder
-                  notifications={notifications}
-                  space={space}
-                  type="icon"
-                  buttonProps={{ iconType: 'pencil', 'aria-label': 'Edit root decoder' }}
-                  policyDocumentData={policyDocumentData}
-                  rootDecoderSource={rootDecoder}
-                  onConfirm={check}
-                ></ButtonSelectRootDecoder>
-              )} */}
+            </EuiDescriptionListDescription>
+          </EuiDescriptionList>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiDescriptionList compressed type="row">
+            <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {JSON.stringify(policyDocumentData?.enabled)}
+            </EuiDescriptionListDescription>
+            <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {JSON.stringify(policyDocumentData?.index_unclassified_events)}
+            </EuiDescriptionListDescription>
+            <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {JSON.stringify(policyDocumentData?.index_discarded_events)}
             </EuiDescriptionListDescription>
           </EuiDescriptionList>
         </EuiFlexItem>

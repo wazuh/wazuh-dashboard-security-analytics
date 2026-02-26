@@ -7,7 +7,11 @@ import React, { useState, useMemo } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import {
+  setBreadcrumbs,
+  successNotificationToast,
+  errorNotificationToast
+} from '../../../utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   EuiButton,
@@ -113,6 +117,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
         promoteData?.promote.changes.kvdbs.length > 0;
 
       const onConfirmPromote = async () => {
+        try {
         // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
         const success = await DataStore.integrations.promoteIntegration({
           space,
@@ -122,6 +127,14 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           successNotificationToast(notifications, 'promoted', `[${space}] space`);
           history.push(ROUTES.INTEGRATIONS);
         }
+      } catch (error) {
+        errorNotificationToast(
+          notifications,
+          'promote',
+          '',
+          error?.message || 'Error promoting.'
+        );
+      }
       };
 
       if (!hasPromotions) {

@@ -5,6 +5,7 @@ import {
   EuiFlyoutBody,
   EuiFlyoutFooter,
   EuiText,
+  EuiSwitch,
   EuiCompressedFormRow,
   EuiCompressedFieldText,
   EuiCompressedTextArea,
@@ -178,6 +179,19 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             }}
           />
         </EuiCompressedFormRow>
+        <EuiCompressedFormRow label="Author" isInvalid={!!authorError} error={authorError}>
+          <EuiCompressedFieldText
+            value={policyDetails.author}
+            onChange={(e) => {
+              const newPolicy = {
+                ...policyDetails,
+                author: e.target.value,
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+            }}
+          />
+        </EuiCompressedFormRow>
         <EuiCompressedFormRow
           label={
             <>
@@ -192,19 +206,6 @@ const EditForm: React.FC<{}> = withPolicyGuard({
               const newPolicy = {
                 ...policyDetails,
                 description: e.target.value,
-              };
-              setPolicyDetails(newPolicy);
-              updateErrors(newPolicy);
-            }}
-          />
-        </EuiCompressedFormRow>
-        <EuiCompressedFormRow label="Author" isInvalid={!!authorError} error={authorError}>
-          <EuiCompressedFieldText
-            value={policyDetails.author}
-            onChange={(e) => {
-              const newPolicy = {
-                ...policyDetails,
-                author: e.target.value,
               };
               setPolicyDetails(newPolicy);
               updateErrors(newPolicy);
@@ -232,21 +233,44 @@ const EditForm: React.FC<{}> = withPolicyGuard({
           />
         </EuiCompressedFormRow>
         <EuiCompressedFormRow>
-          <FormFieldArray
-            label={
-              <>
-                {'References - '}
-                <em>optional</em>
-              </>
-            }
-            values={policyDetails.references || []}
-            placeholder="https://example.com/reference"
-            readOnly={false}
-            addButtonLabel="Add reference"
-            onChange={(references) => {
+          <EuiSwitch
+            label="Enabled"
+            compressed
+            checked={policyDetails.enabled || false}
+            onChange={(e) => {
               const newPolicy = {
                 ...policyDetails,
-                references,
+                enabled: e.target.checked,
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+            }}
+          />
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow>
+          <EuiSwitch
+            label="Index unclassified events"
+            compressed
+            checked={policyDetails.index_unclassified_events || false}
+            onChange={(e) => {
+              const newPolicy = {
+                ...policyDetails,
+                index_unclassified_events: e.target.checked,
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+            }}
+          />
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow>
+          <EuiSwitch
+            label="Index discarded events"
+            compressed
+            checked={policyDetails.index_discarded_events || false}
+            onChange={(e) => {
+              const newPolicy = {
+                ...policyDetails,
+                index_discarded_events: e.target.checked,
               };
               setPolicyDetails(newPolicy);
               updateErrors(newPolicy);
@@ -273,6 +297,28 @@ const EditForm: React.FC<{}> = withPolicyGuard({
               }
             }}
             async
+          />
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow>
+          <FormFieldArray
+            label={
+              <>
+                {'References - '}
+                <em>optional</em>
+              </>
+            }
+            values={policyDetails.references || []}
+            placeholder="https://example.com/reference"
+            readOnly={false}
+            addButtonLabel="Add reference"
+            onChange={(references) => {
+              const newPolicy = {
+                ...policyDetails,
+                references,
+              };
+              setPolicyDetails(newPolicy);
+              updateErrors(newPolicy);
+            }}
           />
         </EuiCompressedFormRow>
       </EuiFlyoutBody>

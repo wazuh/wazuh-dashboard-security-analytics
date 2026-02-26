@@ -9,12 +9,9 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiInMemoryTable,
-  EuiToolTip,
   EuiSpacer,
   EuiText,
-  EuiTitle,
   EuiCard,
-  EuiButtonIcon,
   EuiContextMenuItem,
   EuiContextMenuPanel,
   EuiPopover,
@@ -415,7 +412,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         notifications={notifications}
         onEditPolicy={onEditPolicy}
       />
-      {/* </EuiCard> */}
       <EuiSpacer size={'m'} />
       <EuiCard textAlign="left" paddingSize="m" title="Integrations">
         <EuiInMemoryTable
