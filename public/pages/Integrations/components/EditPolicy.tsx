@@ -313,7 +313,7 @@ export const EditPolicy: React.FC<EditPolicyProps> = ({ onClose, space, notifica
       <EuiFlyout onClose={onClose} ownFocus size="s">
         <EuiFlyoutHeader hasBorder={true}>
           <EuiText size="s">
-            <h2>Edit space fields</h2>
+            <h2>Edit space details</h2>
           </EuiText>
         </EuiFlyoutHeader>
         <EditForm space={space} notifications={notifications} onClose={onClose} />

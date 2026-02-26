@@ -134,10 +134,12 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     spaceFilter,
     SPACE_ACTIONS.REARRANGE_INTEGRATIONS
   );
-  const isEditPolicyActionDisabled = !actionIsAllowedOnSpace(
-    spaceFilter,
-    SPACE_ACTIONS.EDIT_POLICY
-  );
+  const onEditPolicy = () => {
+    setItemForAction({
+      action: SPACE_ACTIONS.EDIT_POLICY,
+    });
+    setIsPopoverOpen(false);
+  };
 
   const deleteSelectedIntegrations = useCallback(async () => {
     setLoading(true);
@@ -279,26 +281,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     >
       Rearrange
     </EuiContextMenuItem>,
-    <EuiContextMenuItem
-      key="edit_policy"
-      icon="pencil"
-      onClick={() => {
-        setItemForAction({
-          action: SPACE_ACTIONS.EDIT_POLICY,
-        });
-        setIsPopoverOpen(false);
-      }}
-      disabled={isEditPolicyActionDisabled}
-      toolTipContent={
-        isEditPolicyActionDisabled
-          ? `The properties are editable only in the spaces: ${getSpacesAllowAction(
-              SPACE_ACTIONS.EDIT_POLICY
-            ).join(', ')}`
-          : undefined
-      }
-    >
-      Edit space fields
-    </EuiContextMenuItem>,
   ];
 
   const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
@@ -421,7 +403,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
                 applied.
               </EuiText>
               <EuiSpacer size="s"></EuiSpacer>
-              
             </EuiFlexItem>
             <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
             <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
@@ -429,7 +410,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           <EuiSpacer size={'s'} />
         </EuiFlexItem>
       </PageHeader>
-        <PolicyInfoCard space={spaceFilter} notifications={notifications} />
+      <PolicyInfoCard
+        space={spaceFilter}
+        notifications={notifications}
+        onEditPolicy={onEditPolicy}
+      />
       {/* </EuiCard> */}
       <EuiSpacer size={'m'} />
       <EuiCard textAlign="left" paddingSize="m" title="Integrations">

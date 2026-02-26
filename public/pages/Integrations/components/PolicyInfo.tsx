@@ -71,12 +71,14 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
   notifications,
   space,
   check,
+  onEditPolicy,
 }: {
   policyDocumentData: PolicyDocument;
   rootDecoder: DecoderSource;
   notifications: NotificationsStart;
   space: Space;
   check;
+  onEditPolicy: () => void;
 }) => {
   // Listen and update when changes are made in the edit form
   useEffect(() => {
@@ -91,32 +93,41 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
       textAlign="left"
       paddingSize="m"
       title={
-      <EuiFlexGroup justifyContent="spaceBetween" gutterSize="none">
-        <EuiFlexItem>
-          <EuiTitle size="s">
-            <h3>Space details</h3>
-          </EuiTitle>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
-            <EuiToolTip content={'Edit space details'}>
-              <EuiButtonIcon iconType="pencil" aria-label="Edit space details" />
-            </EuiToolTip>
-          )}
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    }>          
+        <EuiFlexGroup justifyContent="spaceBetween" gutterSize="none">
+          <EuiFlexItem>
+            <EuiTitle size="s">
+              <h3>Space details</h3>
+            </EuiTitle>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
+              <EuiToolTip content={'Edit space details'}>
+                <EuiButtonIcon
+                  onClick={onEditPolicy}
+                  iconType="pencil"
+                  aria-label="Edit space details"
+                />
+              </EuiToolTip>
+            )}
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      }
+    >
       <EuiFlexGroup>
         <EuiFlexItem>
           <EuiDescriptionList compressed type="row">
             <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>{policyDocumentData.title}</EuiDescriptionListDescription>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.title}
+            </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
               {policyDocumentData.description}
             </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>{policyDocumentData.author}</EuiDescriptionListDescription>
+            <EuiDescriptionListDescription>
+              {policyDocumentData.author}
+            </EuiDescriptionListDescription>
           </EuiDescriptionList>
         </EuiFlexItem>
         <EuiFlexItem>
