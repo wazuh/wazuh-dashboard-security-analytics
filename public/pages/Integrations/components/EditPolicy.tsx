@@ -13,6 +13,8 @@ import {
   EuiButton,
   EuiButtonEmpty,
   EuiComboBox,
+  EuiOverlayMask,
+  EuiConfirmModal,
 } from '@elastic/eui';
 
 import { withPolicyGuard } from './PolicyInfo';
@@ -36,31 +38,17 @@ const EditForm: React.FC<{}> = withPolicyGuard({
   notifications,
   space,
   onClose,
+  onFlyoutClose,
+  setCanClose,
 }: {
   policyDocumentData: PolicyDocument;
   rootDecoder: DecoderSource;
   notifications: NotificationsStart;
   space: Space;
   onClose: () => void;
+  onFlyoutClose: () => void;
+  setCanClose: (arg0: boolean) => void;
 }) => {
-  return (
-    <EditFormBody
-      policyDocumentData={policyDocumentData}
-      rootDecoder={rootDecoder}
-      notifications={notifications}
-      space={space}
-      onClose={onClose}
-    />
-  );
-});
-
-const EditFormBody: React.FC<{
-  policyDocumentData: PolicyDocument;
-  rootDecoder: DecoderSource;
-  notifications: NotificationsStart;
-  space: Space;
-  onClose: () => void;
-}> = ({ policyDocumentData, rootDecoder, notifications, space, onClose }) => {
   const [policyDetails, setPolicyDetails] = useState<PolicyDocument>(policyDocumentData);
   const [titleError, setTitleError] = useState('');
   const [authorError, setAuthorError] = useState('');
@@ -79,7 +67,6 @@ const EditFormBody: React.FC<{
     return () => clearTimeout(handler);
   }, [decoderSearch]);
 
-  // Fetch when debounced search changes
   useEffect(() => {
     fetchDecoders(debouncedSearch);
   }, [debouncedSearch]);
@@ -102,6 +89,10 @@ const EditFormBody: React.FC<{
   const hasChanges = useMemo(() => {
     return JSON.stringify(policyDetails) !== JSON.stringify(policyDocumentData);
   }, [policyDetails, policyDocumentData]);
+
+  useEffect(() => {
+    setCanClose(!hasChanges);
+  }, [hasChanges]);
 
   const updateErrors = (details: PolicyDocument) => {
     const titleInvalid = !validateName(details.title, INTEGRATION_AUTHOR_REGEX);
@@ -288,7 +279,7 @@ const EditFormBody: React.FC<{
       <EuiFlyoutFooter>
         <EuiFlexGroup justifyContent="spaceBetween">
           <EuiFlexItem grow={false}>
-            <EuiButtonEmpty onClick={onClose}>Cancel</EuiButtonEmpty>
+            <EuiButtonEmpty onClick={onFlyoutClose}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <EuiButton fill onClick={onConfirmClicked} isDisabled={!hasChanges}>
@@ -299,7 +290,7 @@ const EditFormBody: React.FC<{
       </EuiFlyoutFooter>
     </>
   );
-};
+});
 
 export type EditPolicyProps = {
   onClose: () => void;
@@ -308,16 +299,47 @@ export type EditPolicyProps = {
 };
 
 export const EditPolicy: React.FC<EditPolicyProps> = ({ onClose, space, notifications }) => {
+  const [canClose, setCanClose] = useState(true);
+  const [canNotCloseIsOpen, setCanNotCloseIsOpen] = useState(false);
+  const onFlyoutClose = function () {
+    if (!canClose) {
+      setCanNotCloseIsOpen(true);
+      return;
+    }
+    onClose();
+  };
+
   return (
     <>
-      <EuiFlyout onClose={onClose} ownFocus size="s">
+      <EuiFlyout onClose={onFlyoutClose} ownFocus size="s">
         <EuiFlyoutHeader hasBorder={true}>
           <EuiText size="s">
             <h2>Edit space details</h2>
           </EuiText>
         </EuiFlyoutHeader>
-        <EditForm space={space} notifications={notifications} onClose={onClose} />
+        <EditForm
+          space={space}
+          notifications={notifications}
+          onClose={onClose}
+          setCanClose={setCanClose}
+          onFlyoutClose={onFlyoutClose}
+        />
       </EuiFlyout>
+      {canNotCloseIsOpen && (
+        <EuiOverlayMask>
+          <EuiConfirmModal
+            title="Unsubmitted changes"
+            onConfirm={onClose}
+            onCancel={() => setCanNotCloseIsOpen(false)}
+            cancelButtonText="No, don't do it"
+            confirmButtonText="Yes, do it"
+          >
+            <p style={{ textAlign: 'center' }}>
+              There are unsaved changes. Are you sure you want to proceed?
+            </p>
+          </EuiConfirmModal>
+        </EuiOverlayMask>
+      )}
     </>
   );
 };
