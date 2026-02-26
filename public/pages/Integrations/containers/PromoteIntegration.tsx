@@ -122,6 +122,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           successNotificationToast(notifications, 'promoted', `[${space}] space`);
           history.push(ROUTES.INTEGRATIONS);
         }
+        return success;
       };
 
       if (!hasPromotions) {
