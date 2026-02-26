@@ -73,7 +73,8 @@ import { Integration } from '../Integrations/containers/Integration';
 import { CreateIntegration } from '../Integrations/containers/CreateIntegration';
 import Decoders from '../Decoders';
 import { KVDBs } from '../KVDBs/containers/KVDBs';
-import { LogTest } from "../LogTest/containers/LogTest";
+import { KVDBFormPage } from '../KVDBs/containers/KVDBFormPage';
+import { LogTest } from '../LogTest/containers/LogTest';
 import {
   DataSourceContextType,
   DateTimeFilter,
@@ -119,10 +120,10 @@ enum Navigation {
   // Insights = "Insights",
   Detection = 'Detection',
   // Wazuh
-  Normalization = "Normalization",
-  Decoders = "Decoders",
-  KVDBS = "KVDBs",
-  LogTest = "Log test",
+  Normalization = 'Normalization',
+  Decoders = 'Decoders',
+  KVDBS = 'KVDBs',
+  LogTest = 'Log test',
 }
 
 /**
@@ -148,6 +149,8 @@ const HIDDEN_NAV_ROUTES: string[] = [
   ROUTES.THREAT_INTEL_EDIT_SCAN_CONFIG,
   ROUTES.DECODERS_CREATE,
   ROUTES.DECODERS_EDIT,
+  ROUTES.KVDBS_CREATE,
+  ROUTES.KVDBS_EDIT,
 ];
 
 interface MainProps extends RouteComponentProps {
@@ -1131,6 +1134,32 @@ export default class Main extends Component<MainProps, MainState> {
                                       )}
                                     />
                                     <Route
+                                      path={ROUTES.KVDBS_CREATE}
+                                      render={(props: RouteComponentProps) => (
+                                        <KVDBFormPage
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="create"
+                                          history={props.history}
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={`${ROUTES.KVDBS_EDIT}/:id`}
+                                      render={(
+                                        props: RouteComponentProps<{
+                                          id: string;
+                                        }>
+                                      ) => (
+                                        <KVDBFormPage
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="edit"
+                                          history={props.history}
+                                        />
+                                      )}
+                                    />
+                                    <Route
                                       path={ROUTES.KVDBS}
                                       render={(props: RouteComponentProps) => (
                                         <KVDBs {...props} notifications={core?.notifications} />
@@ -1139,10 +1168,7 @@ export default class Main extends Component<MainProps, MainState> {
                                     <Route
                                       path={ROUTES.LOG_TEST}
                                       render={(props: RouteComponentProps) => (
-                                        <LogTest
-                                          {...props}
-                                          notifications={core?.notifications}
-                                        />
+                                        <LogTest {...props} notifications={core?.notifications} />
                                       )}
                                     />
                                     {THREAT_INTEL_ENABLED && (

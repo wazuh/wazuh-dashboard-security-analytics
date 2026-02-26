@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { RouteComponentProps, useParams } from 'react-router-dom';
-import { IntegrationItem } from '../../../../types';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
+import { IntegrationItem, Space } from '../../../../types';
+import { SPACE_ACTIONS } from '../../../../common/constants';
+import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import {
-  EuiSmallButtonIcon,
+  EuiSmallButton,
   EuiDescriptionList,
   EuiFlexGroup,
   EuiFlexItem,
@@ -17,7 +19,10 @@ import {
   EuiTab,
   EuiTabs,
   EuiTitle,
-  EuiToolTip,
+  EuiPopover,
+  EuiContextMenuPanel,
+  EuiContextMenuItem,
+  EuiHorizontalRule,
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -43,9 +48,11 @@ export interface IntegrationProps extends RouteComponentProps {
 }
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
+  const isMountedRef = useRef(true);
   const { integrationId } = useParams<{ integrationId: string }>();
   const [selectedTabId, setSelectedTabId] = useState('details');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [infoText, setInfoText] = useState<React.ReactNode | string>(
     <>
       Loading details &nbsp;
@@ -62,6 +69,12 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   const [isEditMode, setIsEditMode] = useState(false);
   const [rules, setRules] = useState<RuleTableItem[]>([]);
   const [loadingRules, setLoadingRules] = useState(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const updateRules = useCallback(
     async (details: IntegrationItem, intialDetails: IntegrationItem) => {
@@ -96,6 +109,10 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     const getIntegrationDetails = async () => {
       const details = await DataStore.integrations.getIntegration(integrationId);
 
+      if (!isMountedRef.current) {
+        return;
+      }
+
       if (!details) {
         setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
         return;
@@ -114,7 +131,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     };
 
     getIntegrationDetails();
-  }, []);
+  }, [integrationId, updateRules]);
 
   const refreshRules = useCallback(() => {
     updateRules(integrationDetails!, initialIntegrationDetails!);
@@ -150,13 +167,19 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         );
       case 'kvdbs':
         return (
-          <IntegrationKVDBs kvdbs={kvdbItems} loading={loadingKvdbs} onRefresh={refreshKvdbs} />
+          <IntegrationKVDBs
+            kvdbs={kvdbItems}
+            loading={loadingKvdbs}
+            space={integrationDetails?.space?.name ?? ''}
+            onRefresh={refreshKvdbs}
+          />
         );
       case 'detection_rules':
         return (
           <IntegrationDetectionRules
             loadingRules={loadingRules}
             rules={rules}
+            space={integrationDetails?.space?.name ?? ''}
             refreshRules={refreshRules}
           />
         );
@@ -164,7 +187,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       default:
         return (
           <IntegrationDetails
-            initialIntegrationDetails={initialIntegrationDetails!}
             integrationDetails={integrationDetails!}
             isEditMode={isEditMode}
             notifications={notifications}
@@ -177,23 +199,147 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   };
 
   const deleteIntegration = async () => {
-    const deleteSucceeded = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
-    if (deleteSucceeded) {
+    const { ok } = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
+
+    if (ok) {
       successNotificationToast(notifications, 'deleted', 'integration');
       history.push(ROUTES.INTEGRATIONS);
-    } else {
-      errorNotificationToast(notifications, 'delete', 'integration');
     }
   };
 
-  const deleteAction = (
-    <EuiToolTip content="Delete" position="bottom">
-      <EuiSmallButtonIcon
-        iconType={'trash'}
-        color="danger"
-        onClick={() => setShowDeleteModal(true)}
+  const toggleActionsMenu = () => {
+    setIsActionsMenuOpen((state) => !state);
+  };
+
+  const closeActionsPopover = () => {
+    setIsActionsMenuOpen(false);
+  };
+
+  const spaceName = (integrationDetails?.space.name ?? '') as Space;
+  const isCreateDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.CREATE);
+  const isEditDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.EDIT);
+  const isDeleteDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.DELETE);
+
+  const actionsButton = (
+    <EuiPopover
+      id={'integrationsActionsPopover'}
+      button={
+        <EuiSmallButton
+          iconType={'arrowDown'}
+          iconSide={'right'}
+          onClick={toggleActionsMenu}
+          data-test-subj={'integrationsActionsButton'}
+        >
+          Actions
+        </EuiSmallButton>
+      }
+      isOpen={isActionsMenuOpen}
+      closePopover={closeActionsPopover}
+      panelPaddingSize={'none'}
+      anchorPosition={'downLeft'}
+      data-test-subj={'integrationsActionsPopover'}
+    >
+      <EuiContextMenuPanel
+        size="s"
+        items={[
+          <EuiContextMenuItem
+            key={'createRule'}
+            href={'detection_rules#/create-rule'}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createRuleButton'}
+            disabled={isCreateDisabled}
+            toolTipContent={
+              isCreateDisabled
+                ? `Rule can only be created in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
+                : undefined
+            }
+          >
+            Create rule
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
+            key={'createDecoder'}
+            href={'decoders#/create-decoder'}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createDecoderButton'}
+            disabled={isCreateDisabled}
+            toolTipContent={
+              isCreateDisabled
+                ? `Decoder can only be created in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
+                : undefined
+            }
+          >
+            Create decoder
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
+            key={'createKVDB'}
+            href={'kvdbs#/create-kvdb'}
+            target="_blank"
+            onClick={() => {
+              closeActionsPopover();
+            }}
+            data-test-subj={'createKVDBButton'}
+            disabled={isCreateDisabled}
+            toolTipContent={
+              isCreateDisabled
+                ? `KVDB can only be created in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
+                : undefined
+            }
+          >
+            Create KVDB
+          </EuiContextMenuItem>,
+          <EuiHorizontalRule margin="xs" />,
+          <EuiContextMenuItem
+            key={'Edit'}
+            onClick={() => {
+              closeActionsPopover();
+              setIsEditMode(true);
+              setSelectedTabId('details');
+            }}
+            disabled={isEditDisabled}
+            data-test-subj={'editIntegrationButton'}
+            toolTipContent={
+              isEditDisabled
+                ? `Integration can only be edited in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.EDIT
+                  ).join(', ')}`
+                : undefined
+            }
+          >
+            Edit
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
+            key={'Delete'}
+            onClick={() => {
+              closeActionsPopover();
+              setShowDeleteModal(true);
+            }}
+            data-test-subj={'deleteIntegrationButton'}
+            disabled={isDeleteDisabled}
+            toolTipContent={
+              isDeleteDisabled
+                ? `Integration can only be deleted in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.DELETE
+                  ).join(', ')}`
+                : undefined
+            }
+          >
+            Delete
+          </EuiContextMenuItem>,
+        ]}
       />
-    </EuiToolTip>
+    </EuiPopover>
   );
 
   return !integrationDetails ? (
@@ -213,15 +359,20 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           onConfirm={deleteIntegration}
         />
       )}
-      <PageHeader appRightControls={[{ renderComponent: deleteAction }]}>
-        <EuiFlexGroup justifyContent="spaceBetween">
+      <PageHeader appRightControls={[{ renderComponent: actionsButton }]}>
+        <EuiFlexGroup>
           <EuiFlexItem>
             <EuiTitle>
               <h1>{integrationDetails.document.title}</h1>
             </EuiTitle>
           </EuiFlexItem>
-          <EuiFlexItem grow={false}>{deleteAction}</EuiFlexItem>
+          <EuiFlexItem>
+            <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
+              <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiFlexItem>
         </EuiFlexGroup>
+        <EuiSpacer size="m" />
       </PageHeader>
       <EuiSpacer />
       <EuiPanel grow={false}>
@@ -236,7 +387,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         <EuiSpacer />
         <EuiFlexGroup>
           <EuiFlexItem>
-            <EuiDescriptionList listItems={[{ title: 'ID', description: integrationDetails.id }]} />
+            <EuiDescriptionList
+              listItems={[{ title: 'ID', description: integrationDetails.document.id }]}
+            />
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiDescriptionList

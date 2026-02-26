@@ -12,47 +12,51 @@ import {
   EuiLink,
   EuiSmallButton,
   EuiText,
+  EuiToolTip,
 } from '@elastic/eui';
 import { ContentPanel } from '../../../components/ContentPanel';
 import { KVDBDetailsFlyout } from '../../KVDBs/components/KVDBDetailsFlyout';
 import { formatCellValue } from '../../../utils/helpers';
 import { EuiIcon } from '@elastic/eui';
 import { ROUTES } from '../../../utils/constants';
+import { KVDBItem, Space } from '../../../../types';
+import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
+import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 
 export interface IntegrationKVDBsProps {
-  kvdbs: KVDBTableItem[];
+  kvdbs: KVDBItem[];
   loading: boolean;
+  space: string;
   onRefresh: () => void;
-}
-
-export interface KVDBTableItem {
-  id: string;
-  title?: string;
-  author?: string;
 }
 
 export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   kvdbs,
   loading,
+  space,
   onRefresh,
 }) => {
   const [flyoutKvdb, setFlyoutKvdb] = useState<KVDBTableItem | undefined>(undefined);
 
-  const columns: EuiBasicTableColumn<KVDBTableItem>[] = useMemo(
+  const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
+
+  const columns: EuiBasicTableColumn<KVDBItem>[] = useMemo(
     () => [
       {
-        field: 'title',
+        field: 'document.title',
         name: 'Title',
         sortable: true,
-        render: (_: string, kvdb: KVDBTableItem) => (
-          <EuiLink onClick={() => setFlyoutKvdb(kvdb)}>{formatCellValue(kvdb.title)}</EuiLink>
+        render: (_: string, kvdb: KVDBItem) => (
+          <EuiLink onClick={() => setFlyoutKvdb(kvdb)}>
+            {formatCellValue(kvdb.document?.title)}
+          </EuiLink>
         ),
       },
       {
-        field: 'author',
+        field: 'document.author',
         name: 'Author',
         sortable: true,
-        render: (_: string, kvdb: KVDBTableItem) => formatCellValue(kvdb.author),
+        render: (_: string, kvdb: KVDBItem) => formatCellValue(kvdb.document?.author),
       },
     ],
     []
@@ -86,12 +90,29 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
               </EuiText>
             </EuiFlexItem>
             {/* TO DO: Create KVDB page*/}
-            <EuiFlexItem grow={false}>
-              <EuiSmallButton fill href={`#${ROUTES.KVDBS_CREATE}`} target="_blank">
-                Create KVDBs&nbsp;
-                <EuiIcon type={'popout'} />
-              </EuiSmallButton>
-            </EuiFlexItem>
+            {space !== SpaceTypes.STANDARD.value && (
+              <EuiFlexItem grow={false}>
+                {isCreateDisabled ? (
+                  <EuiToolTip
+                    content={`KVDB can only be created in the spaces: ${getSpacesAllowAction(
+                      SPACE_ACTIONS.CREATE
+                    ).join(', ')}`}
+                  >
+                    <span>
+                      <EuiSmallButton fill disabled>
+                        Create KVDBs&nbsp;
+                        <EuiIcon type={'popout'} />
+                      </EuiSmallButton>
+                    </span>
+                  </EuiToolTip>
+                ) : (
+                  <EuiSmallButton fill href={`#${ROUTES.KVDBS_CREATE}`} target="_blank">
+                    Create KVDBs&nbsp;
+                    <EuiIcon type={'popout'} />
+                  </EuiSmallButton>
+                )}
+              </EuiFlexItem>
+            )}
           </EuiFlexGroup>
         ) : (
           <EuiInMemoryTable

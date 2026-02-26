@@ -86,7 +86,8 @@ export const ROUTES = Object.freeze({
   DECODERS_CREATE: '/create-decoder',
   DECODERS_EDIT: '/edit-decoder',
   KVDBS: '/kvdbs',
-  KVDBS_CREATE: '/create-kvdb', // TO DO: Create KVDB page
+  KVDBS_CREATE: '/create-kvdb',
+  KVDBS_EDIT: '/edit-kvdb',
   LOG_TEST: '/log-test',
 
   get LANDING_PAGE(): string {
@@ -161,6 +162,8 @@ export const BREADCRUMBS = Object.freeze({
   DECODERS_CREATE: { text: 'Create', href: `#${ROUTES.DECODERS_CREATE}` },
   DECODERS_EDIT: { text: 'Edit' },
   KVDBS: { text: 'KVDBs', href: `#${ROUTES.KVDBS}` },
+  KVDBS_CREATE: { text: 'Create', href: `#${ROUTES.KVDBS_CREATE}` },
+  KVDBS_EDIT: { text: 'Edit' },
   LOG_TEST: { text: 'Log test', href: `#${ROUTES.LOG_TEST}` },
   THREAT_INTEL_OVERVIEW: {
     text: 'Threat intelligence',

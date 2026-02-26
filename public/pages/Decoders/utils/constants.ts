@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
 const KEYWORD_SEARCH_FIELDS = [
   'document.name',
@@ -11,10 +11,7 @@ const KEYWORD_SEARCH_FIELDS = [
   'document.metadata.author.name',
 ];
 
-const TEXT_SEARCH_FIELDS = [
-  'document.metadata.title',
-  'document.metadata.description',
-];
+const TEXT_SEARCH_FIELDS = ['document.metadata.title', 'document.metadata.description'];
 
 const escapeWildcard = (str: string) => str.replace(/[*?]/g, '\\$&');
 
