@@ -21,9 +21,9 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
           document: schema.object({
             author: schema.string(),
             category: schema.string(),
-            description: schema.string(),
-            documentation: schema.string(),
-            references: schema.maybe(schema.arrayOf(schema.string())),
+            description: schema.string({ defaultValue: '' }),
+            documentation: schema.string({ defaultValue: '' }),
+            references: schema.arrayOf(schema.string(), { defaultValue: [] }),
             tags: schema.nullable(
               schema.object({
                 correlation_id: schema.number(),
@@ -60,13 +60,13 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
           document: schema.object({
             author: schema.string(),
             category: schema.string(),
-            decoders: schema.arrayOf(schema.string()),
-            description: schema.string(),
-            documentation: schema.string(),
-            enabled: schema.maybe(schema.boolean()), // TODO: adapt if this can be configured by user in UI
-            kvdbs: schema.arrayOf(schema.string()),
-            references: schema.maybe(schema.arrayOf(schema.string())),
-            rules: schema.arrayOf(schema.string()),
+            decoders: schema.arrayOf(schema.string(), { defaultValue: [] }),
+            description: schema.string({ defaultValue: '' }),
+            documentation: schema.string({ defaultValue: '' }),
+            enabled: schema.boolean({ defaultValue: false }), // TODO: adapt if this can be configured by user in UI
+            kvdbs: schema.arrayOf(schema.string(), { defaultValue: [] }),
+            references: schema.arrayOf(schema.string(), { defaultValue: [] }),
+            rules: schema.arrayOf(schema.string(), { defaultValue: [] }),
             tags: schema.nullable(
               schema.object({
                 correlation_id: schema.number(),
