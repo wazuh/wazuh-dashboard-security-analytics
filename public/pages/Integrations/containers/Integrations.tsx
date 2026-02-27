@@ -9,9 +9,9 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiInMemoryTable,
-  EuiPanel,
   EuiSpacer,
   EuiText,
+  EuiCard,
   EuiContextMenuItem,
   EuiContextMenuPanel,
   EuiPopover,
@@ -38,6 +38,7 @@ import { PolicyInfoCard } from '../components/PolicyInfo';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
+import { EditPolicy } from '../components/EditPolicy';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -131,6 +132,12 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     spaceFilter,
     SPACE_ACTIONS.REARRANGE_INTEGRATIONS
   );
+  const onEditPolicy = () => {
+    setItemForAction({
+      action: SPACE_ACTIONS.EDIT_POLICY,
+    });
+    setIsPopoverOpen(false);
+  };
 
   const deleteSelectedIntegrations = useCallback(async () => {
     setLoading(true);
@@ -241,14 +248,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               SPACE_ACTIONS.DELETE
             ).join(', ')}`
           : selectedItems.length === 0
-          ? 'Select integrations to delete.'
-          : selectedItemsWithoutRelatedEntities.length === 0
-          ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
-          : selectedItemsWithRelatedEntitiesCount > 0
-          ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
-              selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
-            } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
-          : undefined
+            ? 'Select integrations to delete.'
+            : selectedItemsWithoutRelatedEntities.length === 0
+              ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
+              : selectedItemsWithRelatedEntitiesCount > 0
+                ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
+                    selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
+                  } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
+                : undefined
       }
     >
       Delete selected ({selectedItems.length})
@@ -345,6 +352,13 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               notifications={notifications}
             />
           )}
+          {itemForAction.action === SPACE_ACTIONS.EDIT_POLICY && (
+            <EditPolicy
+              space={spaceFilter}
+              notifications={notifications}
+              onClose={() => setItemForAction(null)}
+            />
+          )}
         </>
       )}
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
@@ -381,23 +395,27 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           <EuiFlexGroup alignItems="center" justifyContent={'spaceBetween'}>
             <EuiFlexItem>
               <EuiText size="s">
-                <h1>Integrations</h1>
+                <h1>Overview</h1>
               </EuiText>
               <EuiText size="s" color="subdued">
                 Integrations describe the data sources to which the detection rules are meant to be
                 applied.
               </EuiText>
               <EuiSpacer size="s"></EuiSpacer>
-              <PolicyInfoCard space={spaceFilter} notifications={notifications} />
             </EuiFlexItem>
-            {/* <EuiFlexItem grow={false}>{createIntegrationAction}</EuiFlexItem> */}
             <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
             <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size={'m'} />
+          <EuiSpacer size={'s'} />
         </EuiFlexItem>
       </PageHeader>
-      <EuiPanel>
+      <PolicyInfoCard
+        space={spaceFilter}
+        notifications={notifications}
+        onEditPolicy={onEditPolicy}
+      />
+      <EuiSpacer size={'m'} />
+      <EuiCard textAlign="left" paddingSize="m" title="Integrations">
         <EuiInMemoryTable
           itemId={'id'}
           items={integrations}
@@ -417,7 +435,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           sorting={true}
           loading={loading}
         />
-      </EuiPanel>
+      </EuiCard>
     </>
   );
 };

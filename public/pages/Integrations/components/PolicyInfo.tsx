@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { withGuardAsync } from '../utils/helpers';
 import { DataStore } from '../../../store/DataStore';
 import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiText,
+  EuiTitle,
+  EuiToolTip,
+  EuiCard,
+  EuiButtonIcon,
   EuiDescriptionListTitle,
   EuiDescriptionListDescription,
   EuiDescriptionList,
@@ -14,6 +18,7 @@ import { ButtonSelectRootDecoder } from './RootDecoderRequirement';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { POLICY_UPDATED } from '../utils/constants';
 
 export const withPolicyGuard: <T>(
   searchPolicyOptions: SearchPolicyOptions
@@ -24,10 +29,14 @@ export const withPolicyGuard: <T>(
     async ({ space }: { space: Space }) => {
       try {
         const response = await DataStore.policies.searchPolicies(space, searchPolicyOptions);
-
         const item = response.items?.[0] || {};
 
-        const { document: policyDocumentData, space: spaceData, id, ...rest } = item as {
+        const {
+          document: policyDocumentData,
+          space: spaceData,
+          id,
+          ...rest
+        } = item as {
           document?: PolicyDocument;
           [key: string]: any;
         };
@@ -56,21 +65,54 @@ export const withPolicyGuard: <T>(
 
 export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
   includeIntegrationFields: ['document'],
-})(
-  ({
-    policyDocumentData,
-    rootDecoder,
-    notifications,
-    space,
-    check,
-  }: {
-    policyDocumentData: PolicyDocument;
-    rootDecoder: DecoderSource;
-    notifications: NotificationsStart;
-    space: Space;
-    check;
-  }) => {
-    return (
+})(({
+  policyDocumentData,
+  rootDecoder,
+  notifications,
+  space,
+  check,
+  onEditPolicy,
+}: {
+  policyDocumentData: PolicyDocument;
+  rootDecoder: DecoderSource;
+  notifications: NotificationsStart;
+  space: Space;
+  check;
+  onEditPolicy: () => void;
+}) => {
+  // Listen and update when changes are made in the edit form
+  useEffect(() => {
+    const handlePolicyUpdated = () => check();
+    window.addEventListener(POLICY_UPDATED, handlePolicyUpdated);
+    return () => {
+      window.removeEventListener(POLICY_UPDATED, handlePolicyUpdated);
+    };
+  }, [check]);
+  return (
+    <EuiCard
+      textAlign="left"
+      paddingSize="m"
+      title={
+        <EuiFlexGroup justifyContent="spaceBetween" gutterSize="none">
+          <EuiFlexItem>
+            <EuiTitle size="s">
+              <h3>Space details</h3>
+            </EuiTitle>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
+              <EuiToolTip content={'Edit space details'}>
+                <EuiButtonIcon
+                  onClick={onEditPolicy}
+                  iconType="pencil"
+                  aria-label="Edit space details"
+                />
+              </EuiToolTip>
+            )}
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      }
+    >
       <EuiFlexGroup>
         <EuiFlexItem>
           <EuiDescriptionList compressed type="row">
@@ -96,26 +138,31 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
             </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
-              {policyDocumentData.references.join(', ')}
+              {policyDocumentData.references?.join(', ') ?? ''}
             </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
               {rootDecoder?.document?.name ?? ''}
-              {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
-                <ButtonSelectRootDecoder
-                  notifications={notifications}
-                  space={space}
-                  type="icon"
-                  buttonProps={{ iconType: 'pencil', 'aria-label': 'Edit root decoder' }}
-                  policyDocumentData={policyDocumentData}
-                  rootDecoderSource={rootDecoder}
-                  onConfirm={check}
-                ></ButtonSelectRootDecoder>
-              )}
+            </EuiDescriptionListDescription>
+          </EuiDescriptionList>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiDescriptionList compressed type="row">
+            <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {JSON.stringify(policyDocumentData?.enabled)}
+            </EuiDescriptionListDescription>
+            <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {JSON.stringify(policyDocumentData?.index_unclassified_events)}
+            </EuiDescriptionListDescription>
+            <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {JSON.stringify(policyDocumentData?.index_discarded_events)}
             </EuiDescriptionListDescription>
           </EuiDescriptionList>
         </EuiFlexItem>
       </EuiFlexGroup>
-    );
-  }
-);
+    </EuiCard>
+  );
+});

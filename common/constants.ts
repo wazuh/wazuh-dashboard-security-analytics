@@ -64,6 +64,7 @@ export const SPACE_ACTIONS = {
   PROMOTE: 'promote',
   DEFINE_ROOT_DECODER: 'define_root_decoder',
   REARRANGE_INTEGRATIONS: 'rearrange_integrations',
+  EDIT_POLICY: 'edit_policy',
 };
 
 export const AllowedActionsBySpace = {
@@ -74,6 +75,7 @@ export const AllowedActionsBySpace = {
     SPACE_ACTIONS.PROMOTE,
     SPACE_ACTIONS.DEFINE_ROOT_DECODER,
     SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
+    SPACE_ACTIONS.EDIT_POLICY,
   ],
   [SpaceTypes.TEST.value]: [SPACE_ACTIONS.PROMOTE],
   [SpaceTypes.CUSTOM.value]: [],

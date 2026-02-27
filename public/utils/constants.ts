@@ -91,7 +91,7 @@ export const ROUTES = Object.freeze({
   LOG_TEST: '/log-test',
 
   get LANDING_PAGE(): string {
-    return this.OVERVIEW;
+    return this.INTEGRATIONS;
   },
 });
 
@@ -102,7 +102,7 @@ export const getNotificationDetailsHref = (channelId: string) =>
 export const BREADCRUMBS = Object.freeze({
   SECURITY_ANALYTICS: {
     text: 'Security Analytics',
-    href: `#${ROUTES.OVERVIEW}`,
+    href: `#${ROUTES.INTEGRATIONS}`,
   },
   OVERVIEW: { text: 'Overview', href: `#${ROUTES.OVERVIEW}` },
   GETTING_STARTED: { text: 'Get started', href: `#${ROUTES.GETTING_STARTED}` },
@@ -152,7 +152,7 @@ export const BREADCRUMBS = Object.freeze({
     href: `#${ROUTES.LOG_TYPES_CREATE}`,
   }, // Replace Log Type with Integration by Wazuh
   NORMALIZATION: { text: 'Normalization' },
-  INTEGRATIONS: { text: 'Integrations', href: `#${ROUTES.INTEGRATIONS}` }, // Replace Log Types with Integrations by Wazuh
+  INTEGRATIONS: { text: 'Overview', href: `#${ROUTES.INTEGRATIONS}` }, // Replace Log Types with Integrations by Wazuh
   INTEGRATIONS_CREATE: {
     text: 'Create integration',
     href: `#${ROUTES.INTEGRATIONS_CREATE}`,

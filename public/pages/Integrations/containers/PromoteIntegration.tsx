@@ -7,7 +7,11 @@ import React, { useState, useMemo } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import {
+  setBreadcrumbs,
+  successNotificationToast,
+  errorNotificationToast,
+} from '../../../utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   EuiButton,
@@ -90,7 +94,9 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
       } catch (error) {
         return {
           ok: false,
-          data: { errorPromote: error.message || 'Error getting the promote data' },
+          data: {
+            errorPromote: error.message || 'Error getting the promote data',
+          },
         };
       }
     },
@@ -113,16 +119,25 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
         promoteData?.promote.changes.kvdbs.length > 0;
 
       const onConfirmPromote = async () => {
-        // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
-        const success = await DataStore.integrations.promoteIntegration({
-          space,
-          changes: promoteData.promote.changes,
-        });
-        if (success) {
-          successNotificationToast(notifications, 'promoted', `[${space}] space`);
-          history.push(ROUTES.INTEGRATIONS);
+        try {
+          // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
+          const success = await DataStore.integrations.promoteIntegration({
+            space,
+            changes: promoteData.promote.changes,
+          });
+          if (success) {
+            successNotificationToast(notifications, 'promoted', `[${space}] space`);
+            history.push(ROUTES.INTEGRATIONS);
+          }
+          return success;
+        } catch (error) {
+          errorNotificationToast(
+            notifications,
+            'promote',
+            '',
+            error?.message || 'Error promoting.'
+          );
         }
-        return success;
       };
 
       if (!hasPromotions) {
