@@ -207,10 +207,10 @@ export default class Main extends Component<MainProps, MainState> {
     let dataSourceId = '';
     let dataSourceLabel = '';
     if (props.multiDataSourceEnabled) {
-      const {
-        dataSourceId: parsedDataSourceId,
-        dataSourceLabel: parsedDataSourceLabel,
-      } = parse(this.props.location.search, { decode: false }) as {
+      const { dataSourceId: parsedDataSourceId, dataSourceLabel: parsedDataSourceLabel } = parse(
+        this.props.location.search,
+        { decode: false }
+      ) as {
         dataSourceId: string;
         dataSourceLabel: string;
       };
@@ -520,16 +520,6 @@ export default class Main extends Component<MainProps, MainState> {
                 },
                 isSelected: selectedNavItemId === Navigation.KVDBS,
               },
-              {
-                name: Navigation.LogTest,
-                id: Navigation.LogTest,
-                onClick: () => {
-                  getApplication().navigateToApp(LOG_TEST_NAV_ID, {
-                    path: generateAppPath(ROUTES.LOG_TEST),
-                  });
-                },
-                isSelected: selectedNavItemId === Navigation.LogTest,
-              },
             ],
             // onClick: () => {
             //   /* WORKAROUND: redirect to Normalization app registered by wazuh plugin.
@@ -587,6 +577,16 @@ export default class Main extends Component<MainProps, MainState> {
               //   isSelected: selectedNavItemId === Navigation.CorrelationRules,
               // },
             ],
+          },
+          {
+            name: Navigation.LogTest,
+            id: Navigation.LogTest,
+            onClick: () => {
+              getApplication().navigateToApp(LOG_TEST_NAV_ID, {
+                path: generateAppPath(ROUTES.LOG_TEST),
+              });
+            },
+            isSelected: selectedNavItemId === Navigation.LogTest,
           },
         ],
       },

@@ -12,12 +12,16 @@ import {
   EuiLink,
   EuiSmallButton,
   EuiText,
+  EuiToolTip,
 } from '@elastic/eui';
 import { ContentPanel } from '../../../components/ContentPanel';
 import { DecoderDetailsFlyout } from '../../Decoders/components/DecoderDetailsFlyout';
 import { formatCellValue } from '../../../utils/helpers';
 import { EuiIcon } from '@elastic/eui';
 import { ROUTES } from '../../../utils/constants';
+import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
+import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
+import { Space } from '../../../../types';
 
 export interface IntegrationDecodersProps {
   decoders: DecoderTableItem[];
@@ -40,6 +44,8 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   onRefresh,
 }) => {
   const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(undefined);
+
+  const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
 
   const columns: EuiBasicTableColumn<DecoderTableItem>[] = useMemo(
     () => [
@@ -100,12 +106,29 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
               </EuiText>
             </EuiFlexItem>
 
-            <EuiFlexItem grow={false}>
-              <EuiSmallButton fill href={`#${ROUTES.DECODERS_CREATE}`} target="_blank">
-                Create decoder&nbsp;
-                <EuiIcon type={'popout'} />
-              </EuiSmallButton>
-            </EuiFlexItem>
+            {space !== SpaceTypes.STANDARD.value && (
+              <EuiFlexItem grow={false}>
+                {isCreateDisabled ? (
+                  <EuiToolTip
+                    content={`Decoder can only be created in the spaces: ${getSpacesAllowAction(
+                      SPACE_ACTIONS.CREATE
+                    ).join(', ')}`}
+                  >
+                    <span>
+                      <EuiSmallButton fill disabled>
+                        Create decoder&nbsp;
+                        <EuiIcon type={'popout'} />
+                      </EuiSmallButton>
+                    </span>
+                  </EuiToolTip>
+                ) : (
+                  <EuiSmallButton fill href={`#${ROUTES.DECODERS_CREATE}`} target="_blank">
+                    Create decoder&nbsp;
+                    <EuiIcon type={'popout'} />
+                  </EuiSmallButton>
+                )}
+              </EuiFlexItem>
+            )}
           </EuiFlexGroup>
         ) : (
           <EuiInMemoryTable

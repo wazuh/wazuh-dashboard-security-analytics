@@ -14,24 +14,32 @@ import {
   EuiIcon,
   EuiSpacer,
   EuiText,
+  EuiToolTip,
 } from '@elastic/eui';
 import { RuleViewerFlyout } from '../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
+import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
+import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
+import { Space } from '../../../../types';
 
 export interface IntegrationDetectionRulesProps {
   rules: RuleTableItem[];
   loadingRules: boolean;
+  space: string;
   refreshRules: () => void;
 }
 
 export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps> = ({
   rules,
   loadingRules,
+  space,
   refreshRules,
 }) => {
   const [flyoutData, setFlyoutData] = useState<RuleTableItem | undefined>(undefined);
   const hideFlyout = useCallback(() => {
     setFlyoutData(undefined);
   }, []);
+
+  const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
 
   return (
     <>
@@ -49,17 +57,34 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
                 <p>There are no rules associated with this integration. </p>
               </EuiText>
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EuiSmallButton
-                fill
-                href={`opensearch_security_analytics_dashboards#/create-rule`}
-                target="_blank"
-              >
-                Create rule&nbsp;
-                <EuiIcon type={'popout'} />
-              </EuiSmallButton>
-              <EuiSpacer size="xl" />
-            </EuiFlexItem>
+            {space !== SpaceTypes.STANDARD.value && (
+              <EuiFlexItem grow={false}>
+                {isCreateDisabled ? (
+                  <EuiToolTip
+                    content={`Rule can only be created in the spaces: ${getSpacesAllowAction(
+                      SPACE_ACTIONS.CREATE
+                    ).join(', ')}`}
+                  >
+                    <span>
+                      <EuiSmallButton fill disabled>
+                        Create rule&nbsp;
+                        <EuiIcon type={'popout'} />
+                      </EuiSmallButton>
+                    </span>
+                  </EuiToolTip>
+                ) : (
+                  <EuiSmallButton
+                    fill
+                    href={`opensearch_security_analytics_dashboards#/create-rule`}
+                    target="_blank"
+                  >
+                    Create rule&nbsp;
+                    <EuiIcon type={'popout'} />
+                  </EuiSmallButton>
+                )}
+                <EuiSpacer size="xl" />
+              </EuiFlexItem>
+            )}
           </EuiFlexGroup>
         ) : (
           <RulesTable
