@@ -195,6 +195,8 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
     if (success) {
       successNotificationToast(notifications, 'updated', `[${space}] policy`);
       onConfirm();
+    } else {
+      errorNotificationToast(notifications, 'updated', `[${space}] policy`);
     }
   };
 

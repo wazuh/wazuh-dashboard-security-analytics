@@ -207,10 +207,10 @@ export default class Main extends Component<MainProps, MainState> {
     let dataSourceId = '';
     let dataSourceLabel = '';
     if (props.multiDataSourceEnabled) {
-      const {
-        dataSourceId: parsedDataSourceId,
-        dataSourceLabel: parsedDataSourceLabel,
-      } = parse(this.props.location.search, { decode: false }) as {
+      const { dataSourceId: parsedDataSourceId, dataSourceLabel: parsedDataSourceLabel } = parse(
+        this.props.location.search,
+        { decode: false }
+      ) as {
         dataSourceId: string;
         dataSourceLabel: string;
       };

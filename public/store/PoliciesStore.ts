@@ -23,7 +23,10 @@ export interface PoliciesSearchParams {
 }
 
 export class PoliciesStore {
-  constructor(private service: PoliciesService, private notifications: NotificationsStart) {}
+  constructor(
+    private service: PoliciesService,
+    private notifications: NotificationsStart
+  ) {}
 
   public async searchPolicies(
     space: string,
@@ -76,9 +79,6 @@ export class PoliciesStore {
     data: UpdatePolicyRequestBody
   ): Promise<[boolean, UpdatePolicyResponse['response']]> {
     const response = await this.service.updatePolicy(policyId, data);
-    if (!response.ok) {
-      errorNotificationToast(this.notifications, 'update', 'policy', response.error);
-    }
-    return [response.ok, response.response];
+    return [response.ok, response];
   }
 }

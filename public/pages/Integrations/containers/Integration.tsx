@@ -137,9 +137,10 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     updateRules(integrationDetails!, initialIntegrationDetails!);
   }, [integrationDetails]);
 
-  const decoderIds = useMemo(() => integrationDetails?.document.decoders ?? [], [
-    integrationDetails,
-  ]);
+  const decoderIds = useMemo(
+    () => integrationDetails?.document.decoders ?? [],
+    [integrationDetails]
+  );
   const {
     items: decoderItems,
     loading: loadingDecoders,
@@ -150,7 +151,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   });
 
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
-  const { items: kvdbItems, loading: loadingKvdbs, refresh: refreshKvdbs } = useIntegrationKVDBs({
+  const {
+    items: kvdbItems,
+    loading: loadingKvdbs,
+    refresh: refreshKvdbs,
+  } = useIntegrationKVDBs({
     kvdbIds,
   });
 

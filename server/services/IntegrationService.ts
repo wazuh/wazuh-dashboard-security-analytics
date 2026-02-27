@@ -27,7 +27,7 @@ import {
 } from '../../types';
 import { CLIENT_INTEGRATION_METHODS } from '../utils/constants';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
-import { get, sortBy } from 'lodash';
+import { get } from 'lodash';
 
 const INTEGRATIONS_INDEX = '.cti-integrations';
 const DECODERS_INDEX = '.cti-decoders';
@@ -120,9 +120,7 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<UpdateIntegrationResponse> | ResponseError>
   > => {
     try {
-      const {
-        document: { id, date, modified, ...document },
-      } = request.body;
+      const { document } = request.body;
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
         body: { resource: document },

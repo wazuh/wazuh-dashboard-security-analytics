@@ -4,6 +4,7 @@
  */
 
 import { wazuh } from '../package.json';
+import { IntegrationDocumentCreate } from '../types';
 import { i18n } from '@osd/i18n';
 
 export const DEFAULT_RULE_UUID = '25b9c01c-350d-4b95-bed1-836d04a4f324';
@@ -85,3 +86,14 @@ export const UserSpacesOrder = [
   SpaceTypes.TEST.value,
   SpaceTypes.CUSTOM.value,
 ];
+
+export const defaultIntegration: { document: IntegrationDocumentCreate } = {
+  document: {
+    title: '',
+    description: '',
+    documentation: '',
+    tags: null,
+    category: '',
+    author: '',
+  },
+};

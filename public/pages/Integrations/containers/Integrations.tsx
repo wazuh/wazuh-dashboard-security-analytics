@@ -241,14 +241,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               SPACE_ACTIONS.DELETE
             ).join(', ')}`
           : selectedItems.length === 0
-          ? 'Select integrations to delete.'
-          : selectedItemsWithoutRelatedEntities.length === 0
-          ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
-          : selectedItemsWithRelatedEntitiesCount > 0
-          ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
-              selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
-            } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
-          : undefined
+            ? 'Select integrations to delete.'
+            : selectedItemsWithoutRelatedEntities.length === 0
+              ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
+              : selectedItemsWithRelatedEntitiesCount > 0
+                ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
+                    selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
+                  } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
+                : undefined
       }
     >
       Delete selected ({selectedItems.length})
