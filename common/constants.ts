@@ -5,6 +5,7 @@
 
 import { wazuh } from '../package.json';
 import { i18n } from '@osd/i18n';
+import { PromoteSpaces } from '../types';
 
 export const DEFAULT_RULE_UUID = '25b9c01c-350d-4b95-bed1-836d04a4f324';
 
@@ -80,7 +81,7 @@ export const AllowedActionsBySpace = {
   [SpaceTypes.STANDARD.value]: [],
 };
 
-export const UserSpacesOrder = [
+export const UserSpacesOrder: PromoteSpaces[] = [
   SpaceTypes.DRAFT.value,
   SpaceTypes.TEST.value,
   SpaceTypes.CUSTOM.value,
