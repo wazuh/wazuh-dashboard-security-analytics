@@ -25,7 +25,10 @@ import {
 import { getIntegrationLabel } from '../pages/Integrations/utils/helpers';
 
 export class IntegrationStore {
-  constructor(private service: IntegrationService, private notifications: NotificationsStart) {}
+  constructor(
+    private service: IntegrationService,
+    private notifications: NotificationsStart
+  ) {}
 
   private formatRelatedEntitiesList(entities: string[]): string {
     if (entities.length === 0) {
@@ -169,18 +172,28 @@ export class IntegrationStore {
   }
 
   public async deleteIntegration(id: string) {
-    const deleteRes = await this.service.deleteIntegration(id);
+    try {
+      const deleteRes = await this.service.deleteIntegration(id);
 
-    if (!deleteRes.ok) {
+      if (!deleteRes.ok) {
+        errorNotificationToast(
+          this.notifications,
+          'delete',
+          'integration',
+          deleteRes.error.message || 'Error occurred while deleting integration.'
+        );
+      }
+
+      return { ok: deleteRes.ok, error: deleteRes.error || null };
+    } catch (e: any) {
       errorNotificationToast(
         this.notifications,
         'delete',
         'integration',
-        deleteRes.error.message || 'Error occurred while deleting integration.'
+        e?.message || 'An unexpected error occurred.'
       );
+      return { ok: false, error: { message: e?.message || 'An unexpected error occurred.' } };
     }
-
-    return deleteRes.ok;
   }
 
   public async getPromote(
@@ -202,7 +215,12 @@ export class IntegrationStore {
   public async promoteIntegration(data: PromoteIntegrationRequestBody) {
     const promoteRes = await this.service.promoteIntegration(data);
     if (!promoteRes.ok) {
-      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes?.error?.message || promoteRes.error);
+      errorNotificationToast(
+        this.notifications,
+        'promote',
+        'integration',
+        promoteRes?.error?.message || promoteRes.error
+      );
     }
 
     return promoteRes.ok;
