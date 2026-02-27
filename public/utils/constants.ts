@@ -449,3 +449,22 @@ export const DEFAULT_MESSAGE_SOURCE = {
  - Detector data sources: {{ctx.detector.datasources}}`,
   MESSAGE_SUBJECT: `Triggered alert condition:  {{ctx.trigger.name}} - Severity: {{ctx.trigger.severity}} - Threat detector: {{ctx.detector.name}}`,
 };
+
+// Wazuh: promotions order
+export const PROMOTE_ENTITIES_ORDER = [
+  'policy',
+  'integrations',
+  'decoders',
+  'kvdbs',
+  'filters',
+  'rules',
+] as const;
+
+export const PROMOTE_ENTITIES_LABELS: Record<string, string> = {
+  policy: 'Policy',
+  integrations: 'Integrations',
+  decoders: 'Decoders',
+  kvdbs: 'KVDBs',
+  filters: 'Filters',
+  rules: 'Rules',
+};

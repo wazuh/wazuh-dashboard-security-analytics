@@ -20,7 +20,7 @@ import {
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 import { CLIENT_POLICY_METHODS } from '../utils/constants';
 
-const POLICIES_INDEX = '.cti-policies';
+export const POLICIES_INDEX = '.cti-policies';
 const INTEGRATIONS_INDEX = '.cti-integrations';
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',

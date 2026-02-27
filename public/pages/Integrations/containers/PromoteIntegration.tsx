@@ -5,7 +5,12 @@
 
 import React, { useState, useMemo } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import {
+  BREADCRUMBS,
+  PROMOTE_ENTITIES_LABELS,
+  PROMOTE_ENTITIES_ORDER,
+  ROUTES,
+} from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -17,10 +22,9 @@ import {
   EuiPanel,
   EuiSpacer,
   EuiText,
-  EuiTextColor,
 } from '@elastic/eui';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { getNextSpace, withGuardAsync } from '../utils/helpers';
+import { withGuardAsync } from '../utils/helpers';
 import { PromoteBySpaceModal } from '../components/PromoteModal';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
 import { SPACE_ACTIONS } from '../../../../common/constants';
@@ -29,7 +33,8 @@ import {
   withConditionalHOC,
   withRootDecoderRequirementGuard,
 } from '../components/RootDecoderRequirement';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { actionIsAllowedOnSpace, getNextSpace } from '../../../../common/helpers';
+import { PromoteChangeDiff } from '../components/PromoteChangeDiff';
 
 export interface PromoteIntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -45,7 +50,7 @@ const PromoteEntity: React.FC<{
       data.promote.changes[entity].map(({ id, ...rest }) => ({
         ...rest,
         id,
-        name: data.available_promotions[entity][id],
+        name: data.available_promotions?.[entity]?.[id] || id, // If the name of the entity is not available in the available promotions, we will use the id as the name. This is a fallback mechanism to make sure that we are showing something to the user even if the name is not available.
       })),
     [data.promote.changes[entity]]
   );
@@ -57,9 +62,7 @@ const PromoteEntity: React.FC<{
       <EuiSpacer size="s"></EuiSpacer>
       <div>
         {memoizedData.map(({ id, name, operation }, i) => (
-          <EuiText size="s">
-            {name || id} <EuiTextColor color="subdued">({operation})</EuiTextColor>
-          </EuiText>
+          <PromoteChangeDiff key={`${id}-${i}`} name={name || id} operation={operation} />
         ))}
       </div>
     </div>
@@ -107,10 +110,9 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
       const [modalIsOpen, setModalIsOpen] = useState(false);
 
       // TODO: add ability to select which entities to promote
-      const hasPromotions =
-        promoteData?.promote.changes.integrations.length > 0 ||
-        promoteData?.promote.changes.decoders.length > 0 ||
-        promoteData?.promote.changes.kvdbs.length > 0;
+      const hasPromotions = Object.values(promoteData.promote.changes).some(
+        (items) => items.length > 0
+      );
 
       const onConfirmPromote = async () => {
         // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
@@ -140,7 +142,29 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
             ></PromoteBySpaceModal>
           )}
           <div>
+            {PROMOTE_ENTITIES_ORDER.map((entity) => {
+              if (promoteData?.promote.changes[entity].length > 0) {
+                const label = PROMOTE_ENTITIES_LABELS[entity];
+                return (
+                  <React.Fragment key={entity}>
+                    <PromoteEntity label={label} entity={entity} data={promoteData} />
+                    <EuiSpacer size="m" />
+                  </React.Fragment>
+                );
+              }
+              return null;
+            })}
+            {/* {promoteData?.promote.changes.policy.length > 0 && (
+              <>
+                <PromoteEntity label="Policy" entity="policy" data={promoteData} />
+                <EuiSpacer size="m" />
+              </>
+            )}
             {promoteData?.promote.changes.integrations.length > 0 && (
+              <>
+                <PromoteEntity label="Policy" entity="policy" data={promoteData} />
+                <EuiSpacer size="m" />
+              </>
               <PromoteEntity label="Integrations" entity="integrations" data={promoteData} />
             )}
             {promoteData?.promote.changes.decoders.length > 0 && (
@@ -149,6 +173,12 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
             {promoteData?.promote.changes.kvdbs.length > 0 && (
               <PromoteEntity label="KVDBs" entity="kvdbs" data={promoteData} />
             )}
+            {promoteData?.promote.changes.filters.length > 0 && (
+              <PromoteEntity label="Filters" entity="filters" data={promoteData} />
+            )}
+            {promoteData?.promote.changes.rules.length > 0 && (
+              <PromoteEntity label="Rules" entity="rules" data={promoteData} />
+            )} */}
           </div>
           <EuiSpacer size="m" />
           <EuiFlexGroup justifyContent="flexEnd">
@@ -175,7 +205,7 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, BREADCRUMBS.PROMOTE]);
 
   const description =
-    'Promote the integrations, decoders and KVDBs to another space. Once promoted, they will be available in the next space.';
+    'Promote the integrations, decoders and KVDBs, filters, rules and space changes to another space. Once promoted, they will be available in the another space.';
 
   const space = new URLSearchParams(location.search).get('space');
 
