@@ -18,7 +18,7 @@ import {
   EuiConfirmModal,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { DataSourceProps, IntegrationBase } from '../../../../types';
+import { DataSourceProps } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import {
   getIntegrationsTableColumns,
@@ -70,6 +70,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [selectedItems, setSelectedItems] = useState<IntegrationTableItem[]>([]);
   const [itemForAction, setItemForAction] = useState<ItemForAction | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [policyRefreshKey, setpolicyRefreshKey] = useState(false);
   const loadIntegrations = useCallback(async () => {
     setLoading(true);
 
@@ -357,6 +358,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               space={spaceFilter}
               notifications={notifications}
               onClose={() => setItemForAction(null)}
+              onSuccess={() => setpolicyRefreshKey((prevState) => !prevState)}
             />
           )}
         </>
@@ -413,6 +415,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         space={spaceFilter}
         notifications={notifications}
         onEditPolicy={onEditPolicy}
+        refreshKey={policyRefreshKey}
       />
       <EuiSpacer size={'m'} />
       <EuiCard textAlign="left" paddingSize="m" title="Integrations">

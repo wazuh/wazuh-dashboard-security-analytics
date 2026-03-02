@@ -23,7 +23,6 @@ import { DecoderSource, PolicyDocument, Space } from '../../../../types';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DataStore } from '../../../store/DataStore';
 import { successNotificationToast } from '../../../utils/helpers';
-import { POLICY_UPDATED } from '../utils/constants';
 import { FormFieldArray } from '../../../components/FormFieldArray';
 import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validation';
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
@@ -39,6 +38,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
   notifications,
   space,
   onClose,
+  onSuccess,
   onFlyoutClose,
   setCanClose,
 }: {
@@ -47,6 +47,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
   notifications: NotificationsStart;
   space: Space;
   onClose: () => void;
+  onSuccess: () => void;
   onFlyoutClose: () => void;
   setCanClose: (arg0: boolean) => void;
 }) => {
@@ -142,7 +143,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
     // success seems to be an array
     if (success[0]) {
       successNotificationToast(notifications, 'updated', `[${space}] space`);
-      window.dispatchEvent(new Event(POLICY_UPDATED));
+      if (onSuccess) onSuccess();
     }
     onClose();
   };
@@ -345,11 +346,17 @@ const EditForm: React.FC<{}> = withPolicyGuard({
 
 export type EditPolicyProps = {
   onClose: () => void;
+  onSuccess: () => void;
   space: Space;
   notifications: NotificationsStart;
 };
 
-export const EditPolicy: React.FC<EditPolicyProps> = ({ onClose, space, notifications }) => {
+export const EditPolicy: React.FC<EditPolicyProps> = ({
+  onClose,
+  onSuccess,
+  space,
+  notifications,
+}) => {
   const [canClose, setCanClose] = useState(true);
   const [canNotCloseIsOpen, setCanNotCloseIsOpen] = useState(false);
   const onFlyoutClose = function () {
@@ -372,6 +379,7 @@ export const EditPolicy: React.FC<EditPolicyProps> = ({ onClose, space, notifica
           space={space}
           notifications={notifications}
           onClose={onClose}
+          onSuccess={onSuccess}
           setCanClose={setCanClose}
           onFlyoutClose={onFlyoutClose}
         />

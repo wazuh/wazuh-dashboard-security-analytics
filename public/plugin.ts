@@ -217,23 +217,6 @@ export class SecurityAnalyticsPlugin implements Plugin<
     //   },
     // });
 
-    // Wazuh: hide old Integrations app placement
-    // core.application.register({
-    //   id: INTEGRATIONS_NAV_ID,
-    //   title: 'Integrations',
-    //   order: 7004,
-    //   category: {
-    //     id: 'security_analytics',
-    //     label: 'Security Analytics',
-    //     order: 550,
-    //     euiIconType: 'securityAnalyticsApp',
-    //   },
-    //   updater$: this.appStateUpdater,
-    //   mount: async (params: AppMountParameters) => {
-    //     return mountWrapper(params, ROUTES.INTEGRATIONS);
-    //   },
-    // });
-
     core.application.register({
       id: DECODERS_NAV_ID,
       title: 'Decoders',

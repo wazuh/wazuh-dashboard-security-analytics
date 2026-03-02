@@ -53,5 +53,3 @@ export const integrationLabels: { [value: string]: string } = {
   linux: 'Linux System Logs',
   azure: 'Microsoft Azure',
 };
-
-export const POLICY_UPDATED = 'policy_updated';

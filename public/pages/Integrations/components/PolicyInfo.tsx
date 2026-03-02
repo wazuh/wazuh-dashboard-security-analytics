@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { withGuardAsync } from '../utils/helpers';
 import { DataStore } from '../../../store/DataStore';
 import {
@@ -72,6 +72,7 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
   space,
   check,
   onEditPolicy,
+  refreshKey,
 }: {
   policyDocumentData: PolicyDocument;
   rootDecoder: DecoderSource;
@@ -79,15 +80,16 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
   space: Space;
   check;
   onEditPolicy: () => void;
+  refreshKey: boolean;
 }) => {
-  // Listen and update when changes are made in the edit form
+  // Using the refreshKey prop update when any change is made.
+  const prevRefreshKeyRef = useRef(refreshKey);
   useEffect(() => {
-    const handlePolicyUpdated = () => check();
-    window.addEventListener(POLICY_UPDATED, handlePolicyUpdated);
-    return () => {
-      window.removeEventListener(POLICY_UPDATED, handlePolicyUpdated);
-    };
-  }, [check]);
+    if (refreshKey !== prevRefreshKeyRef.current) {
+      prevRefreshKeyRef.current = refreshKey;
+      check();
+    }
+  });
   return (
     <EuiCard
       textAlign="left"
@@ -150,15 +152,15 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
           <EuiDescriptionList compressed type="row">
             <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
-              {policyDocumentData?.enabled ? 'true' : 'false'}
+              {policyDocumentData?.enabled ? 'yes' : 'no'}
             </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
-              {policyDocumentData?.index_unclassified_events ? 'true' : 'false'}
+              {policyDocumentData?.index_unclassified_events ? 'yes' : 'no'}
             </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
-              {policyDocumentData?.index_discarded_events ? 'true' : 'false'}
+              {policyDocumentData?.index_discarded_events ? 'yes' : 'no'}
             </EuiDescriptionListDescription>
           </EuiDescriptionList>
         </EuiFlexItem>
