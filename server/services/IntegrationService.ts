@@ -313,7 +313,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body || error.message,
+          error: error.body?.message || error.message,
         },
       });
     }
