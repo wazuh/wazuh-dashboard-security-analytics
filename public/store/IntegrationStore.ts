@@ -242,7 +242,7 @@ export class IntegrationStore {
     hasKVDBs: boolean;
   }): string {
     const relatedEntities = [
-      hasRules ? 'detection rules' : null,
+      hasRules ? 'rules' : null,
       hasDecoders ? 'decoders' : null,
       hasKVDBs ? 'KVDBs' : null,
     ].filter(Boolean) as string[];

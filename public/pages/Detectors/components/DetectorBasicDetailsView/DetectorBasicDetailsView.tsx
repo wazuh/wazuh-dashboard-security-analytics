@@ -120,7 +120,7 @@ export const DetectorBasicDetailsView: React.FC<
         },
       ])}
       {createTextDetailsGroup([
-        { label: "Detection rules", content: totalSelected },
+        { label: "Rules", content: totalSelected }, // Wazuh: rename 'Detection rules' to 'Rules'
         { label: "Created at", content: createdAt || DEFAULT_EMPTY_DATA },
         {
           label: "Last updated time",
