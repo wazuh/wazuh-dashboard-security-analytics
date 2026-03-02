@@ -108,8 +108,6 @@ const EditForm: React.FC<{}> = withPolicyGuard({
     const completePolicy = {
       ...details,
       references: details.references?.filter((ref) => ref.trim() !== '') ?? [],
-      documentation: details.documentation ?? '',
-      description: details.description ?? '',
     };
     return completePolicy;
   };
@@ -174,7 +172,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
                 ...policyDetails,
                 title: e.target.value,
               };
-              setPolicyDetails({ ...policyDetails, title: e.target.value });
+              setPolicyDetails(newPolicy);
               updateErrors(newPolicy);
             }}
           />
@@ -277,7 +275,14 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             }}
           />
         </EuiCompressedFormRow>
-        <EuiCompressedFormRow label="Root decoder">
+        <EuiCompressedFormRow
+          label={
+            <>
+              {'Root Decoder - '}
+              <em>optional</em>
+            </>
+          }
+        >
           <EuiComboBox
             placeholder="Search and select a decoder"
             singleSelection={{ asPlainText: true }}

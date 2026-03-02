@@ -150,15 +150,15 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
           <EuiDescriptionList compressed type="row">
             <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
-              {JSON.stringify(policyDocumentData?.enabled)}
+              {policyDocumentData?.enabled ? 'true' : 'false'}
             </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
-              {JSON.stringify(policyDocumentData?.index_unclassified_events)}
+              {policyDocumentData?.index_unclassified_events ? 'true' : 'false'}
             </EuiDescriptionListDescription>
             <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
             <EuiDescriptionListDescription>
-              {JSON.stringify(policyDocumentData?.index_discarded_events)}
+              {policyDocumentData?.index_discarded_events ? 'true' : 'false'}
             </EuiDescriptionListDescription>
           </EuiDescriptionList>
         </EuiFlexItem>
