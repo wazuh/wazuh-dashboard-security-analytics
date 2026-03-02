@@ -21,7 +21,7 @@ The Security Analytics Dashboards plugin lets you manage your [Security Analytic
 
 ## Documentation
 
-Please see our [documentation](https://opensearch.org/docs/security-analytics-plugin/index/).
+Please see our [documentation](https://docs.opensearch.org/latest/security-analytics/).
 
 ## Contributing
 
