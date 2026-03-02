@@ -75,12 +75,12 @@ export interface SecurityAnalyticsPluginStartDeps {
 
 export class SecurityAnalyticsPlugin
   implements
-    Plugin<
-      SecurityAnalyticsPluginSetup,
-      SecurityAnalyticsPluginStart,
-      SecurityAnalyticsPluginSetupDeps,
-      SecurityAnalyticsPluginStartDeps
-    > {
+  Plugin<
+    SecurityAnalyticsPluginSetup,
+    SecurityAnalyticsPluginStart,
+    SecurityAnalyticsPluginSetupDeps,
+    SecurityAnalyticsPluginStartDeps
+  > {
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
   ) { }
@@ -232,7 +232,7 @@ export class SecurityAnalyticsPlugin
         return mountWrapper(params, ROUTES.DECODERS);
       },
     });
-    
+
     core.application.register({
       id: KVDBS_NAV_ID,
       title: 'KVDBs',
@@ -283,7 +283,7 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: DETECTION_RULE_NAV_ID,
-      title: 'Detection rules',
+      title: 'Rules', // Wazuh: rename 'Detection rules' to 'Rules'.
       order: 7010,
       category: {
         id: 'security_analytics',
