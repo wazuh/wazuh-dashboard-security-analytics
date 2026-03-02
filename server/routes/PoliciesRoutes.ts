@@ -53,6 +53,8 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
         body: schema.object({
           author: schema.string(),
           enabled: schema.boolean({ defaultValue: false }),
+          index_discarded_events: schema.boolean({ defaultValue: false }),
+          index_unclassified_events: schema.boolean({ defaultValue: false }),
           description: schema.string({ defaultValue: '' }),
           documentation: schema.string({ defaultValue: '' }),
           enrichments: schema.arrayOf(schema.string(), { defaultValue: [] }),
@@ -62,8 +64,6 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
           title: schema.string(),
           root_decoder: schema.string({ defaultValue: '' }),
           date: schema.string(),
-          index_discarded_events: schema.boolean(),
-          index_unclassified_events: schema.boolean(),
           modified: schema.string(),
           id: schema.string(),
         }),
