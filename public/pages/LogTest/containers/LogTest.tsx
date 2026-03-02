@@ -54,7 +54,7 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
     const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
 
     useEffect(() => {
-        setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.LOG_TEST]);
+        setBreadcrumbs([BREADCRUMBS.LOG_TEST]);
     }, []);
 
     const validateForm = useCallback((): boolean => {

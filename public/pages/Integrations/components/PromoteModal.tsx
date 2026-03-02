@@ -21,7 +21,7 @@ import { getNextSpace } from '../utils/helpers';
 export interface PromoteBySpaceModalProps {
   promote: GetPromoteBySpaceResponse['response'];
   closeModal: () => void;
-  onConfirm: () => void;
+  onConfirm: () => boolean;
   space: PromoteSpaces;
 }
 
@@ -66,8 +66,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
 
   const onConfirmClick = async () => {
     // Generate promote payload
-    await onConfirm();
-    closeModal();
+    (await onConfirm()) && closeModal();
   };
 
   const expectedConfirmActionText = 'promote';

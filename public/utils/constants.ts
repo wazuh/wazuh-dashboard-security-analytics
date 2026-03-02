@@ -283,25 +283,25 @@ export const logTypeCategoryDescription: {
   name: string;
   description: string;
 }[] = [
-    {
-      name: 'Access Management',
-      description: 'User access, authentication, group management',
-    },
-    {
-      name: 'Applications',
-      description: 'Application lifecycle, API, and web resources activities',
-    },
-    {
-      name: 'Cloud Services',
-      description: 'Services managed by cloud providers',
-    },
-    {
-      name: 'Network Activity',
-      description: 'DNS, HTTP, Email, SSH, FTP, DHCP, RDP',
-    },
-    { name: 'System Activity', description: 'System monitoring logs' },
-    { name: 'Other', description: 'Logs not covered in other categories' },
-  ];
+  {
+    name: 'Access Management',
+    description: 'User access, authentication, group management',
+  },
+  {
+    name: 'Applications',
+    description: 'Application lifecycle, API, and web resources activities',
+  },
+  {
+    name: 'Cloud Services',
+    description: 'Services managed by cloud providers',
+  },
+  {
+    name: 'Network Activity',
+    description: 'DNS, HTTP, Email, SSH, FTP, DHCP, RDP',
+  },
+  { name: 'System Activity', description: 'System monitoring logs' },
+  { name: 'Other', description: 'Logs not covered in other categories' },
+];
 
 /* Wazuh: Replaced log types with integrations categories. */
 export const integrationCategories: {
@@ -309,42 +309,42 @@ export const integrationCategories: {
   value: string;
   description: string;
 }[] = [
-    {
-      label: 'Access Management',
-      value: 'access-management',
-      description: 'User access, authentication, group management',
-    },
-    {
-      label: 'Applications',
-      value: 'applications',
-      description: 'Application lifecycle, API, and web resources activities',
-    },
-    {
-      label: 'Cloud Services',
-      value: 'cloud-services',
-      description: 'Services managed by cloud providers',
-    },
-    {
-      label: 'Network Activity',
-      value: 'network-activity',
-      description: 'DNS, HTTP, Email, SSH, FTP, DHCP, RDP',
-    },
-    {
-      label: 'System Activity',
-      value: 'system-activity',
-      description: 'System monitoring logs',
-    },
-    {
-      label: 'Security',
-      value: 'security',
-      description: 'Security-related logs and events',
-    },
-    {
-      label: 'Other',
-      value: 'other',
-      description: 'Logs not covered in other categories',
-    },
-  ];
+  {
+    label: 'Access Management',
+    value: 'access-management',
+    description: 'User access, authentication, group management',
+  },
+  {
+    label: 'Applications',
+    value: 'applications',
+    description: 'Application lifecycle, API, and web resources activities',
+  },
+  {
+    label: 'Cloud Services',
+    value: 'cloud-services',
+    description: 'Services managed by cloud providers',
+  },
+  {
+    label: 'Network Activity',
+    value: 'network-activity',
+    description: 'DNS, HTTP, Email, SSH, FTP, DHCP, RDP',
+  },
+  {
+    label: 'System Activity',
+    value: 'system-activity',
+    description: 'System monitoring logs',
+  },
+  {
+    label: 'Security',
+    value: 'security',
+    description: 'Security-related logs and events',
+  },
+  {
+    label: 'Other',
+    value: 'other',
+    description: 'Logs not covered in other categories',
+  },
+];
 
 export const integrationsByCategories: { [category: string]: Integration[] } = {};
 
