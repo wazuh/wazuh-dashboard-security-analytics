@@ -154,31 +154,6 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
               }
               return null;
             })}
-            {/* {promoteData?.promote.changes.policy.length > 0 && (
-              <>
-                <PromoteEntity label="Policy" entity="policy" data={promoteData} />
-                <EuiSpacer size="m" />
-              </>
-            )}
-            {promoteData?.promote.changes.integrations.length > 0 && (
-              <>
-                <PromoteEntity label="Policy" entity="policy" data={promoteData} />
-                <EuiSpacer size="m" />
-              </>
-              <PromoteEntity label="Integrations" entity="integrations" data={promoteData} />
-            )}
-            {promoteData?.promote.changes.decoders.length > 0 && (
-              <PromoteEntity label="Decoders" entity="decoders" data={promoteData} />
-            )}
-            {promoteData?.promote.changes.kvdbs.length > 0 && (
-              <PromoteEntity label="KVDBs" entity="kvdbs" data={promoteData} />
-            )}
-            {promoteData?.promote.changes.filters.length > 0 && (
-              <PromoteEntity label="Filters" entity="filters" data={promoteData} />
-            )}
-            {promoteData?.promote.changes.rules.length > 0 && (
-              <PromoteEntity label="Rules" entity="rules" data={promoteData} />
-            )} */}
           </div>
           <EuiSpacer size="m" />
           <EuiFlexGroup justifyContent="flexEnd">

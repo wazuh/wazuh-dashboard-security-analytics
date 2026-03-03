@@ -116,6 +116,7 @@ export interface GetPromoteBySpaceResponse {
       integrations: PromoteAvailablePromotionsMap;
       decoders: PromoteAvailablePromotionsMap;
       kvdbs: PromoteAvailablePromotionsMap;
+      rules: PromoteAvailablePromotionsMap;
     };
   };
 }

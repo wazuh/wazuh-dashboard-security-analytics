@@ -29,12 +29,14 @@ import {
 import { CLIENT_INTEGRATION_METHODS } from '../utils/constants';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 import { get } from 'lodash';
-import { POLICIES_INDEX } from './PoliciesService';
 import { getNextSpace } from '../../common/helpers';
 
+// TODO: this should be moved to a common file and imported instead
 const INTEGRATIONS_INDEX = '.cti-integrations';
 const DECODERS_INDEX = '.cti-decoders';
 const KVDBS_INDEX = '.cti-kvdbs';
+const RULES_INDEX = '.cti-rules';
+const POLICIES_INDEX = '.cti-policies';
 
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
@@ -316,7 +318,7 @@ export class IntegrationService extends MDSEnabledClientService {
           client,
           promoteSpace.changes.rules,
           {
-            index: '.cti-rules', // TODO: replace by the constant when this is implemented
+            index: RULES_INDEX, // TODO: replace by the constant when this is implemented
             space,
             nameProp: 'document.title',
             idProp: 'document.id',
@@ -325,7 +327,7 @@ export class IntegrationService extends MDSEnabledClientService {
       }
 
       if (false && promoteSpace.changes.filters.length > 0) {
-        // TODO: enable this when the filters are implemented
+        // TODO: enable this and adapt if required when the filters are implemented
         availablePromotions['filters'] = await this.resolvePromoteEntity(
           client,
           promoteSpace.changes.filters,
