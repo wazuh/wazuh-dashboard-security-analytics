@@ -28,7 +28,7 @@ export const THREAT_ALERTS_NAV_ID = `threat_alerts`;
 export const FINDINGS_NAV_ID = `findings`;
 export const CORRELATIONS_NAV_ID = `correlations`;
 export const DETECTORS_NAV_ID = `detectors`;
-export const DETECTION_RULE_NAV_ID = `rules`;  // Wazuh: rename 'Detection rules' to 'Rules'.
+export const DETECTION_RULE_NAV_ID = `rules`; // Wazuh: rename 'Detection rules' to 'Rules'.
 export const CORRELATIONS_RULE_NAV_ID = `correlation_rules`;
 export const THREAT_INTEL_NAV_ID = `threat_intelligence`;
 export const INTEGRATIONS_NAV_ID = `sa-integrations`;
@@ -448,4 +448,23 @@ export const DEFAULT_MESSAGE_SOURCE = {
  - Description: {{ctx.detector.description}}
  - Detector data sources: {{ctx.detector.datasources}}`,
   MESSAGE_SUBJECT: `Triggered alert condition:  {{ctx.trigger.name}} - Severity: {{ctx.trigger.severity}} - Threat detector: {{ctx.detector.name}}`,
+};
+
+// Wazuh: promotions order
+export const PROMOTE_ENTITIES_ORDER = [
+  'policy',
+  'integrations',
+  'decoders',
+  'kvdbs',
+  'filters',
+  'rules',
+] as const;
+
+export const PROMOTE_ENTITIES_LABELS: Record<string, string> = {
+  policy: 'Policy',
+  integrations: 'Integrations',
+  decoders: 'Decoders',
+  kvdbs: 'KVDBs',
+  filters: 'Filters',
+  rules: 'Rules',
 };

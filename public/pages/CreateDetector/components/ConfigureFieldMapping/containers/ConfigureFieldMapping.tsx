@@ -173,7 +173,8 @@ export default class ConfigureFieldMapping extends Component<
             <EuiText style={{ padding: '10px 0px' }} size="s">
               <p>
                 To generate accurate findings, we recommend to review the following field mappings
-                between the rules fields and the data source fields. {/* Wazuh: rename 'detection rules' to 'rules' */}
+                between the rules fields and the data source fields.{' '}
+                {/* Wazuh: rename 'detection rules' to 'rules' */}
               </p>
             </EuiText>
             <FieldMappingsTable<MappingViewType.Edit>
@@ -198,7 +199,8 @@ export default class ConfigureFieldMapping extends Component<
             <EuiText style={{ padding: '10px 0px' }} size="s">
               <p>
                 To generate accurate findings, we recommend mapping all the fields of interest in
-                your data source to the rules fields. {/* Wazuh: rename 'detection rules' to 'rules' */}
+                your data source to the rules fields.{' '}
+                {/* Wazuh: rename 'detection rules' to 'rules' */}
               </p>
             </EuiText>
             {pendingCount > 0 && (

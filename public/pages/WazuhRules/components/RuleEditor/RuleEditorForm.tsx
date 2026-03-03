@@ -305,8 +305,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     data-test-subj={'rule_integration_dropdown'}
                     resourceName="rules"
                     isInvalid={
-                      (validateOnMount || props.touched.integration) &&
-                      !!props.errors?.integration
+                      (validateOnMount || props.touched.integration) && !!props.errors?.integration
                     }
                     error={props.errors.integration}
                     onChange={(selected) => {

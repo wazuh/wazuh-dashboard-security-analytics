@@ -75,12 +75,12 @@ export interface SecurityAnalyticsPluginStartDeps {
 
 export class SecurityAnalyticsPlugin
   implements
-  Plugin<
-    SecurityAnalyticsPluginSetup,
-    SecurityAnalyticsPluginStart,
-    SecurityAnalyticsPluginSetupDeps,
-    SecurityAnalyticsPluginStartDeps
-  > {
+    Plugin<
+      SecurityAnalyticsPluginSetup,
+      SecurityAnalyticsPluginStart,
+      SecurityAnalyticsPluginSetupDeps,
+      SecurityAnalyticsPluginStartDeps
+    > {
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
   ) {}

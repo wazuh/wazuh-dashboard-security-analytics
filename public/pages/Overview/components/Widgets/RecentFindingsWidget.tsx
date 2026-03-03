@@ -67,7 +67,9 @@ export const RecentFindingsWidget: React.FC<RecentFindingsWidgetProps> = ({
   }, []);
 
   return (
-    <WidgetContainer title={'Recent rule findings'} actions={actions}> {/* Wazuh: rename 'detection rule' to 'rule' */}
+    <WidgetContainer title={'Recent rule findings'} actions={actions}>
+      {' '}
+      {/* Wazuh: rename 'detection rule' to 'rule' */}
       {findingItems.length === 0 ? (
         getEuiEmptyPrompt('No recent findings.')
       ) : (
