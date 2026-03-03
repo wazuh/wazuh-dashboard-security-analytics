@@ -11,7 +11,7 @@ import {
   DEFAULT_NAV_GROUPS,
   Plugin,
   PluginInitializerContext,
-  AppNavLinkStatus
+  AppNavLinkStatus,
 } from '../../../src/core/public';
 import {
   // Wazuh: hide Correlations app in Security Analytics nav.
@@ -75,15 +75,15 @@ export interface SecurityAnalyticsPluginStartDeps {
 
 export class SecurityAnalyticsPlugin
   implements
-  Plugin<
-    SecurityAnalyticsPluginSetup,
-    SecurityAnalyticsPluginStart,
-    SecurityAnalyticsPluginSetupDeps,
-    SecurityAnalyticsPluginStartDeps
-  > {
+    Plugin<
+      SecurityAnalyticsPluginSetup,
+      SecurityAnalyticsPluginStart,
+      SecurityAnalyticsPluginSetupDeps,
+      SecurityAnalyticsPluginStartDeps
+    > {
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
-  ) { }
+  ) {}
 
   private updateDefaultRouteOfManagementApplications: AppUpdater = () => {
     const dataSourceValue = dataSourceObservable.value?.id;
@@ -334,20 +334,20 @@ export class SecurityAnalyticsPlugin
       // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
         id: DETECTION_NAV_ID,
-        title: "Detection",
+        title: 'Detection',
         mount: async () => {
           return () => {};
-        }
-      })
+        },
+      });
 
       // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
         id: NORMALIZATION_NAV_ID,
-        title: "Normalization",
+        title: 'Normalization',
         mount: async () => {
           return () => {};
-        }
-      })
+        },
+      });
 
       const navlinks = [
         { id: OVERVIEW_NAV_ID, showInAllNavGroup: true },
@@ -367,7 +367,7 @@ export class SecurityAnalyticsPlugin
         { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7004 },
         {
           id: NORMALIZATION_NAV_ID,
-          title: "Normalization",
+          title: 'Normalization',
           showInAllNavGroup: true,
           order: 7003,
         },
@@ -385,7 +385,7 @@ export class SecurityAnalyticsPlugin
         },
         {
           id: DETECTION_NAV_ID,
-          title: "Detection",
+          title: 'Detection',
           showInAllNavGroup: true,
           order: 7009,
         },
