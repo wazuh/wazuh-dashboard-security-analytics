@@ -39,7 +39,7 @@ import {
   LOG_TYPES_NAV_ID,
   DECODERS_NAV_ID,
   KVDBS_NAV_ID,
-  INTEGRATIONS_NAV_ID,
+  OVERVIEW_NAV_ID,
   LOG_TEST_NAV_ID,
 } from '../../utils/constants';
 import { CoreServicesConsumer } from '../../components/core_services';
@@ -210,10 +210,10 @@ export default class Main extends Component<MainProps, MainState> {
     let dataSourceId = '';
     let dataSourceLabel = '';
     if (props.multiDataSourceEnabled) {
-      const { dataSourceId: parsedDataSourceId, dataSourceLabel: parsedDataSourceLabel } = parse(
-        this.props.location.search,
-        { decode: false }
-      ) as {
+      const {
+        dataSourceId: parsedDataSourceId,
+        dataSourceLabel: parsedDataSourceLabel,
+      } = parse(this.props.location.search, { decode: false }) as {
         dataSourceId: string;
         dataSourceLabel: string;
       };
@@ -784,7 +784,7 @@ export default class Main extends Component<MainProps, MainState> {
                                         />
                                       )}
                                     /> */}
-                                    <Route
+                                    {/* <Route
                                       path={ROUTES.OVERVIEW}
                                       render={(props: RouteComponentProps) => (
                                         <Overview
@@ -810,7 +810,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           />
                                         )}
                                       />
-                                    )}*/}
+                                    )} */}
                                     {/* Wazuh: hide Alerts route. */}
                                     {/* <Route
                                       path={`${ROUTES.ALERTS}/:detectorId?`}

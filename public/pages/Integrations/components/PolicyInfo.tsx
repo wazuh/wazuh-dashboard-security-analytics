@@ -14,16 +14,16 @@ import {
   EuiDescriptionList,
 } from '@elastic/eui';
 import { DecoderSource, PolicyDocument, SearchPolicyOptions, Space } from '../../../../types';
-import { ButtonSelectRootDecoder } from './RootDecoderRequirement';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
-import { POLICY_UPDATED } from '../utils/constants';
 
 export const withPolicyGuard: <T>(
-  searchPolicyOptions: SearchPolicyOptions
+  searchPolicyOptions: SearchPolicyOptions,
+  withGuardOptions?: { rerunOn?: (props) => any[] }
 ) => (Component: React.FC<T>) => React.ReactElement = (
-  searchPolicyOptions: SearchPolicyOptions = {}
+  searchPolicyOptions: SearchPolicyOptions = {},
+  withGuardOptions?: { rerunOn?: (props) => any[] }
 ) =>
   withGuardAsync(
     async ({ space }: { space: Space }) => {
@@ -31,12 +31,7 @@ export const withPolicyGuard: <T>(
         const response = await DataStore.policies.searchPolicies(space, searchPolicyOptions);
         const item = response.items?.[0] || {};
 
-        const {
-          document: policyDocumentData,
-          space: spaceData,
-          id,
-          ...rest
-        } = item as {
+        const { document: policyDocumentData, space: spaceData, id, ...rest } = item as {
           document?: PolicyDocument;
           [key: string]: any;
         };
@@ -58,113 +53,109 @@ export const withPolicyGuard: <T>(
     ({ error }) =>
       error ? <EuiText color="danger">Error loading the policy: {error.message}</EuiText> : null,
     null,
-    {
+    withGuardOptions || {
       rerunOn: ({ space }) => [space],
     }
   );
 
-export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
-  includeIntegrationFields: ['document'],
-})(({
-  policyDocumentData,
-  rootDecoder,
-  notifications,
-  space,
-  check,
-  onEditPolicy,
-  refreshKey,
-}: {
-  policyDocumentData: PolicyDocument;
-  rootDecoder: DecoderSource;
-  notifications: NotificationsStart;
-  space: Space;
-  check;
-  onEditPolicy: () => void;
-  refreshKey: boolean;
-}) => {
-  // Using the refreshKey prop update when any change is made.
-  const prevRefreshKeyRef = useRef(refreshKey);
-  useEffect(() => {
-    if (refreshKey !== prevRefreshKeyRef.current) {
-      prevRefreshKeyRef.current = refreshKey;
-      check();
-    }
-  });
-  return (
-    <EuiCard
-      textAlign="left"
-      paddingSize="m"
-      title={
-        <EuiFlexGroup justifyContent="spaceBetween" gutterSize="none">
+export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
+  {
+    includeIntegrationFields: ['document'],
+  },
+  {
+    rerunOn: ({ space, refresh }) => [space, refresh],
+  }
+)(
+  ({
+    policyDocumentData,
+    rootDecoder,
+    notifications,
+    space,
+    onEditPolicy,
+  }: {
+    policyDocumentData: PolicyDocument;
+    rootDecoder: DecoderSource;
+    notifications: NotificationsStart;
+    space: Space;
+    onEditPolicy: () => void;
+    refreshKey: boolean;
+  }) => {
+    return (
+      <EuiCard
+        textAlign="left"
+        paddingSize="m"
+        title={
+          <EuiFlexGroup justifyContent="spaceBetween" gutterSize="none">
+            <EuiFlexItem>
+              <EuiTitle size="s">
+                <h3>Space details</h3>
+              </EuiTitle>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
+                <EuiToolTip content={'Edit space details'}>
+                  <EuiButtonIcon
+                    onClick={onEditPolicy}
+                    iconType="pencil"
+                    aria-label="Edit space details"
+                  />
+                </EuiToolTip>
+              )}
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        }
+      >
+        <EuiFlexGroup>
           <EuiFlexItem>
-            <EuiTitle size="s">
-              <h3>Space details</h3>
-            </EuiTitle>
+            <EuiDescriptionList compressed type="row">
+              <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData.title}
+              </EuiDescriptionListDescription>
+              <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData.description}
+              </EuiDescriptionListDescription>
+              <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData.author}
+              </EuiDescriptionListDescription>
+            </EuiDescriptionList>
           </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
-              <EuiToolTip content={'Edit space details'}>
-                <EuiButtonIcon
-                  onClick={onEditPolicy}
-                  iconType="pencil"
-                  aria-label="Edit space details"
-                />
-              </EuiToolTip>
-            )}
+          <EuiFlexItem>
+            <EuiDescriptionList compressed type="row">
+              <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData.documentation}
+              </EuiDescriptionListDescription>
+              <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData.references?.join(', ') ?? ''}
+              </EuiDescriptionListDescription>
+              <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {rootDecoder?.document?.name ?? ''}
+              </EuiDescriptionListDescription>
+            </EuiDescriptionList>
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiDescriptionList compressed type="row">
+              <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData?.enabled ? 'yes' : 'no'}
+              </EuiDescriptionListDescription>
+              <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData?.index_unclassified_events ? 'yes' : 'no'}
+              </EuiDescriptionListDescription>
+              <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData?.index_discarded_events ? 'yes' : 'no'}
+              </EuiDescriptionListDescription>
+            </EuiDescriptionList>
           </EuiFlexItem>
         </EuiFlexGroup>
-      }
-    >
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiDescriptionList compressed type="row">
-            <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.title}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.description}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.author}
-            </EuiDescriptionListDescription>
-          </EuiDescriptionList>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiDescriptionList compressed type="row">
-            <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.documentation}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData.references?.join(', ') ?? ''}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {rootDecoder?.document?.name ?? ''}
-            </EuiDescriptionListDescription>
-          </EuiDescriptionList>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiDescriptionList compressed type="row">
-            <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData?.enabled ? 'yes' : 'no'}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData?.index_unclassified_events ? 'yes' : 'no'}
-            </EuiDescriptionListDescription>
-            <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
-            <EuiDescriptionListDescription>
-              {policyDocumentData?.index_discarded_events ? 'yes' : 'no'}
-            </EuiDescriptionListDescription>
-          </EuiDescriptionList>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    </EuiCard>
-  );
-});
+      </EuiCard>
+    );
+  }
+);

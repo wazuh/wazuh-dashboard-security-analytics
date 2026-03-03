@@ -70,7 +70,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [selectedItems, setSelectedItems] = useState<IntegrationTableItem[]>([]);
   const [itemForAction, setItemForAction] = useState<ItemForAction | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [policyRefreshKey, setpolicyRefreshKey] = useState(false);
+  const [policyRefresh, setPolicyRefresh] = useState(0);
   const loadIntegrations = useCallback(async () => {
     setLoading(true);
 
@@ -249,14 +249,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               SPACE_ACTIONS.DELETE
             ).join(', ')}`
           : selectedItems.length === 0
-            ? 'Select integrations to delete.'
-            : selectedItemsWithoutRelatedEntities.length === 0
-              ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
-              : selectedItemsWithRelatedEntitiesCount > 0
-                ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
-                    selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
-                  } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
-                : undefined
+          ? 'Select integrations to delete.'
+          : selectedItemsWithoutRelatedEntities.length === 0
+          ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
+          : selectedItemsWithRelatedEntitiesCount > 0
+          ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
+              selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
+            } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
+          : undefined
       }
     >
       Delete selected ({selectedItems.length})
@@ -318,7 +318,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
   const showIntegrationDetails = useCallback(
     (id: string) => {
-      history.push(`${ROUTES.INTEGRATIONS}/${id}?space=${spaceFilter}`);
+      history.push(`${ROUTES.OVERVIEW}/${id}?space=${spaceFilter}`);
     },
     [spaceFilter]
   );
@@ -358,7 +358,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               space={spaceFilter}
               notifications={notifications}
               onClose={() => setItemForAction(null)}
-              onSuccess={() => setpolicyRefreshKey((prevState) => !prevState)}
+              onSuccess={() => setPolicyRefresh((prevState) => prevState + 1)}
             />
           )}
         </>
@@ -400,8 +400,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
                 <h1>Overview</h1>
               </EuiText>
               <EuiText size="s" color="subdued">
-                Integrations describe the data sources to which the rules are meant to be
-                applied.
+                Integrations describe the data sources to which the rules are meant to be applied.
               </EuiText>
               <EuiSpacer size="s"></EuiSpacer>
             </EuiFlexItem>
@@ -415,7 +414,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         space={spaceFilter}
         notifications={notifications}
         onEditPolicy={onEditPolicy}
-        refreshKey={policyRefreshKey}
+        refresh={policyRefresh}
       />
       <EuiSpacer size={'m'} />
       <EuiCard textAlign="left" paddingSize="m" title="Integrations">
