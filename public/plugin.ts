@@ -134,21 +134,38 @@ export class SecurityAnalyticsPlugin
       },
     });
 
+    // Wazuh: hide Overview app to be substituted by the Integrations app
+    // core.application.register({
+    //   id: OVERVIEW_NAV_ID,
+    //   title: 'Overview',
+    //   order: 7000,
+    //   category: {
+    //     id: 'security_analytics',
+    //     label: 'Security analytics',
+    //     order: 550,
+    //     euiIconType: 'securityAnalyticsApp',
+    //   },
+    //   updater$: this.appStateUpdater,
+    //   mount: async (params: AppMountParameters) => {
+    //     const { renderApp } = await import('./security_analytics_app');
+    //     const [coreStart, depsStart] = await core.getStartServices();
+    //     return renderApp(coreStart, params, ROUTES.LANDING_PAGE, depsStart, dataSourceManagement);
+    //   },
+    // });
+
     core.application.register({
-      id: OVERVIEW_NAV_ID,
+      id: INTEGRATIONS_NAV_ID,
       title: 'Overview',
       order: 7000,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Security Analytics',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
-        const { renderApp } = await import('./security_analytics_app');
-        const [coreStart, depsStart] = await core.getStartServices();
-        return renderApp(coreStart, params, ROUTES.LANDING_PAGE, depsStart, dataSourceManagement);
+        return mountWrapper(params, ROUTES.INTEGRATIONS);
       },
     });
 
@@ -201,22 +218,6 @@ export class SecurityAnalyticsPlugin
     //     return mountWrapper(params, ROUTES.CORRELATIONS);
     //   },
     // });
-
-    core.application.register({
-      id: INTEGRATIONS_NAV_ID,
-      title: 'Integrations',
-      order: 7004,
-      category: {
-        id: 'security_analytics',
-        label: 'Security Analytics',
-        order: 550,
-        euiIconType: 'securityAnalyticsApp',
-      },
-      updater$: this.appStateUpdater,
-      mount: async (params: AppMountParameters) => {
-        return mountWrapper(params, ROUTES.INTEGRATIONS);
-      },
-    });
 
     core.application.register({
       id: DECODERS_NAV_ID,

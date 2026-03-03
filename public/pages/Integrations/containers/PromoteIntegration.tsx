@@ -93,7 +93,9 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
       } catch (error) {
         return {
           ok: false,
-          data: { errorPromote: error.message || 'Error getting the promote data' },
+          data: {
+            errorPromote: error.message || 'Error getting the promote data',
+          },
         };
       }
     },

@@ -25,7 +25,8 @@ import {
   dataSourceObservable,
   OS_NOTIFICATION_PLUGIN,
   THREAT_INTEL_ENABLED,
-  OVERVIEW_NAV_ID,
+  // Wazuh: hide Overview app in navigation.
+  // OVERVIEW_NAV_ID,
   FINDINGS_NAV_ID,
   // Wazuh: hide Alerts app in navigation.
   // THREAT_ALERTS_NAV_ID,
@@ -38,13 +39,13 @@ import {
   LOG_TYPES_NAV_ID,
   DECODERS_NAV_ID,
   KVDBS_NAV_ID,
-  INTEGRATIONS_NAV_ID,
+  OVERVIEW_NAV_ID,
   LOG_TEST_NAV_ID,
 } from '../../utils/constants';
 import { CoreServicesConsumer } from '../../components/core_services';
 import Findings from '../Findings';
 import Detectors from '../Detectors';
-import Overview from '../Overview';
+// import Overview from '../Overview';
 import CreateDetector from '../CreateDetector/containers/CreateDetector';
 // Wazuh: hide Alerts app and routes.
 // import Alerts from "../Alerts";
@@ -99,7 +100,7 @@ import {
   getPlugins,
   setIsNotificationPluginInstalled,
 } from '../../utils/helpers';
-import { GettingStartedContent } from '../Overview/components/GettingStarted/GettingStartedContent';
+// import { GettingStartedContent } from '../Overview/components/GettingStarted/GettingStartedContent';
 import { BrowserServices } from '../../models/interfaces';
 import { CHANNEL_TYPES } from '../CreateDetector/components/ConfigureAlerts/utils/constants';
 import { PromoteIntegration } from '../Integrations/containers/PromoteIntegration';
@@ -179,7 +180,7 @@ interface MainState {
  */
 
 const navItemIdByRoute: { [route: string]: Navigation } = {
-  [ROUTES.OVERVIEW]: Navigation.Overview,
+  // [ROUTES.OVERVIEW]: Navigation.Overview,
   [ROUTES.FINDINGS]: Navigation.Findings,
   // Wazuh: hide Alerts route mapping.
   // [ROUTES.ALERTS]: Navigation.Alerts,
@@ -187,7 +188,7 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   [ROUTES.RULES]: Navigation.Rules,
   // Wazuh: hide Log types and add Wazuh integrations route mapping.
   // [ROUTES.LOG_TYPES]: Navigation.LogTypes,
-  [ROUTES.INTEGRATIONS]: Navigation.Integrations,
+  [ROUTES.INTEGRATIONS]: Navigation.Overview,
   [ROUTES.DECODERS]: Navigation.Decoders,
   [ROUTES.KVDBS]: Navigation.KVDBS,
   [ROUTES.LOG_TEST]: Navigation.LogTest,
@@ -222,7 +223,7 @@ export default class Main extends Component<MainProps, MainState> {
 
     this.state = {
       getStartedDismissedOnce: false,
-      selectedNavItemId: Navigation.Overview,
+      selectedNavItemId: Navigation.Overview, // Navigation.Integrations
       dateTimeFilter: defaultDateTimeFilter,
       showFlyoutData: null,
       /**
@@ -379,6 +380,7 @@ export default class Main extends Component<MainProps, MainState> {
           );
         },
         items: [
+          /****
           {
             name: Navigation.Overview,
             id: Navigation.Overview,
@@ -392,6 +394,7 @@ export default class Main extends Component<MainProps, MainState> {
             },
             isSelected: selectedNavItemId === Navigation.Overview,
           },
+          */
           ...(THREAT_INTEL_ENABLED
             ? [
                 {
@@ -407,6 +410,22 @@ export default class Main extends Component<MainProps, MainState> {
                 },
               ]
             : []),
+          {
+            name: Navigation.Overview,
+            id: Navigation.Overview,
+            onClick: () => {
+              // this.setState({ selectedNavItemId: Navigation.Integrations });
+              // history.push(ROUTES.INTEGRATIONS);
+              // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
+              getApplication().navigateToApp(INTEGRATIONS_NAV_ID, {
+                path: generateAppPath(ROUTES.INTEGRATIONS),
+              });
+              if (history.location.pathname !== ROUTES.INTEGRATIONS) {
+                history.push(ROUTES.INTEGRATIONS);
+              }
+            },
+            isSelected: selectedNavItemId === Navigation.Overview,
+          },
           {
             name: Navigation.Findings,
             id: Navigation.Findings,
@@ -461,22 +480,6 @@ export default class Main extends Component<MainProps, MainState> {
           //     },
           //   ],
           // },
-          {
-            name: Navigation.Integrations,
-            id: Navigation.Integrations,
-            onClick: () => {
-              // this.setState({ selectedNavItemId: Navigation.Integrations });
-              // history.push(ROUTES.INTEGRATIONS);
-              // Wazuh: navigate to app so this is highlighted in the sidebar menu (old)
-              getApplication().navigateToApp(INTEGRATIONS_NAV_ID, {
-                path: generateAppPath(ROUTES.INTEGRATIONS),
-              });
-              if (history.location.pathname !== ROUTES.INTEGRATIONS) {
-                history.push(ROUTES.INTEGRATIONS);
-              }
-            },
-            isSelected: selectedNavItemId === Navigation.Integrations,
-          },
           /**** Wazuh Replace LogTypes entry for Wazuh integrations 
           {
             name: Navigation.LogTypes,
@@ -781,7 +784,7 @@ export default class Main extends Component<MainProps, MainState> {
                                         />
                                       )}
                                     /> */}
-                                    <Route
+                                    {/* <Route
                                       path={ROUTES.OVERVIEW}
                                       render={(props: RouteComponentProps) => (
                                         <Overview
@@ -807,7 +810,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           />
                                         )}
                                       />
-                                    )}
+                                    )} */}
                                     {/* Wazuh: hide Alerts route. */}
                                     {/* <Route
                                       path={`${ROUTES.ALERTS}/:detectorId?`}
