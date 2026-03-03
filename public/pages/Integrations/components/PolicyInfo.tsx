@@ -42,12 +42,15 @@ export const withPolicyGuard: <T>(
           rootDecoder = await DataStore.decoders.getDecoder(rootDecoderId, space); // TODO: this could be obtained from the endpoint as rest
         }
 
+        const ok = !Boolean(policyDocumentData);
+        const error = ok ? new Error('Policy data was not found') : null;
+
         return {
-          ok: !Boolean(policyDocumentData),
-          data: { policyDocumentData, rootDecoder, policyEnhancedData: rest },
+          ok,
+          data: { policyDocumentData, rootDecoder, policyEnhancedData: rest, error },
         };
       } catch (error) {
-        return { ok: false, data: { error } };
+        return { ok: true, data: { error } };
       }
     },
     ({ error }) =>
