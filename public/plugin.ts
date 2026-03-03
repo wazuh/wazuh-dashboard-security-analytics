@@ -73,12 +73,14 @@ export interface SecurityAnalyticsPluginStartDeps {
   contentManagement: ContentManagementPluginStart;
 }
 
-export class SecurityAnalyticsPlugin implements Plugin<
-  SecurityAnalyticsPluginSetup,
-  SecurityAnalyticsPluginStart,
-  SecurityAnalyticsPluginSetupDeps,
-  SecurityAnalyticsPluginStartDeps
-> {
+export class SecurityAnalyticsPlugin
+  implements
+  Plugin<
+    SecurityAnalyticsPluginSetup,
+    SecurityAnalyticsPluginStart,
+    SecurityAnalyticsPluginSetupDeps,
+    SecurityAnalyticsPluginStartDeps
+  > {
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
   ) {}
@@ -282,7 +284,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
 
     core.application.register({
       id: DETECTION_RULE_NAV_ID,
-      title: 'Detection rules',
+      title: 'Rules', // Wazuh: rename 'Detection rules' to 'Rules'.
       order: 7010,
       category: {
         id: 'security_analytics',

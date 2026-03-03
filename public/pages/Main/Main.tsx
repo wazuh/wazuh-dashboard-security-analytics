@@ -55,11 +55,13 @@ import { UpdateDetectorRules } from '../Detectors/components/UpdateRules/UpdateR
 import UpdateFieldMappings from '../Detectors/components/UpdateFieldMappings/UpdateFieldMappings';
 // Wazuh: hide Alert triggers edit route.
 // import UpdateAlertConditions from "../Detectors/components/UpdateAlertConditions/UpdateAlertConditions";
-import { Rules } from '../Rules/containers/Rules/Rules';
-import { CreateRule } from '../Rules/containers/CreateRule/CreateRule';
-import { EditRule } from '../Rules/containers/EditRule/EditRule';
-import { ImportRule } from '../Rules/containers/ImportRule/ImportRule';
-import { DuplicateRule } from '../Rules/containers/DuplicateRule/DuplicateRule';
+// Wazuh: use wazuh rules
+// import { Rules } from '../Rules/containers/Rules/Rules';
+// import { CreateRule } from '../Rules/containers/CreateRule/CreateRule';
+// import { EditRule } from '../Rules/containers/EditRule/EditRule';
+// import { ImportRule } from '../Rules/containers/ImportRule/ImportRule';
+// import { DuplicateRule } from '../Rules/containers/DuplicateRule/DuplicateRule';
+import { Rules, CreateRule, EditRule } from '../WazuhRules';
 import Callout, { ICalloutProps } from './components/Callout';
 import { DataStore } from '../../store/DataStore';
 // Wazuh: hide Correlations and Correlation rules routes.
@@ -108,7 +110,7 @@ enum Navigation {
   SecurityAnalytics = 'Security Analytics',
   Findings = 'Findings',
   Detectors = 'Detectors',
-  Rules = 'Detection rules',
+  Rules = 'Rules', // Wazuh: rename 'Detection rules' to 'Rules'
   Overview = 'Overview',
   // Wazuh: hide Alerts/Correlations navigation items.
   // Alerts = "Alerts",
@@ -712,9 +714,8 @@ export default class Main extends Component<MainProps, MainState> {
                                       path={ROUTES.RULES}
                                       render={(props: RouteComponentProps) => (
                                         <Rules
-                                          {...props}
+                                          history={props.history} // Wazuh: use wazuh rules component
                                           notifications={core?.notifications}
-                                          dataSource={selectedDataSource}
                                         />
                                       )}
                                     />
@@ -735,9 +736,8 @@ export default class Main extends Component<MainProps, MainState> {
                                           props.history.replace(ROUTES.RULES);
                                           return (
                                             <Rules
-                                              {...props}
+                                              history={props.history} // Wazuh: use wazuh rules component
                                               notifications={core?.notifications}
-                                              dataSource={selectedDataSource}
                                             />
                                           );
                                         }
@@ -751,16 +751,16 @@ export default class Main extends Component<MainProps, MainState> {
                                         );
                                       }}
                                     />
-                                    <Route
+                                    {/* Wazuh: hide Rules duplicate and import routes. * /}
+                                    {/* <Route
                                       path={ROUTES.RULES_DUPLICATE}
                                       render={(props: RouteComponentProps<any, any, any>) => {
                                         if (!props.location.state?.ruleItem) {
                                           props.history.replace(ROUTES.RULES);
                                           return (
                                             <Rules
-                                              {...props}
+                                              history={props.history}
                                               notifications={core?.notifications}
-                                              dataSource={selectedDataSource}
                                             />
                                           );
                                         }
@@ -783,8 +783,7 @@ export default class Main extends Component<MainProps, MainState> {
                                           notifications={core?.notifications}
                                         />
                                       )}
-                                    />
-                                    {/*}
+                                    /> */}
                                     <Route
                                       path={ROUTES.OVERVIEW}
                                       render={(props: RouteComponentProps) => (

@@ -400,7 +400,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
                 <h1>Overview</h1>
               </EuiText>
               <EuiText size="s" color="subdued">
-                Integrations describe the data sources to which the detection rules are meant to be
+                Integrations describe the data sources to which the rules are meant to be
                 applied.
               </EuiText>
               <EuiSpacer size="s"></EuiSpacer>

@@ -576,7 +576,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
         id: FindingTabId.DetectionRules,
         name: (
           <span>
-            Detection rules (
+            Rules ( {/* Wazuh: rename 'Detection rules' to 'Rules' */}
             {findingStateByTabId[FindingTabId.DetectionRules].filteredFindings.length})
           </span>
         ),

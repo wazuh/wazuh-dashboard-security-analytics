@@ -25,7 +25,7 @@ export const CreateIntegration: React.FC<CreateIntegrationProps> = ({ history, n
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, BREADCRUMBS.INTEGRATIONS_CREATE]);
 
   const description =
-    'Create integration to categorize and identify detection rules for your data sources.'; // Replace Log Type is replaced with Integration by Wazuh
+    'Create integration to categorize and identify rules for your data sources.'; // Replace Log Type is replaced with Integration by Wazuh
 
   const onCreateIntegration = async (integrationData: IntegrationItem) => {
     const success = await DataStore.integrations.createIntegration(integrationData);
