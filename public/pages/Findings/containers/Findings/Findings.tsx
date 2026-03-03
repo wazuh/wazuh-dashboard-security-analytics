@@ -18,11 +18,7 @@ import {
   EuiTabbedContent,
 } from '@elastic/eui';
 import FindingsTable from '../../components/FindingsTable';
-import {
-  DetectorsService,
-  OpenSearchService,
-  IndexPatternsService,
-} from '../../../../services';
+import { DetectorsService, OpenSearchService, IndexPatternsService } from '../../../../services';
 // Wazuh: hide correlations service usage in findings page.
 // import { CorrelationService } from '../../../../services';
 // Wazuh: hide alert-related channels and props from findings page.
@@ -253,8 +249,8 @@ class Findings extends Component<FindingsProps, FindingsState> {
     } else if (this.state.selectedTabId === FindingTabId.ThreatIntel && THREAT_INTEL_ENABLED) {
       await this.getThreatIntelFindings();
     }
-  // const data = this.generateVisualizationData();
-  // this.createStackedBarChart(data.visData, data.groupBy);
+    // const data = this.generateVisualizationData();
+    // this.createStackedBarChart(data.visData, data.groupBy);
   };
 
   setStateForTab<T extends FindingTabId, F extends keyof FindingsState['findingStateByTabId'][T]>(
