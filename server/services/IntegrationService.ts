@@ -32,6 +32,7 @@ import { get } from 'lodash';
 const INTEGRATIONS_INDEX = '.cti-integrations';
 const DECODERS_INDEX = '.cti-decoders';
 const KVDBS_INDEX = '.cti-kvdbs';
+const RULES_INDEX = '.cti-rules';
 
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
@@ -260,6 +261,19 @@ export class IntegrationService extends MDSEnabledClientService {
         );
       }
 
+      if (promoteSpace.changes.rules.length > 0) {
+        availablePromotions['rules'] = await this.resolvePromoteEntity(
+          client,
+          promoteSpace.changes.rules,
+          {
+            index: RULES_INDEX,
+            space,
+            nameProp: 'document.title',
+            idProp: 'document.id',
+          }
+        );
+      }
+
       return response.custom({
         statusCode: 200,
         body: {
@@ -311,7 +325,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body || error.message,
+          error: error.body?.message || error.message,
         },
       });
     }

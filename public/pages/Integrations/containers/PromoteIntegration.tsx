@@ -110,7 +110,8 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
       const hasPromotions =
         promoteData?.promote.changes.integrations.length > 0 ||
         promoteData?.promote.changes.decoders.length > 0 ||
-        promoteData?.promote.changes.kvdbs.length > 0;
+        promoteData?.promote.changes.kvdbs.length > 0 ||
+        promoteData?.promote.changes.rules.length > 0;
 
       const onConfirmPromote = async () => {
         // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
@@ -122,6 +123,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           successNotificationToast(notifications, 'promoted', `[${space}] space`);
           history.push(ROUTES.INTEGRATIONS);
         }
+        return success;
       };
 
       if (!hasPromotions) {
@@ -147,6 +149,9 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
             )}
             {promoteData?.promote.changes.kvdbs.length > 0 && (
               <PromoteEntity label="KVDBs" entity="kvdbs" data={promoteData} />
+            )}
+            {promoteData?.promote.changes.rules.length > 0 && (
+              <PromoteEntity label="Rules" entity="rules" data={promoteData} />
             )}
           </div>
           <EuiSpacer size="m" />

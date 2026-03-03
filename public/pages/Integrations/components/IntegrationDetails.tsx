@@ -10,9 +10,10 @@ import { IntegrationItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { IntegrationForm } from './IntegrationForm';
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { successNotificationToast } from '../../../utils/helpers';
+import { successNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { SPACE_ACTIONS } from '../../../../common/constants';
+import { BREADCRUMBS } from '../../../utils/constants';
 
 export interface IntegrationDetailsProps {
   integrationDetails: IntegrationItem;
@@ -55,6 +56,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
     });
     if (success) {
       setIntegrationDetails(integrationData);
+      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: integrationData.document.title }]);
       successNotificationToast(
         notifications,
         'updated',
@@ -65,15 +67,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   };
 
   return (
-    <ContentPanel
-      title="Details"
-      actions={
-        actionIsAllowedOnSpace(integrationDetails?.space?.name, SPACE_ACTIONS.EDIT) &&
-        !isEditMode ? (
-          <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>
-        ) : null
-      }
-    >
+    <ContentPanel title="Details">
       <EuiDescriptionList
         listItems={[
           {
