@@ -318,7 +318,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
   const showIntegrationDetails = useCallback(
     (id: string) => {
-      history.push(`${ROUTES.OVERVIEW}/${id}?space=${spaceFilter}`);
+      history.push(`${ROUTES.INTEGRATIONS}/${id}?space=${spaceFilter}`);
     },
     [spaceFilter]
   );
