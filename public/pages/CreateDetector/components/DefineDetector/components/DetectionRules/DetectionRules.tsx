@@ -115,7 +115,8 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
               </h4>
             </EuiTitle>
             <EuiText size="s" color="subdued">
-              Add or remove rules for this detector. {/* Wazuh: rename 'detection rules' to 'rules' */}
+              Add or remove rules for this detector.{' '}
+              {/* Wazuh: rename 'detection rules' to 'rules' */}
             </EuiText>
           </div>
         }

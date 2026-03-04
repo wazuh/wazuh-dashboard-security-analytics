@@ -87,7 +87,7 @@ export type PromoteNextSpaces = Omit<UserSpace, 'draft'>; // TODO: use the centr
 export type NonUserSpace = 'standard';
 export type Space = UserSpace | NonUserSpace;
 
-export type PromoteOperations = 'update' | 'add' | 'delete';
+export type PromoteOperations = 'update' | 'add' | 'remove';
 export type PromoteOperationsPolicy = 'update';
 
 export interface PromoteChanges {

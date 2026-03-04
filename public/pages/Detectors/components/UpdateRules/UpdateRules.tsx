@@ -292,7 +292,8 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
       <EuiSpacer size="xl" />
 
       <ContentPanel
-        title={`Rules (${ // Wazuh: rename 'Detection rules' to 'Rules'
+        title={`Rules (${
+          // Wazuh: rename 'Detection rules' to 'Rules'
           prePackagedRuleItems.concat(customRuleItems).filter((item) => item.active).length
         })`}
       >
