@@ -79,6 +79,6 @@ export class PoliciesStore {
     if (!response.ok) {
       errorNotificationToast(this.notifications, 'update', 'policy', response.error);
     }
-    return [response.ok, response];
+    return [response.ok, response.response];
   }
 }
