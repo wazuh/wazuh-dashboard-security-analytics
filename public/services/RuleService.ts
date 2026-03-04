@@ -46,9 +46,8 @@ export default class RuleService {
     integrationId: string;
   }): Promise<ServerResponse<CreateRuleResponse>> => {
     const url = `..${API.RULES_BASE}`;
-    const ruleBody: CreateRuleRequest = { rule: rule };
     return (await this.httpClient.post(url, {
-      body: JSON.stringify(ruleBody),
+      body: JSON.stringify(rule),
       query: {
         dataSourceId: dataSourceInfo.activeDataSource.id,
       },
