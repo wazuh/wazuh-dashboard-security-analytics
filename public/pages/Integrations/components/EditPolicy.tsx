@@ -140,13 +140,13 @@ const EditForm: React.FC<{}> = withPolicyGuard({
 
     const onConfirm = async () => {
       const payload = sanitizatePolicy(policyDetails);
-      const success = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
-      // success seems to be an array
-      if (success[0]) {
+      const [ok] = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
+
+      if (ok) {
         successNotificationToast(notifications, 'updated', `[${space}] space`);
         if (onSuccess) onSuccess();
+        onClose();
       }
-      onClose();
     };
 
     const onConfirmClicked = useCallback(() => {

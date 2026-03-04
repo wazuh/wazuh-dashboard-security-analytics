@@ -37,6 +37,7 @@ import {
   // Wazuh: hide Correlation rules app in navigation.
   // CORRELATIONS_RULE_NAV_ID,
   LOG_TYPES_NAV_ID,
+  INTEGRATIONS_NAV_ID,
   DECODERS_NAV_ID,
   KVDBS_NAV_ID,
   OVERVIEW_NAV_ID,
