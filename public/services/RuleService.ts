@@ -6,7 +6,6 @@
 import { HttpSetup } from 'opensearch-dashboards/public';
 import { ServerResponse } from '../../server/models/types';
 import {
-  CreateRuleRequest,
   CreateRuleResponse,
   DeleteRuleResponse,
   GetRulesResponse,
