@@ -79,6 +79,9 @@ export class PoliciesStore {
     data: UpdatePolicyRequestBody
   ): Promise<[boolean, UpdatePolicyResponse['response']]> {
     const response = await this.service.updatePolicy(policyId, data);
-    return [response.ok, response];
+    if (!response.ok) {
+      errorNotificationToast(this.notifications, 'update', 'policy', response.error);
+    }
+    return [response.ok, response.response];
   }
 }
