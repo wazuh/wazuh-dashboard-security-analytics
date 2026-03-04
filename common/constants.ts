@@ -4,6 +4,7 @@
  */
 
 import { wazuh } from '../package.json';
+import { IntegrationDocumentCreate } from '../types';
 import { i18n } from '@osd/i18n';
 import { PromoteSpaces } from '../types';
 
@@ -88,3 +89,14 @@ export const UserSpacesOrder: PromoteSpaces[] = [
   SpaceTypes.TEST.value,
   SpaceTypes.CUSTOM.value,
 ];
+
+export const defaultIntegration: { document: IntegrationDocumentCreate } = {
+  document: {
+    title: '',
+    description: '',
+    documentation: '',
+    tags: null,
+    category: '',
+    author: '',
+  },
+};
