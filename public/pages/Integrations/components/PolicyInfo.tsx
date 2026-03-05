@@ -95,7 +95,8 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
               </EuiTitle>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              {actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && (
+              {(actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) ||
+                actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_ENRICHMENTS)) && (
                 <EuiToolTip content={'Edit space details'}>
                   <EuiButtonIcon
                     onClick={onEditPolicy}
@@ -154,6 +155,12 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
               <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
               <EuiDescriptionListDescription>
                 {policyDocumentData?.index_discarded_events ? 'yes' : 'no'}
+              </EuiDescriptionListDescription>
+              <EuiDescriptionListTitle>Enrichments</EuiDescriptionListTitle>
+              <EuiDescriptionListDescription>
+                {policyDocumentData?.enrichments && policyDocumentData.enrichments.length > 0
+                  ? policyDocumentData.enrichments.join(', ')
+                  : '-'}
               </EuiDescriptionListDescription>
             </EuiDescriptionList>
           </EuiFlexItem>
