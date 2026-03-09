@@ -71,6 +71,7 @@ export const ROUTES = Object.freeze({
   CORRELATION_RULE_CREATE: '/correlations/create-rule',
   CORRELATION_RULE_EDIT: '/correlations/rule',
   INTEGRATIONS: '/integrations',
+  FILTERS: '/filters',
   INTEGRATIONS_CREATE: '/create-integration',
   PROMOTE: '/promote',
   LOG_TYPES: '/log-types',
