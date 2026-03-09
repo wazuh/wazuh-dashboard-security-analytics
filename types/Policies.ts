@@ -21,6 +21,7 @@ export interface PolicyDocument {
   documentation: string;
   id: string;
   integrations: string[];
+  filters: string[];
   modified: string;
   references: string[];
   root_decoder: string;

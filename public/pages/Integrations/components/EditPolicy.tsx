@@ -148,11 +148,20 @@ const EditForm: React.FC<{}> = withPolicyGuard({
     };
 
     const sanitizatePolicy = (details: PolicyDocument) => {
-      const completePolicy = {
-        ...details,
+      return {
+        title: details.title,
+        root_decoder: details.root_decoder,
+        integrations: details.integrations,
+        filters: details.filters ?? [],
+        enrichments: details.enrichments,
+        enabled: details.enabled,
+        index_unclassified_events: details.index_unclassified_events,
+        index_discarded_events: details.index_discarded_events,
+        author: details.author,
+        description: details.description,
+        documentation: details.documentation,
         references: details.references?.filter((ref) => ref.trim() !== '') ?? [],
       };
-      return completePolicy;
     };
 
     const fetchDecoders = async (search: string) => {
