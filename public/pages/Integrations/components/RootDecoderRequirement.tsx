@@ -107,7 +107,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
   );
 
   const updatePolicy = async () => {
-    const [success] = await DataStore.policies.updatePolicy(policyDocumentData.id, {
+    const [success] = await DataStore.policies.updatePolicy(space, {
       ...policyDocumentData,
       root_decoder: selected,
     });

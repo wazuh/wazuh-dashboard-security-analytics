@@ -190,7 +190,7 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
       ...policyDocumentData,
       integrations: validIntegrations.map(({ id }) => id),
     };
-    const [success] = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
+    const [success] = await DataStore.policies.updatePolicy(space, payload);
 
     if (success) {
       successNotificationToast(notifications, 'updated', `[${space}] policy`);

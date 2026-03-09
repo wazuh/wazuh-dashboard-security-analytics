@@ -59,7 +59,20 @@ export interface GetPolicyResponse {
   item?: PolicyItem;
 }
 
-export interface UpdatePolicyRequestBody {}
+export interface UpdatePolicyRequestBody {
+  title?: string;
+  root_decoder?: string | null;
+  integrations?: string[];
+  filters?: string[];
+  enrichments?: string[];
+  enabled: boolean;
+  index_unclassified_events: boolean;
+  index_discarded_events: boolean;
+  author?: string;
+  description?: string;
+  documentation?: string;
+  references?: string[];
+}
 
 export interface UpdatePolicyResponse {
   ok: boolean;

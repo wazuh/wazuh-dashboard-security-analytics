@@ -181,7 +181,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
 
     const onConfirm = async () => {
       const payload = sanitizatePolicy(policyDetails);
-      const [ok] = await DataStore.policies.updatePolicy(policyDocumentData.id, payload);
+      const [ok] = await DataStore.policies.updatePolicy(space, payload);
 
       if (ok) {
         successNotificationToast(notifications, 'updated', `[${space}] space`);
