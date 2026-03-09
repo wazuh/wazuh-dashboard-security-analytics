@@ -37,6 +37,7 @@ export const API: SecurityAnalyticsApi = {
   INTEGRATION_BASE: `${BASE_API_PATH}/integrations`,
   LOGTYPE_BASE: `${BASE_API_PATH}/logtype`,
   KVDBS_BASE: `${BASE_API_PATH}/kvdbs`,
+  FILTERS_BASE: `${BASE_API_PATH}/filters`,
   LOG_TEST_BASE: `${BASE_API_PATH}/logtest`,
   METRICS: `/api/security_analytics/stats`,
   GET_CORRELATION_ALERTS: `${BASE_API_PATH}/correlationAlerts`,
