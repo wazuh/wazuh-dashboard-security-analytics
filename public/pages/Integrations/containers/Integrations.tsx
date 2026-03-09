@@ -16,8 +16,11 @@ import {
   EuiContextMenuPanel,
   EuiPopover,
   EuiConfirmModal,
+  EuiTab,
+  EuiTabs,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { OVERVIEW_TAB, OverviewOverviewTabId } from '../utils/constants';
 import { DataSourceProps } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import {
@@ -39,6 +42,7 @@ import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { EditPolicy } from '../components/EditPolicy';
+import { FiltersTab } from '../../Filters/components/FiltersTab';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -71,6 +75,15 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [itemForAction, setItemForAction] = useState<ItemForAction | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [policyRefresh, setPolicyRefresh] = useState(0);
+  const initialTab: OverviewTabId =
+    history.location.pathname === ROUTES.FILTERS ? OVERVIEW_TAB.FILTERS : OVERVIEW_TAB.INTEGRATIONS;
+  const [selectedTab, setSelectedTab] = useState<OverviewTabId>(initialTab);
+
+  const onTabChange = (tab: OverviewTabId) => {
+    setSelectedTab(tab);
+    const path = tab === OVERVIEW_TAB.FILTERS ? ROUTES.FILTERS : ROUTES.INTEGRATIONS;
+    history.replace(path + history.location.search);
+  };
   const loadIntegrations = useCallback(async () => {
     setLoading(true);
 
@@ -405,7 +418,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               <EuiSpacer size="s"></EuiSpacer>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-            <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size={'s'} />
         </EuiFlexItem>
@@ -417,27 +429,46 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         refresh={policyRefresh}
       />
       <EuiSpacer size={'m'} />
-      <EuiCard textAlign="left" paddingSize="m" title="Integrations">
-        <EuiInMemoryTable
-          itemId={'id'}
-          items={integrations}
-          columns={getIntegrationsTableColumns({
-            showDetails: showIntegrationDetails,
-            setItemForAction,
-          })}
-          pagination={{
-            initialPageSize: 25,
-          }}
-          search={getIntegrationsTableSearchConfig()}
-          selection={{
-            onSelectionChange: onSelectionChange,
-            initialSelected: [],
-          }}
-          isSelectable={true}
-          sorting={true}
-          loading={loading}
-        />
-      </EuiCard>
+      <EuiTabs size="s">
+        <EuiTab
+          isSelected={selectedTab === OVERVIEW_TAB.INTEGRATIONS}
+          onClick={() => onTabChange(OVERVIEW_TAB.INTEGRATIONS)}
+        >
+          Integrations
+        </EuiTab>
+        <EuiTab
+          isSelected={selectedTab === OVERVIEW_TAB.FILTERS}
+          onClick={() => onTabChange(OVERVIEW_TAB.FILTERS)}
+        >
+          Filters
+        </EuiTab>
+      </EuiTabs>
+      <EuiSpacer size={'m'} />
+      {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
+        <EuiCard textAlign="left" paddingSize="m" title="Integrations">
+          <EuiInMemoryTable
+            itemId={'id'}
+            items={integrations}
+            columns={getIntegrationsTableColumns({
+              showDetails: showIntegrationDetails,
+              setItemForAction,
+            })}
+            pagination={{
+              initialPageSize: 25,
+            }}
+            search={getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] })}
+            selection={{
+              onSelectionChange: onSelectionChange,
+              initialSelected: [],
+            }}
+            isSelectable={true}
+            sorting={true}
+            loading={loading}
+          />
+        </EuiCard>
+      ) : (
+        <FiltersTab spaceFilter={spaceFilter} notifications={notifications} />
+      )}
     </>
   );
 };

@@ -190,6 +190,7 @@ const navItemIdByRoute: { [route: string]: Navigation } = {
   // Wazuh: hide Log types and add Wazuh integrations route mapping.
   // [ROUTES.LOG_TYPES]: Navigation.LogTypes,
   [ROUTES.INTEGRATIONS]: Navigation.Overview,
+  [ROUTES.FILTERS]: Navigation.Overview,
   [ROUTES.DECODERS]: Navigation.Decoders,
   [ROUTES.KVDBS]: Navigation.KVDBS,
   [ROUTES.LOG_TEST]: Navigation.LogTest,
@@ -1073,6 +1074,18 @@ export default class Main extends Component<MainProps, MainState> {
                                     />
                                     <Route
                                       path={`${ROUTES.INTEGRATIONS}`}
+                                      render={(props: RouteComponentProps<any, any, any>) => {
+                                        return (
+                                          <Integrations
+                                            notifications={core?.notifications}
+                                            {...props}
+                                            dataSource={selectedDataSource}
+                                          />
+                                        );
+                                      }}
+                                    />
+                                    <Route
+                                      path={ROUTES.FILTERS}
                                       render={(props: RouteComponentProps<any, any, any>) => {
                                         return (
                                           <Integrations
