@@ -22,10 +22,20 @@ export interface DetectorSchedule {
   };
 }
 
+export type DetectorIntegrationSpace = 'standard' | 'custom';
+
+export interface DetectorIntegrationSelection {
+  detectorType: string;
+  integrationId?: string;
+  integrationSpace: DetectorIntegrationSpace;
+}
+
 export interface Detector {
   id?: string;
   type: string;
   detector_type: string;
+  // This metadata is sent ahead of backend support so the API can persist the detector/integration link.
+  integration_id?: string;
   name: string;
   enabled: boolean;
   createdBy: string;

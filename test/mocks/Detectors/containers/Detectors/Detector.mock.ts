@@ -13,6 +13,7 @@ export default {
   id: 'detector_id_1',
   type: 'detector',
   detector_type: 'detector_type',
+  integration_id: 'integration_id_1',
   name: 'detector_name',
   enabled: true,
   createdBy: 'someone',

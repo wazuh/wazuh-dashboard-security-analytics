@@ -4,7 +4,7 @@
  */
 
 import { SimpleSavedObject } from 'opensearch-dashboards/public';
-import { Detector, LogType, ServerResponse } from '../../types';
+import { Detector, DetectorIntegrationSpace, LogType, ServerResponse } from '../../types';
 import { DetectorInput, PeriodSchedule } from '../../models/interfaces';
 import { DetectorHit } from '../../server/models/interfaces';
 import _ from 'lodash';
@@ -242,6 +242,8 @@ export const EMPTY_DEFAULT_DETECTOR_INPUT: DetectorInput = {
     custom_rules: [],
   },
 };
+
+export const DEFAULT_DETECTOR_INTEGRATION_SPACE: DetectorIntegrationSpace = 'standard';
 
 export const EMPTY_DEFAULT_DETECTOR: Detector = {
   type: 'detector',
