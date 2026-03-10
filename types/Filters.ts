@@ -45,3 +45,29 @@ export interface FilterSearchResponse {
     hits: { _id: string; _source: FilterSource }[];
   };
 }
+
+export interface FilterResource {
+  name: string;
+  enabled: boolean;
+  check: string;
+  type: string;
+  metadata?: {
+    description?: string;
+    author?: { name?: string; email?: string; url?: string };
+  };
+}
+
+export interface CreateFilterPayload {
+  space: string;
+  resource: FilterResource;
+}
+
+export interface UpdateFilterPayload {
+  space: string;
+  resource: FilterResource;
+}
+
+export interface CUDFilterResponse {
+  message: string;
+  status: number;
+}
