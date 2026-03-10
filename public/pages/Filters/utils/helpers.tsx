@@ -4,9 +4,11 @@
  */
 
 import React from 'react';
-import { EuiLink, EuiButtonIcon } from '@elastic/eui';
+import { EuiLink } from '@elastic/eui';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { FilterItem } from '../../../../types';
+import { SPACE_ACTIONS } from '../../../../common/constants';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 
 export interface FilterTableItem {
   id: string;
@@ -26,7 +28,12 @@ export const toFilterTableItem = (item: FilterItem): FilterTableItem => ({
   _source: item,
 });
 
-export const getFiltersTableColumns = (onViewDetails: (item: FilterItem) => void) => [
+export const getFiltersTableColumns = (
+  spaceFilter: string,
+  onViewDetails: (item: FilterItem) => void,
+  onEdit: (item: FilterItem) => void,
+  onDelete: (item: FilterItem) => void
+) => [
   {
     field: 'name',
     name: 'Name',
@@ -56,13 +63,28 @@ export const getFiltersTableColumns = (onViewDetails: (item: FilterItem) => void
     name: 'Actions',
     actions: [
       {
-        render: (row: FilterTableItem) => (
-          <EuiButtonIcon
-            aria-label="Inspect filter"
-            iconType="inspect"
-            onClick={() => onViewDetails(row._source)}
-          />
-        ),
+        name: 'View',
+        description: 'View filter details',
+        type: 'icon',
+        icon: 'inspect',
+        onClick: (row: FilterTableItem) => onViewDetails(row._source),
+      },
+      {
+        name: 'Edit',
+        description: 'Edit filter',
+        type: 'icon',
+        icon: 'pencil',
+        onClick: (row: FilterTableItem) => onEdit(row._source),
+        available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT),
+      },
+      {
+        name: 'Delete',
+        description: 'Delete filter',
+        type: 'icon',
+        icon: 'trash',
+        color: 'danger',
+        onClick: (row: FilterTableItem) => onDelete(row._source),
+        available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
       },
     ],
   },

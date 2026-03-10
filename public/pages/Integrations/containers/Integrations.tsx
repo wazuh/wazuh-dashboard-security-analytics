@@ -74,6 +74,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [selectedItems, setSelectedItems] = useState<IntegrationTableItem[]>([]);
   const [itemForAction, setItemForAction] = useState<ItemForAction | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isOverviewActionsOpen, setIsOverviewActionsOpen] = useState<boolean>(false);
   const [policyRefresh, setPolicyRefresh] = useState(0);
   const initialTab: OverviewTabId =
     history.location.pathname === ROUTES.FILTERS ? OVERVIEW_TAB.FILTERS : OVERVIEW_TAB.INTEGRATIONS;
@@ -147,10 +148,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     SPACE_ACTIONS.REARRANGE_INTEGRATIONS
   );
   const onEditPolicy = () => {
-    setItemForAction({
-      action: SPACE_ACTIONS.EDIT_POLICY,
-    });
-    setIsPopoverOpen(false);
+    setItemForAction({ action: SPACE_ACTIONS.EDIT_POLICY });
   };
 
   const deleteSelectedIntegrations = useCallback(async () => {
@@ -212,113 +210,124 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     notifications,
   ]);
 
-  const panels = [
-    <EuiContextMenuItem
-      key="create"
-      icon="plusInCircle"
-      href={`#${ROUTES.INTEGRATIONS_CREATE}`}
-      disabled={isCreateActionDisabled}
-      toolTipContent={
-        isCreateActionDisabled
-          ? `Integration can only be created in the spaces: ${getSpacesAllowAction(
-              SPACE_ACTIONS.CREATE
-            ).join(', ')}`
-          : undefined
-      }
-    >
-      Create
-    </EuiContextMenuItem>,
-    <EuiContextMenuItem
-      key="promote"
-      icon="share"
-      onClick={() => {
-        history.push({
-          pathname: `${ROUTES.PROMOTE}`,
-          search: `?space=${spaceFilter}`,
-        });
-      }}
-      disabled={isPromoteActionDisabled}
-      toolTipContent={
-        isPromoteActionDisabled
-          ? `Integration can only be promoted in the spaces: ${getSpacesAllowAction(
-              SPACE_ACTIONS.PROMOTE
-            ).join(', ')}`
-          : undefined
-      }
-    >
-      Promote
-    </EuiContextMenuItem>,
-    <EuiContextMenuItem
-      key="delete"
-      icon="trash"
-      onClick={() => {
-        setItemForAction({ action: DELETE_SELECTED_ACTION });
-        setIsPopoverOpen(false);
-      }}
-      disabled={isDeleteSelectedActionDisabled}
-      toolTipContent={
-        isDeleteActionDisabledBySpace
-          ? `Integrations can only be deleted in the space: ${getSpacesAllowAction(
-              SPACE_ACTIONS.DELETE
-            ).join(', ')}`
-          : selectedItems.length === 0
-          ? 'Select integrations to delete.'
-          : selectedItemsWithoutRelatedEntities.length === 0
-          ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
-          : selectedItemsWithRelatedEntitiesCount > 0
-          ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
-              selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
-            } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
-          : undefined
-      }
-    >
-      Delete selected ({selectedItems.length})
-    </EuiContextMenuItem>,
-    <EuiContextMenuItem
-      key="rearrange_integrations"
-      icon="sortable"
-      onClick={() => {
-        setItemForAction({
-          action: SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
-        });
-        setIsPopoverOpen(false);
-      }}
-      disabled={isRearrangeIntegrationsActionDisabled}
-      toolTipContent={
-        isRearrangeIntegrationsActionDisabled
-          ? `Integration can only be rearranged in the spaces: ${getSpacesAllowAction(
-              SPACE_ACTIONS.REARRANGE_INTEGRATIONS
-            ).join(', ')}`
-          : undefined
-      }
-    >
-      Rearrange
-    </EuiContextMenuItem>,
-  ];
-
-  const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
-
-  const actionsButton = (
+  const buildActionsPopOver = (
+    id: string,
+    isOpen: boolean,
+    onToggle: () => void,
+    items: React.ReactElement[]
+  ) => (
     <EuiPopover
-      id={'integrationsActionsPopover'}
+      id={id}
       button={
         <EuiSmallButton
           iconType={'arrowDown'}
           iconSide={'right'}
-          onClick={handlerShowActionsButton}
-          data-test-subj={'integrationsActionsButton'}
+          onClick={onToggle}
+          data-test-subj={id}
         >
           Actions
         </EuiSmallButton>
       }
-      isOpen={isPopoverOpen}
-      closePopover={handlerShowActionsButton}
+      isOpen={isOpen}
+      closePopover={onToggle}
       panelPaddingSize={'none'}
       anchorPosition={'downLeft'}
-      data-test-subj={'integrationsActionsPopover'}
     >
-      <EuiContextMenuPanel items={panels} size="s" />
+      <EuiContextMenuPanel items={items} size="s" />
     </EuiPopover>
+  );
+
+  const overviewActionsButton = buildActionsPopOver(
+    'overviewActionsPopover',
+    isOverviewActionsOpen,
+    () => setIsOverviewActionsOpen((prev) => !prev),
+    [
+      <EuiContextMenuItem
+        key="promote"
+        icon="share"
+        onClick={() => {
+          history.push({ pathname: ROUTES.PROMOTE, search: `?space=${spaceFilter}` });
+          setIsOverviewActionsOpen(false);
+        }}
+        disabled={isPromoteActionDisabled}
+        toolTipContent={
+          isPromoteActionDisabled
+            ? `Integration can only be promoted in the spaces: ${getSpacesAllowAction(
+                SPACE_ACTIONS.PROMOTE
+              ).join(', ')}`
+            : undefined
+        }
+      >
+        Promote
+      </EuiContextMenuItem>,
+    ]
+  );
+
+  const actionsButton = buildActionsPopOver(
+    'integrationsActionsPopover',
+    isPopoverOpen,
+    () => setIsPopoverOpen((prev) => !prev),
+    [
+      <EuiContextMenuItem
+        key="create"
+        icon="plusInCircle"
+        href={`#${ROUTES.INTEGRATIONS_CREATE}`}
+        disabled={isCreateActionDisabled}
+        toolTipContent={
+          isCreateActionDisabled
+            ? `Integration can only be created in the spaces: ${getSpacesAllowAction(
+                SPACE_ACTIONS.CREATE
+              ).join(', ')}`
+            : undefined
+        }
+      >
+        Create
+      </EuiContextMenuItem>,
+      <EuiContextMenuItem
+        key="delete"
+        icon="trash"
+        onClick={() => {
+          setItemForAction({ action: DELETE_SELECTED_ACTION });
+          setIsPopoverOpen(false);
+        }}
+        disabled={isDeleteSelectedActionDisabled}
+        toolTipContent={
+          isDeleteActionDisabledBySpace
+            ? `Integrations can only be deleted in the space: ${getSpacesAllowAction(
+                SPACE_ACTIONS.DELETE
+              ).join(', ')}`
+            : selectedItems.length === 0
+            ? 'Select integrations to delete.'
+            : selectedItemsWithoutRelatedEntities.length === 0
+            ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
+            : selectedItemsWithRelatedEntitiesCount > 0
+            ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
+                selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
+              } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
+            : undefined
+        }
+      >
+        Delete selected ({selectedItems.length})
+      </EuiContextMenuItem>,
+      <EuiContextMenuItem
+        key="rearrange_integrations"
+        icon="sortable"
+        onClick={() => {
+          setItemForAction({ action: SPACE_ACTIONS.REARRANGE_INTEGRATIONS });
+          setIsPopoverOpen(false);
+        }}
+        disabled={isRearrangeIntegrationsActionDisabled}
+        toolTipContent={
+          isRearrangeIntegrationsActionDisabled
+            ? `Integration can only be rearranged in the spaces: ${getSpacesAllowAction(
+                SPACE_ACTIONS.REARRANGE_INTEGRATIONS
+              ).join(', ')}`
+            : undefined
+        }
+      >
+        Rearrange
+      </EuiContextMenuItem>,
+    ]
   );
 
   useEffect(() => {
@@ -417,7 +426,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               </EuiText>
               <EuiSpacer size="s"></EuiSpacer>
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
+              <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
+              <EuiFlexItem grow={false}>{overviewActionsButton}</EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size={'s'} />
         </EuiFlexItem>
