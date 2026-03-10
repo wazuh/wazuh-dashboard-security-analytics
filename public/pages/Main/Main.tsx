@@ -106,6 +106,7 @@ import { BrowserServices } from '../../models/interfaces';
 import { CHANNEL_TYPES } from '../CreateDetector/components/ConfigureAlerts/utils/constants';
 import { PromoteIntegration } from '../Integrations/containers/PromoteIntegration';
 import { DecoderFormPage } from '../Decoders/containers/DecoderFormPage';
+import { FilterFormPage } from '../Filters/containers/FilterFormPage';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
@@ -155,6 +156,8 @@ const HIDDEN_NAV_ROUTES: string[] = [
   ROUTES.DECODERS_EDIT,
   ROUTES.KVDBS_CREATE,
   ROUTES.KVDBS_EDIT,
+  ROUTES.FILTERS_CREATE,
+  ROUTES.FILTERS_EDIT,
 ];
 
 interface MainProps extends RouteComponentProps {
@@ -1083,6 +1086,32 @@ export default class Main extends Component<MainProps, MainState> {
                                           />
                                         );
                                       }}
+                                    />
+                                    <Route
+                                      path={ROUTES.FILTERS_CREATE}
+                                      render={(props: RouteComponentProps) => (
+                                        <FilterFormPage
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="create"
+                                          history={props.history}
+                                        />
+                                      )}
+                                    />
+                                    <Route
+                                      path={`${ROUTES.FILTERS_EDIT}/:id`}
+                                      render={(
+                                        props: RouteComponentProps<{
+                                          id: string;
+                                        }>
+                                      ) => (
+                                        <FilterFormPage
+                                          {...props}
+                                          notifications={core?.notifications}
+                                          action="edit"
+                                          history={props.history}
+                                        />
+                                      )}
                                     />
                                     <Route
                                       path={ROUTES.FILTERS}
