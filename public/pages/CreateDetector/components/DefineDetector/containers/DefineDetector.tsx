@@ -21,18 +21,23 @@ import { DetectorSchedule } from '../components/DetectorSchedule/DetectorSchedul
 import { RuleItem } from '../components/DetectionRules/types/interfaces';
 import { CreateDetectorRulesState } from '../components/DetectionRules/DetectionRules';
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { logTypesWithDashboards, THREAT_INTEL_ENABLED } from '../../../../../utils/constants';
+import {
+  DEFAULT_DETECTOR_INTEGRATION_SPACE,
+  logTypesWithDashboards,
+  THREAT_INTEL_ENABLED,
+} from '../../../../../utils/constants';
 import {
   CreateDetectorSteps,
   DataSourceProps,
   Detector,
   DetectorCreationStep,
+  DetectorIntegrationSelection,
+  DetectorIntegrationSpace,
   FieldMapping,
   SecurityAnalyticsContextType,
 } from '../../../../../../types';
 import { ConfigureFieldMappingProps } from '../../ConfigureFieldMapping/containers/ConfigureFieldMapping';
 import { ContentPanel } from '../../../../../components/ContentPanel';
-import { ruleTypes } from '../../../../Rules/utils/constants';
 import { ThreatIntelligence } from '../components/ThreatIntelligence/ThreatIntelligence';
 import { addDetectionType, removeDetectionType } from '../../../../../utils/helpers';
 
@@ -45,7 +50,9 @@ interface DefineDetectorProps extends RouteComponentProps, DataSourceProps {
   rulesState: CreateDetectorRulesState;
   notifications: NotificationsStart;
   loadingRules?: boolean;
+  integrationSpace: DetectorIntegrationSpace;
   changeDetector: (detector: Detector) => void;
+  changeIntegrationSpace: (integrationSpace: DetectorIntegrationSpace) => void;
   updateDataValidState: (step: DetectorCreationStep, isValid: boolean) => void;
   onPageChange: (page: { index: number; size: number }) => void;
   onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
@@ -61,9 +68,6 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
   public static contextType?:
     | React.Context<SecurityAnalyticsContextType | null>
     | undefined = SecurityAnalyticsContext;
-  private standardLogTypes = new Set(
-    ruleTypes.filter((ruleType) => ruleType.isStandard).map(({ value }) => value)
-  );
 
   constructor(props: DefineDetectorProps) {
     super(props);
@@ -88,6 +92,7 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
     const isDataValid =
       !!detector.name &&
       !!detector.detector_type &&
+      !!detector.integration_id &&
       detector.inputs[0].detector_input.indices.length >= MIN_NUM_DATA_SOURCES &&
       !!detector.schedule.period.interval;
 
@@ -142,11 +147,21 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
     this.context.metrics.detectorMetricsManager.sendMetrics(CreateDetectorSteps.sourceSelected);
   };
 
-  onDetectorTypeChange = (detectorType: string) => {
+  onDetectorSelectionChange = ({
+    detectorType,
+    integrationId,
+    integrationSpace,
+  }: DetectorIntegrationSelection) => {
+    this.props.changeIntegrationSpace(integrationSpace);
+
     const newDetector: Detector = {
       ...this.state.detector,
       detector_type: detectorType,
-      threat_intel_enabled: false,
+      integration_id: integrationId,
+      threat_intel_enabled:
+        integrationSpace === 'standard' && detectorType
+          ? this.state.detector.threat_intel_enabled
+          : false,
     };
 
     this.updateDetectorCreationState(newDetector);
@@ -190,11 +205,13 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
       isEdit,
       fieldMappings,
       fieldMappingService,
+      integrationSpace,
       rulesState,
       replaceFieldMappings,
     } = this.props;
     const { detector } = this.state;
-    const { name, inputs, detector_type, threat_intel_enabled } = this.props.detector;
+    const { name, inputs, detector_type, threat_intel_enabled, integration_id } =
+      this.props.detector;
     const { description, indices } = inputs[0].detector_input;
     const configureFieldMappingProps: ConfigureFieldMappingProps = {
       ...this.props,
@@ -238,10 +255,12 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
 
         <DetectorType
           detectorType={detector_type}
+          integrationId={integration_id}
+          integrationSpace={integrationSpace || DEFAULT_DETECTOR_INTEGRATION_SPACE}
           rulesState={this.props.rulesState}
           loadingRules={this.props.loadingRules}
           configureFieldMappingProps={configureFieldMappingProps}
-          onDetectorTypeChange={this.onDetectorTypeChange}
+          onDetectorSelectionChange={this.onDetectorSelectionChange}
           onAllRulesToggle={this.props.onAllRulesToggle}
           onPageChange={this.props.onPageChange}
           onRuleToggle={this.props.onRuleToggle}
@@ -249,7 +268,7 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
 
         <EuiSpacer size={'m'} />
 
-        {THREAT_INTEL_ENABLED && this.standardLogTypes.has(detector_type) && (
+        {THREAT_INTEL_ENABLED && integrationSpace === 'standard' && !!detector_type && (
           <ThreatIntelligence
             isEdit={isEdit}
             threatIntelChecked={threat_intel_enabled}

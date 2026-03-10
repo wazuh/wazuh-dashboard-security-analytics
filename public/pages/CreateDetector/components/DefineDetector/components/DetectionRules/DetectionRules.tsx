@@ -151,8 +151,8 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
                 <p>
                   {/* Wazuh: rename 'detection rules' to 'rules' */}
                   {detectorType
-                    ? 'There are no applicable rules for the selected log type. Consider creating new rules.'
-                    : 'Select a log type to be able to select rules.'}
+                    ? 'There are no applicable rules for the selected integration. Consider creating new rules.'
+                    : 'Select an integration to be able to select rules.'}
                 </p>
               </EuiText>
             }

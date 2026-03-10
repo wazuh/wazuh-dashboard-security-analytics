@@ -16,7 +16,12 @@ import {
 } from '@elastic/eui';
 import DefineDetector from '../components/DefineDetector/containers/DefineDetector';
 import { createDetectorSteps, PENDING_DETECTOR_ID } from '../utils/constants';
-import { BREADCRUMBS, EMPTY_DEFAULT_DETECTOR, ROUTES } from '../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_DETECTOR_INTEGRATION_SPACE,
+  EMPTY_DEFAULT_DETECTOR,
+  ROUTES,
+} from '../../../utils/constants';
 // Wazuh: hide Configure Alerts step in detector creation wizard.
 // import ConfigureAlerts from '../components/ConfigureAlerts';
 import { FieldMapping } from '../../../../models/interfaces';
@@ -36,6 +41,7 @@ import {
   DataSourceProps,
   Detector,
   DetectorCreationStep,
+  DetectorIntegrationSpace,
 } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
@@ -53,6 +59,7 @@ interface CreateDetectorProps extends RouteComponentProps, DataSourceProps, Data
 export interface CreateDetectorState {
   currentStep: DetectorCreationStep;
   detector: Detector;
+  integrationSpace: DetectorIntegrationSpace;
   fieldMappings: FieldMapping[];
   stepDataValid: { [step in DetectorCreationStep | string]: boolean };
   creatingDetector: boolean;
@@ -81,6 +88,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
         detector_type: '',
         triggers: [],
       },
+      integrationSpace: DEFAULT_DETECTOR_INTEGRATION_SPACE,
       fieldMappings: [],
       stepDataValid: {
         [DetectorCreationStep.DEFINE_DETECTOR]: false,
@@ -126,6 +134,10 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
 
   changeDetector = (detector: Detector) => {
     this.setState({ detector: detector });
+  };
+
+  changeIntegrationSpace = (integrationSpace: DetectorIntegrationSpace) => {
+    this.setState({ integrationSpace });
   };
 
   replaceFieldMappings = (fieldMappings: FieldMapping[]): void => {
@@ -221,6 +233,32 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     this.setState({
       loadingRules: true,
     });
+
+    if (!detector_type) {
+      this.setState({
+        rulesState: {
+          ...this.state.rulesState,
+          allRules: [],
+          page: {
+            index: 0,
+          },
+        },
+        detector: {
+          ...this.state.detector,
+          inputs: [
+            {
+              detector_input: {
+                ...this.state.detector.inputs[0].detector_input,
+                pre_packaged_rules: [],
+                custom_rules: [],
+              },
+            },
+          ],
+        },
+        loadingRules: false,
+      });
+      return;
+    }
 
     const allRules = await DataStore.rules.getAllRules({
       'rule.category': [detector_type],
@@ -335,6 +373,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
           <DefineDetector
             {...this.props}
             detector={this.state.detector}
+            integrationSpace={this.state.integrationSpace}
             indexService={services.indexService}
             fieldMappingService={services.fieldMappingService}
             fieldMappings={this.state.fieldMappings}
@@ -344,6 +383,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
             onAllRulesToggle={this.onAllRulesToggle}
             onPageChange={this.onPageChange}
             changeDetector={this.changeDetector}
+            changeIntegrationSpace={this.changeIntegrationSpace}
             replaceFieldMappings={this.replaceFieldMappings}
             updateDataValidState={this.updateDataValidState}
           />

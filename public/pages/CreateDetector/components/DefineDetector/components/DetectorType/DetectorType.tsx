@@ -3,129 +3,76 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { Component } from 'react';
-import { EuiCompressedFormRow, EuiSpacer, EuiCompressedComboBox, EuiText } from '@elastic/eui';
-import { FormFieldHeader } from '../../../../../../components/FormFieldHeader/FormFieldHeader';
+import React from 'react';
+import { EuiCompressedFormRow, EuiSpacer, EuiText } from '@elastic/eui';
 import { CreateDetectorRulesState, DetectionRules } from '../DetectionRules/DetectionRules';
 import { RuleItem } from '../DetectionRules/types/interfaces';
-import { ruleTypes } from '../../../../../Rules/utils/constants';
 import ConfigureFieldMapping from '../../../ConfigureFieldMapping';
 import { ConfigureFieldMappingProps } from '../../../ConfigureFieldMapping/containers/ConfigureFieldMapping';
-import { getLogTypeOptions } from '../../../../../../utils/helpers';
-import { getLogTypeLabel } from '../../../../../LogTypes/utils/helpers';
+import { DetectorIntegrationSelector } from '../../../../../../components/DetectorIntegrationSelector';
+import { DetectorIntegrationSelection, DetectorIntegrationSpace } from '../../../../../../../types';
 
 interface DetectorTypeProps {
   detectorType: string;
+  integrationId?: string;
+  integrationSpace: DetectorIntegrationSpace;
   rulesState: CreateDetectorRulesState;
   configureFieldMappingProps: ConfigureFieldMappingProps;
   loadingRules?: boolean;
-  onDetectorTypeChange: (detectorType: string) => void;
+  onDetectorSelectionChange: (selection: DetectorIntegrationSelection) => void;
   onPageChange: (page: { index: number; size: number }) => void;
   onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
   onAllRulesToggle: (enabled: boolean) => void;
 }
 
-interface DetectorTypeState {
-  fieldTouched: boolean;
-  detectorTypeIds: string[];
-}
+const DetectorType: React.FC<DetectorTypeProps> = ({
+  detectorType,
+  integrationId,
+  integrationSpace,
+  rulesState,
+  configureFieldMappingProps,
+  loadingRules,
+  onDetectorSelectionChange,
+  onPageChange,
+  onRuleToggle,
+  onAllRulesToggle,
+}) => {
+  return (
+    <>
+      <EuiText size="s">
+        <h3>Rules</h3> {/* Wazuh: rename 'Detection rules' to 'Rules' */}
+      </EuiText>
+      <EuiText size="s">
+        <p>
+          The rules are automatically populated based on your selected integration. Threat
+          intelligence based detection can be enabled for standard integrations.
+        </p>
+      </EuiText>
+      <EuiSpacer />
 
-export default class DetectorType extends Component<DetectorTypeProps, DetectorTypeState> {
-  private detectorTypeOptions: { value: string; label: string }[] = [];
-  constructor(props: DetectorTypeProps) {
-    super(props);
+      <DetectorIntegrationSelector
+        detectorType={detectorType}
+        integrationId={integrationId}
+        integrationSpace={integrationSpace}
+        onSelectionChange={onDetectorSelectionChange}
+      />
 
-    this.state = {
-      fieldTouched: false,
-      detectorTypeIds: [],
-    };
-  }
+      <EuiCompressedFormRow fullWidth={true}>
+        <DetectionRules
+          detectorType={detectorType}
+          rulesState={rulesState}
+          loading={loadingRules}
+          onPageChange={onPageChange}
+          onRuleToggle={onRuleToggle}
+          onAllRulesToggle={onAllRulesToggle}
+        />
+      </EuiCompressedFormRow>
 
-  async componentDidMount(): Promise<void> {
-    this.detectorTypeOptions = await getLogTypeOptions();
-    this.setState({
-      detectorTypeIds: ruleTypes.map((option) => option.value),
-    });
-  }
+      <EuiCompressedFormRow fullWidth={true}>
+        <ConfigureFieldMapping {...configureFieldMappingProps} />
+      </EuiCompressedFormRow>
+    </>
+  );
+};
 
-  onChange = (detectorType: string) => {
-    this.setState({ fieldTouched: true });
-    this.props.onDetectorTypeChange(detectorType);
-  };
-
-  isInvalid = () => {
-    const { fieldTouched } = this.state;
-    return fieldTouched && !(this.getErrorMessage().length < 1);
-  };
-
-  getErrorMessage = () => {
-    const { detectorType } = this.props;
-    if (detectorType.length < 1) return 'Select a detector type.';
-    if (!this.state.detectorTypeIds.includes(detectorType)) {
-      console.warn(`Unsupported detector type found: ${detectorType}`);
-      return 'Unsupported detector type.';
-    }
-    return '';
-  };
-
-  render() {
-    const { detectorType } = this.props;
-
-    return (
-      <>
-        <EuiText size="s">
-          <h3>Rules</h3> {/* Wazuh: rename 'Detection rules' to 'Rules' */}
-        </EuiText>
-        <EuiText size="s">
-          {/* Replace log type with integration by Wazuh */}
-          <p>
-            The rules are automatically populated based on your selected integration. Threat
-            intelligence based detection can be enabled for standard integrations.{' '}
-          </p>
-        </EuiText>
-        <EuiSpacer />
-        <EuiCompressedFormRow
-          label={
-            <div>
-              {/* Replace log type with integration by Wazuh */}
-              <FormFieldHeader headerTitle={'Integration'} />
-              <EuiSpacer size={'s'} />
-            </div>
-          }
-          fullWidth={true}
-          isInvalid={this.isInvalid()}
-          error={this.getErrorMessage()}
-        >
-          <EuiCompressedComboBox
-            isInvalid={this.isInvalid()}
-            placeholder="Select integration" // Changed Log Type to Integration by Wazuh
-            data-test-subj={'log_type_dropdown'}
-            options={this.detectorTypeOptions}
-            singleSelection={{ asPlainText: true }}
-            onChange={(e) => {
-              this.onChange(e[0]?.value || '');
-            }}
-            selectedOptions={
-              detectorType ? [{ value: detectorType, label: getLogTypeLabel(detectorType) }] : []
-            }
-          />
-        </EuiCompressedFormRow>
-
-        <EuiCompressedFormRow fullWidth={true}>
-          <DetectionRules
-            detectorType={detectorType}
-            rulesState={this.props.rulesState}
-            loading={this.props.loadingRules}
-            onPageChange={this.props.onPageChange}
-            onRuleToggle={this.props.onRuleToggle}
-            onAllRulesToggle={this.props.onAllRulesToggle}
-          />
-        </EuiCompressedFormRow>
-
-        <EuiCompressedFormRow fullWidth={true}>
-          <ConfigureFieldMapping {...this.props.configureFieldMappingProps} />
-        </EuiCompressedFormRow>
-      </>
-    );
-  }
-}
+export default DetectorType;
