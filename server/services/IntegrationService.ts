@@ -37,6 +37,7 @@ const DECODERS_INDEX = '.cti-decoders';
 const KVDBS_INDEX = '.cti-kvdbs';
 const RULES_INDEX = '.cti-rules';
 const POLICIES_INDEX = '.cti-policies';
+const FILTERS_INDEX = '.engine-filters';
 
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
@@ -205,23 +206,23 @@ export class IntegrationService extends MDSEnabledClientService {
               // This part of the query is to get the name of the entities that are going to be removed from the space, so we need to look into the space we are promoting to, as they are not present in the current space
               ...(idsToSpace.length > 0
                 ? [
-                    {
-                      bool: {
-                        must: [
-                          {
-                            terms: {
-                              [idProp]: idsToSpace,
-                            },
+                  {
+                    bool: {
+                      must: [
+                        {
+                          terms: {
+                            [idProp]: idsToSpace,
                           },
-                          {
-                            term: {
-                              'space.name': toSpace,
-                            },
+                        },
+                        {
+                          term: {
+                            'space.name': toSpace,
                           },
-                        ],
-                      },
+                        },
+                      ],
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
             minimum_should_match: 1,
@@ -316,7 +317,7 @@ export class IntegrationService extends MDSEnabledClientService {
           client,
           promoteSpace.changes.rules,
           {
-            index: RULES_INDEX, // TODO: replace by the constant when this is implemented
+            index: RULES_INDEX,
             space,
             nameProp: 'document.title',
             idProp: 'document.id',
@@ -324,15 +325,14 @@ export class IntegrationService extends MDSEnabledClientService {
         );
       }
 
-      if (false && promoteSpace.changes.filters.length > 0) {
-        // TODO: enable this and adapt if required when the filters are implemented
+      if (promoteSpace.changes.filters.length > 0) {
         availablePromotions['filters'] = await this.resolvePromoteEntity(
           client,
           promoteSpace.changes.filters,
           {
-            index: '.cti-filters', // TODO: replace by the constant when this is implemented
+            index: FILTERS_INDEX,
             space,
-            nameProp: 'document.title',
+            nameProp: 'document.name',
             idProp: 'document.id',
           }
         );
