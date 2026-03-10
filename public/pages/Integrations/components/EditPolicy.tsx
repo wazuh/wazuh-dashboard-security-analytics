@@ -104,7 +104,9 @@ const EditForm: React.FC<{}> = withPolicyGuard({
 
     // Flag to determine if the space allows editing non-enrichments fields
     const canEditPolicy = actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY);
-    const canEditEnrichments = actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_ENRICHMENTS);
+    const canEditToggles =
+      canEditPolicy || actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS);
+    const canEditEnrichments = actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS);
 
     const handleEnrichmentToggle = useCallback((value: EnrichmentType) => {
       setSelectedEnrichments((prev) => {
@@ -298,8 +300,8 @@ const EditForm: React.FC<{}> = withPolicyGuard({
               renderTextValue(policyDetails.documentation)
             )}
           </EuiCompressedFormRow>
-          <EuiCompressedFormRow label={!canEditPolicy ? 'Enabled' : undefined}>
-            {canEditPolicy ? (
+          <EuiCompressedFormRow label={!canEditToggles ? 'Enabled' : undefined}>
+            {canEditToggles ? (
               <EuiSwitch
                 label="Enabled"
                 compressed
@@ -317,8 +319,8 @@ const EditForm: React.FC<{}> = withPolicyGuard({
               renderBooleanValue(policyDetails.enabled)
             )}
           </EuiCompressedFormRow>
-          <EuiCompressedFormRow label={!canEditPolicy ? 'Index unclassified events' : undefined}>
-            {canEditPolicy ? (
+          <EuiCompressedFormRow label={!canEditToggles ? 'Index unclassified events' : undefined}>
+            {canEditToggles ? (
               <EuiSwitch
                 label="Index unclassified events"
                 compressed
@@ -336,8 +338,8 @@ const EditForm: React.FC<{}> = withPolicyGuard({
               renderBooleanValue(policyDetails.index_unclassified_events)
             )}
           </EuiCompressedFormRow>
-          <EuiCompressedFormRow label={!canEditPolicy ? 'Index discarded events' : undefined}>
-            {canEditPolicy ? (
+          <EuiCompressedFormRow label={!canEditToggles ? 'Index discarded events' : undefined}>
+            {canEditToggles ? (
               <EuiSwitch
                 label="Index discarded events"
                 compressed
