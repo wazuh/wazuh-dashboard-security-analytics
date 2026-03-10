@@ -17,6 +17,7 @@ import { DecoderSource, PolicyDocument, SearchPolicyOptions, Space } from '../..
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 
 const truncateStyle: React.CSSProperties = {
   display: '-webkit-box',
@@ -115,7 +116,8 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
               {(actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) ||
-                actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_ENRICHMENTS)) && (
+                actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS) ||
+                actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS)) && (
                 <EuiToolTip content={'Edit space details'}>
                   <EuiButtonIcon
                     onClick={onEditPolicy}
@@ -160,7 +162,9 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
                   <EuiDescriptionListTitle>Enrichments</EuiDescriptionListTitle>
                   <EuiDescriptionListDescription>
                     {policyDocumentData?.enrichments && policyDocumentData.enrichments.length > 0
-                      ? policyDocumentData.enrichments.join(', ')
+                      ? policyDocumentData.enrichments
+                          .map((e) => ENRICHMENT_LABELS[e as EnrichmentType] ?? e)
+                          .join(', ')
                       : '-'}
                   </EuiDescriptionListDescription>
                 </EuiDescriptionList>

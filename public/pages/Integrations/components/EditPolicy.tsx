@@ -32,7 +32,7 @@ import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validatio
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
-import { ALLOWED_ENRICHMENTS, EnrichmentType } from '../constants/enrichments';
+import { ALLOWED_ENRICHMENTS, ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 
 const DECODER_SEARCH_SIZE = 25;
 const DELAY_ON_SEARCH = 300; // ms
@@ -424,7 +424,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
                       checked={selectedEnrichments.includes(value) ? 'on' : undefined}
                       onClick={() => handleEnrichmentToggle(value)}
                     >
-                      {value}
+                      {ENRICHMENT_LABELS[value]}
                     </EuiFilterSelectItem>
                   ))}
                 </div>
