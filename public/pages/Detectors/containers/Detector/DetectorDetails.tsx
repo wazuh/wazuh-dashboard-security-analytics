@@ -22,7 +22,6 @@ import { RouteComponentProps } from 'react-router-dom';
 import { BREADCRUMBS, EMPTY_DEFAULT_DETECTOR_HIT, ROUTES } from '../../../../utils/constants';
 import { DetectorHit } from '../../../../../server/models/interfaces';
 import { DetectorDetailsView } from '../DetectorDetailsView/DetectorDetailsView';
-import { FieldMappingsView } from '../../components/FieldMappingsView/FieldMappingsView';
 // Wazuh: hide Alert triggers tab in detector details.
 // import { AlertTriggersView } from '../AlertTriggersView/AlertTriggersView';
 import { RuleItem } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
@@ -65,7 +64,6 @@ export interface DetectorDetailsState {
 
 enum TabId {
   DetectorDetails = 'detector-config-tab',
-  FieldMappings = 'field-mappings-tab',
   // Wazuh: hide Alert triggers tab in detector details.
   // AlertTriggers = 'alert-triggers-tab',
 }
@@ -90,13 +88,6 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     this.props.history.push({
       pathname: `${ROUTES.EDIT_DETECTOR_RULES}/${this.state.detectorId}`,
       state: { detectorHit: this.detectorHit, enabledRules, allRules },
-    });
-  };
-
-  editFieldMappings = () => {
-    this.props.history.push({
-      pathname: `${ROUTES.EDIT_FIELD_MAPPINGS}/${this.state.detectorId}`,
-      state: { detectorHit: this.detectorHit },
     });
   };
 
@@ -125,18 +116,6 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
             dashboardId={this.state.dashboardId}
             editBasicDetails={this.editDetectorBasicDetails}
             editDetectorRules={this.editDetectorRules}
-            isEditable={isEditable}
-          />
-        ),
-      },
-      {
-        id: TabId.FieldMappings,
-        name: 'Field mappings',
-        content: (
-          <FieldMappingsView
-            {...this.props}
-            detector={this.detectorHit._source}
-            editFieldMappings={this.editFieldMappings}
             isEditable={isEditable}
           />
         ),
