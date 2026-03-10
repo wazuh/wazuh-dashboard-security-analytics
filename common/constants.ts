@@ -85,7 +85,10 @@ export const AllowedActionsBySpace = {
   ],
   [SpaceTypes.TEST.value]: [SPACE_ACTIONS.PROMOTE],
   [SpaceTypes.CUSTOM.value]: [],
-  [SpaceTypes.STANDARD.value]: [SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS],
+  [SpaceTypes.STANDARD.value]: [
+    SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS,
+    SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS,
+  ],
 };
 
 export const UserSpacesOrder: PromoteSpaces[] = [
