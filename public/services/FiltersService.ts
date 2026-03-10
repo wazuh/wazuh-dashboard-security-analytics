@@ -4,7 +4,14 @@
  */
 
 import { HttpSetup } from 'opensearch-dashboards/public';
-import { FilterSearchRequest, FilterSearchResponse, ServerResponse } from '../../types';
+import {
+  FilterSearchRequest,
+  FilterSearchResponse,
+  ServerResponse,
+  CreateFilterPayload,
+  UpdateFilterPayload,
+  CUDFilterResponse,
+} from '../../types';
 import { API } from '../../server/utils/constants';
 
 export default class FiltersService {
@@ -19,5 +26,24 @@ export default class FiltersService {
     return (await this.httpClient.post(url, {
       body: JSON.stringify(params ?? {}),
     })) as ServerResponse<FilterSearchResponse>;
+  };
+
+  createFilter = async (body: CreateFilterPayload): Promise<ServerResponse<CUDFilterResponse>> => {
+    return (await this.httpClient.post(this.baseUrl, {
+      body: JSON.stringify(body),
+    })) as ServerResponse<CUDFilterResponse>;
+  };
+
+  updateFilter = async (
+    filterId: string,
+    body: UpdateFilterPayload
+  ): Promise<ServerResponse<CUDFilterResponse>> => {
+    return (await this.httpClient.put(`${this.baseUrl}/${filterId}`, {
+      body: JSON.stringify(body),
+    })) as ServerResponse<CUDFilterResponse>;
+  };
+
+  deleteFilter = async (filterId: string): Promise<ServerResponse<CUDFilterResponse>> => {
+    return (await this.httpClient.delete(`${this.baseUrl}/${filterId}`, {})) as ServerResponse<CUDFilterResponse>;
   };
 }

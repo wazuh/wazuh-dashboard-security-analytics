@@ -20,7 +20,7 @@ import {
   EuiTabs,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { OVERVIEW_TAB, OverviewOverviewTabId } from '../utils/constants';
+import { OVERVIEW_TAB, OverviewTabId } from '../utils/constants';
 import { DataSourceProps } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import {
@@ -467,7 +467,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           />
         </EuiCard>
       ) : (
-        <FiltersTab spaceFilter={spaceFilter} notifications={notifications} />
+        <FiltersTab spaceFilter={spaceFilter} notifications={notifications} history={history} />
       )}
     </>
   );
