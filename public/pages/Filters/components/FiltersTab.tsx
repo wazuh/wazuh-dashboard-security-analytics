@@ -199,22 +199,20 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
 
   return (
     <>
-      <EuiCard textAlign="left" paddingSize="m" title="Filters">
-        <EuiInMemoryTable
-          itemId="id"
-          items={items}
-          loading={loading || isDeleting}
-          columns={getFiltersTableColumns(spaceFilter, onViewDetails, onEdit, onDelete)}
-          pagination={{ initialPageSize: 25 }}
-          search={getFiltersTableSearchConfig(items, { toolsRight: [actionsButton] })}
-          selection={{
-            onSelectionChange: setSelectedItems,
-            initialSelected: [],
-          }}
-          isSelectable={true}
-          sorting={true}
-        />
-      </EuiCard>
+      <EuiInMemoryTable
+        itemId="id"
+        items={items}
+        loading={loading || isDeleting}
+        columns={getFiltersTableColumns(spaceFilter, onViewDetails, onEdit, onDelete)}
+        pagination={{ initialPageSize: 25 }}
+        search={getFiltersTableSearchConfig(items, { toolsRight: [actionsButton] })}
+        selection={{
+          onSelectionChange: setSelectedItems,
+          initialSelected: [],
+        }}
+        isSelectable={true}
+        sorting={true}
+      />
 
       {selectedFilter && (
         <FilterDetailsFlyout filter={selectedFilter} onClose={() => setSelectedFilter(null)} />

@@ -437,30 +437,23 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         refresh={policyRefresh}
       />
       <EuiSpacer size={'m'} />
-      <EuiTabs size="s">
-        <EuiTab
-          isSelected={selectedTab === OVERVIEW_TAB.INTEGRATIONS}
-          onClick={() => onTabChange(OVERVIEW_TAB.INTEGRATIONS)}
-        >
-          Integrations
-        </EuiTab>
-        <EuiTab
-          isSelected={selectedTab === OVERVIEW_TAB.FILTERS}
-          onClick={() => onTabChange(OVERVIEW_TAB.FILTERS)}
-        >
-          Filters
-        </EuiTab>
-      </EuiTabs>
-      <EuiSpacer size={'s'} />
-      <EuiText size="s" color="subdued" paddingSize="m">
-        {selectedTab === OVERVIEW_TAB.INTEGRATIONS &&
-          'Integrations describe the data sources to which the rules are applied.'}
-        {selectedTab === OVERVIEW_TAB.FILTERS &&
-          'Filters decide whether events continue through the processing pipeline, allowing specific events to be excluded.'}
-      </EuiText>
-      <EuiSpacer size={'l'} />
-      {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
-        <EuiCard textAlign="left" paddingSize="m" title="Integrations">
+      <EuiCard textAlign="left" paddingSize="m">
+        <EuiTabs size="s">
+          <EuiTab
+            isSelected={selectedTab === OVERVIEW_TAB.INTEGRATIONS}
+            onClick={() => onTabChange(OVERVIEW_TAB.INTEGRATIONS)}
+          >
+            Integrations
+          </EuiTab>
+          <EuiTab
+            isSelected={selectedTab === OVERVIEW_TAB.FILTERS}
+            onClick={() => onTabChange(OVERVIEW_TAB.FILTERS)}
+          >
+            Filters
+          </EuiTab>
+        </EuiTabs>
+        <EuiSpacer size={'l'} />
+        {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
           <EuiInMemoryTable
             itemId={'id'}
             items={integrations}
@@ -480,10 +473,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             sorting={true}
             loading={loading}
           />
-        </EuiCard>
-      ) : (
-        <FiltersTab spaceFilter={spaceFilter} notifications={notifications} history={history} />
-      )}
+        ) : (
+          <FiltersTab spaceFilter={spaceFilter} notifications={notifications} history={history} />
+        )}
+      </EuiCard>
     </>
   );
 };
