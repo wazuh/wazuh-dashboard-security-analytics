@@ -437,21 +437,26 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         refresh={policyRefresh}
       />
       <EuiSpacer size={'m'} />
-      <EuiCard textAlign="left" paddingSize="m">
-        <EuiTabs size="s">
-          <EuiTab
-            isSelected={selectedTab === OVERVIEW_TAB.INTEGRATIONS}
-            onClick={() => onTabChange(OVERVIEW_TAB.INTEGRATIONS)}
-          >
-            Integrations
-          </EuiTab>
-          <EuiTab
-            isSelected={selectedTab === OVERVIEW_TAB.FILTERS}
-            onClick={() => onTabChange(OVERVIEW_TAB.FILTERS)}
-          >
-            Filters
-          </EuiTab>
-        </EuiTabs>
+      <EuiCard
+        textAlign="left"
+        paddingSize="m"
+        title={
+          <EuiTabs size="s">
+            <EuiTab
+              isSelected={selectedTab === OVERVIEW_TAB.INTEGRATIONS}
+              onClick={() => onTabChange(OVERVIEW_TAB.INTEGRATIONS)}
+            >
+              Integrations
+            </EuiTab>
+            <EuiTab
+              isSelected={selectedTab === OVERVIEW_TAB.FILTERS}
+              onClick={() => onTabChange(OVERVIEW_TAB.FILTERS)}
+            >
+              Filters
+            </EuiTab>
+          </EuiTabs>
+        }
+      >
         <EuiSpacer size={'l'} />
         {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
           <EuiInMemoryTable
