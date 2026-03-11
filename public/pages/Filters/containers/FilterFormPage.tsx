@@ -191,7 +191,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 </PageHeader>
 
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle="Name" isRequired />}
+                  label={'Name'}
                   fullWidth
                   isInvalid={!!errors.name && touched.name}
                   error={errors.name}
@@ -212,7 +212,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle="Type" isRequired />}
+                  label={'Type'}
                   fullWidth
                   isInvalid={!!errors.type && touched.type}
                   error={errors.type}
@@ -228,7 +228,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle="Check expression" isRequired />}
+                  label={'Check expression'}
                   fullWidth
                   isInvalid={!!errors.check && touched.check}
                   error={errors.check}
@@ -245,7 +245,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
 
-                <EuiCompressedFormRow label={<FormFieldHeader headerTitle="Enabled" />} fullWidth>
+                <EuiCompressedFormRow label={'Enabled'} fullWidth>
                   <EuiCompressedSwitch
                     label={values.enabled ? 'Enabled' : 'Disabled'}
                     checked={values.enabled}
@@ -256,7 +256,12 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="l" />
 
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle="Description" />}
+                  label={
+                    <>
+                      {'Description - '}
+                      <em>optional</em>
+                    </>
+                  }
                   fullWidth
                 >
                   <EuiCompressedTextArea
@@ -269,7 +274,12 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle="Author name" />}
+                  label={
+                    <>
+                      {'Author name - '}
+                      <em>optional</em>
+                    </>
+                  }
                   fullWidth
                 >
                   <EuiCompressedFieldText
@@ -281,7 +291,12 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle="Author email" />}
+                  label={
+                    <>
+                      {'Author email - '}
+                      <em>optional</em>
+                    </>
+                  }
                   fullWidth
                 >
                   <EuiCompressedFieldText
@@ -293,7 +308,12 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle="Author URL" />}
+                  label={
+                    <>
+                      {'Author URL - '}
+                      <em>optional</em>
+                    </>
+                  }
                   fullWidth
                 >
                   <EuiCompressedFieldText

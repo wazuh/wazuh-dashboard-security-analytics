@@ -19,7 +19,7 @@ import { FilterItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { ROUTES } from '../../../utils/constants';
 import { pluralize } from '../../../utils/helpers';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { FiltersAllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import {
   DELETE_ACTION,
@@ -88,8 +88,16 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
     fetchFilters();
   }, [fetchFilters]);
 
-  const isCreateActionAllowed = actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
-  const isDeleteActionAllowed = actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
+  const isCreateActionAllowed = actionIsAllowedOnSpace(
+    spaceFilter,
+    SPACE_ACTIONS.CREATE,
+    FiltersAllowedActionsBySpace
+  );
+  const isDeleteActionAllowed = actionIsAllowedOnSpace(
+    spaceFilter,
+    SPACE_ACTIONS.DELETE,
+    FiltersAllowedActionsBySpace
+  );
 
   const {
     itemForAction,
@@ -154,7 +162,8 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
             toolTipContent={
               !isCreateActionAllowed
                 ? `Filters can only be created in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.CREATE
+                    SPACE_ACTIONS.CREATE,
+                    FiltersAllowedActionsBySpace
                   ).join(', ')}`
                 : undefined
             }
@@ -168,7 +177,8 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
             toolTipContent={
               !isDeleteActionAllowed
                 ? `Filters can only be deleted in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.DELETE
+                    SPACE_ACTIONS.DELETE,
+                    FiltersAllowedActionsBySpace
                   ).join(', ')}`
                 : selectedItems.length === 0
                 ? 'Select filters to delete'

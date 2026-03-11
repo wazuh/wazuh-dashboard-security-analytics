@@ -7,7 +7,7 @@ import React from 'react';
 import { EuiLink } from '@elastic/eui';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { FilterItem } from '../../../../types';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { FiltersAllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 
 export interface FilterTableItem {
@@ -75,7 +75,8 @@ export const getFiltersTableColumns = (
         type: 'icon',
         icon: 'pencil',
         onClick: (row: FilterTableItem) => onEdit(row._source),
-        available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT),
+        available: () =>
+          actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT, FiltersAllowedActionsBySpace),
       },
       {
         name: 'Delete',
@@ -84,7 +85,8 @@ export const getFiltersTableColumns = (
         icon: 'trash',
         color: 'danger',
         onClick: (row: FilterTableItem) => onDelete(row._source),
-        available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
+        available: () =>
+          actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE, FiltersAllowedActionsBySpace),
       },
     ],
   },
