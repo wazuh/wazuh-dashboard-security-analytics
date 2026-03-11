@@ -13,7 +13,6 @@ import {
 import { ServerResponse } from '../models/types';
 import {
     LogTestApiRequest,
-    LogTestRequestBody,
     LogTestResponse,
 } from '../../types';
 import { CLIENT_LOG_TEST_METHODS } from '../utils/constants';
@@ -28,7 +27,7 @@ export class LogTestService extends MDSEnabledClientService {
         IOpenSearchDashboardsResponse<ServerResponse<LogTestResponse> | ResponseError>
     > => {
         try {
-            const logTest = request.body.document as LogTestRequestBody;
+            const { document: logTest, integrationId } = request.body as LogTestApiRequest;
             const client = this.getClient(request, context);
 
             if (logTest.queue === undefined || logTest.queue === null) {
@@ -61,9 +60,22 @@ export class LogTestService extends MDSEnabledClientService {
                 });
             }
 
+            if (!integrationId?.trim()) {
+                return response.custom({
+                    statusCode: 200,
+                    body: {
+                        ok: false,
+                        error: 'Integration is required.',
+                    },
+                });
+            }
+
             const logTestResponse: LogTestResponse = await client(
                 CLIENT_LOG_TEST_METHODS.TEST_LOG,
-                { body: logTest }
+                {
+                    integration: integrationId.trim(),
+                    body: logTest,
+                }
             );
 
             return response.custom({

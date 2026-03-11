@@ -18,8 +18,14 @@ import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { setBreadcrumbs } from '../../../utils/helpers';
 import { BREADCRUMBS } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
+import { SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
-import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/LogTestForm';
+import {
+  LogTestForm,
+  LogTestFormData,
+  LogTestFormErrors,
+  LogTestIntegrationOption,
+} from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
 import { MetadataEntry, buildMetadataObject } from '../utils';
 
@@ -28,6 +34,7 @@ const INITIAL_FORM_DATA: LogTestFormData = {
   location: '',
   event: '',
   traceLevel: 'NONE',
+  integrationId: '',
   metadataFields: [],
 };
 
@@ -38,9 +45,35 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
   const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
+  const [isLoadingIntegrations, setIsLoadingIntegrations] = useState(false);
+  const [integrationOptions, setIntegrationOptions] = useState<LogTestIntegrationOption[]>([]);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.LOG_TEST]);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadIntegrationOptions = async () => {
+      setIsLoadingIntegrations(true);
+      try {
+        const integrations = await DataStore.integrations.getIntegrations(SpaceTypes.TEST.value);
+        if (cancelled) return;
+        setIntegrationOptions(
+          integrations
+            .map((integration) => ({ id: integration.id, label: integration.document.title }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+        );
+      } finally {
+        if (!cancelled) setIsLoadingIntegrations(false);
+      }
+    };
+
+    loadIntegrationOptions();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const validateForm = useCallback((): boolean => {
@@ -56,6 +89,10 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
 
     if (!formData.event.trim()) {
       newErrors.event = 'Log event is required';
+    }
+
+    if (!formData.integrationId) {
+      newErrors.integrationId = 'Integration is required';
     }
 
     setErrors(newErrors);
@@ -77,11 +114,9 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
         location: formData.location.trim(),
         event: formData.event.trim(),
         trace_level: formData.traceLevel,
-        ...{
-          agent_metadata: agentMetadata,
-        },
+        agent_metadata: agentMetadata,
       },
-      integrationId: '',
+      integrationId: formData.integrationId,
     });
 
     setIsLoading(false);
@@ -136,6 +171,8 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
             errors={errors}
             onFormChange={handleFormChange}
             onMetadataFieldsChange={handleMetadataFieldsChange}
+            integrationOptions={integrationOptions}
+            isLoadingIntegrations={isLoadingIntegrations}
             disabled={isLoading}
           />
 

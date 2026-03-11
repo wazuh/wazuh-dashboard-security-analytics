@@ -19,9 +19,20 @@ export interface LogTestAssetTrace {
   traces: string[];
 }
 
+export interface LogTestMatchedRule {
+  id?: string;
+  rule_id?: string;
+  name?: string;
+  title?: string;
+  level?: string;
+  severity?: string;
+  [key: string]: unknown;
+}
+
 export interface LogTestResult {
   output: object;
   asset_traces?: LogTestAssetTrace[];
+  matched_rules?: LogTestMatchedRule[];
 }
 
 export interface LogTestResponse {
