@@ -149,6 +149,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   );
   const onEditPolicy = () => {
     setItemForAction({ action: SPACE_ACTIONS.EDIT_POLICY });
+    setIsPopoverOpen(false);
   };
 
   const deleteSelectedIntegrations = useCallback(async () => {
