@@ -26,7 +26,11 @@ import FormFieldHeader from '../../../components/FormFieldHeader';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { errorNotificationToast, setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import {
+  errorNotificationToast,
+  setBreadcrumbs,
+  successNotificationToast,
+} from '../../../utils/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { FILTER_NAME_REGEX } from '../../../utils/validation';
 import {
@@ -109,7 +113,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
     if (!trimmedName) {
       errors.name = 'Name is required';
     } else if (!FILTER_NAME_REGEX.test(trimmedName)) {
-      errors.name = "Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0).";
+      errors.name = 'Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0).';
     }
     if (!values.type) errors.type = 'Type is required';
     if (!values.check.trim()) errors.check = 'Check expression is required';
@@ -117,10 +121,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
   }, []);
 
   const handleSubmitForm = useCallback(
-    async (
-      values: FilterFormModel,
-      { setSubmitting }: { setSubmitting: (v: boolean) => void }
-    ) => {
+    async (values: FilterFormModel, { setSubmitting }: { setSubmitting: (v: boolean) => void }) => {
       const resource = mapFormToFilterResource(values);
       const space = spaceFilter || 'draft';
       try {
@@ -194,7 +195,11 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   fullWidth
                   isInvalid={!!errors.name && touched.name}
                   error={errors.name}
-                  helpText={!(errors.name && touched.name) ? "Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0)" : undefined}
+                  helpText={
+                    !(errors.name && touched.name)
+                      ? 'Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0)'
+                      : undefined
+                  }
                 >
                   <EuiCompressedFieldText
                     placeholder="filter/prefilter/0"
@@ -240,10 +245,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
 
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle="Enabled" />}
-                  fullWidth
-                >
+                <EuiCompressedFormRow label={<FormFieldHeader headerTitle="Enabled" />} fullWidth>
                   <EuiCompressedSwitch
                     label={values.enabled ? 'Enabled' : 'Disabled'}
                     checked={values.enabled}

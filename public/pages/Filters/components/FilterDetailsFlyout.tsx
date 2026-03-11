@@ -44,7 +44,7 @@ const detailsMapLabels: { [key: string]: string } = {
 const editorType = {
   visual: 'visual',
   json: 'json',
-}
+};
 
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
   const [selectedEditorType, setSelectedEditorType] = useState(editorType.visual);
@@ -104,11 +104,7 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
         <EuiFlexGroup alignItems="center">
           <EuiFlexItem>
             <EuiText size="s">
-              <h2>
-                {document.name
-                  ? `Filter details — ${document.name}`
-                  : 'Filter details'}
-              </h2>
+              <h2>{document.name ? `Filter details — ${document.name}` : 'Filter details'}</h2>
             </EuiText>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>

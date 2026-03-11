@@ -421,13 +421,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               <EuiText size="s">
                 <h1>Overview</h1>
               </EuiText>
-              <EuiText size="s" color="subdued">
-                Integrations describe the data sources to which the rules are meant to be applied.
-              </EuiText>
               <EuiSpacer size="s"></EuiSpacer>
             </EuiFlexItem>
-              <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-              <EuiFlexItem grow={false}>{overviewActionsButton}</EuiFlexItem>
+            <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
+            <EuiFlexItem grow={false}>{overviewActionsButton}</EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size={'s'} />
         </EuiFlexItem>
@@ -453,7 +450,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           Filters
         </EuiTab>
       </EuiTabs>
-      <EuiSpacer size={'m'} />
+      <EuiSpacer size={'s'} />
+      <EuiText size="s" color="subdued" paddingSize="m">
+        {selectedTab === OVERVIEW_TAB.INTEGRATIONS &&
+          'Integrations describe the data sources to which the rules are applied.'}
+        {selectedTab === OVERVIEW_TAB.FILTERS &&
+          'Filters decide whether events continue through the processing pipeline, allowing specific events to be excluded.'}
+      </EuiText>
+      <EuiSpacer size={'l'} />
       {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
         <EuiCard textAlign="left" paddingSize="m" title="Integrations">
           <EuiInMemoryTable

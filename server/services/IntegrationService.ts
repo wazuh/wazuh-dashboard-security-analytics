@@ -206,23 +206,23 @@ export class IntegrationService extends MDSEnabledClientService {
               // This part of the query is to get the name of the entities that are going to be removed from the space, so we need to look into the space we are promoting to, as they are not present in the current space
               ...(idsToSpace.length > 0
                 ? [
-                  {
-                    bool: {
-                      must: [
-                        {
-                          terms: {
-                            [idProp]: idsToSpace,
+                    {
+                      bool: {
+                        must: [
+                          {
+                            terms: {
+                              [idProp]: idsToSpace,
+                            },
                           },
-                        },
-                        {
-                          term: {
-                            'space.name': toSpace,
+                          {
+                            term: {
+                              'space.name': toSpace,
+                            },
                           },
-                        },
-                      ],
+                        ],
+                      },
                     },
-                  },
-                ]
+                  ]
                 : []),
             ],
             minimum_should_match: 1,
