@@ -18,10 +18,8 @@ import {
   DetectionRules,
 } from "../../../../../CreateDetector/components/DefineDetector/components/DetectionRules/DetectionRules";
 import { RuleItem } from "../../../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces";
-import { ruleTypes } from "../../../../../Rules/utils/constants";
 import ConfigureFieldMapping from "../../../../../CreateDetector/components/ConfigureFieldMapping";
 import { ConfigureFieldMappingProps } from "../../../../../CreateDetector/components/ConfigureFieldMapping/containers/ConfigureFieldMapping";
-// import { ConfigureFieldMappingProps } from '../../../ConfigureFieldMapping/containers/ConfigureFieldMapping';
 import { getIntegrationOptionsBySpace } from "../../../../../../utils/helpers";
 import { getLogTypeLabel } from "../../../../../LogTypes/utils/helpers";
 import { SpaceSelector } from "../../../../../../components/SpaceSelector/SpaceSelector";
@@ -36,11 +34,12 @@ interface DetectorTypeProps {
   onPageChange: (page: { index: number; size: number }) => void;
   onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
   onAllRulesToggle: (enabled: boolean) => void;
+  /** Notifies the parent when the selected space changes so it can re-filter rules */
+  onSpaceChange?: (space: string) => void;
 }
 
 interface DetectorTypeState {
   fieldTouched: boolean;
-  detectorTypeIds: string[];
   selectedSpace: string;
   detectorTypeOptions: { value: string; label: string }[];
 }
@@ -54,7 +53,6 @@ export default class DetectorType extends Component<
 
     this.state = {
       fieldTouched: false,
-      detectorTypeIds: [],
       selectedSpace: SpaceTypes.STANDARD.value,
       detectorTypeOptions: [],
     };
@@ -62,9 +60,6 @@ export default class DetectorType extends Component<
 
   async componentDidMount(): Promise<void> {
     await this.loadOptionsForSpace(this.state.selectedSpace);
-    this.setState({
-      detectorTypeIds: ruleTypes.map((option) => option.value),
-    });
   }
 
   private async loadOptionsForSpace(space: string): Promise<void> {
@@ -76,6 +71,8 @@ export default class DetectorType extends Component<
     this.setState({ selectedSpace: space });
     // Clear the currently selected integration when switching spaces
     this.props.onDetectorTypeChange("");
+    // Notify parent so it can re-fetch rules filtered by the new space
+    this.props.onSpaceChange?.(space);
     await this.loadOptionsForSpace(space);
   };
 
@@ -91,9 +88,13 @@ export default class DetectorType extends Component<
 
   getErrorMessage = () => {
     const { detectorType } = this.props;
+    const { detectorTypeOptions } = this.state;
     if (detectorType.length < 1) return "Select a detector type.";
-    if (!this.state.detectorTypeIds.includes(detectorType)) {
-      console.warn(`Unsupported detector type found: ${detectorType}`);
+    // Validate against the currently loaded options for the selected space
+    if (
+      detectorTypeOptions.length > 0 &&
+      !detectorTypeOptions.some((opt) => opt.value === detectorType)
+    ) {
       return "Unsupported detector type.";
     }
     return "";
@@ -106,10 +107,9 @@ export default class DetectorType extends Component<
     return (
       <>
         <EuiText size="s">
-          <h3>Rules</h3> {/* Wazuh: rename 'Detection rules' to 'Rules' */}
+          <h3>Rules</h3>
         </EuiText>
         <EuiText size="s">
-          {/* Replace log type with integration by Wazuh */}
           <p>
             The rules are automatically populated based on your selected
             integration. Threat intelligence based detection can be enabled for
@@ -118,7 +118,6 @@ export default class DetectorType extends Component<
         </EuiText>
         <EuiSpacer />
 
-        {/* Space selector: filters the Integration dropdown by Standard / Custom */}
         <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>
             <EuiText size="s">

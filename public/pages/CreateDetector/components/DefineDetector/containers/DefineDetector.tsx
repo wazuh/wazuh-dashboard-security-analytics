@@ -57,6 +57,7 @@ interface DefineDetectorProps extends RouteComponentProps, DataSourceProps {
   onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
   onAllRulesToggle: (enabled: boolean) => void;
   replaceFieldMappings: (mappings: FieldMapping[]) => void;
+  onSpaceChange?: (space: string) => void;
 }
 
 interface DefineDetectorState {
@@ -269,6 +270,7 @@ export default class DefineDetector extends Component<
           onAllRulesToggle={this.props.onAllRulesToggle}
           onPageChange={this.props.onPageChange}
           onRuleToggle={this.props.onRuleToggle}
+          onSpaceChange={this.props.onSpaceChange}
         />
 
         <EuiSpacer size={"m"} />
