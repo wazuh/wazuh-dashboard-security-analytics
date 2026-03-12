@@ -323,7 +323,7 @@ export const formatRuleType = (matchingRuleType: string) => {
     return `${logType.category}: ${getLogTypeLabel(logType.value)}`;
   }
 
-  return DEFAULT_EMPTY_DATA;
+  return matchingRuleType || DEFAULT_EMPTY_DATA; // Wazuh: in case of not in logtype, return original value
 };
 
 export const getSeverityBadge = (severity: string) => {
