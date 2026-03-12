@@ -241,10 +241,11 @@ export class RulesStore implements IWazuhRulesStore {
 
     return {
       ...hit,
+      _id: hit._source?.document?.id ?? hit._id,
       prePackaged,
       space: this.normalizeSpace(hit._source?.space),
       _source: {
-        id: hit._id,
+        id: hit._source?.document?.id ?? hit._id,
         title: doc.title ?? '',
         level: doc.level ?? '',
         category: logsource.category ?? logsource.product ?? logsource.service ?? '',
