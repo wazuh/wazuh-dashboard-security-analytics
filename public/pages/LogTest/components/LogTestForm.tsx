@@ -5,68 +5,78 @@
 
 import React from 'react';
 import {
-    EuiFlexGroup,
-    EuiFlexItem,
-    EuiFormRow,
-    EuiFieldText,
-    EuiFieldNumber,
-    EuiTextArea,
-    EuiAccordion,
-    EuiSpacer,
-    EuiSelect,
+  EuiCallOut,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiFormRow,
+  EuiFieldText,
+  EuiTextArea,
+  EuiAccordion,
+  EuiSpacer,
+  EuiSelect,
 } from '@elastic/eui';
 import { LogTestTraceLevel } from '../../../../types';
+import { MetadataEntry } from '../utils';
+import { MetadataFieldsEditor } from './MetadataFieldsEditor';
 
 const TRACE_LEVEL_OPTIONS: Array<{ value: LogTestTraceLevel; text: string }> = [
-    { value: 'NONE', text: 'None' },
-    { value: 'ASSET_ONLY', text: 'Asset only' },
-    { value: 'ALL', text: 'All' },
+  { value: 'NONE', text: 'None' },
+  { value: 'ASSET_ONLY', text: 'Asset only' },
+  { value: 'ALL', text: 'All' },
 ];
 
+export interface LogTestIntegrationOption {
+  id: string;
+  label: string;
+}
+
 export interface LogTestFormData {
-    queue: number | undefined;
-    location: string;
-    event: string;
-    traceLevel: LogTestTraceLevel;
-    agentMetadata: {
-        groups: string;
-        hostArchitecture: string;
-        hostHostname: string;
-        hostOsName: string;
-        hostOsPlatform: string;
-        hostOsType: string;
-        hostOsVersion: string;
-        id: string;
-        name: string;
-        version: string;
-    };
+  queue: number | undefined;
+  location: string;
+  event: string;
+  traceLevel: LogTestTraceLevel;
+  integrationId: string;
+  metadataFields: MetadataEntry[];
 }
 
 export interface LogTestFormErrors {
-    queue?: string;
-    location?: string;
-    event?: string;
+  queue?: string;
+  location?: string;
+  event?: string;
+  integrationId?: string;
 }
 
 export interface LogTestFormProps {
-    formData: LogTestFormData;
-    errors: LogTestFormErrors;
-    onFormChange: (field: keyof LogTestFormData, value: any) => void;
-    onAgentMetadataChange: (field: keyof LogTestFormData['agentMetadata'], value: string) => void;
-    disabled?: boolean;
+  formData: LogTestFormData;
+  errors: LogTestFormErrors;
+  onFormChange: (field: keyof LogTestFormData, value: any) => void;
+  onMetadataFieldsChange: (fields: MetadataEntry[]) => void;
+  integrationOptions: LogTestIntegrationOption[];
+  isLoadingIntegrations: boolean;
+  disabled?: boolean;
 }
 
 export const LogTestForm: React.FC<LogTestFormProps> = ({
-    formData,
-    errors,
-    onFormChange,
-    onAgentMetadataChange,
-    disabled = false,
+  formData,
+  errors,
+  onFormChange,
+  onMetadataFieldsChange,
+  integrationOptions,
+  isLoadingIntegrations,
+  disabled = false,
 }) => {
-    return (
-        <>
-            <EuiFlexGroup gutterSize="m" wrap>
-                <EuiFlexItem style={{ minWidth: '300px' }}>
+  const integrationSelectOptions = [
+    {
+      value: '',
+      text: isLoadingIntegrations ? 'Loading integrations...' : 'Select integration',
+    },
+    ...integrationOptions.map((option) => ({ value: option.id, text: option.label })),
+  ];
+
+  return (
+    <>
+      <EuiFlexGroup gutterSize="m" wrap>
+        {/* <EuiFlexItem style={{ minWidth: '300px' }}>
                     <EuiFormRow
                         label="Queue"
                         isInvalid={!!errors.queue}
@@ -88,186 +98,95 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
                             fullWidth
                         />
                     </EuiFormRow>
-                </EuiFlexItem>
-                <EuiFlexItem style={{ minWidth: '300px' }}>
-                    <EuiFormRow
-                        label="Location"
-                        isInvalid={!!errors.location}
-                        error={errors.location}
-                        fullWidth
-                    >
-                        <EuiFieldText
-                            value={formData.location}
-                            onChange={(e) => onFormChange('location', e.target.value)}
-                            placeholder="/var/log/auth.log"
-                            isInvalid={!!errors.location}
-                            disabled={disabled}
-                            fullWidth
-                        />
-                    </EuiFormRow>
-                </EuiFlexItem>
-                <EuiFlexItem style={{ minWidth: '200px' }}>
-                    <EuiFormRow label="Trace level" fullWidth>
-                        <EuiSelect
-                            options={TRACE_LEVEL_OPTIONS}
-                            value={formData.traceLevel}
-                            onChange={(e) =>
-                                onFormChange('traceLevel', e.target.value as LogTestTraceLevel)
-                            }
-                            disabled={disabled}
-                            fullWidth
-                        />
-                    </EuiFormRow>
-                </EuiFlexItem>
-            </EuiFlexGroup>
-            <EuiSpacer size="m" />
-            <EuiAccordion
-                id="agent-metadata-accordion"
-                buttonContent="Agent metadata (optional)"
-                paddingSize="m"
-            >
-                <EuiSpacer size="s" />
-                <EuiFlexGroup gutterSize="m" wrap>
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.groups" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.groups}
-                                onChange={(e) => onAgentMetadataChange('groups', e.target.value)}
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
+                </EuiFlexItem> */}
+        <EuiFlexItem style={{ minWidth: '300px' }}>
+          <EuiFormRow
+            label="Location"
+            isInvalid={!!errors.location}
+            error={errors.location}
+            fullWidth
+          >
+            <EuiFieldText
+              value={formData.location}
+              onChange={(e) => onFormChange('location', e.target.value)}
+              placeholder="/var/log/auth.log"
+              isInvalid={!!errors.location}
+              disabled={disabled}
+              fullWidth
+            />
+          </EuiFormRow>
+        </EuiFlexItem>
+        <EuiFlexItem style={{ minWidth: '200px' }}>
+          <EuiFormRow label="Trace level" fullWidth>
+            <EuiSelect
+              options={TRACE_LEVEL_OPTIONS}
+              value={formData.traceLevel}
+              onChange={(e) => onFormChange('traceLevel', e.target.value as LogTestTraceLevel)}
+              disabled={disabled}
+              fullWidth
+            />
+          </EuiFormRow>
+        </EuiFlexItem>
+        <EuiFlexItem style={{ minWidth: '280px' }}>
+          <EuiFormRow
+            label="Integration"
+            isInvalid={!!errors.integrationId}
+            error={errors.integrationId}
+            fullWidth
+          >
+            <EuiSelect
+              options={integrationSelectOptions}
+              value={formData.integrationId}
+              onChange={(e) => onFormChange('integrationId', e.target.value)}
+              isInvalid={!!errors.integrationId}
+              disabled={disabled || isLoadingIntegrations || integrationOptions.length === 0}
+              fullWidth
+            />
+          </EuiFormRow>
+        </EuiFlexItem>
+      </EuiFlexGroup>
 
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.host.architecture" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.hostArchitecture}
-                                onChange={(e) =>
-                                    onAgentMetadataChange('hostArchitecture', e.target.value)
-                                }
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.host.hostname" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.hostHostname}
-                                onChange={(e) =>
-                                    onAgentMetadataChange('hostHostname', e.target.value)
-                                }
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.host.os.name" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.hostOsName}
-                                onChange={(e) =>
-                                    onAgentMetadataChange('hostOsName', e.target.value)
-                                }
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.host.os.platform" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.hostOsPlatform}
-                                onChange={(e) =>
-                                    onAgentMetadataChange('hostOsPlatform', e.target.value)
-                                }
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.host.os.type" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.hostOsType}
-                                onChange={(e) =>
-                                    onAgentMetadataChange('hostOsType', e.target.value)
-                                }
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.host.os.version" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.hostOsVersion}
-                                onChange={(e) =>
-                                    onAgentMetadataChange('hostOsVersion', e.target.value)
-                                }
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.id" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.id}
-                                onChange={(e) => onAgentMetadataChange('id', e.target.value)}
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.name" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.name}
-                                onChange={(e) => onAgentMetadataChange('name', e.target.value)}
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-
-                    <EuiFlexItem style={{ minWidth: '280px' }}>
-                        <EuiFormRow label="wazuh.agent.version" fullWidth>
-                            <EuiFieldText
-                                value={formData.agentMetadata.version}
-                                onChange={(e) => onAgentMetadataChange('version', e.target.value)}
-                                disabled={disabled}
-                                fullWidth
-                            />
-                        </EuiFormRow>
-                    </EuiFlexItem>
-                </EuiFlexGroup>
-            </EuiAccordion>
-            <EuiSpacer size="m" />
-            <EuiFormRow
-                label="Log event"
-                isInvalid={!!errors.event}
-                error={errors.event}
-                fullWidth
-            >
-                <EuiTextArea
-                    placeholder="Enter log data to test..."
-                    value={formData.event}
-                    onChange={(e) => onFormChange('event', e.target.value)}
-                    rows={6}
-                    isInvalid={!!errors.event}
-                    disabled={disabled}
-                    fullWidth
-                />
-            </EuiFormRow>
+      {!isLoadingIntegrations && integrationOptions.length === 0 && (
+        <>
+          <EuiSpacer size="m" />
+          <EuiCallOut
+            title="No integrations available in test space"
+            color="warning"
+            iconType="alert"
+          >
+            <p>
+              There are no integrations in test space available for Log test. Promote or create
+              integrations before running this test.
+            </p>
+          </EuiCallOut>
         </>
-    );
+      )}
+
+      <EuiSpacer size="m" />
+      <EuiAccordion
+        id="agent-metadata-accordion"
+        buttonContent="Metadata (optional)"
+        paddingSize="m"
+      >
+        <EuiSpacer size="s" />
+        <MetadataFieldsEditor
+          entries={formData.metadataFields}
+          onChange={onMetadataFieldsChange}
+          disabled={disabled}
+        />
+      </EuiAccordion>
+      <EuiSpacer size="m" />
+      <EuiFormRow label="Log event" isInvalid={!!errors.event} error={errors.event} fullWidth>
+        <EuiTextArea
+          placeholder="Enter log data to test..."
+          value={formData.event}
+          onChange={(e) => onFormChange('event', e.target.value)}
+          rows={6}
+          isInvalid={!!errors.event}
+          disabled={disabled}
+          fullWidth
+        />
+      </EuiFormRow>
+    </>
+  );
 };
