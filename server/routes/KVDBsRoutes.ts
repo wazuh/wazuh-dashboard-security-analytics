@@ -3,28 +3,29 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { IRouter } from 'opensearch-dashboards/server';
-import { schema } from '@osd/config-schema';
-import { NodeServices } from '../models/interfaces';
-import { API } from '../utils/constants';
-import { createQueryValidationSchema } from '../utils/helpers';
+import { IRouter } from "opensearch-dashboards/server";
+import { schema } from "@osd/config-schema";
+import { NodeServices } from "../models/interfaces";
+import { API } from "../utils/constants";
+import { createQueryValidationSchema } from "../utils/helpers";
 
-const kvdbCreateResourceSchema = schema.object({
+const kvdbMetadataSchema = schema.object({
   title: schema.string(),
   author: schema.string(),
   description: schema.maybe(schema.string()),
   documentation: schema.maybe(schema.string()),
   references: schema.maybe(schema.arrayOf(schema.string())),
+  supports: schema.maybe(schema.arrayOf(schema.string())),
+});
+
+const kvdbCreateResourceSchema = schema.object({
+  metadata: kvdbMetadataSchema,
   enabled: schema.maybe(schema.boolean()),
   content: schema.any(),
 });
 
 const kvdbUpdateResourceSchema = schema.object({
-  title: schema.string(),
-  author: schema.string(),
-  description: schema.string(),
-  documentation: schema.string(),
-  references: schema.arrayOf(schema.string()),
+  metadata: kvdbMetadataSchema,
   enabled: schema.maybe(schema.boolean()),
   content: schema.any(),
 });
@@ -40,7 +41,7 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.searchKVDBs
+    kvdbsService.searchKVDBs,
   );
 
   router.post(
@@ -51,7 +52,7 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.searchIntegrations
+    kvdbsService.searchIntegrations,
   );
 
   router.post(
@@ -65,7 +66,7 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.createKVDB
+    kvdbsService.createKVDB,
   );
 
   router.put(
@@ -81,7 +82,7 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.updateKVDB
+    kvdbsService.updateKVDB,
   );
 
   router.delete(
@@ -94,6 +95,6 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    kvdbsService.deleteKVDB
+    kvdbsService.deleteKVDB,
   );
 }
