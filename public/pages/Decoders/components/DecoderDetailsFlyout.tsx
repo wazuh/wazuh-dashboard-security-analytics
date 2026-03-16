@@ -1,9 +1,9 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
-*/
+ */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   EuiButtonGroup,
   EuiCallOut,
@@ -19,10 +19,10 @@ import {
   EuiSpacer,
   EuiText,
   EuiTitle,
-} from '@elastic/eui';
-import { DecoderItem } from '../../../../types';
-import { DataStore } from '../../../store/DataStore';
-import { createTextDetailsGroup } from '../../../utils/helpers';
+} from "@elastic/eui";
+import { DecoderItem } from "../../../../types";
+import { DataStore } from "../../../store/DataStore";
+import { createTextDetailsGroup } from "../../../utils/helpers";
 
 interface DecoderDetailsFlyoutProps {
   decoderId: string;
@@ -32,16 +32,16 @@ interface DecoderDetailsFlyoutProps {
 
 const decoderViewOptions = [
   {
-    id: 'visual',
-    label: 'Visual',
+    id: "visual",
+    label: "Visual",
   },
   {
-    id: 'yaml',
-    label: 'YAML',
+    id: "yaml",
+    label: "YAML",
   },
   {
-    id: 'json',
-    label: 'JSON',
+    id: "json",
+    label: "JSON",
   },
 ];
 
@@ -56,35 +56,47 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   const [selectedView, setSelectedView] = useState(decoderViewOptions[0].id);
 
   const formatTextValue = (value: unknown) => {
-    if (value === null || value === undefined || value === '') {
+    if (value === null || value === undefined || value === "") {
       return undefined;
     }
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    if (
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+    ) {
       return String(value);
     }
     if (Array.isArray(value)) {
       const formatted = value
         .map((entry) => {
           if (entry === null || entry === undefined) {
-            return '';
+            return "";
           }
-          if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
+          if (
+            typeof entry === "string" ||
+            typeof entry === "number" ||
+            typeof entry === "boolean"
+          ) {
             return String(entry);
           }
-          if (typeof entry === 'object' && 'name' in entry && typeof entry.name === 'string') {
+          if (
+            typeof entry === "object" &&
+            "name" in entry &&
+            typeof entry.name === "string"
+          ) {
             return entry.name;
           }
           return JSON.stringify(entry);
         })
         .filter(Boolean)
-        .join(', ');
+        .join(", ");
       return formatted || undefined;
     }
-    if (typeof value === 'object') {
-      if ('name' in value && typeof value.name === 'string') {
+    if (typeof value === "object") {
+      if ("name" in value && typeof value.name === "string") {
         return value.name;
       }
-      if ('value' in value && typeof value.value === 'string') {
+      if ("value" in value && typeof value.value === "string") {
         return value.value;
       }
       return JSON.stringify(value);
@@ -104,14 +116,14 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
           return;
         }
         if (!response) {
-          setError('Decoder not found.');
+          setError("Decoder not found.");
         } else {
           setDecoder(response);
         }
       })
       .catch((err) => {
         if (isMounted) {
-          setError(err?.message ?? 'Failed to load decoder.');
+          setError(err?.message ?? "Failed to load decoder.");
         }
       })
       .finally(() => {
@@ -127,64 +139,55 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
 
   const decoderJson = useMemo(() => {
     if (!decoder) {
-      return '';
+      return "";
     }
     try {
       return JSON.stringify(decoder?.document, null, 2);
     } catch (err) {
-      return '';
+      return "";
     }
   }, [decoder]);
 
-  const integrations = decoder?.integrations?.length ? decoder.integrations.join(', ') : undefined;
+  const integrations = decoder?.integrations?.length
+    ? decoder.integrations.join(", ")
+    : undefined;
 
   const detailsContent = (
     <>
       {createTextDetailsGroup([
-        { label: 'ID', content: formatTextValue(decoder?.document?.id) },
-        { label: 'Integration', content: integrations },
-      ])}
-      {createTextDetailsGroup([
-        { label: 'Title', content: formatTextValue(decoder?.document?.metadata?.title) },
-        { label: 'Module', content: formatTextValue(decoder?.document?.metadata?.module) },
+        { label: "ID", content: formatTextValue(decoder?.document?.id) },
+        { label: "Integration", content: integrations },
       ])}
       {createTextDetailsGroup([
         {
-          label: 'Compatibility',
+          label: "Title",
+          content: formatTextValue(decoder?.document?.metadata?.title),
+        },
+        {
+          label: "Module",
+          content: formatTextValue(decoder?.document?.metadata?.module),
+        },
+      ])}
+      {createTextDetailsGroup([
+        {
+          label: "Compatibility",
           content: formatTextValue(decoder?.document?.metadata?.compatibility),
         },
-        { label: 'Versions', content: formatTextValue(decoder?.document?.metadata?.versions) },
+        {
+          label: "Versions",
+          content: formatTextValue(decoder?.document?.metadata?.versions),
+        },
       ])}
-      {decoder?.document?.metadata?.author && (
-        <>
-          <EuiTitle size="xs">
-            <h3>Author</h3>
-          </EuiTitle>
-          <EuiSpacer size="s" />
-          {createTextDetailsGroup([
-            {
-              label: 'Name',
-              content: formatTextValue(decoder.document.metadata.author.name),
-            },
-            {
-              label: 'Email',
-              content: formatTextValue(decoder.document.metadata.author.email),
-            },
-          ])}
-          {createTextDetailsGroup([
-            {
-              label: 'URL',
-              content: formatTextValue(decoder.document.metadata.author.url),
-              url: decoder.document.metadata.author.url,
-              target: '_blank',
-            },
-            {
-              label: 'Date',
-              content: formatTextValue(decoder.document.metadata.author.date),
-            },
-          ])}
-        </>
-      )}
+      {createTextDetailsGroup([
+        {
+          label: "Author",
+          content: formatTextValue(decoder?.document?.metadata?.author),
+        },
+        {
+          label: "Date",
+          content: formatTextValue(decoder?.document?.metadata?.date),
+        },
+      ])}
 
       {formatTextValue(decoder?.document?.metadata?.description) && (
         <>
@@ -202,7 +205,9 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
 
   const yamlContent = (
     <EuiCodeBlock language="yaml" isCopyable={true}>
-      {typeof decoder?.decoder === 'string' ? decoder?.decoder : JSON.stringify(decoder?.decoder, null, 2) ?? ''}
+      {typeof decoder?.decoder === "string"
+        ? decoder?.decoder
+        : (JSON.stringify(decoder?.decoder, null, 2) ?? "")}
     </EuiCodeBlock>
   );
 
@@ -222,10 +227,10 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
     if (!decoder) {
       return null;
     }
-    if (selectedView === 'yaml') {
+    if (selectedView === "yaml") {
       return yamlContent;
     }
-    if (selectedView === 'json') {
+    if (selectedView === "json") {
       return jsonContent;
     }
     return detailsContent;
@@ -246,7 +251,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
               <h2>
                 {decoder?.document?.name
                   ? `Decoder details - ${decoder.document.name}`
-                  : 'Decoder'}
+                  : "Decoder"}
               </h2>
             </EuiText>
           </EuiFlexItem>
