@@ -496,14 +496,42 @@ export async function getDataSources(
 
     if (indicesResponse.ok) {
       const indices = indicesResponse.response.indices;
-      const indexOptions = indices
-        .map(({ index }) => ({ label: index, value: index }))
-        .filter(({ label }) => !label.startsWith("."));
+      const indexOptions: { label: string; value: string }[] = [];
+      const dataStreamOptions: { label: string; value: string }[] = [];
+      const dataStreamsSet = new Set<string>();
 
-      dataSourceOptions.push({
-        label: "Indices",
-        options: indexOptions,
+      indices.forEach(({ index }) => {
+        const dsMatch = index.match(/^\.ds-(.+)-\d{6}$/);
+        
+        if (dsMatch) {
+          const dsName = dsMatch[1];
+          if (!dataStreamsSet.has(dsName)) {
+            dataStreamsSet.add(dsName);
+            dataStreamOptions.push({ label: dsName, value: dsName });
+          }
+        } else if (!index.startsWith(".")) {
+          indexOptions.push({ label: index, value: index });
+        }
       });
+
+      if (dataStreamOptions.length > 0) {
+        const aliasGroup = dataSourceOptions.find(group => group.label === "Aliases");
+        if (aliasGroup) {
+          aliasGroup.options.push(...dataStreamOptions);
+        } else {
+          dataSourceOptions.push({
+            label: "Aliases",
+            options: dataStreamOptions,
+          });
+        }
+      }
+
+      if (indexOptions.length > 0) {
+        dataSourceOptions.push({
+          label: "Indexes",
+          options: indexOptions,
+        });
+      }
     } else {
       errorNotificationToast(
         notifications,
