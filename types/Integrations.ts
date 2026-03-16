@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { RuleItemInfoBase } from './Rule';
+import { RuleItemInfoBase } from "./Rule";
+import { CatalogResourceMetadata } from "./ResourceMetadata";
 
 export interface IntegrationWithRules extends Integration {
   detectionRules: RuleItemInfoBase[];
@@ -17,31 +18,26 @@ export interface IntegrationItem extends Integration {
 
 export interface Integration {
   id: string;
-  document: IntegrationBase['document'];
-  space: IntegrationBase['space'];
+  document: IntegrationBase["document"];
+  space: IntegrationBase["space"];
 }
 
-export interface IntegrationDocumentCreate {
-  author: string;
-  category: string;
-  description: string;
-  documentation: string;
-  tags: {
-    correlation_id: number;
-  } | null;
-  title: string;
-}
+export interface IntegrationMetadata extends CatalogResourceMetadata {}
 
-export type IntegrationDocument = IntegrationDocumentCreate & {
-  id: string;
-  date: string;
-  references?: string[];
-  decoders?: string[];
-  kvdbs?: string[];
-  rules?: string[];
-};
 export interface IntegrationBase {
-  document: IntegrationDocument;
+  document: {
+    id: string;
+    parent_decoder?: string;
+    category: string;
+    metadata: IntegrationMetadata;
+    enabled?: boolean;
+    decoders?: string[];
+    kvdbs?: string[];
+    rules?: string[];
+    tags?: {
+      correlation_id: number;
+    } | null;
+  };
   space: {
     name: string;
   };
@@ -56,7 +52,7 @@ export interface SearchIntegrationsResponse {
   };
 }
 
-export type CreateIntegrationRequestBody = { document: IntegrationDocumentCreate };
+export interface CreateIntegrationRequestBody extends IntegrationBase {}
 
 export interface CreateIntegrationResponse {
   _id: string;
@@ -65,7 +61,7 @@ export interface CreateIntegrationResponse {
 
 export interface UpdateIntegrationParams {
   integrationId: string;
-  body: { resource: IntegrationBase['document'] };
+  body: { resource: IntegrationBase["document"] };
 }
 
 export interface UpdateIntegrationResponse {
@@ -81,14 +77,14 @@ export interface DeleteIntegrationResponse {}
 
 export interface PromoteIntegrationResponse {}
 
-export type UserSpace = 'draft' | 'test' | 'custom';
-export type PromoteSpaces = Omit<UserSpace, 'custom'>; // TODO: use the centralized items on constants instead
-export type PromoteNextSpaces = Omit<UserSpace, 'draft'>; // TODO: use the centralized items on constants instead
-export type NonUserSpace = 'standard';
+export type UserSpace = "draft" | "test" | "custom";
+export type PromoteSpaces = Omit<UserSpace, "custom">; // TODO: use the centralized items on constants instead
+export type PromoteNextSpaces = Omit<UserSpace, "draft">; // TODO: use the centralized items on constants instead
+export type NonUserSpace = "standard";
 export type Space = UserSpace | NonUserSpace;
 
-export type PromoteOperations = 'update' | 'add' | 'remove';
-export type PromoteOperationsPolicy = 'update';
+export type PromoteOperations = "update" | "add" | "delete";
+export type PromoteOperationsPolicy = "update";
 
 export interface PromoteChanges {
   policy: { operation: PromoteOperationsPolicy; id: string }[];
@@ -96,7 +92,6 @@ export interface PromoteChanges {
   kvdbs: { operation: PromoteOperations; id: string }[];
   decoders: { operation: PromoteOperations; id: string }[];
   filters: { operation: PromoteOperations; id: string }[];
-  rules: { operation: PromoteOperations; id: string }[];
 }
 
 export type PromoteChangeGroup = keyof PromoteChanges;
@@ -121,7 +116,6 @@ export interface GetPromoteBySpaceResponse {
       integrations: PromoteAvailablePromotionsMap;
       decoders: PromoteAvailablePromotionsMap;
       kvdbs: PromoteAvailablePromotionsMap;
-      rules: PromoteAvailablePromotionsMap;
     };
   };
 }
