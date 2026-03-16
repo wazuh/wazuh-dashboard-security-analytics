@@ -1,57 +1,46 @@
-import React from 'react';
-import { withGuardAsync } from '../utils/helpers';
-import { DataStore } from '../../../store/DataStore';
+import React from "react";
+import { withGuardAsync } from "../utils/helpers";
+import { DataStore } from "../../../store/DataStore";
 import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiText,
-  EuiTitle,
-  EuiToolTip,
-  EuiCard,
-  EuiButtonIcon,
   EuiDescriptionListTitle,
   EuiDescriptionListDescription,
   EuiDescriptionList,
-} from '@elastic/eui';
-import { DecoderSource, PolicyDocument, SearchPolicyOptions, Space } from '../../../../types';
-import { NotificationsStart } from 'opensearch-dashboards/public';
-import { SPACE_ACTIONS } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
-import { ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
-
-const truncateStyle: React.CSSProperties = {
-  display: '-webkit-box',
-  WebkitLineClamp: 4,
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  wordBreak: 'break-all',
-};
-
-const renderValue = (value: string | undefined | null): React.ReactNode => {
-  if (!value) return '-';
-
-  return (
-    <span title={value} style={truncateStyle}>
-      {value}
-    </span>
-  );
-};
+} from "@elastic/eui";
+import {
+  DecoderSource,
+  PolicyDocument,
+  SearchPolicyOptions,
+  Space,
+} from "../../../../types";
+import { ButtonSelectRootDecoder } from "./RootDecoderRequirement";
+import { NotificationsStart } from "opensearch-dashboards/public";
+import { SPACE_ACTIONS } from "../../../../common/constants";
+import { actionIsAllowedOnSpace } from "../../../../common/helpers";
 
 export const withPolicyGuard: <T>(
   searchPolicyOptions: SearchPolicyOptions,
-  withGuardOptions?: { rerunOn?: (props) => any[] }
 ) => (Component: React.FC<T>) => React.ReactElement = (
   searchPolicyOptions: SearchPolicyOptions = {},
-  withGuardOptions?: { rerunOn?: (props) => any[] }
 ) =>
   withGuardAsync(
     async ({ space }: { space: Space }) => {
       try {
-        const response = await DataStore.policies.searchPolicies(space, searchPolicyOptions);
+        const response = await DataStore.policies.searchPolicies(
+          space,
+          searchPolicyOptions,
+        );
+
         const item = response.items?.[0] || {};
 
-        const { document: policyDocumentData, space: spaceData, id, ...rest } = item as {
+        const {
+          document: policyDocumentData,
+          space: spaceData,
+          id,
+          ...rest
+        } = item as {
           document?: PolicyDocument;
           [key: string]: any;
         };
@@ -59,180 +48,99 @@ export const withPolicyGuard: <T>(
         const rootDecoderId = policyDocumentData?.root_decoder;
         let rootDecoder: DecoderSource | undefined;
         if (rootDecoderId) {
-          rootDecoder = await DataStore.decoders.getDecoder(rootDecoderId, space); // TODO: this could be obtained from the endpoint as rest
+          rootDecoder = await DataStore.decoders.getDecoder(
+            rootDecoderId,
+            space,
+          ); // TODO: this could be obtained from the endpoint as rest
         }
 
-        const ok = !Boolean(policyDocumentData);
-        const error = ok ? new Error('Policy data was not found') : null;
-
         return {
-          ok,
-          data: { policyDocumentData, rootDecoder, policyEnhancedData: rest, error },
+          ok: !Boolean(policyDocumentData),
+          data: { policyDocumentData, rootDecoder, policyEnhancedData: rest },
         };
       } catch (error) {
-        return { ok: true, data: { error } };
+        return { ok: false, data: { error } };
       }
     },
     ({ error }) =>
-      error ? <EuiText color="danger">Error loading the policy: {error.message}</EuiText> : null,
+      error ? (
+        <EuiText color="danger">
+          Error loading the policy: {error.message}
+        </EuiText>
+      ) : null,
     null,
-    withGuardOptions || {
+    {
       rerunOn: ({ space }) => [space],
-    }
+    },
   );
 
-export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
-  {
-    includeIntegrationFields: ['document'],
-  },
-  {
-    rerunOn: ({ space, refresh }) => [space, refresh],
-  }
-)(
-  ({
-    policyDocumentData,
-    rootDecoder,
-    notifications,
-    space,
-    onEditPolicy,
-  }: {
-    policyDocumentData: PolicyDocument;
-    rootDecoder: DecoderSource;
-    notifications: NotificationsStart;
-    space: Space;
-    onEditPolicy: () => void;
-    refreshKey: boolean;
-  }) => {
-    return (
-      <EuiCard
-        textAlign="left"
-        paddingSize="m"
-        title={
-          <EuiFlexGroup justifyContent="spaceBetween" gutterSize="none">
-            <EuiFlexItem>
-              <EuiTitle size="s">
-                <h3>Space details</h3>
-              </EuiTitle>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              {(actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) ||
-                actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS) ||
-                actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS)) && (
-                <EuiToolTip content={'Edit space details'}>
-                  <EuiButtonIcon
-                    onClick={onEditPolicy}
-                    iconType="pencil"
-                    aria-label="Edit space details"
-                  />
-                </EuiToolTip>
-              )}
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        }
-      >
-        <EuiFlexGroup direction="column" gutterSize="l">
-          <EuiFlexItem>
-            <EuiFlexGroup gutterSize="l">
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {renderValue(policyDocumentData.title)}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {renderValue(policyDocumentData.documentation)}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {policyDocumentData?.enabled ? 'yes' : 'no'}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Enrichments</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {policyDocumentData?.enrichments && policyDocumentData.enrichments.length > 0
-                      ? policyDocumentData.enrichments
-                          .map((e) => ENRICHMENT_LABELS[e as EnrichmentType] ?? e)
-                          .join(', ')
-                      : '-'}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-
-          <EuiFlexItem>
-            <EuiFlexGroup gutterSize="l">
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {renderValue(policyDocumentData.author)}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {renderValue(rootDecoder?.document?.name ?? '')}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {policyDocumentData?.index_unclassified_events ? 'yes' : 'no'}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem />
-            </EuiFlexGroup>
-          </EuiFlexItem>
-
-          <EuiFlexItem>
-            <EuiFlexGroup gutterSize="l">
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {renderValue(policyDocumentData.description)}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {renderValue(policyDocumentData.references?.join(', ') ?? '')}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem style={{ minWidth: 0 }}>
-                <EuiDescriptionList>
-                  <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
-                  <EuiDescriptionListDescription>
-                    {policyDocumentData?.index_discarded_events ? 'yes' : 'no'}
-                  </EuiDescriptionListDescription>
-                </EuiDescriptionList>
-              </EuiFlexItem>
-              <EuiFlexItem />
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiCard>
-    );
-  }
-);
+export const PolicyInfoCard: React.FC<{}> = withPolicyGuard({
+  includeIntegrationFields: ["document"],
+})(({
+  policyDocumentData,
+  rootDecoder,
+  notifications,
+  space,
+  check,
+}: {
+  policyDocumentData: PolicyDocument;
+  rootDecoder: DecoderSource;
+  notifications: NotificationsStart;
+  space: Space;
+  check;
+}) => {
+  const metadata = policyDocumentData.metadata;
+  return (
+    <EuiFlexGroup>
+      <EuiFlexItem>
+        <EuiDescriptionList compressed type="row">
+          <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {metadata?.title}
+          </EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {metadata?.description}
+          </EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {metadata?.author}
+          </EuiDescriptionListDescription>
+        </EuiDescriptionList>
+      </EuiFlexItem>
+      <EuiFlexItem>
+        <EuiDescriptionList compressed type="row">
+          <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {metadata?.documentation}
+          </EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {metadata?.references?.join(", ")}
+          </EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
+          <EuiDescriptionListDescription>
+            {rootDecoder?.document?.name ?? ""}
+            {actionIsAllowedOnSpace(
+              space,
+              SPACE_ACTIONS.DEFINE_ROOT_DECODER,
+            ) && (
+              <ButtonSelectRootDecoder
+                notifications={notifications}
+                space={space}
+                type="icon"
+                buttonProps={{
+                  iconType: "pencil",
+                  "aria-label": "Edit root decoder",
+                }}
+                policyDocumentData={policyDocumentData}
+                rootDecoderSource={rootDecoder}
+                onConfirm={check}
+              ></ButtonSelectRootDecoder>
+            )}
+          </EuiDescriptionListDescription>
+        </EuiDescriptionList>
+      </EuiFlexItem>
+    </EuiFlexGroup>
+  );
+});
