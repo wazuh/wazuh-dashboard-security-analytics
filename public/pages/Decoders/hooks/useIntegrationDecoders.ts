@@ -45,7 +45,7 @@ export function useIntegrationDecoders({
               id: item.id,
               name: item.document?.name,
               title: item.document?.metadata?.title,
-              author: item.document?.metadata?.author.name,
+              author: item.document?.metadata?.author,
             })),
           );
         }
