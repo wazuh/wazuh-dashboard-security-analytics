@@ -501,7 +501,7 @@ export async function getDataSources(
       const dataStreamsSet = new Set<string>();
 
       indices.forEach(({ index }) => {
-        const dsMatch = index.match(/^\.ds-(.+)-\d{6}$/);
+        const dsMatch = index.match(/^\.ds-(.+)-\d+$/);
         
         if (dsMatch) {
           const dsName = dsMatch[1];
