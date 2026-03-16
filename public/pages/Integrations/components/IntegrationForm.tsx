@@ -15,18 +15,18 @@ import {
   EuiCompressedSuperSelect,
   EuiCompressedTextArea,
   EuiText,
-} from '@elastic/eui';
-import { IntegrationItem } from '../../../../types';
-import React, { useEffect, useMemo, useCallback } from 'react';
+} from "@elastic/eui";
+import { IntegrationItem } from "../../../../types";
+import React, { useEffect, useMemo, useCallback } from "react";
 import {
   INTEGRATION_AUTHOR_REGEX,
   LOG_TYPE_NAME_REGEX,
   validateName,
-} from '../../../utils/validation';
-import { NotificationsStart } from 'opensearch-dashboards/public';
-import { useState } from 'react';
-import { getIntegrationCategoryOptions } from '../../../utils/helpers';
-import { FormFieldArray } from '../../../components/FormFieldArray';
+} from "../../../utils/validation";
+import { NotificationsStart } from "opensearch-dashboards/public";
+import { useState } from "react";
+import { getIntegrationCategoryOptions } from "../../../utils/helpers";
+import { FormFieldArray } from "../../../components/FormFieldArray";
 
 interface ReadOnlyFieldProps {
   value: string | undefined;
@@ -36,17 +36,17 @@ interface ReadOnlyFieldProps {
 
 const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({
   value,
-  placeholder = '-',
+  placeholder = "-",
   isTextArea = false,
 }) => (
   <EuiText
     size="s"
     style={{
-      padding: '6px 0',
-      lineHeight: isTextArea ? '1.5' : '20px',
-      whiteSpace: isTextArea ? 'pre-wrap' : 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
+      padding: "6px 0",
+      lineHeight: isTextArea ? "1.5" : "20px",
+      whiteSpace: isTextArea ? "pre-wrap" : "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
     }}
   >
     {value || placeholder}
@@ -70,11 +70,12 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   onCancel,
   onConfirm,
 }) => {
-  const [titleError, setTitleError] = useState('');
-  const [categoryError, setCategoryError] = useState('');
+  const [titleError, setTitleError] = useState("");
+  const [categoryError, setCategoryError] = useState("");
   const [categoryTouched, setCategoryTouched] = useState(false);
-  const [authorError, setAuthorError] = useState('');
-  const [editingIntegration, setEditingIntegration] = useState<IntegrationItem>(integrationDetails);
+  const [authorError, setAuthorError] = useState("");
+  const [editingIntegration, setEditingIntegration] =
+    useState<IntegrationItem>(integrationDetails);
 
   useEffect(() => {
     if (isEditMode) {
@@ -83,12 +84,22 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   }, [isEditMode, integrationDetails]);
 
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
-    const titleInvalid = !validateName(details.document.title, LOG_TYPE_NAME_REGEX, false);
-    const authorInvalid = !validateName(details.document.author, INTEGRATION_AUTHOR_REGEX, false);
-    const categoryInvalid = (categoryTouched || onSubmit) && !details.document.category;
-    setTitleError(titleInvalid ? 'Invalid title' : '');
-    setCategoryError(categoryInvalid ? 'Select category to assign' : '');
-    setAuthorError(authorInvalid ? 'Invalid author' : '');
+    const metadata = details.document.metadata;
+    const titleInvalid = !validateName(
+      metadata?.title,
+      LOG_TYPE_NAME_REGEX,
+      false,
+    );
+    const authorInvalid = !validateName(
+      metadata?.author,
+      INTEGRATION_AUTHOR_REGEX,
+      false,
+    );
+    const categoryInvalid =
+      (categoryTouched || onSubmit) && !details.document.category;
+    setTitleError(titleInvalid ? "Invalid title" : "");
+    setCategoryError(categoryInvalid ? "Select category to assign" : "");
+    setAuthorError(authorInvalid ? "Invalid author" : "");
 
     return { titleInvalid, categoryInvalid, authorInvalid };
   };
@@ -99,7 +110,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         ...option,
         disabled: !!integrationDetails.detectionRulesCount,
       })),
-    [categoryOptions, integrationDetails.detectionRulesCount]
+    [categoryOptions, integrationDetails.detectionRulesCount],
   );
 
   const getCategoryLabel = useCallback(
@@ -108,11 +119,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       const found = categoryOptions.find((opt) => opt.value === categoryValue);
       return found?.inputDisplay as string | undefined;
     },
-    [categoryOptions]
+    [categoryOptions],
   );
 
   const onConfirmClicked = useCallback(() => {
-    const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(editingIntegration, true);
+    const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(
+      editingIntegration,
+      true,
+    );
 
     if (titleInvalid || categoryInvalid || authorInvalid) {
       notifications?.toasts.addDanger({
@@ -127,34 +141,37 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
 
   const onCancelClicked = useCallback(() => {
     setEditingIntegration(integrationDetails);
-    setTitleError('');
-    setCategoryError('');
+    setTitleError("");
+    setCategoryError("");
     setCategoryTouched(false);
-    setAuthorError('');
+    setAuthorError("");
     onCancel();
   }, [integrationDetails, onCancel]);
 
   return (
     <>
-      <div style={{ paddingBottom: isEditMode ? '60px' : '0' }}>
+      <div style={{ paddingBottom: isEditMode ? "60px" : "0" }}>
         <EuiCompressedFormRow
           label="Title"
           helpText={
             isEditMode &&
-            'Must contain 2-50 characters. Valid characters are a-z, 0-9, hyphens, and underscores'
+            "Must contain 2-50 characters. Valid characters are a-z, 0-9, hyphens, and underscores"
           }
           isInvalid={!!titleError}
           error={titleError}
         >
           {isEditMode ? (
             <EuiCompressedFieldText
-              value={editingIntegration?.document.title}
+              value={editingIntegration?.document.metadata?.title}
               onChange={(e) => {
                 const newIntegration = {
                   ...editingIntegration!,
                   document: {
                     ...editingIntegration!.document,
-                    title: e.target.value,
+                    metadata: {
+                      ...editingIntegration!.document.metadata,
+                      title: e.target.value,
+                    },
                   },
                 };
                 setEditingIntegration(newIntegration);
@@ -163,7 +180,9 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
               disabled={!!integrationDetails.detectionRulesCount}
             />
           ) : (
-            <ReadOnlyField value={integrationDetails?.document.title} />
+            <ReadOnlyField
+              value={integrationDetails?.document.metadata?.title}
+            />
           )}
         </EuiCompressedFormRow>
         <EuiSpacer />
@@ -171,23 +190,26 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
           label={
             isEditMode ? (
               <>
-                {'Description - '}
+                {"Description - "}
                 <em>optional</em>
               </>
             ) : (
-              'Description'
+              "Description"
             )
           }
         >
           {isEditMode ? (
             <EuiCompressedTextArea
-              value={editingIntegration?.document?.description}
+              value={editingIntegration?.document?.metadata?.description}
               onChange={(e) => {
                 const newIntegration = {
                   ...editingIntegration!,
                   document: {
                     ...editingIntegration!.document,
-                    description: e.target.value,
+                    metadata: {
+                      ...editingIntegration!.document.metadata,
+                      description: e.target.value,
+                    },
                   },
                 };
                 setEditingIntegration(newIntegration);
@@ -196,11 +218,18 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
               placeholder="Description of the integration"
             />
           ) : (
-            <ReadOnlyField value={integrationDetails?.document?.description} isTextArea />
+            <ReadOnlyField
+              value={integrationDetails?.document?.metadata?.description}
+              isTextArea
+            />
           )}
         </EuiCompressedFormRow>
         <EuiSpacer />
-        <EuiCompressedFormRow label="Category" isInvalid={!!categoryError} error={categoryError}>
+        <EuiCompressedFormRow
+          label="Category"
+          isInvalid={!!categoryError}
+          error={categoryError}
+        >
           {isEditMode ? (
             <EuiCompressedSuperSelect
               options={categoryOptionsWithDisabled}
@@ -220,24 +249,29 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
               disabled={!!integrationDetails.detectionRulesCount}
             />
           ) : (
-            <ReadOnlyField value={getCategoryLabel(integrationDetails?.document.category)} />
+            <ReadOnlyField
+              value={getCategoryLabel(integrationDetails?.document.category)}
+            />
           )}
         </EuiCompressedFormRow>
         <EuiCompressedFormRow
           label="Author"
-          helpText={isEditMode && 'Must contain 2-50 characters.'}
+          helpText={isEditMode && "Must contain 2-50 characters."}
           isInvalid={!!authorError}
           error={authorError}
         >
           {isEditMode ? (
             <EuiCompressedFieldText
-              value={editingIntegration?.document.author}
+              value={editingIntegration?.document.metadata?.author}
               onChange={(e) => {
                 const newIntegration = {
                   ...editingIntegration!,
                   document: {
                     ...editingIntegration!.document,
-                    author: e.target.value,
+                    metadata: {
+                      ...editingIntegration!.document.metadata,
+                      author: e.target.value,
+                    },
                   },
                 };
                 setEditingIntegration(newIntegration);
@@ -246,31 +280,36 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
               disabled={!!integrationDetails.detectionRulesCount}
             />
           ) : (
-            <ReadOnlyField value={integrationDetails?.document.author} />
+            <ReadOnlyField
+              value={integrationDetails?.document.metadata?.author}
+            />
           )}
         </EuiCompressedFormRow>
         <EuiCompressedFormRow
           label={
             isEditMode ? (
               <>
-                {'Documentation - '}
+                {"Documentation - "}
                 <em>optional</em>
               </>
             ) : (
-              'Documentation'
+              "Documentation"
             )
           }
-          helpText={isEditMode && 'Must contain 2-100 characters.'}
+          helpText={isEditMode && "Must contain 2-100 characters."}
         >
           {isEditMode ? (
             <EuiCompressedFieldText
-              value={editingIntegration?.document.documentation}
+              value={editingIntegration?.document.metadata?.documentation}
               onChange={(e) => {
                 const newIntegration = {
                   ...editingIntegration!,
                   document: {
                     ...editingIntegration!.document,
-                    documentation: e.target.value,
+                    metadata: {
+                      ...editingIntegration!.document.metadata,
+                      documentation: e.target.value,
+                    },
                   },
                 };
                 setEditingIntegration(newIntegration);
@@ -279,7 +318,9 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
               disabled={!!integrationDetails.detectionRulesCount}
             />
           ) : (
-            <ReadOnlyField value={integrationDetails?.document.documentation} />
+            <ReadOnlyField
+              value={integrationDetails?.document.metadata?.documentation}
+            />
           )}
         </EuiCompressedFormRow>
         <EuiSpacer />
@@ -287,11 +328,11 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
           <FormFieldArray
             label={
               <>
-                {'References - '}
+                {"References - "}
                 <em>optional</em>
               </>
             }
-            values={editingIntegration?.document?.references || []}
+            values={editingIntegration?.document?.metadata?.references || []}
             placeholder="https://example.com/reference"
             readOnly={false}
             addButtonLabel="Add reference"
@@ -300,7 +341,10 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                 ...editingIntegration!,
                 document: {
                   ...editingIntegration!.document,
-                  references,
+                  metadata: {
+                    ...editingIntegration!.document.metadata,
+                    references,
+                  },
                 },
               };
               setEditingIntegration(newIntegration);
@@ -308,14 +352,16 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
             }}
           />
         ) : (
-          integrationDetails?.document?.references?.length > 0 && (
+          integrationDetails?.document?.metadata?.references?.length > 0 && (
             <>
               <EuiCompressedFormRow label="References">
                 <EuiText size="s">
-                  <ul style={{ paddingLeft: '20px', marginBottom: 0 }}>
-                    {integrationDetails.document.references.map((ref: string, index: number) => (
-                      <li key={index}>{ref || '-'}</li>
-                    ))}
+                  <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
+                    {integrationDetails.document.metadata.references.map(
+                      (ref: string, index: number) => (
+                        <li key={index}>{ref || "-"}</li>
+                      ),
+                    )}
                   </ul>
                 </EuiText>
               </EuiCompressedFormRow>
@@ -328,12 +374,23 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         <EuiBottomBar>
           <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
             <EuiFlexItem grow={false}>
-              <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={onCancelClicked}>
+              <EuiButtonEmpty
+                color="ghost"
+                size="s"
+                iconType="cross"
+                onClick={onCancelClicked}
+              >
                 Cancel
               </EuiButtonEmpty>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiButton color="primary" fill iconType="check" size="s" onClick={onConfirmClicked}>
+              <EuiButton
+                color="primary"
+                fill
+                iconType="check"
+                size="s"
+                onClick={onConfirmClicked}
+              >
                 {confirmButtonText}
               </EuiButton>
             </EuiFlexItem>
