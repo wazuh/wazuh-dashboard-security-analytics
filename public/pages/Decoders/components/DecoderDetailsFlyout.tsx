@@ -187,6 +187,24 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
           label: "Date",
           content: formatTextValue(decoder?.document?.metadata?.date),
         },
+        {
+          label: "Modified",
+          content: formatTextValue(decoder?.document?.metadata?.modified),
+        },
+      ])}
+      {createTextDetailsGroup([
+        {
+          label: "References",
+          content: formatTextValue(decoder?.document?.metadata?.references),
+        },
+        {
+          label: "Documentation",
+          content: formatTextValue(decoder?.document?.metadata?.documentation),
+        },
+        {
+          label: "Supports",
+          content: formatTextValue(decoder?.document?.metadata?.supports),
+        },
       ])}
 
       {formatTextValue(decoder?.document?.metadata?.description) && (

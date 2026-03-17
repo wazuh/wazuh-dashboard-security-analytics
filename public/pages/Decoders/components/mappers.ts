@@ -27,8 +27,10 @@ export const decoderFormDefaultValue: DecoderFormModel = {
       "This is a placeholder decoder. Please update the fields accordingly.",
     author: "User",
     date: new Date().toISOString().split("T")[0],
+    modified: new Date().toISOString().split("T")[0],
     references: [],
     documentation: "",
+    supports: [],
   },
 };
 
