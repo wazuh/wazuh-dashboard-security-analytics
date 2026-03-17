@@ -370,10 +370,11 @@ export async function getIntegrationOptionsBySpace(
 ): Promise<{ value: string; label: string }[]> {
   const integrations = await DataStore.integrations.getIntegrations(space);
   return integrations
-    .map(({ document: { title } }) => ({
-      value: title,
-      label: title,
+    .map(({ document: { metadata } }) => ({
+      value: metadata?.title ?? "",
+      label: metadata?.title ?? "",
     }))
+    .filter((opt) => opt.label)
     .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
 }
 

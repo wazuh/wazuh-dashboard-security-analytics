@@ -5,6 +5,13 @@
 
 import { IntegrationBase } from "../../../../types";
 
+export const OVERVIEW_TAB = {
+  INTEGRATIONS: "integrations",
+  FILTERS: "filters",
+} as const;
+
+export type OverviewTabId = (typeof OVERVIEW_TAB)[keyof typeof OVERVIEW_TAB];
+
 export const integrationDetailsTabs = [
   {
     id: "details",

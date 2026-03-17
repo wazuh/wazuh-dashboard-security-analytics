@@ -98,9 +98,9 @@ export class IntegrationStore {
           0,
           ruleTypes.length,
           ...integrations
-            .map(({ id, document: { category, title }, space }) => ({
-              label: getIntegrationLabel(title),
-              value: title,
+            .map(({ id, document: { category, metadata }, space }) => ({
+              label: getIntegrationLabel(metadata?.title),
+              value: metadata?.title ?? "",
               id,
               category,
               isStandard: space.name === "Standard",
