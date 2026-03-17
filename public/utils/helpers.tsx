@@ -517,11 +517,16 @@ export async function getDataSources(
       const dataStreamOptions: { label: string; value: string }[] = [];
       const dataStreamsSet = new Set<string>();
 
+      // Matches OpenSearch data stream backing indices (e.g., .ds-wazuh-alerts-000001)
+      const DATA_STREAM_BACKING_INDEX_PATTERN = /^\.ds-(.+)-\d+$/;
+      // Regex capture group containing the logical data stream name
+      const DATA_STREAM_NAME_GROUP = 1;
+
       indices.forEach(({ index }) => {
-        const dsMatch = index.match(/^\.ds-(.+)-\d+$/);
+        const dsMatch = index.match(DATA_STREAM_BACKING_INDEX_PATTERN);
 
         if (dsMatch) {
-          const dsName = dsMatch[1];
+          const dsName = dsMatch[DATA_STREAM_NAME_GROUP];
           if (!dataStreamsSet.has(dsName)) {
             dataStreamsSet.add(dsName);
             dataStreamOptions.push({ label: dsName, value: dsName });
@@ -551,18 +556,10 @@ export async function getDataSources(
           options: indexOptions,
         });
       }
-      // Wazuh -- end1
     } else {
-      errorNotificationToast(
-        notifications,
-        "retrieve",
-        "indices",
-        indicesResponse.error,
-      );
-
-      return { ok: false, error: indicesResponse.error };
+      throw indicesResponse.error;
     }
-
+    // Wazuh -- end
     return {
       ok: true,
       dataSources: dataSourceOptions,
