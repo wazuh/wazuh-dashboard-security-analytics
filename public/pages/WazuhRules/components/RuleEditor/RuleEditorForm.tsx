@@ -20,6 +20,7 @@ import {
   EuiTitle,
   EuiPanel,
   EuiLink,
+  EuiSwitch,
 } from '@elastic/eui';
 import { FieldTextArray } from '../../../Rules/components/RuleEditor/components/FieldTextArray';
 import { ruleSeverity, ruleStatus } from '../../../Rules/utils/constants';
@@ -34,9 +35,11 @@ import {
 } from '../../../../utils/validation';
 import { RuleEditorFormModel } from './RuleEditorFormModel';
 import { FormSubmissionErrorToastNotification } from '../../../Rules/components/RuleEditor/FormSubmitionErrorToastNotification';
-import { YamlRuleEditorComponent } from '../../../Rules/components/RuleEditor/components/YamlRuleEditorComponent/YamlRuleEditorComponent';
+import { YamlRuleEditorComponent } from './components/YamlRuleEditorComponent/YamlRuleEditorComponent';
 import { mapFormToRule, mapRuleToForm } from './mappers';
 import { DetectionVisualEditor } from '../../../Rules/components/RuleEditor/DetectionVisualEditor';
+import { MitreVisualEditor } from './components/MitreVisualEditor/MitreVisualEditor';
+import { ComplianceVisualEditor } from './components/ComplianceVisualEditor/ComplianceVisualEditor';
 import { getSeverityLabel } from '../../../Correlations/utils/constants';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { TopNavControlLinkData } from '../../../../../../../src/plugins/navigation/public';
@@ -390,6 +393,23 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                   />
                 </EuiCompressedFormRow>
 
+                <EuiSpacer />
+
+                <EuiCompressedFormRow
+                  label={
+                    <EuiText size={'s'}>
+                      <strong>Enabled</strong>
+                    </EuiText>
+                  }
+                >
+                  <EuiSwitch
+                    label={props.values.enabled ? 'Rule is enabled' : 'Rule is disabled'}
+                    checked={props.values.enabled}
+                    onChange={(e) => props.setFieldValue('enabled', e.target.checked)}
+                    data-test-subj={'rule_enabled_toggle'}
+                  />
+                </EuiCompressedFormRow>
+
                 <EuiSpacer size={'xxl'} />
 
                 <EuiTitle>
@@ -419,6 +439,38 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                   onChange={(detection: string) => {
                     props.handleChange('detection')(detection);
                   }}
+                />
+
+                <EuiSpacer size="xl" />
+
+                <EuiTitle size="xxs">
+                  <EuiText size="s">
+                    <h3>MITRE ATT&CK</h3>
+                  </EuiText>
+                </EuiTitle>
+                <EuiText size="xs" color="subdued">
+                  Map this rule to MITRE ATT&CK tactics, techniques and subtechniques.
+                </EuiText>
+                <EuiSpacer size="s" />
+                <MitreVisualEditor
+                  mitreYml={props.values.mitre || ''}
+                  onChange={(value) => props.setFieldValue('mitre', value)}
+                />
+
+                <EuiSpacer size="xl" />
+
+                <EuiTitle size="xxs">
+                  <EuiText size="s">
+                    <h3>Compliance</h3>
+                  </EuiText>
+                </EuiTitle>
+                <EuiText size="xs">
+                  Map this rule to compliance frameworks (PCI DSS, GDPR, HIPAA, etc.).
+                </EuiText>
+                <EuiSpacer size="s" />
+                <ComplianceVisualEditor
+                  complianceYml={props.values.compliance || ''}
+                  onChange={(value) => props.setFieldValue('compliance', value)}
                 />
 
                 <EuiSpacer size={'xl'} />

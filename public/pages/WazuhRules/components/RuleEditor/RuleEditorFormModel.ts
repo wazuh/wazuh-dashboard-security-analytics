@@ -4,6 +4,7 @@
  */
 
 import { DEFAULT_RULE_UUID } from '../../../../../common/constants';
+import { Rule } from '../../../../../types';
 import { ruleStatus } from '../../../Rules/utils/constants';
 
 export interface RuleEditorFormModel {
@@ -19,6 +20,10 @@ export interface RuleEditorFormModel {
   detection: string;
   level: string;
   falsePositives: string[];
+  mitre: string;
+  compliance: string;
+  enabled: boolean;
+  metadata?: Rule['metadata'];
 }
 
 export const ruleEditorStateDefaultValue: RuleEditorFormModel = {
@@ -34,4 +39,7 @@ export const ruleEditorStateDefaultValue: RuleEditorFormModel = {
   detection: '',
   level: '',
   falsePositives: [],
+  mitre: '',
+  compliance: '',
+  enabled: true,
 };

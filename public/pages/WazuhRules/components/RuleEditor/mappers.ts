@@ -23,6 +23,16 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
     false_positives: formState.falsePositives.map((falsePositive) => ({
       value: falsePositive,
     })),
+    metadata: {
+      ...formState.metadata,
+      title: formState.name,
+      author: formState.author,
+      description: formState.description,
+      references: formState.references,
+    },
+    mitre: formState.mitre,
+    compliance: formState.compliance,
+    enabled: formState.enabled,
   };
 };
 
@@ -47,5 +57,9 @@ export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
     falsePositives: rule.false_positives
       ? rule.false_positives.map((falsePositive) => falsePositive.value)
       : ruleEditorStateDefaultValue.falsePositives,
+    mitre: rule.mitre,
+    compliance: rule.compliance,
+    enabled: rule.enabled ?? true,
+    metadata: rule.metadata,
   };
 };
