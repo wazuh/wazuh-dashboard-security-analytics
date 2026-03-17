@@ -48,11 +48,18 @@ export default class WazuhRulesService {
     return { bool };
   }
 
+  private parseYamlField(yamlStr: string | undefined): any {
+    if (!yamlStr || (typeof yamlStr === 'string' && !yamlStr.trim())) return undefined;
+    if (typeof yamlStr !== 'string') return yamlStr;
+    try {
+      return load(yamlStr);
+    } catch {
+      return undefined;
+    }
+  }
+
   private buildRuleResource(rule: Rule) {
     const resource: Record<string, any> = {
-      title: rule.title,
-      description: rule.description,
-      author: rule.author,
       level: rule.level,
       status: rule.status,
       logsource:
@@ -60,11 +67,33 @@ export default class WazuhRulesService {
           ? rule.log_source
           : { category: rule.category },
       detection: load(rule.detection),
+      enabled: rule.enabled ?? true,
     };
-    if (rule.references?.length) resource.references = rule.references.map((r) => r.value);
+
     if (rule.tags?.length) resource.tags = rule.tags.map((t) => t.value);
     if (rule.false_positives?.length)
       resource.falsepositives = rule.false_positives.map((fp) => fp.value);
+
+    const metadata: Record<string, any> = {
+      title: rule.metadata?.title || rule.title,
+      author: rule.metadata?.author || rule.author,
+      description: rule.metadata?.description || rule.description,
+      references: rule.metadata?.references?.length
+        ? rule.metadata.references
+        : rule.references?.map((r) => r.value) ?? [],
+    };
+    if (rule.metadata?.date) metadata.date = rule.metadata.date;
+    if (rule.metadata?.modified) metadata.modified = rule.metadata.modified;
+    if (rule.metadata?.documentation) metadata.documentation = rule.metadata.documentation;
+    if (rule.metadata?.supports?.length) metadata.supports = rule.metadata.supports;
+    resource.metadata = metadata;
+
+    const mitre = this.parseYamlField(rule.mitre);
+    if (mitre) resource.mitre = mitre;
+
+    const compliance = this.parseYamlField(rule.compliance);
+    if (compliance) resource.compliance = compliance;
+
     return resource;
   }
 

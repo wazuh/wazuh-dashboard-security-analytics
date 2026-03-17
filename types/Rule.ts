@@ -23,6 +23,19 @@ export interface Rule {
   references: Array<{ value: string }>;
   author: string;
   detection: string;
+  metadata: {
+    title?: string;
+    author?: string;
+    date?: string;
+    modified?: string;
+    description?: string;
+    references?: string[];
+    documentation?: string;
+    supports?: string[];
+  };
+  mitre: string;
+  compliance: string;
+  enabled: boolean;
 }
 
 export type RuleSource = Rule & {
