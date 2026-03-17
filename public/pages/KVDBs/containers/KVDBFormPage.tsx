@@ -16,48 +16,51 @@ import {
   EuiSpacer,
   EuiText,
   EuiToolTip,
-} from '@elastic/eui';
-import { Form, Formik, FormikErrors } from 'formik';
-import { NotificationsStart } from 'opensearch-dashboards/public';
-import React, { useCallback, useEffect, useState } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+} from "@elastic/eui";
+import { Form, Formik, FormikErrors } from "formik";
+import { NotificationsStart } from "opensearch-dashboards/public";
+import React, { useCallback, useEffect, useState } from "react";
+import { RouteComponentProps } from "react-router-dom";
 import {
   IntegrationComboBox,
   useIntegrationSelector,
-} from '../../../components/IntegrationComboBox';
-import FormFieldHeader from '../../../components/FormFieldHeader';
-import { FormFieldArray } from '../../../components/FormFieldArray';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+} from "../../../components/IntegrationComboBox";
+import FormFieldHeader from "../../../components/FormFieldHeader";
+import { FormFieldArray } from "../../../components/FormFieldArray";
+import { PageHeader } from "../../../components/PageHeader/PageHeader";
+import { DataStore } from "../../../store/DataStore";
+import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
 import {
   errorNotificationToast,
   setBreadcrumbs,
   successNotificationToast,
-} from '../../../utils/helpers';
-import { ContentEntry, KVDBContentEditor } from '../components/KVDBContentEditor';
+} from "../../../utils/helpers";
+import {
+  ContentEntry,
+  KVDBContentEditor,
+} from "../components/KVDBContentEditor";
 import {
   kvdbFormDefaultValue,
   KVDBFormModel,
   mapFormToKVDBResource,
   mapKVDBToForm,
-} from '../utils/mappers';
+} from "../utils/mappers";
 
 const KVDB_ACTION = {
-  CREATE: 'create',
-  EDIT: 'edit',
+  CREATE: "create",
+  EDIT: "edit",
 } as const;
 
-type KVDBAction = typeof KVDB_ACTION[keyof typeof KVDB_ACTION];
+type KVDBAction = (typeof KVDB_ACTION)[keyof typeof KVDB_ACTION];
 
 const actionLabels: Record<KVDBAction, string> = {
-  create: 'Create',
-  edit: 'Edit',
+  create: "Create",
+  edit: "Edit",
 };
 
 type KVDBFormPageProps = {
   notifications: NotificationsStart;
-  history: RouteComponentProps['history'];
+  history: RouteComponentProps["history"];
   action: KVDBAction;
   match: { params: { id?: string } };
 };
@@ -66,13 +69,15 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const kvdbId = props.match.params.id;
   const [isLoading, setIsLoading] = useState(false);
-  const [integrationType, setIntegrationType] = useState<string>('');
-  const [initialValue, setInitialValue] = useState<KVDBFormModel>(kvdbFormDefaultValue);
+  const [integrationType, setIntegrationType] = useState<string>("");
+  const [initialValue, setInitialValue] =
+    useState<KVDBFormModel>(kvdbFormDefaultValue);
 
-  const { loading: loadingIntegrations, options: integrationTypeOptions } = useIntegrationSelector({
-    notifications,
-    enabled: action === KVDB_ACTION.CREATE,
-  });
+  const { loading: loadingIntegrations, options: integrationTypeOptions } =
+    useIntegrationSelector({
+      notifications,
+      enabled: action === KVDB_ACTION.CREATE,
+    });
 
   useEffect(() => {
     if (action !== KVDB_ACTION.EDIT) return;
@@ -88,14 +93,14 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
           BREADCRUMBS.NORMALIZATION,
           BREADCRUMBS.KVDBS,
           BREADCRUMBS.KVDBS_EDIT,
-          { text: item?.document?.title || kvdbId },
+          { text: item?.document?.metadata?.title || kvdbId },
         ]);
       } catch {
         errorNotificationToast(
           notifications,
-          'retrieve',
-          'KVDB',
-          `There was an error retrieving the KVDB with id ${kvdbId}.`
+          "retrieve",
+          "KVDB",
+          `There was an error retrieving the KVDB with id ${kvdbId}.`,
         );
       } finally {
         setIsLoading(false);
@@ -107,11 +112,15 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
 
   useEffect(() => {
     if (action !== KVDB_ACTION.CREATE) return;
-    setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS, BREADCRUMBS.KVDBS_CREATE]);
+    setBreadcrumbs([
+      BREADCRUMBS.NORMALIZATION,
+      BREADCRUMBS.KVDBS,
+      BREADCRUMBS.KVDBS_CREATE,
+    ]);
   }, [action]);
 
   const onIntegrationChange = useCallback((options: Array<{ id?: string }>) => {
-    setIntegrationType(options[0]?.id || '');
+    setIntegrationType(options[0]?.id || "");
   }, []);
 
   const createKVDB = useCallback(
@@ -126,13 +135,14 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
         successNotificationToast(
           notifications,
           KVDB_ACTION.CREATE,
-          'KVDB',
-          result.message || `The KVDB "${values.title}" has been created successfully.`
+          "KVDB",
+          result.message ||
+            `The KVDB "${values.title}" has been created successfully.`,
         );
         history.push(ROUTES.KVDBS);
       }
     },
-    [integrationType, notifications, history]
+    [integrationType, notifications, history],
   );
 
   const updateKVDB = useCallback(
@@ -145,14 +155,15 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       if (result) {
         successNotificationToast(
           notifications,
-          'update',
-          'KVDB',
-          result.message || `The KVDB "${values.title}" has been updated successfully.`
+          "update",
+          "KVDB",
+          result.message ||
+            `The KVDB "${values.title}" has been updated successfully.`,
         );
         history.push(ROUTES.KVDBS);
       }
     },
-    [kvdbId, notifications, history]
+    [kvdbId, notifications, history],
   );
 
   const handleSubmit = useCallback(
@@ -163,20 +174,20 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
         await updateKVDB(values);
       }
     },
-    [action, createKVDB, updateKVDB]
+    [action, createKVDB, updateKVDB],
   );
 
   const validateForm = useCallback((values: KVDBFormModel) => {
     const errors: FormikErrors<KVDBFormModel> = {};
 
     if (!values.title.trim()) {
-      errors.title = 'Title is required';
+      errors.title = "Title is required";
     } else if (/\s/.test(values.title)) {
-      errors.title = 'Title must not contain spaces';
+      errors.title = "Title must not contain spaces";
     }
 
     if (!values.author.trim()) {
-      errors.author = 'Author is required';
+      errors.author = "Author is required";
     }
 
     const keyCounts: Record<string, number> = {};
@@ -190,20 +201,20 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
         const entryErrors: FormikErrors<ContentEntry> = {};
 
         if (entry.key.trim() && keyCounts[entry.key.trim()] > 1) {
-          entryErrors.key = 'Duplicate key';
+          entryErrors.key = "Duplicate key";
         }
 
         const trimmed = entry.value.trim();
-        if (trimmed[0] === '{' || trimmed[0] === '[') {
+        if (trimmed[0] === "{" || trimmed[0] === "[") {
           try {
             JSON.parse(trimmed);
           } catch {
-            entryErrors.value = 'Invalid JSON';
+            entryErrors.value = "Invalid JSON";
           }
         }
 
         return entryErrors;
-      }
+      },
     );
 
     if (contentErrors.some((e) => Object.keys(e).length > 0)) {
@@ -215,7 +226,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
 
   const handleSubmitForm = async (
     values: KVDBFormModel,
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
   ) => {
     try {
       await handleSubmit(values);
@@ -233,19 +244,23 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const getSubmitTooltip = (errors: FormikErrors<KVDBFormModel>) => {
     const messages: string[] = [];
     if (action === KVDB_ACTION.CREATE && !integrationType) {
-      messages.push('Select an integration to proceed');
+      messages.push("Select an integration to proceed");
     }
     if (errors.title || errors.author) {
-      messages.push('Please fix the errors in the form to proceed');
+      messages.push("Please fix the errors in the form to proceed");
     }
-    return messages.length > 0 ? messages.join('. ') : undefined;
+    return messages.length > 0 ? messages.join(". ") : undefined;
   };
 
   return (
     <>
       {isLoading ? (
         <EuiPanel>
-          <EuiFlexGroup justifyContent="center" alignItems="center" style={{ minHeight: '400px' }}>
+          <EuiFlexGroup
+            justifyContent="center"
+            alignItems="center"
+            style={{ minHeight: "400px" }}
+          >
             <EuiFlexItem grow={false}>
               <EuiLoadingSpinner size="xl" />
             </EuiFlexItem>
@@ -253,7 +268,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
         </EuiPanel>
       ) : (
         <Formik
-          key={kvdbId || 'new-kvdb'}
+          key={kvdbId || "new-kvdb"}
           initialValues={initialValue}
           validateOnMount={true}
           enableReinitialize={true}
@@ -269,8 +284,8 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   </EuiText>
                   <EuiText size="s" color="subdued">
                     {action === KVDB_ACTION.CREATE
-                      ? 'Create a new KVDB.'
-                      : 'Edit the KVDB to update its configuration.'}
+                      ? "Create a new KVDB."
+                      : "Edit the KVDB to update its configuration."}
                   </EuiText>
                   <EuiSpacer />
                 </PageHeader>
@@ -287,77 +302,97 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   </>
                 )}
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Title'} />}
+                  label={<FormFieldHeader headerTitle={"Title"} />}
                   fullWidth={true}
-                  isInvalid={!!formikProps.errors.title && formikProps.touched.title}
+                  isInvalid={
+                    !!formikProps.errors.title && formikProps.touched.title
+                  }
                   error={formikProps.errors.title}
                 >
                   <EuiCompressedFieldText
                     placeholder="Enter KVDB title"
                     value={formikProps.values.title}
-                    onChange={(e) => formikProps.setFieldValue('title', e.target.value)}
-                    onBlur={() => formikProps.setFieldTouched('title')}
-                    isInvalid={!!formikProps.errors.title && formikProps.touched.title}
+                    onChange={(e) =>
+                      formikProps.setFieldValue("title", e.target.value)
+                    }
+                    onBlur={() => formikProps.setFieldTouched("title")}
+                    isInvalid={
+                      !!formikProps.errors.title && formikProps.touched.title
+                    }
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Author'} />}
+                  label={<FormFieldHeader headerTitle={"Author"} />}
                   fullWidth={true}
-                  isInvalid={!!formikProps.errors.author && formikProps.touched.author}
+                  isInvalid={
+                    !!formikProps.errors.author && formikProps.touched.author
+                  }
                   error={formikProps.errors.author}
                 >
                   <EuiCompressedFieldText
                     placeholder="Enter author name"
                     value={formikProps.values.author}
-                    onChange={(e) => formikProps.setFieldValue('author', e.target.value)}
-                    onBlur={() => formikProps.setFieldTouched('author')}
-                    isInvalid={!!formikProps.errors.author && formikProps.touched.author}
+                    onChange={(e) =>
+                      formikProps.setFieldValue("author", e.target.value)
+                    }
+                    onBlur={() => formikProps.setFieldTouched("author")}
+                    isInvalid={
+                      !!formikProps.errors.author && formikProps.touched.author
+                    }
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Description'} />}
+                  label={<FormFieldHeader headerTitle={"Description"} />}
                   fullWidth={true}
                 >
                   <EuiCompressedTextArea
                     placeholder="Enter a description"
                     value={formikProps.values.description}
-                    onChange={(e) => formikProps.setFieldValue('description', e.target.value)}
+                    onChange={(e) =>
+                      formikProps.setFieldValue("description", e.target.value)
+                    }
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Documentation'} />}
+                  label={<FormFieldHeader headerTitle={"Documentation"} />}
                   fullWidth={true}
                 >
                   <EuiCompressedFieldText
                     placeholder="Enter documentation URL"
                     value={formikProps.values.documentation}
-                    onChange={(e) => formikProps.setFieldValue('documentation', e.target.value)}
+                    onChange={(e) =>
+                      formikProps.setFieldValue("documentation", e.target.value)
+                    }
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
                 <FormFieldArray
-                  label={<FormFieldHeader headerTitle={'References'} />}
+                  label={<FormFieldHeader headerTitle={"References"} />}
                   values={formikProps.values.references}
                   placeholder="https://example.com/reference"
                   addButtonLabel="Add reference"
-                  onChange={(references) => formikProps.setFieldValue('references', references)}
+                  onChange={(references) =>
+                    formikProps.setFieldValue("references", references)
+                  }
                 />
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Enabled'} />}
+                  label={<FormFieldHeader headerTitle={"Enabled"} />}
                   fullWidth={true}
                 >
                   <EuiCompressedSwitch
-                    label={formikProps.values.enabled ? 'Enabled' : 'Disabled'}
+                    label={formikProps.values.enabled ? "Enabled" : "Disabled"}
                     checked={formikProps.values.enabled}
-                    onChange={(e) => formikProps.setFieldValue('enabled', e.target.checked)}
+                    onChange={(e) =>
+                      formikProps.setFieldValue("enabled", e.target.checked)
+                    }
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
                 <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Content'} />}
+                  label={<FormFieldHeader headerTitle={"Content"} />}
                   fullWidth={true}
                 >
                   <KVDBContentEditor />
@@ -366,10 +401,15 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
               <EuiSpacer size="xl" />
               <EuiFlexGroup justifyContent="flexEnd">
                 <EuiFlexItem grow={false}>
-                  <EuiSmallButton href={`#${ROUTES.KVDBS}`}>Cancel</EuiSmallButton>
+                  <EuiSmallButton href={`#${ROUTES.KVDBS}`}>
+                    Cancel
+                  </EuiSmallButton>
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
-                  <EuiToolTip content={getSubmitTooltip(formikProps.errors)} position="top">
+                  <EuiToolTip
+                    content={getSubmitTooltip(formikProps.errors)}
+                    position="top"
+                  >
                     <EuiSmallButton
                       disabled={isSubmitDisabled(formikProps.errors)}
                       isLoading={formikProps.isSubmitting}

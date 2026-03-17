@@ -39,7 +39,9 @@ const detailsMapLabels: { [key: string]: string } = {
   "document.enabled": "Enabled",
   "document.metadata.references": "References",
   "document.metadata.documentation": "Documentation",
+  "document.metadata.supports": "Supports",
   "document.metadata.date": "Date",
+  "document.metadata.modified": "Modified",
   space: "Space",
 };
 
@@ -64,6 +66,8 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
     "document.enabled": document.enabled,
     "document.metadata.references": metadata?.references,
     "document.metadata.documentation": metadata?.documentation,
+    "document.metadata.supports": metadata?.supports,
+    "document.metadata.modified": metadata?.modified,
     space: kvdb?.space?.name,
   };
 
@@ -75,10 +79,12 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({
           "integration.title",
           "document.metadata.title",
           ["document.metadata.date", "date"],
+          ["document.metadata.modified", "date"],
           "document.metadata.author",
           ["document.enabled", "boolean_yesno"],
           ["document.metadata.references", "url"],
           ["document.metadata.documentation", "url"],
+          "document.metadata.supports",
           "space",
         ].map((item) => {
           const [field, type] =

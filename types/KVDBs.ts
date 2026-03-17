@@ -35,7 +35,7 @@ export interface KVDBSource {
 export interface KVDBIntegrationSource {
   document?: {
     id?: string;
-    title?: string;
+    metadata?: { title?: string };
     kvdbs?: string[] | string;
   };
 }
