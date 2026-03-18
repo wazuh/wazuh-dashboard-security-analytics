@@ -39,6 +39,7 @@ export const defaultIntegration: IntegrationBase = {
       title: "",
       author: "",
       date: "",
+      modified: "",
       description: "",
       references: [],
       documentation: "",

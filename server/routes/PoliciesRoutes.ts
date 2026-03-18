@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { IRouter } from 'opensearch-dashboards/server';
-import { schema } from '@osd/config-schema';
-import { NodeServices } from '../models/interfaces';
-import { API } from '../utils/constants';
-import { createQueryValidationSchema } from '../utils/helpers';
+import { IRouter } from "opensearch-dashboards/server";
+import { schema } from "@osd/config-schema";
+import { NodeServices } from "../models/interfaces";
+import { API } from "../utils/constants";
+import { createQueryValidationSchema } from "../utils/helpers";
 
 export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
   const { policiesService } = services;
@@ -22,7 +22,7 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
         }),
       },
     },
-    policiesService.searchPolicies
+    policiesService.searchPolicies,
   );
 
   router.get(
@@ -37,32 +37,39 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
         }),
       },
     },
-    policiesService.getPolicy
+    policiesService.getPolicy,
   );
+
+  const policyMetadataSchema = schema.object({
+    title: schema.string(),
+    author: schema.string(),
+    description: schema.string({ defaultValue: "" }),
+    documentation: schema.string({ defaultValue: "" }),
+    references: schema.arrayOf(schema.string(), { defaultValue: [] }),
+  });
 
   router.put(
     {
       path: `${API.POLICIES_BASE}/{space}`,
       validate: {
         params: schema.object({
-          space: schema.oneOf([schema.literal('draft'), schema.literal('standard')]),
+          space: schema.oneOf([
+            schema.literal("draft"),
+            schema.literal("standard"),
+          ]),
         }),
         body: schema.object({
-          author: schema.string(),
+          metadata: policyMetadataSchema,
           enabled: schema.boolean({ defaultValue: false }),
           index_discarded_events: schema.boolean({ defaultValue: false }),
           index_unclassified_events: schema.boolean({ defaultValue: false }),
-          description: schema.string({ defaultValue: '' }),
-          documentation: schema.string({ defaultValue: '' }),
           enrichments: schema.arrayOf(schema.string(), { defaultValue: [] }),
           filters: schema.arrayOf(schema.string(), { defaultValue: [] }),
           integrations: schema.arrayOf(schema.string(), { defaultValue: [] }),
-          references: schema.arrayOf(schema.string(), { defaultValue: [] }),
-          title: schema.string(),
-          root_decoder: schema.string({ defaultValue: '' }),
+          root_decoder: schema.string({ defaultValue: "" }),
         }),
       },
     },
-    policiesService.updatePolicy
+    policiesService.updatePolicy,
   );
 }
