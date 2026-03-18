@@ -42,6 +42,7 @@ export const defaultIntegration: IntegrationBase = {
       description: "",
       references: [],
       documentation: "",
+      supports: [],
     },
     tags: null,
   },
