@@ -101,7 +101,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     getIntegrationDetails();
   }, [integrationId]);
 
+  const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
   const { items: rules, loading: loadingRules, refresh: refreshRules } = useIntegrationRules({
+    ruleIds,
     space: integrationDetails?.space?.name ?? '',
   });
 
@@ -120,6 +122,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
   const { items: kvdbItems, loading: loadingKvdbs, refresh: refreshKvdbs } = useIntegrationKVDBs({
     kvdbIds,
+    space: integrationDetails?.space?.name ?? '',
   });
 
   const renderTabContent = () => {
