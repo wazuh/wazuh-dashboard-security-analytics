@@ -3,8 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { RuleService } from '../public/services';
-import { NotificationsStart } from 'opensearch-dashboards/public';
+import { RuleService } from "../public/services";
+import { NotificationsStart } from "opensearch-dashboards/public";
+import { CatalogResourceMetadata } from "./ResourceMetadata";
+
+export interface RuleMetadata extends CatalogResourceMetadata {}
 
 export interface Rule {
   id: string;
@@ -23,6 +26,8 @@ export interface Rule {
   references: Array<{ value: string }>;
   author: string;
   detection: string;
+  /** Normalized metadata for API payload (document.metadata.*). When present, used by buildRuleResource. */
+  metadata?: RuleMetadata;
 }
 
 export type RuleSource = Rule & {
@@ -44,7 +49,10 @@ export interface DetectorRuleInfo {
   id: string;
 }
 
-export type RuleItemInfoBase = RuleInfo & { prePackaged: boolean; space?: string }; // Wazuh: added space field
+export type RuleItemInfoBase = RuleInfo & {
+  prePackaged: boolean;
+  space?: string;
+}; // Wazuh: added space field
 
 /**
  * API Interfaces
@@ -57,7 +65,7 @@ export interface CreateRuleParams {
 export interface CreateRuleResponse {
   _id: string;
   _version: number;
-  rule: Omit<Rule, 'id'> & {
+  rule: Omit<Rule, "id"> & {
     last_update_time: number;
     monitor_id: string;
   };
@@ -72,7 +80,7 @@ export interface UpdateRuleParams {
 export interface UpdateRuleResponse {
   _id: string;
   _version: number;
-  rule: Omit<Rule, 'id'> & {
+  rule: Omit<Rule, "id"> & {
     last_update_time: number;
     monitor_id: string;
   };
@@ -109,7 +117,10 @@ export interface IRulesStore {
 
   readonly notifications: NotificationsStart;
 
-  getAllRules: (terms?: { [key: string]: string[] }, query?: any) => Promise<RuleItemInfoBase[]>;
+  getAllRules: (
+    terms?: { [key: string]: string[] },
+    query?: any,
+  ) => Promise<RuleItemInfoBase[]>;
 
   createRule: (rule: Rule, integrationId: string) => Promise<boolean>; // Wazuh: added integrationId param
 
@@ -120,18 +131,32 @@ export interface IRulesStore {
   getRules: (
     prePackaged: boolean,
     terms?: { [key: string]: string[] },
-    query?: any
+    query?: any,
   ) => Promise<RuleItemInfoBase[]>;
 
-  getPrePackagedRules: (terms?: { [key: string]: string[] }) => Promise<RuleItemInfoBase[]>;
+  getPrePackagedRules: (terms?: {
+    [key: string]: string[];
+  }) => Promise<RuleItemInfoBase[]>;
 
-  getCustomRules: (terms?: { [key: string]: string[] }) => Promise<RuleItemInfoBase[]>;
+  getCustomRules: (terms?: {
+    [key: string]: string[];
+  }) => Promise<RuleItemInfoBase[]>;
 
   // Wazuh: search rules with pagination and sorting
   searchRules: (
-    params: { query?: any; from?: number; size?: number; sort?: Array<Record<string, any>> },
-    space: string
+    params: {
+      query?: any;
+      from?: number;
+      size?: number;
+      sort?: Array<Record<string, any>>;
+    },
+    space: string,
   ) => Promise<{ total: number; items: RuleItemInfoBase[] }>;
 }
 
-export type RulesTableColumnFields = 'title' | 'level' | 'category' | 'source' | 'description';
+export type RulesTableColumnFields =
+  | "title"
+  | "level"
+  | "category"
+  | "source"
+  | "description";
