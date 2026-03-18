@@ -10,14 +10,17 @@ export interface FilterDocument {
   check: string;
   enabled: boolean;
   metadata?: {
+    title?: string;
     description?: string;
-    author?: {
-      name?: string;
-      email?: string;
-      date?: string;
-      modified?: string;
-      url?: string;
-    };
+    author?:
+      | string
+      | {
+          name?: string;
+          email?: string;
+          date?: string;
+          modified?: string;
+          url?: string;
+        };
   };
 }
 
@@ -34,7 +37,7 @@ export interface FilterItem extends FilterSource {
 export interface FilterSearchRequest {
   from?: number;
   size?: number;
-  sort?: Array<Record<string, { order: 'asc' | 'desc' }>>;
+  sort?: Array<Record<string, { order: "asc" | "desc" }>>;
   query?: Record<string, unknown>;
   track_total_hits?: boolean;
 }
@@ -52,8 +55,14 @@ export interface FilterResource {
   check: string;
   type: string;
   metadata?: {
+    title?: string;
+    author?: string | { name?: string; email?: string; url?: string };
+    date?: string;
+    modified?: string;
     description?: string;
-    author?: { name?: string; email?: string; url?: string };
+    references?: string[];
+    documentation?: string;
+    supports?: string[];
   };
 }
 

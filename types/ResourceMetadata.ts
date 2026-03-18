@@ -7,18 +7,20 @@
  * Shared metadata model for all catalog resources. Contains the common fields
  * that are nested under `document.metadata` in the indexed document.
  *
+ * Aligns with indexer IRMAs (Integration, Decoder, Rule, KVDB, Filter).
+ *
  * Resource-specific fields:
- * - `compatibility` — used only by Policy resources.
- * - `supports` — used by Integration, Decoder, Rule, KVDB, and Filter resources.
+ * - `compatibility` — Policy only.
+ * - `supports` — Integration, Decoder, Rule, KVDB, Filter.
  */
 export interface ResourceMetadata {
   title: string;
   author: string;
-  date: string;
+  date?: string;
   modified?: string;
-  description: string;
-  references: string[];
-  documentation: string;
+  description?: string;
+  references?: string[];
+  documentation?: string;
   compatibility?: string[];
   supports?: string[];
 }
@@ -31,7 +33,8 @@ export interface PolicyMetadata extends Omit<ResourceMetadata, "supports"> {
 }
 
 /**
- * Non-policy resource metadata with supports field.
+ * Metadata for catalog resources (Integration, Decoder, Rule, KVDB, Filter).
+ * Extends base metadata with supports field.
  */
 export interface CatalogResourceMetadata extends Omit<
   ResourceMetadata,

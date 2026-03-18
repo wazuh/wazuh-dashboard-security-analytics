@@ -6,6 +6,7 @@
 export * from "./Alert";
 export * from "./Detector";
 export * from "./FieldMapping";
+export * from "./Filters";
 export * from "./Finding";
 export * from "./Indices";
 export * from "./Notification";
@@ -26,4 +27,5 @@ export * from "./DataSource";
 export * from "./shared";
 export * from "./ThreatIntel";
 export * from "./LogTest";
+// [Wazuh custom] ResourceMetadata type for normalized metadata structure (issue #117)
 export * from "./ResourceMetadata";

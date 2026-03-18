@@ -15,14 +15,7 @@ export interface KVDBDocument {
 }
 
 export interface KVDBResource {
-  metadata: {
-    title: string;
-    author: string;
-    description?: string;
-    documentation?: string;
-    references?: string[];
-    supports?: string[];
-  };
+  metadata: KVDBMetadata;
   enabled?: boolean;
   content?: Record<string, unknown>;
 }
