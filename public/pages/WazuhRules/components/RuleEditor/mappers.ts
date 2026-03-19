@@ -53,6 +53,10 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
 
 export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
   const logType = rule.category || getLogTypeFromLogSource(rule.log_source);
+  const title = rule.metadata?.title ?? rule.title;
+  const description = rule.metadata?.description ?? rule.description;
+  const author = rule.metadata?.author ?? rule.author;
+  const refs = rule.metadata?.references ?? rule.references?.map((r) => r.value) ?? [];
 
   const metadataTitle = rule.metadata?.title ?? rule.title;
   const metadataDescription = rule.metadata?.description ?? rule.description;
@@ -72,8 +76,8 @@ export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
     tags: rule.tags ? rule.tags.map((tag) => tag.value) : ruleEditorStateDefaultValue.tags,
     detection: rule.detection,
     level: rule.level,
-    falsePositives: rule.false_positives
-      ? rule.false_positives.map((falsePositive) => falsePositive.value)
+    falsePositives: rule.false_positives?.length
+      ? rule.false_positives.map((fp) => fp.value)
       : ruleEditorStateDefaultValue.falsePositives,
     mitre: rule.mitre,
     compliance: rule.compliance,
