@@ -34,7 +34,6 @@ const DECODERS_INDEX = '.cti-decoders';
 const KVDBS_INDEX = '.cti-kvdbs';
 const FILTERS_INDEX = '.engine-filters';
 const POLICIES_INDEX = '.cti-policies';
-const RULES_INDEX = '.cti-rules';
 
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
@@ -225,7 +224,6 @@ export class IntegrationService extends MDSEnabledClientService {
         kvdbs: {},
         filters: {},
         policy: {},
-        rules: {},
       };
 
       //
@@ -287,19 +285,6 @@ export class IntegrationService extends MDSEnabledClientService {
           promoteSpace.changes.policy,
           {
             index: POLICIES_INDEX,
-            space,
-            nameProp: 'document.metadata.title',
-            idProp: 'document.id',
-          }
-        );
-      }
-
-      if (promoteSpace.changes.rules?.length > 0) {
-        availablePromotions['rules'] = await this.resolvePromoteEntity(
-          client,
-          promoteSpace.changes.rules,
-          {
-            index: RULES_INDEX,
             space,
             nameProp: 'document.metadata.title',
             idProp: 'document.id',
