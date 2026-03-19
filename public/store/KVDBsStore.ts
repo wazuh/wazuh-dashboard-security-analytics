@@ -118,53 +118,89 @@ export class KVDBsStore {
     };
   }
 
+  private getErrorMessage(error: unknown, fallback: string): string {
+    if (typeof error === "string") return error;
+    const err = error as { body?: { message?: string }; message?: string };
+    return err?.body?.message ?? err?.message ?? fallback;
+  }
+
   public async createKVDB(
     body: CreateKVDBPayload,
   ): Promise<CUDKVDBResponse | undefined> {
-    const response = await this.service.createKVDB(body);
-    if (!response.ok) {
+    try {
+      const response = await this.service.createKVDB(body);
+      if (!response.ok) {
+        errorNotificationToast(
+          this.notifications,
+          "create",
+          "KVDB",
+          this.getErrorMessage(response.error, "Failed to create KVDB"),
+        );
+        return undefined;
+      }
+      return response.response;
+    } catch (error: unknown) {
       errorNotificationToast(
         this.notifications,
         "create",
         "KVDB",
-        response.error,
+        this.getErrorMessage(error, "An unexpected error occurred."),
       );
       return undefined;
     }
-    return response.response;
   }
 
   public async updateKVDB(
     kvdbId: string,
     body: UpdateKVDBPayload,
   ): Promise<CUDKVDBResponse | undefined> {
-    const response = await this.service.updateKVDB(kvdbId, body);
-    if (!response.ok) {
+    try {
+      const response = await this.service.updateKVDB(kvdbId, body);
+      if (!response.ok) {
+        errorNotificationToast(
+          this.notifications,
+          "update",
+          "KVDB",
+          this.getErrorMessage(response.error, "Failed to update KVDB"),
+        );
+        return undefined;
+      }
+      return response.response;
+    } catch (error: unknown) {
       errorNotificationToast(
         this.notifications,
         "update",
         "KVDB",
-        response.error,
+        this.getErrorMessage(error, "An unexpected error occurred."),
       );
       return undefined;
     }
-    return response.response;
   }
 
   public async deleteKVDB(
     kvdbId: string,
   ): Promise<CUDKVDBResponse | undefined> {
-    const response = await this.service.deleteKVDB(kvdbId);
-    if (!response.ok) {
+    try {
+      const response = await this.service.deleteKVDB(kvdbId);
+      if (!response.ok) {
+        errorNotificationToast(
+          this.notifications,
+          "delete",
+          "KVDB",
+          this.getErrorMessage(response.error, "Failed to delete KVDB"),
+        );
+        return undefined;
+      }
+      return response.response;
+    } catch (error: unknown) {
       errorNotificationToast(
         this.notifications,
         "delete",
         "KVDB",
-        response.error,
+        this.getErrorMessage(error, "An unexpected error occurred."),
       );
       return undefined;
     }
-    return response.response;
   }
 
   private async getIntegrationsMap(
