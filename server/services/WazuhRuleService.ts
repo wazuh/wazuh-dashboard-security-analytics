@@ -38,8 +38,8 @@ export default class WazuhRulesService {
     const bool: any = space
       ? { filter: [{ term: { 'space.name': space } }] }
       : prePackaged === false
-      ? { filter: [CUSTOM_SPACE_TERM] }
-      : { filter: [STANDARD_SPACE_TERM] };
+        ? { filter: [CUSTOM_SPACE_TERM] }
+        : { filter: [STANDARD_SPACE_TERM] };
 
     if (incomingQuery && !incomingQuery.match_all) {
       bool.must = [incomingQuery];
@@ -48,23 +48,51 @@ export default class WazuhRulesService {
     return { bool };
   }
 
+  private parseYamlField(yamlStr: string | undefined): any {
+    if (!yamlStr || (typeof yamlStr === 'string' && !yamlStr.trim())) return undefined;
+    if (typeof yamlStr !== 'string') return yamlStr;
+    try {
+      return load(yamlStr);
+    } catch {
+      return undefined;
+    }
+  }
+
   private buildRuleResource(rule: Rule) {
     const resource: Record<string, any> = {
-      title: rule.title,
-      description: rule.description,
-      author: rule.author,
       level: rule.level,
       status: rule.status,
       logsource:
         rule.log_source && Object.keys(rule.log_source).length > 0
           ? rule.log_source
-          : { category: rule.category },
+          : { product: rule.category },
       detection: load(rule.detection),
+      enabled: rule.enabled ?? true,
     };
-    if (rule.references?.length) resource.references = rule.references.map((r) => r.value);
     if (rule.tags?.length) resource.tags = rule.tags.map((t) => t.value);
     if (rule.false_positives?.length)
       resource.falsepositives = rule.false_positives.map((fp) => fp.value);
+
+    const metadata: Record<string, any> = {
+      title: rule.metadata?.title || rule.title,
+      author: rule.metadata?.author || rule.author,
+      description: rule.metadata?.description || rule.description,
+      references: rule.metadata?.references?.length
+        ? rule.metadata.references
+        : rule.references?.map((r) => r.value) ?? [],
+    };
+    if (rule.metadata?.date) metadata.date = rule.metadata.date;
+    if (rule.metadata?.modified) metadata.modified = rule.metadata.modified;
+    if (rule.metadata?.documentation) metadata.documentation = rule.metadata.documentation;
+    if (rule.metadata?.supports?.length) metadata.supports = rule.metadata.supports;
+    resource.metadata = metadata;
+
+    const mitre = this.parseYamlField(rule.mitre);
+    if (mitre) resource.mitre = mitre;
+
+    const compliance = this.parseYamlField(rule.compliance);
+    if (compliance) resource.compliance = compliance;
+
     return resource;
   }
 
@@ -74,7 +102,11 @@ export default class WazuhRulesService {
     response: OpenSearchDashboardsResponseFactory
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<GetRulesResponse> | ResponseError>> => {
     try {
-      const { prePackaged, space } = request.query as { prePackaged: boolean; space?: string };
+      const { prePackaged, space } = request.query as {
+        prePackaged: boolean;
+        space?: string;
+      };
+
       const { from = 0, size = 5000, query, sort } = (request.body as any) ?? {};
       const client = this.getClient(request);
       const searchBody: any = {
@@ -98,7 +130,14 @@ export default class WazuhRulesService {
       });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - getRules:', error);
-      return response.custom({ statusCode: 200, body: { ok: false, error: error.message } });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: false, error: error.message },
+      });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: false, error: error.message },
+      });
     }
   };
 
@@ -121,10 +160,20 @@ export default class WazuhRulesService {
       const client = this.getClient(request);
 
       const createResponse = await client(CLIENT_RULE_METHODS.CREATE_RULE, {
-        body: { resource: this.buildRuleResource(rule), integration: integrationId },
+        body: {
+          resource: this.buildRuleResource(rule),
+          integration: integrationId,
+        },
       });
 
-      return response.custom({ statusCode: 200, body: { ok: true, response: createResponse } });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: createResponse },
+      });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: createResponse },
+      });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - createRule:', error);
       return response.custom({
@@ -154,7 +203,14 @@ export default class WazuhRulesService {
         body: { resource: this.buildRuleResource(rule) },
       });
 
-      return response.custom({ statusCode: 200, body: { ok: true, response: updateResponse } });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: updateResponse },
+      });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: updateResponse },
+      });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - updateRule:', error);
       return response.custom({
@@ -174,10 +230,24 @@ export default class WazuhRulesService {
       const client = this.getClient(request);
       await client(CLIENT_RULE_METHODS.DELETE_RULE, { ruleId });
 
-      return response.custom({ statusCode: 200, body: { ok: true, response: {} } });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: {} },
+      });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: {} },
+      });
     } catch (error) {
       console.error('Security Analytics - RulesService - deleteRule:', error);
-      return response.custom({ statusCode: 200, body: { ok: false, error: error.message } });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: false, error: error.message },
+      });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: false, error: error.message },
+      });
     }
   };
 }
