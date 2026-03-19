@@ -175,21 +175,44 @@ export class IntegrationStore {
     integrationId: string,
     document: Integration,
   ): Promise<boolean> {
-    const updateRes = await this.service.updateIntegration(
-      integrationId,
-      document,
-    );
+    try {
+      const updateRes = await this.service.updateIntegration(
+        integrationId,
+        document,
+      );
 
-    if (!updateRes.ok) {
+      if (!updateRes.ok) {
+        const errorMsg =
+          typeof updateRes.error === "string"
+            ? updateRes.error
+            : ((updateRes.error as { message?: string })?.message ??
+              JSON.stringify(updateRes.error));
+        errorNotificationToast(
+          this.notifications,
+          "update",
+          "integration",
+          errorMsg,
+        );
+        return false;
+      }
+
+      return true;
+    } catch (error: unknown) {
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : ((error as { body?: { message?: string }; message?: string })?.body
+              ?.message ??
+            (error as { message?: string })?.message ??
+            "An unexpected error occurred.");
       errorNotificationToast(
         this.notifications,
         "update",
         "integration",
-        updateRes.error,
+        errorMsg,
       );
+      return false;
     }
-
-    return updateRes.ok;
   }
 
   public async deleteIntegration(id: string) {
