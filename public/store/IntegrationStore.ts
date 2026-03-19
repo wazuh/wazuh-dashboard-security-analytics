@@ -5,10 +5,10 @@
 
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
+  CreateIntegrationRequestBody,
   GetPromote,
   GetPromoteBySpaceResponse,
   Integration,
-  IntegrationBase,
   IntegrationWithRules,
   PromoteIntegrationRequestBody,
   RuleItemInfoBase,
@@ -25,10 +25,7 @@ import {
 import { getIntegrationLabel } from '../pages/Integrations/utils/helpers';
 
 export class IntegrationStore {
-  constructor(
-    private service: IntegrationService,
-    private notifications: NotificationsStart
-  ) {}
+  constructor(private service: IntegrationService, private notifications: NotificationsStart) {}
 
   private formatRelatedEntitiesList(entities: string[]): string {
     if (entities.length === 0) {
@@ -50,10 +47,7 @@ export class IntegrationStore {
     id: string,
     spaceFilter?: string | null
   ): Promise<IntegrationWithRules | undefined> {
-    const integrationsRes = await this.service.searchIntegrations({
-      id,
-      spaceFilter,
-    });
+    const integrationsRes = await this.service.searchIntegrations({ id, spaceFilter });
     if (integrationsRes.ok) {
       const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
         return {
@@ -65,7 +59,7 @@ export class IntegrationStore {
       let detectionRules: RuleItemInfoBase[] = [];
 
       if (integrations[0]) {
-        const integrationName = integrations[0].document.metadata?.title?.toLowerCase() ?? '';
+        const integrationName = integrations[0].document.title.toLowerCase();
         detectionRules = await DataStore.rules.getAllRules({
           'rule.category': [integrationName],
         });
@@ -95,9 +89,9 @@ export class IntegrationStore {
           0,
           ruleTypes.length,
           ...integrations
-            .map(({ id, document: { category, metadata }, space }) => ({
-              label: getIntegrationLabel(metadata?.title),
-              value: metadata?.title ?? '',
+            .map(({ id, document: { category, title }, space }) => ({
+              label: getIntegrationLabel(title),
+              value: title,
               id,
               category,
               isStandard: space.name === 'Standard',
@@ -149,7 +143,7 @@ export class IntegrationStore {
     }
   }
 
-  public async createIntegration(integration: IntegrationBase): Promise<boolean> {
+  public async createIntegration(integration: CreateIntegrationRequestBody): Promise<boolean> {
     const createRes = await this.service.createIntegration(integration);
 
     if (!createRes.ok) {
@@ -165,30 +159,13 @@ export class IntegrationStore {
   }
 
   public async updateIntegration(integrationId: string, document: Integration): Promise<boolean> {
-    try {
-      const updateRes = await this.service.updateIntegration(integrationId, document);
+    const updateRes = await this.service.updateIntegration(integrationId, document);
 
-      if (!updateRes.ok) {
-        const errorMsg =
-          typeof updateRes.error === 'string'
-            ? updateRes.error
-            : ((updateRes.error as { message?: string })?.message ??
-              JSON.stringify(updateRes.error));
-        errorNotificationToast(this.notifications, 'update', 'integration', errorMsg);
-        return false;
-      }
-
-      return true;
-    } catch (error: unknown) {
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : ((error as { body?: { message?: string }; message?: string })?.body?.message ??
-            (error as { message?: string })?.message ??
-            'An unexpected error occurred.');
-      errorNotificationToast(this.notifications, 'update', 'integration', errorMsg);
-      return false;
+    if (!updateRes.ok) {
+      errorNotificationToast(this.notifications, 'update', 'integration', updateRes.error);
     }
+
+    return updateRes.ok;
   }
 
   public async deleteIntegration(id: string) {
@@ -212,10 +189,7 @@ export class IntegrationStore {
         'integration',
         e?.message || 'An unexpected error occurred.'
       );
-      return {
-        ok: false,
-        error: { message: e?.message || 'An unexpected error occurred.' },
-      };
+      return { ok: false, error: { message: e?.message || 'An unexpected error occurred.' } };
     }
   }
 
@@ -238,7 +212,12 @@ export class IntegrationStore {
   public async promoteIntegration(data: PromoteIntegrationRequestBody) {
     const promoteRes = await this.service.promoteIntegration(data);
     if (!promoteRes.ok) {
-      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
+      errorNotificationToast(
+        this.notifications,
+        'promote',
+        'integration',
+        promoteRes?.error?.message || promoteRes.error
+      );
     }
 
     return promoteRes.ok;
@@ -268,7 +247,7 @@ export class IntegrationStore {
     hasKVDBs: boolean;
   }): string {
     const relatedEntities = [
-      hasRules ? 'detection rules' : null,
+      hasRules ? 'rules' : null,
       hasDecoders ? 'decoders' : null,
       hasKVDBs ? 'KVDBs' : null,
     ].filter(Boolean) as string[];

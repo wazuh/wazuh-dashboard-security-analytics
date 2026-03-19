@@ -100,14 +100,7 @@ const RearrangeItem: RearrangeItemsProps = (
 };
 
 const integrationSourceDocumentFieldsUI = ['title', 'category', 'decoders', 'kvdbs', 'rules'];
-const integrationSourceDocumentFields = [
-  'id',
-  'metadata.title',
-  'category',
-  'decoders',
-  'kvdbs',
-  'rules',
-];
+const integrationSourceDocumentFields = ['id', ...integrationSourceDocumentFieldsUI];
 
 const integrationSourceDocumentFieldsUIMapperLabel = {
   title: 'Title',
@@ -126,17 +119,7 @@ const integrationSourceDocumentFieldMapper = {
   rules: getArrayLengthMapper,
 };
 
-// Map from UI field names to actual document paths
-const fieldToDocumentPath: Record<string, string> = {
-  id: 'document.id',
-  title: 'document.metadata.title',
-  category: 'document.category',
-  decoders: 'document.decoders',
-  kvdbs: 'document.kvdbs',
-  rules: 'document.rules',
-};
-
-// helper function to get the field path for the integration document fields
+// helper function to get the field path for the integration document fields, for example for the 'title' field it will return 'document.title' since the data is nested in the document object
 function getDocumentField(field: string) {
   return `document.${field}`;
 }
@@ -165,9 +148,8 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
         const integrationData = policyEnhancedData.integrationsMap?.[id] || {};
 
         const source = Object.fromEntries(
-          integrationSourceDocumentFieldsUI.map((field) => {
-            const documentPath = fieldToDocumentPath[field];
-            const value = get(integrationData, documentPath);
+          integrationSourceDocumentFields.map((field) => {
+            const value = get(integrationData, getDocumentField(field));
             return [
               field,
               integrationSourceDocumentFieldMapper[field]
@@ -205,8 +187,18 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
     );
 
     const payload = {
-      ...policyDocumentData,
+      title: policyDocumentData.title,
+      root_decoder: policyDocumentData.root_decoder,
       integrations: validIntegrations.map(({ id }) => id),
+      filters: policyDocumentData.filters ?? [],
+      enrichments: policyDocumentData.enrichments,
+      enabled: policyDocumentData.enabled,
+      index_unclassified_events: policyDocumentData.index_unclassified_events,
+      index_discarded_events: policyDocumentData.index_discarded_events,
+      author: policyDocumentData.author,
+      description: policyDocumentData.description,
+      documentation: policyDocumentData.documentation,
+      references: policyDocumentData.references,
     };
     const [success] = await DataStore.policies.updatePolicy(space, payload);
 
@@ -244,7 +236,9 @@ export type RearrangeIntegrationWithDataProps = RearrangeIntegrationsViewProps;
 
 const RearrangeIntegrationWithData: React.FC<RearrangeIntegrationWithDataProps> = compose(
   withPolicyGuard({
-    includeIntegrationFields: Object.values(fieldToDocumentPath),
+    includeIntegrationFields: integrationSourceDocumentFields.map((field) =>
+      getDocumentField(field)
+    ),
   }),
   withGuard(
     (props) => !Boolean(props.policyDocumentData?.integrations?.length),

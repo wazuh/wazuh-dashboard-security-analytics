@@ -40,14 +40,6 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
     policiesService.getPolicy
   );
 
-  const policyMetadataSchema = schema.object({
-    title: schema.string(),
-    author: schema.string(),
-    description: schema.string({ defaultValue: '' }),
-    documentation: schema.string({ defaultValue: '' }),
-    references: schema.arrayOf(schema.string(), { defaultValue: [] }),
-  });
-
   router.put(
     {
       path: `${API.POLICIES_BASE}/{space}`,
@@ -56,13 +48,17 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
           space: schema.oneOf([schema.literal('draft'), schema.literal('standard')]),
         }),
         body: schema.object({
-          metadata: policyMetadataSchema,
+          author: schema.string(),
           enabled: schema.boolean({ defaultValue: false }),
           index_discarded_events: schema.boolean({ defaultValue: false }),
           index_unclassified_events: schema.boolean({ defaultValue: false }),
+          description: schema.string({ defaultValue: '' }),
+          documentation: schema.string({ defaultValue: '' }),
           enrichments: schema.arrayOf(schema.string(), { defaultValue: [] }),
           filters: schema.arrayOf(schema.string(), { defaultValue: [] }),
           integrations: schema.arrayOf(schema.string(), { defaultValue: [] }),
+          references: schema.arrayOf(schema.string(), { defaultValue: [] }),
+          title: schema.string(),
           root_decoder: schema.string({ defaultValue: '' }),
         }),
       },

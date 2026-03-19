@@ -35,7 +35,8 @@ const detailsMapLabels: { [key: string]: string } = {
   'document.check': 'Check',
   'document.enabled': 'Enabled',
   'document.metadata.description': 'Description',
-  'document.metadata.author': 'Author',
+  'document.metadata.author.name': 'Author',
+  'document.metadata.author.email': 'Author Email',
   'space.name': 'Space',
   'hash.sha256': 'SHA256',
 };
@@ -45,23 +46,10 @@ const editorType = {
   json: 'json',
 };
 
-/** Resolve author display: indexer sends string; legacy may send { name } */
-const getAuthorDisplay = (author: string | { name?: string } | undefined): string => {
-  if (!author) return '';
-  if (typeof author === 'string') return author;
-  return author.name ?? '';
-};
-
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
   const [selectedEditorType, setSelectedEditorType] = useState(editorType.visual);
 
-  const document = filter.document ?? {
-    id: '',
-    name: '',
-    type: '',
-    check: '',
-    enabled: false,
-  };
+  const document = filter.document ?? { id: '', name: '', type: '', check: '', enabled: false };
 
   const filterData = {
     'document.id': document.id || filter.id,
@@ -70,7 +58,8 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     'document.check': document.check,
     'document.enabled': document.enabled,
     'document.metadata.description': document.metadata?.description,
-    'document.metadata.author': getAuthorDisplay(document.metadata?.author),
+    'document.metadata.author.name': document.metadata?.author?.name,
+    'document.metadata.author.email': document.metadata?.author?.email,
     'space.name': filter.space?.name,
     'hash.sha256': filter.hash?.sha256,
   };
@@ -84,7 +73,8 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
         'document.check',
         ['document.enabled', 'boolean_yesno'],
         'document.metadata.description',
-        'document.metadata.author',
+        'document.metadata.author.name',
+        'document.metadata.author.email',
         'space.name',
         'hash.sha256',
       ].map((item) => {

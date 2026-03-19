@@ -30,8 +30,7 @@ export const kvdbFormDefaultValue: KVDBFormModel = {
  * Convert from API document to form model (for edit mode)
  */
 export const mapKVDBToForm = (document: KVDBDocument): KVDBFormModel => {
-  const metadata = document.metadata;
-  const refs = metadata?.references;
+  const refs = document.references;
   const references = Array.isArray(refs) ? refs : refs ? [refs] : [];
 
   const contentEntries: ContentEntry[] = [];
@@ -45,10 +44,10 @@ export const mapKVDBToForm = (document: KVDBDocument): KVDBFormModel => {
   }
 
   return {
-    title: metadata?.title || '',
-    author: metadata?.author || '',
-    description: metadata?.description || '',
-    documentation: metadata?.documentation || '',
+    title: document.title || '',
+    author: document.author || document.metadata?.author?.name || '',
+    description: document.description || '',
+    documentation: document.documentation || '',
     references,
     enabled: document.enabled ?? true,
     contentEntries,
@@ -80,18 +79,14 @@ const entriesToContentObject = (entries: ContentEntry[]): Record<string, unknown
 
 /**
  * Convert from form model to API resource payload.
- * Note: date and modified are set by the indexer; do not send them.
  */
 export const mapFormToKVDBResource = (values: KVDBFormModel): KVDBResource => {
   return {
-    metadata: {
-      title: values.title,
-      author: values.author,
-      description: values.description,
-      documentation: values.documentation,
-      references: values.references,
-      supports: [],
-    },
+    title: values.title,
+    author: values.author,
+    description: values.description,
+    documentation: values.documentation,
+    references: values.references,
     enabled: values.enabled,
     content: entriesToContentObject(values.contentEntries),
   };

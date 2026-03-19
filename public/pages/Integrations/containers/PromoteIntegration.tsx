@@ -42,18 +42,17 @@ export interface PromoteIntegrationProps extends RouteComponentProps {
 
 const PromoteEntity: React.FC<{
   label: string;
-  entity: PromoteChangeGroup;
+  entity: Exclude<PromoteChangeGroup, 'policy' | 'filters'>;
   data: GetPromoteBySpaceResponse['response'];
 }> = ({ label, entity, data }) => {
   const memoizedData = useMemo(
     () =>
-      (data.promote?.changes?.[entity] ?? []).map(({ id, ...rest }) => {
-        const strippedId = id.replace(/^\w_/, '');
-        const available = data.available_promotions?.[entity];
-        const name = available?.[id] ?? available?.[strippedId] ?? id; // Prefer metadata.title from available_promotions; fallback to id
-        return { ...rest, id, name };
-      }),
-    [data.promote?.changes?.[entity], entity, data.available_promotions]
+      data.promote.changes[entity].map(({ id, ...rest }) => ({
+        ...rest,
+        id,
+        name: data.available_promotions?.[entity]?.[id] || id, // If the name of the entity is not available in the available promotions, we will use the id as the name. This is a fallback mechanism to make sure that we are showing something to the user even if the name is not available.
+      })),
+    [data.promote.changes[entity]]
   );
   return (
     <div>
@@ -146,7 +145,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           )}
           <div>
             {PROMOTE_ENTITIES_ORDER.map((entity) => {
-              if ((promoteData?.promote?.changes?.[entity]?.length ?? 0) > 0) {
+              if (promoteData?.promote.changes[entity].length > 0) {
                 const label = PROMOTE_ENTITIES_LABELS[entity];
                 return (
                   <React.Fragment key={entity}>

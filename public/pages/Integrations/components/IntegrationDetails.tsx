@@ -33,17 +33,34 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   integrationId,
 }) => {
   const onUpdateIntegration = async (integrationData: IntegrationItem) => {
-    const success = await DataStore.integrations.updateIntegration(integrationId, integrationData);
+    const { document } = integrationData;
+
+    const updateIntegrationBody = Object.fromEntries(
+      [
+        'author',
+        'category',
+        'decoders',
+        'description',
+        'documentation',
+        'enabled',
+        'kvdbs',
+        'references',
+        'rules',
+        'tags',
+        'title',
+      ].map((field) => [field, document[field as keyof typeof document]])
+    );
+
+    const success = await DataStore.integrations.updateIntegration(integrationId, {
+      document: updateIntegrationBody,
+    });
     if (success) {
       setIntegrationDetails(integrationData);
-      setBreadcrumbs([
-        BREADCRUMBS.INTEGRATIONS,
-        { text: integrationData.document.metadata?.title ?? '' },
-      ]);
+      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: integrationData.document.title }]);
       successNotificationToast(
         notifications,
         'updated',
-        `integration ${integrationData.document.metadata?.title ?? ''}`
+        `integration ${integrationData.document.title}`
       );
       setIsEditMode(false);
     }

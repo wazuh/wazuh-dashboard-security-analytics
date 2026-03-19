@@ -43,20 +43,20 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   const columns: EuiBasicTableColumn<KVDBItem>[] = useMemo(
     () => [
       {
-        field: 'document.metadata.title',
+        field: 'document.title',
         name: 'Title',
         sortable: true,
         render: (_: string, kvdb: KVDBItem) => (
           <EuiLink onClick={() => setFlyoutKvdb(kvdb)}>
-            {formatCellValue(kvdb.document?.metadata?.title)}
+            {formatCellValue(kvdb.document?.title)}
           </EuiLink>
         ),
       },
       {
-        field: 'document.metadata.author',
+        field: 'document.author',
         name: 'Author',
         sortable: true,
-        render: (_: string, kvdb: KVDBItem) => formatCellValue(kvdb.document?.metadata?.author),
+        render: (_: string, kvdb: KVDBItem) => formatCellValue(kvdb.document?.author),
       },
     ],
     []
@@ -125,7 +125,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
               pageSizeOptions: [10, 25, 50],
             }}
             sorting={{
-              sort: { field: 'document.metadata.title', direction: 'asc' },
+              sort: { field: 'document.title', direction: 'asc' },
             }}
             message="No KVDBs found."
           />

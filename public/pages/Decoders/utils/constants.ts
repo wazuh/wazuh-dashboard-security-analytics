@@ -8,7 +8,7 @@ const KEYWORD_SEARCH_FIELDS = [
   'document.metadata.module',
   'document.metadata.compatibility',
   'document.metadata.versions',
-  'document.metadata.author',
+  'document.metadata.author.name',
 ];
 
 const TEXT_SEARCH_FIELDS = ['document.metadata.title', 'document.metadata.description'];

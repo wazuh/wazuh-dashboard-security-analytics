@@ -188,8 +188,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         !isDeleteActionAllowed
           ? `Cannot delete KVDBs in the ${spaceFilter} space.`
           : selectedItems.length === 0
-            ? 'Select KVDBs to delete'
-            : undefined
+          ? 'Select KVDBs to delete'
+          : undefined
       }
     >
       Delete selected ({selectedItems.length})
@@ -199,7 +199,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const columns: Array<EuiBasicTableColumn<KVDBItem>> = useMemo(
     () => [
       {
-        field: 'document.metadata.title',
+        field: 'document.title',
         name: 'Title',
         sortable: true,
         dataType: 'string',
@@ -212,7 +212,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         render: (value: string) => formatCellValue(value),
       },
       {
-        field: 'document.metadata.author',
+        field: 'document.author',
         name: 'Author',
         sortable: true,
         render: (value: string) => formatCellValue(value),

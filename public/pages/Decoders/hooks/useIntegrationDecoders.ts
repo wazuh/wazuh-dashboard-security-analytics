@@ -42,7 +42,7 @@ export function useIntegrationDecoders({ decoderIds, space }: useIntegrationDeco
               id: item.id,
               name: item.document?.name,
               title: item.document?.metadata?.title,
-              author: item.document?.metadata?.author,
+              author: item.document?.metadata?.author.name,
             }))
           );
         }

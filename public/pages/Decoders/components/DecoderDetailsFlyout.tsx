@@ -1,7 +1,7 @@
 /*
  * Copyright Wazuh Inc.
  * SPDX-License-Identifier: AGPL-3.0-or-later
- */
+*/
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -68,11 +68,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
           if (entry === null || entry === undefined) {
             return '';
           }
-          if (
-            typeof entry === 'string' ||
-            typeof entry === 'number' ||
-            typeof entry === 'boolean'
-          ) {
+          if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
             return String(entry);
           }
           if (typeof entry === 'object' && 'name' in entry && typeof entry.name === 'string') {
@@ -149,53 +145,46 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
         { label: 'Integration', content: integrations },
       ])}
       {createTextDetailsGroup([
-        {
-          label: 'Title',
-          content: formatTextValue(decoder?.document?.metadata?.title),
-        },
-        {
-          label: 'Module',
-          content: formatTextValue(decoder?.document?.metadata?.module),
-        },
+        { label: 'Title', content: formatTextValue(decoder?.document?.metadata?.title) },
+        { label: 'Module', content: formatTextValue(decoder?.document?.metadata?.module) },
       ])}
       {createTextDetailsGroup([
         {
           label: 'Compatibility',
           content: formatTextValue(decoder?.document?.metadata?.compatibility),
         },
-        {
-          label: 'Versions',
-          content: formatTextValue(decoder?.document?.metadata?.versions),
-        },
+        { label: 'Versions', content: formatTextValue(decoder?.document?.metadata?.versions) },
       ])}
-      {createTextDetailsGroup([
-        {
-          label: 'Author',
-          content: formatTextValue(decoder?.document?.metadata?.author),
-        },
-        {
-          label: 'Date',
-          content: formatTextValue(decoder?.document?.metadata?.date),
-        },
-        {
-          label: 'Modified',
-          content: formatTextValue(decoder?.document?.metadata?.modified),
-        },
-      ])}
-      {createTextDetailsGroup([
-        {
-          label: 'References',
-          content: formatTextValue(decoder?.document?.metadata?.references),
-        },
-        {
-          label: 'Documentation',
-          content: formatTextValue(decoder?.document?.metadata?.documentation),
-        },
-        {
-          label: 'Supports',
-          content: formatTextValue(decoder?.document?.metadata?.supports),
-        },
-      ])}
+      {decoder?.document?.metadata?.author && (
+        <>
+          <EuiTitle size="xs">
+            <h3>Author</h3>
+          </EuiTitle>
+          <EuiSpacer size="s" />
+          {createTextDetailsGroup([
+            {
+              label: 'Name',
+              content: formatTextValue(decoder.document.metadata.author.name),
+            },
+            {
+              label: 'Email',
+              content: formatTextValue(decoder.document.metadata.author.email),
+            },
+          ])}
+          {createTextDetailsGroup([
+            {
+              label: 'URL',
+              content: formatTextValue(decoder.document.metadata.author.url),
+              url: decoder.document.metadata.author.url,
+              target: '_blank',
+            },
+            {
+              label: 'Date',
+              content: formatTextValue(decoder.document.metadata.author.date),
+            },
+          ])}
+        </>
+      )}
 
       {formatTextValue(decoder?.document?.metadata?.description) && (
         <>
@@ -213,9 +202,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
 
   const yamlContent = (
     <EuiCodeBlock language="yaml" isCopyable={true}>
-      {typeof decoder?.decoder === 'string'
-        ? decoder?.decoder
-        : (JSON.stringify(decoder?.decoder, null, 2) ?? '')}
+      {typeof decoder?.decoder === 'string' ? decoder?.decoder : JSON.stringify(decoder?.decoder, null, 2) ?? ''}
     </EuiCodeBlock>
   );
 
@@ -257,7 +244,9 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
           <EuiFlexItem>
             <EuiText size="s">
               <h2>
-                {decoder?.document?.name ? `Decoder details - ${decoder.document.name}` : 'Decoder'}
+                {decoder?.document?.name
+                  ? `Decoder details - ${decoder.document.name}`
+                  : 'Decoder'}
               </h2>
             </EuiText>
           </EuiFlexItem>

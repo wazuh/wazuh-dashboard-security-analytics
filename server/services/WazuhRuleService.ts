@@ -38,8 +38,8 @@ export default class WazuhRulesService {
     const bool: any = space
       ? { filter: [{ term: { 'space.name': space } }] }
       : prePackaged === false
-        ? { filter: [CUSTOM_SPACE_TERM] }
-        : { filter: [STANDARD_SPACE_TERM] };
+      ? { filter: [CUSTOM_SPACE_TERM] }
+      : { filter: [STANDARD_SPACE_TERM] };
 
     if (incomingQuery && !incomingQuery.match_all) {
       bool.must = [incomingQuery];
@@ -49,17 +49,10 @@ export default class WazuhRulesService {
   }
 
   private buildRuleResource(rule: Rule) {
-    const metadata = rule.metadata ?? {
-      title: rule.title,
-      author: rule.author,
-      description: rule.description ?? '',
-      references: rule.references?.map((r) => r.value) ?? [],
-      documentation: '',
-      supports: [],
-    };
     const resource: Record<string, any> = {
-      enabled: true,
-      metadata,
+      title: rule.title,
+      description: rule.description,
+      author: rule.author,
       level: rule.level,
       status: rule.status,
       logsource:
@@ -68,6 +61,7 @@ export default class WazuhRulesService {
           : { category: rule.category },
       detection: load(rule.detection),
     };
+    if (rule.references?.length) resource.references = rule.references.map((r) => r.value);
     if (rule.tags?.length) resource.tags = rule.tags.map((t) => t.value);
     if (rule.false_positives?.length)
       resource.falsepositives = rule.false_positives.map((fp) => fp.value);
@@ -80,10 +74,7 @@ export default class WazuhRulesService {
     response: OpenSearchDashboardsResponseFactory
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<GetRulesResponse> | ResponseError>> => {
     try {
-      const { prePackaged, space } = request.query as {
-        prePackaged: boolean;
-        space?: string;
-      };
+      const { prePackaged, space } = request.query as { prePackaged: boolean; space?: string };
       const { from = 0, size = 5000, query, sort } = (request.body as any) ?? {};
       const client = this.getClient(request);
       const searchBody: any = {
@@ -107,10 +98,7 @@ export default class WazuhRulesService {
       });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - getRules:', error);
-      return response.custom({
-        statusCode: 200,
-        body: { ok: false, error: error.message },
-      });
+      return response.custom({ statusCode: 200, body: { ok: false, error: error.message } });
     }
   };
 
@@ -133,16 +121,10 @@ export default class WazuhRulesService {
       const client = this.getClient(request);
 
       const createResponse = await client(CLIENT_RULE_METHODS.CREATE_RULE, {
-        body: {
-          resource: this.buildRuleResource(rule),
-          integration: integrationId,
-        },
+        body: { resource: this.buildRuleResource(rule), integration: integrationId },
       });
 
-      return response.custom({
-        statusCode: 200,
-        body: { ok: true, response: createResponse },
-      });
+      return response.custom({ statusCode: 200, body: { ok: true, response: createResponse } });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - createRule:', error);
       return response.custom({
@@ -172,10 +154,7 @@ export default class WazuhRulesService {
         body: { resource: this.buildRuleResource(rule) },
       });
 
-      return response.custom({
-        statusCode: 200,
-        body: { ok: true, response: updateResponse },
-      });
+      return response.custom({ statusCode: 200, body: { ok: true, response: updateResponse } });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - updateRule:', error);
       return response.custom({
@@ -195,16 +174,10 @@ export default class WazuhRulesService {
       const client = this.getClient(request);
       await client(CLIENT_RULE_METHODS.DELETE_RULE, { ruleId });
 
-      return response.custom({
-        statusCode: 200,
-        body: { ok: true, response: {} },
-      });
+      return response.custom({ statusCode: 200, body: { ok: true, response: {} } });
     } catch (error) {
       console.error('Security Analytics - RulesService - deleteRule:', error);
-      return response.custom({
-        statusCode: 200,
-        body: { ok: false, error: error.message },
-      });
+      return response.custom({ statusCode: 200, body: { ok: false, error: error.message } });
     }
   };
 }
