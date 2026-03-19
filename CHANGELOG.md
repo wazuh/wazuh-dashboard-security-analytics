@@ -22,6 +22,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Hide Alerts/Correlations and Correlation rules from the Security Analytics navigation, leaving Findings at the root level [#8004](https://github.com/wazuh/wazuh-dashboard-plugins/pull/8004)
 - Changed the management of rules [#96](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/96)
 - Renamed Dectection rules to rules [#96](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/96)
+- Updated Detectors management feature [#111](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/111)
 
 ### Removed
 
@@ -31,3 +32,4 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 
 - Fixed YAML Editor when creating or editing detection rules [#9](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/9)
 - Fixed detection rule editor causing blank screen [#44](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/44)
+- Fixed data source didn't include data stream aliases for detector creation [#116](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/116)
