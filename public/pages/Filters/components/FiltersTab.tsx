@@ -181,8 +181,8 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
                     FiltersAllowedActionsBySpace
                   ).join(', ')}`
                 : selectedItems.length === 0
-                ? 'Select filters to delete'
-                : undefined
+                  ? 'Select filters to delete'
+                  : undefined
             }
             onClick={() => {
               setItemForAction({ action: DELETE_SELECTED_ACTION });

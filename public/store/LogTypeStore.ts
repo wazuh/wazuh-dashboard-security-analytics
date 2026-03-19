@@ -17,7 +17,10 @@ import {
 import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
 
 export class LogTypeStore {
-  constructor(private service: LogTypeService, private notifications: NotificationsStart) {}
+  constructor(
+    private service: LogTypeService,
+    private notifications: NotificationsStart
+  ) {}
 
   public async getLogType(id: string): Promise<LogTypeWithRules | undefined> {
     const logTypesRes = await this.service.searchLogTypes(id);

@@ -17,7 +17,10 @@ import { errorNotificationToast } from '../utils/helpers';
 import { THREAT_INTEL_ENABLED } from '../utils/constants';
 
 export default class FindingsService {
-  constructor(private httpClient: HttpSetup, private notifications: NotificationsStart) {}
+  constructor(
+    private httpClient: HttpSetup,
+    private notifications: NotificationsStart
+  ) {}
 
   getFindings = async (
     getFindingsParams: GetFindingsParams

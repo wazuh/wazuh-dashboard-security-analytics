@@ -18,7 +18,10 @@ import { errorNotificationToast } from '../utils/helpers';
 import { THREAT_INTEL_ENABLED } from '../utils/constants';
 
 export default class AlertsService {
-  constructor(private httpClient: HttpSetup, private notifications: NotificationsStart) {}
+  constructor(
+    private httpClient: HttpSetup,
+    private notifications: NotificationsStart
+  ) {}
 
   getAlerts = async (
     getAlertsParams: GetAlertsParams

@@ -17,7 +17,10 @@ export interface DecodersSearchParams {
 }
 
 export class DecodersStore {
-  constructor(private service: DecodersService, private notifications: NotificationsStart) {}
+  constructor(
+    private service: DecodersService,
+    private notifications: NotificationsStart
+  ) {}
 
   public async searchDecoders(
     params: DecodersSearchParams,

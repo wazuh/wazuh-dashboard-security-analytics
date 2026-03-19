@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { NotificationsStart } from "opensearch-dashboards/public";
+import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   CreateKVDBPayload,
   CUDKVDBResponse,
@@ -14,35 +14,29 @@ import {
   KVDBSearchResponse,
   ServerResponse,
   UpdateKVDBPayload,
-} from "../../types";
-import KVDBsService from "../services/KVDBsService";
-import { errorNotificationToast } from "../utils/helpers";
+} from '../../types';
+import KVDBsService from '../services/KVDBsService';
+import { errorNotificationToast } from '../utils/helpers';
 
 export class KVDBsStore {
   constructor(
     private service: KVDBsService,
-    private notifications: NotificationsStart,
+    private notifications: NotificationsStart
   ) {}
 
   public async searchKVDBs(
-    params: KVDBSearchRequest,
+    params: KVDBSearchRequest
   ): Promise<{ items: KVDBItem[]; total: number }> {
     try {
-      const response: ServerResponse<KVDBSearchResponse> =
-        await this.service.searchKVDBs(params);
+      const response: ServerResponse<KVDBSearchResponse> = await this.service.searchKVDBs(params);
       if (!response.ok) {
-        errorNotificationToast(
-          this.notifications,
-          "fetch",
-          "KVDBs",
-          response.error,
-        );
+        errorNotificationToast(this.notifications, 'fetch', 'KVDBs', response.error);
         return { items: [], total: 0 };
       }
 
       const hits = response.response.hits.hits ?? [];
       const total =
-        typeof response.response.hits.total === "number"
+        typeof response.response.hits.total === 'number'
           ? response.response.hits.total
           : (response.response.hits.total?.value ?? hits.length);
       const items: KVDBItem[] = hits.map((hit) => ({
@@ -51,50 +45,35 @@ export class KVDBsStore {
       }));
 
       const kvdbIds = Array.from(
-        new Set(
-          items
-            .map((item) => item.document?.id)
-            .filter((id): id is string => Boolean(id)),
-        ),
+        new Set(items.map((item) => item.document?.id).filter((id): id is string => Boolean(id)))
       );
 
       const integrationsMap = await this.getIntegrationsMap(kvdbIds);
 
       const itemsWithIntegration = items.map((item) => ({
         ...item,
-        integration: integrationsMap.get(item.document?.id ?? "") ?? undefined,
+        integration: integrationsMap.get(item.document?.id ?? '') ?? undefined,
       }));
 
       return { items: itemsWithIntegration, total };
     } catch (error: any) {
-      errorNotificationToast(
-        this.notifications,
-        "fetch",
-        "KVDBs",
-        error.message,
-      );
+      errorNotificationToast(this.notifications, 'fetch', 'KVDBs', error.message);
       return { items: [], total: 0 };
     }
   }
 
   public async getKVDB(id: string): Promise<KVDBItem | undefined> {
-    const response: ServerResponse<KVDBSearchResponse> =
-      await this.service.searchKVDBs({
-        size: 1,
-        query: {
-          ids: {
-            values: [id],
-          },
+    const response: ServerResponse<KVDBSearchResponse> = await this.service.searchKVDBs({
+      size: 1,
+      query: {
+        ids: {
+          values: [id],
         },
-      });
+      },
+    });
 
     if (!response.ok) {
-      errorNotificationToast(
-        this.notifications,
-        "fetch",
-        "KVDB",
-        response.error,
-      );
+      errorNotificationToast(this.notifications, 'fetch', 'KVDB', response.error);
       return undefined;
     }
 
@@ -109,32 +88,30 @@ export class KVDBsStore {
     };
 
     const integrationsMap = await this.getIntegrationsMap(
-      item.document?.id ? [item.document.id] : [],
+      item.document?.id ? [item.document.id] : []
     );
 
     return {
       ...item,
-      integration: integrationsMap.get(item.document?.id ?? "") ?? undefined,
+      integration: integrationsMap.get(item.document?.id ?? '') ?? undefined,
     };
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {
-    if (typeof error === "string") return error;
+    if (typeof error === 'string') return error;
     const err = error as { body?: { message?: string }; message?: string };
     return err?.body?.message ?? err?.message ?? fallback;
   }
 
-  public async createKVDB(
-    body: CreateKVDBPayload,
-  ): Promise<CUDKVDBResponse | undefined> {
+  public async createKVDB(body: CreateKVDBPayload): Promise<CUDKVDBResponse | undefined> {
     try {
       const response = await this.service.createKVDB(body);
       if (!response.ok) {
         errorNotificationToast(
           this.notifications,
-          "create",
-          "KVDB",
-          this.getErrorMessage(response.error, "Failed to create KVDB"),
+          'create',
+          'KVDB',
+          this.getErrorMessage(response.error, 'Failed to create KVDB')
         );
         return undefined;
       }
@@ -142,9 +119,9 @@ export class KVDBsStore {
     } catch (error: unknown) {
       errorNotificationToast(
         this.notifications,
-        "create",
-        "KVDB",
-        this.getErrorMessage(error, "An unexpected error occurred."),
+        'create',
+        'KVDB',
+        this.getErrorMessage(error, 'An unexpected error occurred.')
       );
       return undefined;
     }
@@ -152,16 +129,16 @@ export class KVDBsStore {
 
   public async updateKVDB(
     kvdbId: string,
-    body: UpdateKVDBPayload,
+    body: UpdateKVDBPayload
   ): Promise<CUDKVDBResponse | undefined> {
     try {
       const response = await this.service.updateKVDB(kvdbId, body);
       if (!response.ok) {
         errorNotificationToast(
           this.notifications,
-          "update",
-          "KVDB",
-          this.getErrorMessage(response.error, "Failed to update KVDB"),
+          'update',
+          'KVDB',
+          this.getErrorMessage(response.error, 'Failed to update KVDB')
         );
         return undefined;
       }
@@ -169,25 +146,23 @@ export class KVDBsStore {
     } catch (error: unknown) {
       errorNotificationToast(
         this.notifications,
-        "update",
-        "KVDB",
-        this.getErrorMessage(error, "An unexpected error occurred."),
+        'update',
+        'KVDB',
+        this.getErrorMessage(error, 'An unexpected error occurred.')
       );
       return undefined;
     }
   }
 
-  public async deleteKVDB(
-    kvdbId: string,
-  ): Promise<CUDKVDBResponse | undefined> {
+  public async deleteKVDB(kvdbId: string): Promise<CUDKVDBResponse | undefined> {
     try {
       const response = await this.service.deleteKVDB(kvdbId);
       if (!response.ok) {
         errorNotificationToast(
           this.notifications,
-          "delete",
-          "KVDB",
-          this.getErrorMessage(response.error, "Failed to delete KVDB"),
+          'delete',
+          'KVDB',
+          this.getErrorMessage(response.error, 'Failed to delete KVDB')
         );
         return undefined;
       }
@@ -195,16 +170,16 @@ export class KVDBsStore {
     } catch (error: unknown) {
       errorNotificationToast(
         this.notifications,
-        "delete",
-        "KVDB",
-        this.getErrorMessage(error, "An unexpected error occurred."),
+        'delete',
+        'KVDB',
+        this.getErrorMessage(error, 'An unexpected error occurred.')
       );
       return undefined;
     }
   }
 
   private async getIntegrationsMap(
-    kvdbIds: string[],
+    kvdbIds: string[]
   ): Promise<Map<string, KVDBIntegrationSummary>> {
     if (!kvdbIds.length) {
       return new Map();
@@ -214,12 +189,7 @@ export class KVDBsStore {
       await this.service.searchIntegrations(kvdbIds);
 
     if (!response.ok) {
-      errorNotificationToast(
-        this.notifications,
-        "fetch",
-        "integrations",
-        response.error,
-      );
+      errorNotificationToast(this.notifications, 'fetch', 'integrations', response.error);
       return new Map();
     }
 

@@ -29,7 +29,7 @@ export interface FilterItem extends FilterSource {
 export interface FilterSearchRequest {
   from?: number;
   size?: number;
-  sort?: Array<Record<string, { order: "asc" | "desc" }>>;
+  sort?: Array<Record<string, { order: 'asc' | 'desc' }>>;
   query?: Record<string, unknown>;
   track_total_hits?: boolean;
 }

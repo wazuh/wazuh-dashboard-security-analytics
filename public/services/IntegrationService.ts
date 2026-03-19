@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { HttpSetup } from "opensearch-dashboards/public";
+import { HttpSetup } from 'opensearch-dashboards/public';
 import {
   CreateIntegrationRequestBody,
   CreateIntegrationResponse,
@@ -16,9 +16,9 @@ import {
   SearchIntegrationsResponse,
   ServerResponse,
   UpdateIntegrationResponse,
-} from "../../types";
-import { API } from "../../server/utils/constants";
-import { dataSourceInfo } from "./utils/constants";
+} from '../../types';
+import { API } from '../../server/utils/constants';
+import { dataSourceInfo } from './utils/constants';
 
 export default class IntegrationService {
   constructor(private httpClient: HttpSetup) {}
@@ -56,7 +56,7 @@ export default class IntegrationService {
         bool: {
           must: {
             query_string: {
-              query: `space.name:${spaceFilter ? spaceFilter : "*"}`,
+              query: `space.name:${spaceFilter ? spaceFilter : '*'}`,
             },
           },
         },
@@ -78,9 +78,9 @@ export default class IntegrationService {
       | IntegrationBase
       | {
           id?: string;
-          document: IntegrationBase["document"];
-          space: IntegrationBase["space"];
-        },
+          document: IntegrationBase['document'];
+          space: IntegrationBase['space'];
+        }
   ): Promise<ServerResponse<UpdateIntegrationResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/${integrationId}`;
     // Route schema expects only { document, space }; strip id and other extra fields
@@ -99,7 +99,7 @@ export default class IntegrationService {
   };
 
   deleteIntegration = async (
-    integrationId: string,
+    integrationId: string
   ): Promise<ServerResponse<DeleteIntegrationResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/${integrationId}`;
     return (await this.httpClient.delete(url, {
@@ -121,7 +121,7 @@ export default class IntegrationService {
   };
 
   promoteIntegration = async (
-    data: PromoteIntegrationRequestBody,
+    data: PromoteIntegrationRequestBody
   ): Promise<ServerResponse<PromoteIntegrationResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/promote`;
     return (await this.httpClient.post(url, {

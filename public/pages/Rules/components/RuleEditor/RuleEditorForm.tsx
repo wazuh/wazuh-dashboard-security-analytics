@@ -365,7 +365,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                               ? [
                                   {
                                     value: props.values.logType,
-                                  label: getLogTypeLabel(String(props.values.logType)),
+                                    label: getLogTypeLabel(String(props.values.logType)),
                                   },
                                 ]
                               : []

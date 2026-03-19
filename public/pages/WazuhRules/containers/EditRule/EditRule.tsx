@@ -14,8 +14,11 @@ import { RuleItemInfoBase } from '../../../../../types';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import { getUseUpdatedUx } from '../../../../services/utils/constants';
 
-export interface EditRuleProps
-  extends RouteComponentProps<any, any, { ruleItem: RuleItemInfoBase }> {
+export interface EditRuleProps extends RouteComponentProps<
+  any,
+  any,
+  { ruleItem: RuleItemInfoBase }
+> {
   services: BrowserServices;
   notifications?: NotificationsStart;
 }

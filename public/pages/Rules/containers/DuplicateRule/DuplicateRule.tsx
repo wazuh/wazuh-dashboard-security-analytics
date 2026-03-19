@@ -13,8 +13,11 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RuleItemInfoBase } from '../../../../../types';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 
-export interface DuplicateRuleProps
-  extends RouteComponentProps<any, any, { ruleItem: RuleItemInfoBase }> {
+export interface DuplicateRuleProps extends RouteComponentProps<
+  any,
+  any,
+  { ruleItem: RuleItemInfoBase }
+> {
   services: BrowserServices;
   notifications?: NotificationsStart;
 }

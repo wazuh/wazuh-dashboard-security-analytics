@@ -17,15 +17,17 @@ import FiltersService from '../services/FiltersService';
 import { errorNotificationToast } from '../utils/helpers';
 
 export class FiltersStore {
-  constructor(private service: FiltersService, private notifications: NotificationsStart) {}
+  constructor(
+    private service: FiltersService,
+    private notifications: NotificationsStart
+  ) {}
 
   public async searchFilters(
     params: FilterSearchRequest
   ): Promise<{ items: FilterItem[]; total: number }> {
     try {
-      const response: ServerResponse<FilterSearchResponse> = await this.service.searchFilters(
-        params
-      );
+      const response: ServerResponse<FilterSearchResponse> =
+        await this.service.searchFilters(params);
       if (!response.ok) {
         errorNotificationToast(this.notifications, 'fetch', 'Filters', response.error);
         return { items: [], total: 0 };
@@ -35,7 +37,7 @@ export class FiltersStore {
       const total =
         typeof response.response.hits.total === 'number'
           ? response.response.hits.total
-          : response.response.hits.total?.value ?? hits.length;
+          : (response.response.hits.total?.value ?? hits.length);
       const items: FilterItem[] = hits.map((hit) => ({
         id: hit._id,
         ...hit._source,

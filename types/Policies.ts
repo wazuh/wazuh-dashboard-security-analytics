@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { IntegrationBase } from "./Integrations";
-import { PolicyMetadata } from "./ResourceMetadata";
+import { IntegrationBase } from './Integrations';
+import { PolicyMetadata } from './ResourceMetadata';
 
 export interface PolicySpace {
   name: string;

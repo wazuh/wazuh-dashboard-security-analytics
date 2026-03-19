@@ -3,20 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useMemo } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useState, useMemo } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 import {
   BREADCRUMBS,
   PROMOTE_ENTITIES_LABELS,
   PROMOTE_ENTITIES_ORDER,
   ROUTES,
-} from "../../../utils/constants";
-import { DataStore } from "../../../store/DataStore";
-import {
-  setBreadcrumbs,
-  successNotificationToast,
-} from "../../../utils/helpers";
-import { NotificationsStart } from "opensearch-dashboards/public";
+} from '../../../utils/constants';
+import { DataStore } from '../../../store/DataStore';
+import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   EuiButton,
   EuiFlexGroup,
@@ -25,26 +22,19 @@ import {
   EuiPanel,
   EuiSpacer,
   EuiText,
-} from "@elastic/eui";
-import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import { withGuardAsync } from "../utils/helpers";
-import { PromoteBySpaceModal } from "../components/PromoteModal";
-import {
-  GetPromoteBySpaceResponse,
-  PromoteChangeGroup,
-  PromoteSpaces,
-} from "../../../../types";
-import { SPACE_ACTIONS } from "../../../../common/constants";
-import { compose } from "redux";
+} from '@elastic/eui';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { withGuardAsync } from '../utils/helpers';
+import { PromoteBySpaceModal } from '../components/PromoteModal';
+import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
+import { SPACE_ACTIONS } from '../../../../common/constants';
+import { compose } from 'redux';
 import {
   withConditionalHOC,
   withRootDecoderRequirementGuard,
-} from "../components/RootDecoderRequirement";
-import {
-  actionIsAllowedOnSpace,
-  getNextSpace,
-} from "../../../../common/helpers";
-import { PromoteChangeDiff } from "../components/PromoteChangeDiff";
+} from '../components/RootDecoderRequirement';
+import { actionIsAllowedOnSpace, getNextSpace } from '../../../../common/helpers';
+import { PromoteChangeDiff } from '../components/PromoteChangeDiff';
 
 export interface PromoteIntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -53,17 +43,17 @@ export interface PromoteIntegrationProps extends RouteComponentProps {
 const PromoteEntity: React.FC<{
   label: string;
   entity: PromoteChangeGroup;
-  data: GetPromoteBySpaceResponse["response"];
+  data: GetPromoteBySpaceResponse['response'];
 }> = ({ label, entity, data }) => {
   const memoizedData = useMemo(
     () =>
       (data.promote?.changes?.[entity] ?? []).map(({ id, ...rest }) => {
-        const strippedId = id.replace(/^\w_/, "");
+        const strippedId = id.replace(/^\w_/, '');
         const available = data.available_promotions?.[entity];
         const name = available?.[id] ?? available?.[strippedId] ?? id; // Prefer metadata.title from available_promotions; fallback to id
         return { ...rest, id, name };
       }),
-    [data.promote?.changes?.[entity], entity, data.available_promotions],
+    [data.promote?.changes?.[entity], entity, data.available_promotions]
   );
   return (
     <div>
@@ -73,11 +63,7 @@ const PromoteEntity: React.FC<{
       <EuiSpacer size="s"></EuiSpacer>
       <div>
         {memoizedData.map(({ id, name, operation }, i) => (
-          <PromoteChangeDiff
-            key={`${id}-${i}`}
-            name={name || id}
-            operation={operation}
-          />
+          <PromoteChangeDiff key={`${id}-${i}`} name={name || id} operation={operation} />
         ))}
       </div>
     </div>
@@ -86,10 +72,7 @@ const PromoteEntity: React.FC<{
 
 const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
   withConditionalHOC((props) => {
-    return actionIsAllowedOnSpace(
-      props.space,
-      SPACE_ACTIONS.DEFINE_ROOT_DECODER,
-    );
+    return actionIsAllowedOnSpace(props.space, SPACE_ACTIONS.DEFINE_ROOT_DECODER);
   }, withRootDecoderRequirementGuard), // This guard is added to make sure that the user has a root decoder defined before promoting, as it is a requirement for the promotion. If the user doesn't have a root decoder defined, it will show a message to the user to define a root decoder before promoting.
   withGuardAsync(
     async ({ space }) => {
@@ -100,7 +83,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
         if (!ok) {
           return {
             ok: false,
-            data: { errorPromote: "Error getting the promote data" },
+            data: { errorPromote: 'Error getting the promote data' },
           };
         }
 
@@ -112,7 +95,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
         return {
           ok: false,
           data: {
-            errorPromote: error.message || "Error getting the promote data",
+            errorPromote: error.message || 'Error getting the promote data',
           },
         };
       }
@@ -123,15 +106,15 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
       notifications,
       history,
     }: {
-      promoteData: GetPromoteBySpaceResponse["response"];
+      promoteData: GetPromoteBySpaceResponse['response'];
       space: PromoteSpaces;
-      notifications: PromoteIntegrationProps["notifications"];
+      notifications: PromoteIntegrationProps['notifications'];
     }) => {
       const [modalIsOpen, setModalIsOpen] = useState(false);
 
       // TODO: add ability to select which entities to promote
       const hasPromotions = Object.values(promoteData.promote.changes).some(
-        (items) => items.length > 0,
+        (items) => items.length > 0
       );
 
       const onConfirmPromote = async () => {
@@ -141,11 +124,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           changes: promoteData.promote.changes,
         });
         if (success) {
-          successNotificationToast(
-            notifications,
-            "promoted",
-            `[${space}] space`,
-          );
+          successNotificationToast(notifications, 'promoted', `[${space}] space`);
           history.push(ROUTES.INTEGRATIONS);
         }
         return success;
@@ -171,11 +150,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
                 const label = PROMOTE_ENTITIES_LABELS[entity];
                 return (
                   <React.Fragment key={entity}>
-                    <PromoteEntity
-                      label={label}
-                      entity={entity}
-                      data={promoteData}
-                    />
+                    <PromoteEntity label={label} entity={entity} data={promoteData} />
                     <EuiSpacer size="m" />
                   </React.Fragment>
                 );
@@ -186,11 +161,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           <EuiSpacer size="m" />
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem grow={false}>
-              <EuiButton
-                disabled={!hasPromotions}
-                onClick={() => setModalIsOpen(true)}
-                fill={true}
-              >
+              <EuiButton disabled={!hasPromotions} onClick={() => setModalIsOpen(true)} fill={true}>
                 Promote
               </EuiButton>
             </EuiFlexItem>
@@ -198,8 +169,8 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
         </>
       );
     },
-    EuiLoadingSpinner,
-  ),
+    EuiLoadingSpinner
+  )
 )(({ errorPromote }) => {
   return <EuiText color="danger">{errorPromote}</EuiText>;
 });
@@ -212,9 +183,9 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, BREADCRUMBS.PROMOTE]);
 
   const description =
-    "Promote the integrations, decoders and KVDBs, filters, rules and space changes to another space. Once promoted, they will be available in the another space.";
+    'Promote the integrations, decoders and KVDBs, filters, rules and space changes to another space. Once promoted, they will be available in the another space.';
 
-  const space = new URLSearchParams(location.search).get("space");
+  const space = new URLSearchParams(location.search).get('space');
 
   return (
     <EuiPanel>
@@ -231,8 +202,8 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
       {actionIsAllowedOnSpace(space, SPACE_ACTIONS.PROMOTE) ? (
         <>
           <EuiText size="s">
-            You are promoting the entities from <b>{space}</b> to{" "}
-            <b>{getNextSpace(space)}</b> space.
+            You are promoting the entities from <b>{space}</b> to <b>{getNextSpace(space)}</b>{' '}
+            space.
           </EuiText>
           <EuiSpacer />
           <PromoteBySpace

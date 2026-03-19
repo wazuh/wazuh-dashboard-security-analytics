@@ -4,28 +4,28 @@
  */
 
 export const KVDBS_PAGE_SIZE = 25;
-export const KVDBS_SORT_FIELD = "document.metadata.title";
+export const KVDBS_SORT_FIELD = 'document.metadata.title';
 
 export const KVDBS_SEARCH_SCHEMA = {
   strict: true,
   fields: {
-    "document.metadata.author": {
-      type: "string",
+    'document.metadata.author': {
+      type: 'string',
     },
-    "document.metadata.date": {
-      type: "date",
+    'document.metadata.date': {
+      type: 'date',
     },
-    "document.enabled": {
-      type: "boolean",
+    'document.enabled': {
+      type: 'boolean',
     },
-    "document.id": {
-      type: "string",
+    'document.id': {
+      type: 'string',
     },
-    "document.metadata.references": {
-      type: "string",
+    'document.metadata.references': {
+      type: 'string',
     },
-    "document.metadata.title": {
-      type: "string",
+    'document.metadata.title': {
+      type: 'string',
     },
   },
 };
