@@ -40,8 +40,6 @@ export default class WazuhRulesService {
       : prePackaged === false
         ? { filter: [CUSTOM_SPACE_TERM] }
         : { filter: [STANDARD_SPACE_TERM] };
-        ? { filter: [CUSTOM_SPACE_TERM] }
-        : { filter: [STANDARD_SPACE_TERM] };
 
     if (incomingQuery && !incomingQuery.match_all) {
       bool.must = [incomingQuery];
@@ -108,10 +106,7 @@ export default class WazuhRulesService {
         prePackaged: boolean;
         space?: string;
       };
-      const { prePackaged, space } = request.query as {
-        prePackaged: boolean;
-        space?: string;
-      };
+
       const { from = 0, size = 5000, query, sort } = (request.body as any) ?? {};
       const client = this.getClient(request);
       const searchBody: any = {
@@ -165,10 +160,6 @@ export default class WazuhRulesService {
       const client = this.getClient(request);
 
       const createResponse = await client(CLIENT_RULE_METHODS.CREATE_RULE, {
-        body: {
-          resource: this.buildRuleResource(rule),
-          integration: integrationId,
-        },
         body: {
           resource: this.buildRuleResource(rule),
           integration: integrationId,

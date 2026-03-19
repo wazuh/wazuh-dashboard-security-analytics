@@ -78,8 +78,6 @@ export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
     level: rule.level,
     falsePositives: rule.false_positives?.length
       ? rule.false_positives.map((fp) => fp.value)
-    falsePositives: rule.false_positives?.length
-      ? rule.false_positives.map((fp) => fp.value)
       : ruleEditorStateDefaultValue.falsePositives,
     mitre: rule.mitre,
     compliance: rule.compliance,
