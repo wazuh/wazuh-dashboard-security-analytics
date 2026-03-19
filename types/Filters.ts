@@ -12,15 +12,7 @@ export interface FilterDocument {
   metadata?: {
     title?: string;
     description?: string;
-    author?:
-      | string
-      | {
-          name?: string;
-          email?: string;
-          date?: string;
-          modified?: string;
-          url?: string;
-        };
+    author?: string | { name?: string };
   };
 }
 
@@ -56,7 +48,7 @@ export interface FilterResource {
   type: string;
   metadata?: {
     title?: string;
-    author?: string | { name?: string; email?: string; url?: string };
+    author?: string;
     date?: string;
     modified?: string;
     description?: string;

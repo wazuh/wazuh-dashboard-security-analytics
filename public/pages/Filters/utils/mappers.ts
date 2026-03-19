@@ -11,9 +11,7 @@ export interface FilterFormModel {
   check: string;
   enabled: boolean;
   description: string;
-  authorName: string;
-  authorEmail: string;
-  authorUrl: string;
+  author: string;
 }
 
 export const filterFormDefaultValue: FilterFormModel = {
@@ -22,9 +20,7 @@ export const filterFormDefaultValue: FilterFormModel = {
   check: "",
   enabled: true,
   description: "",
-  authorName: "",
-  authorEmail: "",
-  authorUrl: "",
+  author: "",
 };
 
 export const mapFilterToForm = (document: FilterDocument): FilterFormModel => {
@@ -35,9 +31,7 @@ export const mapFilterToForm = (document: FilterDocument): FilterFormModel => {
     check: document.check ?? "",
     enabled: document.enabled ?? true,
     description: document.metadata?.description ?? "",
-    authorName: typeof author === "string" ? author : (author?.name ?? ""),
-    authorEmail: typeof author === "object" ? (author?.email ?? "") : "",
-    authorUrl: typeof author === "object" ? (author?.url ?? "") : "",
+    author: typeof author === "string" ? author : (author?.name ?? ""),
   };
 };
 
@@ -52,7 +46,7 @@ export const mapFormToFilterResource = (
     enabled: values.enabled,
     metadata: {
       title: values.name,
-      author: values.authorName?.trim() ?? "",
+      author: values.author?.trim() ?? "",
       date: now,
       modified: now,
       description: values.description || "",

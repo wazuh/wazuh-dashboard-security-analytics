@@ -45,14 +45,13 @@ const editorType = {
   json: "json",
 };
 
-/** Resolve author display: indexer sends string; legacy may send { name, email } */
+/** Resolve author display: indexer sends string; legacy may send { name } */
 const getAuthorDisplay = (
-  author: string | { name?: string; email?: string } | undefined,
+  author: string | { name?: string } | undefined,
 ): string => {
   if (!author) return "";
   if (typeof author === "string") return author;
-  const parts = [author.name, author.email].filter(Boolean);
-  return parts.join(" ");
+  return author.name ?? "";
 };
 
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({

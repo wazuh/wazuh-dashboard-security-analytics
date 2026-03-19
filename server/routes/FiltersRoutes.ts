@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { IRouter } from 'opensearch-dashboards/server';
-import { schema } from '@osd/config-schema';
-import { NodeServices } from '../models/interfaces';
-import { API } from '../utils/constants';
-import { createQueryValidationSchema } from '../utils/helpers';
+import { IRouter } from "opensearch-dashboards/server";
+import { schema } from "@osd/config-schema";
+import { NodeServices } from "../models/interfaces";
+import { API } from "../utils/constants";
+import { createQueryValidationSchema } from "../utils/helpers";
 
 const filterResourceSchema = schema.object({
   name: schema.string(),
@@ -17,14 +17,8 @@ const filterResourceSchema = schema.object({
   metadata: schema.maybe(
     schema.object({
       description: schema.maybe(schema.string()),
-      author: schema.maybe(
-        schema.object({
-          name: schema.maybe(schema.string()),
-          email: schema.maybe(schema.string()),
-          url: schema.maybe(schema.string()),
-        })
-      ),
-    })
+      author: schema.maybe(schema.string()),
+    }),
   ),
 });
 
@@ -39,7 +33,7 @@ export function setupFiltersRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    filtersService.searchFilters
+    filtersService.searchFilters,
   );
 
   router.post(
@@ -53,7 +47,7 @@ export function setupFiltersRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    filtersService.createFilter
+    filtersService.createFilter,
   );
 
   router.put(
@@ -68,7 +62,7 @@ export function setupFiltersRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    filtersService.updateFilter
+    filtersService.updateFilter,
   );
 
   router.delete(
@@ -79,6 +73,6 @@ export function setupFiltersRoutes(services: NodeServices, router: IRouter) {
         query: createQueryValidationSchema(),
       },
     },
-    filtersService.deleteFilter
+    filtersService.deleteFilter,
   );
 }
