@@ -83,15 +83,13 @@ const entriesToContentObject = (
 
 /**
  * Convert from form model to API resource payload.
+ * Note: date and modified are set by the indexer; do not send them.
  */
 export const mapFormToKVDBResource = (values: KVDBFormModel): KVDBResource => {
-  const now = new Date().toISOString();
   return {
     metadata: {
       title: values.title,
       author: values.author,
-      date: now,
-      modified: now,
       description: values.description,
       documentation: values.documentation,
       references: values.references,
