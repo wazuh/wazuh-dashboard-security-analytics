@@ -4,17 +4,17 @@
  */
 
 const RULE_KEYWORD_SEARCH_FIELDS = [
-  "document.metadata.title",
-  "document.metadata.author",
-  "document.level",
-  "document.logsource.category",
-  "document.logsource.product",
-  "document.logsource.service",
+  'document.metadata.title',
+  'document.metadata.author',
+  'document.level',
+  'document.logsource.category',
+  'document.logsource.product',
+  'document.logsource.service',
 ];
 
-const RULE_TEXT_SEARCH_FIELDS = ["document.metadata.description"];
+const RULE_TEXT_SEARCH_FIELDS = ['document.metadata.description'];
 
-const escapeWildcard = (str: string) => str.replace(/[*?]/g, "\\$&");
+const escapeWildcard = (str: string) => str.replace(/[*?]/g, '\\$&');
 
 export const buildRulesSearchQuery = (searchText: string) => {
   const trimmed = searchText.trim();

@@ -3,20 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
-import { RouteComponentProps, useLocation, useParams } from "react-router-dom";
-import { IntegrationItem, Space } from "../../../../types";
-import { SPACE_ACTIONS } from "../../../../common/constants";
-import {
-  actionIsAllowedOnSpace,
-  getSpacesAllowAction,
-} from "../../../../common/helpers";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
+import { IntegrationItem, Space } from '../../../../types';
+import { SPACE_ACTIONS } from '../../../../common/constants';
+import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import {
   EuiSmallButton,
   EuiDescriptionList,
@@ -32,48 +23,45 @@ import {
   EuiContextMenuPanel,
   EuiContextMenuItem,
   EuiHorizontalRule,
-} from "@elastic/eui";
-import { DataStore } from "../../../store/DataStore";
-import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
-import { integrationDetailsTabs } from "../utils/constants";
-import { IntegrationDetails } from "../components/IntegrationDetails";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import { IntegrationDetectionRules } from "../components/IntegrationDetectionRules";
-import { IntegrationDecoders } from "../components/IntegrationDecoders";
-import { IntegrationKVDBs } from "../components/IntegrationKVDBs";
-import { RuleTableItem } from "../../Rules/utils/helpers";
-import { DeleteIntegrationModal } from "../components/DeleteIntegrationModal";
+} from '@elastic/eui';
+import { DataStore } from '../../../store/DataStore';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { integrationDetailsTabs } from '../utils/constants';
+import { IntegrationDetails } from '../components/IntegrationDetails';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { IntegrationDetectionRules } from '../components/IntegrationDetectionRules';
+import { IntegrationDecoders } from '../components/IntegrationDecoders';
+import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
+import { RuleTableItem } from '../../Rules/utils/helpers';
+import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import {
   errorNotificationToast,
   setBreadcrumbs,
   successNotificationToast,
-} from "../../../utils/helpers";
-import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import { useIntegrationDecoders } from "../../Decoders/hooks/useIntegrationDecoders";
-import { useIntegrationKVDBs } from "../../KVDBs/hooks/useIntegrationKVDBs";
+} from '../../../utils/helpers';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
+import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
 
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
 }
 
-export const Integration: React.FC<IntegrationProps> = ({
-  notifications,
-  history,
-}) => {
+export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
   const isMountedRef = useRef(true);
   const { integrationId } = useParams<{ integrationId: string }>();
-  const [selectedTabId, setSelectedTabId] = useState("details");
+  const [selectedTabId, setSelectedTabId] = useState('details');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [infoText, setInfoText] = useState<React.ReactNode | string>(
     <>
       Loading details &nbsp;
       <EuiLoadingSpinner size="l" />
-    </>,
+    </>
   );
-  const [integrationDetails, setIntegrationDetails] = useState<
-    IntegrationItem | undefined
-  >(undefined);
+  const [integrationDetails, setIntegrationDetails] = useState<IntegrationItem | undefined>(
+    undefined
+  );
   const [initialIntegrationDetails, setInitialIntegrationDetails] = useState<
     IntegrationItem | undefined
   >(undefined);
@@ -91,16 +79,14 @@ export const Integration: React.FC<IntegrationProps> = ({
   const updateRules = useCallback(
     async (details: IntegrationItem, intialDetails: IntegrationItem) => {
       const rulesRes = await DataStore.rules.getAllRules({
-        "rule.category": [
-          details.document.metadata?.title?.toLowerCase() ?? "",
-        ],
+        'rule.category': [details.document.metadata?.title?.toLowerCase() ?? ''],
       });
       const ruleItems = rulesRes.map((rule) => ({
         title: rule._source.title,
         level: rule._source.level,
         category: rule._source.category,
         description: rule._source.description,
-        source: rule.prePackaged ? "Standard" : "Custom",
+        source: rule.prePackaged ? 'Standard' : 'Custom',
         ruleInfo: rule,
         ruleId: rule._id,
       }));
@@ -116,27 +102,23 @@ export const Integration: React.FC<IntegrationProps> = ({
         detectionRulesCount: rulesCount,
       });
     },
-    [],
+    []
   );
 
   useEffect(() => {
     const getIntegrationDetails = async () => {
-      const details =
-        await DataStore.integrations.getIntegration(integrationId);
+      const details = await DataStore.integrations.getIntegration(integrationId);
 
       if (!isMountedRef.current) {
         return;
       }
 
       if (!details) {
-        setInfoText("Integration not found!"); // Replace Log Type to Integration by Wazuh
+        setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
         return;
       }
 
-      setBreadcrumbs([
-        BREADCRUMBS.INTEGRATIONS,
-        { text: details.document.metadata?.title ?? "" },
-      ]);
+      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.metadata?.title ?? '' }]);
       const integrationItem = {
         ...details,
         detectionRulesCount: details.document?.rules?.length ?? 0,
@@ -157,7 +139,7 @@ export const Integration: React.FC<IntegrationProps> = ({
 
   const decoderIds = useMemo(
     () => integrationDetails?.document.decoders ?? [],
-    [integrationDetails],
+    [integrationDetails]
   );
   const {
     items: decoderItems,
@@ -165,13 +147,10 @@ export const Integration: React.FC<IntegrationProps> = ({
     refresh: refreshDecoders,
   } = useIntegrationDecoders({
     decoderIds,
-    space: integrationDetails?.space?.name ?? "",
+    space: integrationDetails?.space?.name ?? '',
   });
 
-  const kvdbIds = useMemo(
-    () => integrationDetails?.document.kvdbs ?? [],
-    [integrationDetails],
-  );
+  const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
   const {
     items: kvdbItems,
     loading: loadingKvdbs,
@@ -182,34 +161,34 @@ export const Integration: React.FC<IntegrationProps> = ({
 
   const renderTabContent = () => {
     switch (selectedTabId) {
-      case "decoders":
+      case 'decoders':
         return (
           <IntegrationDecoders
             decoders={decoderItems}
             loading={loadingDecoders}
-            space={integrationDetails?.space?.name ?? ""}
+            space={integrationDetails?.space?.name ?? ''}
             onRefresh={refreshDecoders}
           />
         );
-      case "kvdbs":
+      case 'kvdbs':
         return (
           <IntegrationKVDBs
             kvdbs={kvdbItems}
             loading={loadingKvdbs}
-            space={integrationDetails?.space?.name ?? ""}
+            space={integrationDetails?.space?.name ?? ''}
             onRefresh={refreshKvdbs}
           />
         );
-      case "detection_rules":
+      case 'detection_rules':
         return (
           <IntegrationDetectionRules
             loadingRules={loadingRules}
             rules={rules}
-            space={integrationDetails?.space?.name ?? ""}
+            space={integrationDetails?.space?.name ?? ''}
             refreshRules={refreshRules}
           />
         );
-      case "details":
+      case 'details':
       default:
         return (
           <IntegrationDetails
@@ -225,12 +204,10 @@ export const Integration: React.FC<IntegrationProps> = ({
   };
 
   const deleteIntegration = async () => {
-    const { ok } = await DataStore.integrations.deleteIntegration(
-      integrationDetails!.id,
-    );
+    const { ok } = await DataStore.integrations.deleteIntegration(integrationDetails!.id);
 
     if (ok) {
-      successNotificationToast(notifications, "deleted", "integration");
+      successNotificationToast(notifications, 'deleted', 'integration');
       history.push(ROUTES.INTEGRATIONS);
     }
   };
@@ -243,91 +220,85 @@ export const Integration: React.FC<IntegrationProps> = ({
     setIsActionsMenuOpen(false);
   };
 
-  const spaceName = (integrationDetails?.space.name ?? "") as Space;
-  const isCreateDisabled = !actionIsAllowedOnSpace(
-    spaceName,
-    SPACE_ACTIONS.CREATE,
-  );
+  const spaceName = (integrationDetails?.space.name ?? '') as Space;
+  const isCreateDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.CREATE);
   const isEditDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.EDIT);
-  const isDeleteDisabled = !actionIsAllowedOnSpace(
-    spaceName,
-    SPACE_ACTIONS.DELETE,
-  );
+  const isDeleteDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.DELETE);
 
   const actionsButton = (
     <EuiPopover
-      id={"integrationsActionsPopover"}
+      id={'integrationsActionsPopover'}
       button={
         <EuiSmallButton
-          iconType={"arrowDown"}
-          iconSide={"right"}
+          iconType={'arrowDown'}
+          iconSide={'right'}
           onClick={toggleActionsMenu}
-          data-test-subj={"integrationsActionsButton"}
+          data-test-subj={'integrationsActionsButton'}
         >
           Actions
         </EuiSmallButton>
       }
       isOpen={isActionsMenuOpen}
       closePopover={closeActionsPopover}
-      panelPaddingSize={"none"}
-      anchorPosition={"downLeft"}
-      data-test-subj={"integrationsActionsPopover"}
+      panelPaddingSize={'none'}
+      anchorPosition={'downLeft'}
+      data-test-subj={'integrationsActionsPopover'}
     >
       <EuiContextMenuPanel
         size="s"
         items={[
           <EuiContextMenuItem
-            key={"createRule"}
-            href={"detection_rules#/create-rule"}
+            key={'createRule'}
+            href={'detection_rules#/create-rule'}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
             }}
-            data-test-subj={"createRuleButton"}
+            data-test-subj={'createRuleButton'}
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
                 ? `Rule can only be created in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.CREATE,
-                  ).join(", ")}`
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
                 : undefined
             }
           >
             Create rule
           </EuiContextMenuItem>,
           <EuiContextMenuItem
-            key={"createDecoder"}
-            href={"decoders#/create-decoder"}
+            key={'createDecoder'}
+            href={'decoders#/create-decoder'}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
             }}
-            data-test-subj={"createDecoderButton"}
+            data-test-subj={'createDecoderButton'}
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
                 ? `Decoder can only be created in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.CREATE,
-                  ).join(", ")}`
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
                 : undefined
             }
           >
             Create decoder
           </EuiContextMenuItem>,
           <EuiContextMenuItem
-            key={"createKVDB"}
-            href={"kvdbs#/create-kvdb"}
+            key={'createKVDB'}
+            href={'kvdbs#/create-kvdb'}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
             }}
-            data-test-subj={"createKVDBButton"}
+            data-test-subj={'createKVDBButton'}
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
                 ? `KVDB can only be created in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.CREATE,
-                  ).join(", ")}`
+                    SPACE_ACTIONS.CREATE
+                  ).join(', ')}`
                 : undefined
             }
           >
@@ -335,37 +306,37 @@ export const Integration: React.FC<IntegrationProps> = ({
           </EuiContextMenuItem>,
           <EuiHorizontalRule margin="xs" />,
           <EuiContextMenuItem
-            key={"Edit"}
+            key={'Edit'}
             onClick={() => {
               closeActionsPopover();
               setIsEditMode(true);
-              setSelectedTabId("details");
+              setSelectedTabId('details');
             }}
             disabled={isEditDisabled}
-            data-test-subj={"editIntegrationButton"}
+            data-test-subj={'editIntegrationButton'}
             toolTipContent={
               isEditDisabled
                 ? `Integration can only be edited in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.EDIT,
-                  ).join(", ")}`
+                    SPACE_ACTIONS.EDIT
+                  ).join(', ')}`
                 : undefined
             }
           >
             Edit
           </EuiContextMenuItem>,
           <EuiContextMenuItem
-            key={"Delete"}
+            key={'Delete'}
             onClick={() => {
               closeActionsPopover();
               setShowDeleteModal(true);
             }}
-            data-test-subj={"deleteIntegrationButton"}
+            data-test-subj={'deleteIntegrationButton'}
             disabled={isDeleteDisabled}
             toolTipContent={
               isDeleteDisabled
                 ? `Integration can only be deleted in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.DELETE,
-                  ).join(", ")}`
+                    SPACE_ACTIONS.DELETE
+                  ).join(', ')}`
                 : undefined
             }
           >
@@ -385,7 +356,7 @@ export const Integration: React.FC<IntegrationProps> = ({
       {showDeleteModal && (
         <DeleteIntegrationModal
           integrationId={integrationDetails.id}
-          integrationName={integrationDetails.document.metadata?.title ?? ""}
+          integrationName={integrationDetails.document.metadata?.title ?? ''}
           detectionRulesCount={integrationDetails.detectionRulesCount} // TODO: refactor to avoid passing this prop
           decodersCount={integrationDetails.decodersCount}
           kvdbsCount={integrationDetails.kvdbsCount}
@@ -413,9 +384,8 @@ export const Integration: React.FC<IntegrationProps> = ({
         <EuiDescriptionList
           listItems={[
             {
-              title: "Description",
-              description:
-                integrationDetails.document.metadata?.description ?? "",
+              title: 'Description',
+              description: integrationDetails.document.metadata?.description ?? '',
             },
           ]}
         />
@@ -423,16 +393,14 @@ export const Integration: React.FC<IntegrationProps> = ({
         <EuiFlexGroup>
           <EuiFlexItem>
             <EuiDescriptionList
-              listItems={[
-                { title: "ID", description: integrationDetails.document.id },
-              ]}
+              listItems={[{ title: 'ID', description: integrationDetails.document.id }]}
             />
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiDescriptionList
               listItems={[
                 {
-                  title: "Rules",
+                  title: 'Rules',
                   description: integrationDetails.detectionRulesCount,
                 },
               ]}
@@ -442,7 +410,7 @@ export const Integration: React.FC<IntegrationProps> = ({
             <EuiDescriptionList
               listItems={[
                 {
-                  title: "Decoders",
+                  title: 'Decoders',
                   description: integrationDetails.decodersCount,
                 },
               ]}
@@ -452,7 +420,7 @@ export const Integration: React.FC<IntegrationProps> = ({
             <EuiDescriptionList
               listItems={[
                 {
-                  title: "KVDBs",
+                  title: 'KVDBs',
                   description: integrationDetails.kvdbsCount,
                 },
               ]}
@@ -462,7 +430,7 @@ export const Integration: React.FC<IntegrationProps> = ({
             <EuiDescriptionList
               listItems={[
                 {
-                  title: "Space",
+                  title: 'Space',
                   description: integrationDetails.space.name,
                 },
               ]}

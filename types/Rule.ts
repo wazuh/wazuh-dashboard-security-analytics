@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { RuleService } from "../public/services";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import { CatalogResourceMetadata } from "./ResourceMetadata";
+import { RuleService } from '../public/services';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { CatalogResourceMetadata } from './ResourceMetadata';
 
 export interface RuleMetadata extends CatalogResourceMetadata {}
 
@@ -65,7 +65,7 @@ export interface CreateRuleParams {
 export interface CreateRuleResponse {
   _id: string;
   _version: number;
-  rule: Omit<Rule, "id"> & {
+  rule: Omit<Rule, 'id'> & {
     last_update_time: number;
     monitor_id: string;
   };
@@ -80,7 +80,7 @@ export interface UpdateRuleParams {
 export interface UpdateRuleResponse {
   _id: string;
   _version: number;
-  rule: Omit<Rule, "id"> & {
+  rule: Omit<Rule, 'id'> & {
     last_update_time: number;
     monitor_id: string;
   };
@@ -117,10 +117,7 @@ export interface IRulesStore {
 
   readonly notifications: NotificationsStart;
 
-  getAllRules: (
-    terms?: { [key: string]: string[] },
-    query?: any,
-  ) => Promise<RuleItemInfoBase[]>;
+  getAllRules: (terms?: { [key: string]: string[] }, query?: any) => Promise<RuleItemInfoBase[]>;
 
   createRule: (rule: Rule, integrationId: string) => Promise<boolean>; // Wazuh: added integrationId param
 
@@ -131,16 +128,12 @@ export interface IRulesStore {
   getRules: (
     prePackaged: boolean,
     terms?: { [key: string]: string[] },
-    query?: any,
+    query?: any
   ) => Promise<RuleItemInfoBase[]>;
 
-  getPrePackagedRules: (terms?: {
-    [key: string]: string[];
-  }) => Promise<RuleItemInfoBase[]>;
+  getPrePackagedRules: (terms?: { [key: string]: string[] }) => Promise<RuleItemInfoBase[]>;
 
-  getCustomRules: (terms?: {
-    [key: string]: string[];
-  }) => Promise<RuleItemInfoBase[]>;
+  getCustomRules: (terms?: { [key: string]: string[] }) => Promise<RuleItemInfoBase[]>;
 
   // Wazuh: search rules with pagination and sorting
   searchRules: (
@@ -150,13 +143,8 @@ export interface IRulesStore {
       size?: number;
       sort?: Array<Record<string, any>>;
     },
-    space: string,
+    space: string
   ) => Promise<{ total: number; items: RuleItemInfoBase[] }>;
 }
 
-export type RulesTableColumnFields =
-  | "title"
-  | "level"
-  | "category"
-  | "source"
-  | "description";
+export type RulesTableColumnFields = 'title' | 'level' | 'category' | 'source' | 'description';

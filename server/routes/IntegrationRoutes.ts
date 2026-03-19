@@ -3,32 +3,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { IRouter } from "opensearch-dashboards/server";
-import { schema } from "@osd/config-schema";
-import { NodeServices } from "../models/interfaces";
-import { API } from "../utils/constants";
-import { createQueryValidationSchema } from "../utils/helpers";
-import { AllowedActionsBySpace, SPACE_ACTIONS } from "../../common/constants";
+import { IRouter } from 'opensearch-dashboards/server';
+import { schema } from '@osd/config-schema';
+import { NodeServices } from '../models/interfaces';
+import { API } from '../utils/constants';
+import { createQueryValidationSchema } from '../utils/helpers';
+import { AllowedActionsBySpace, SPACE_ACTIONS } from '../../common/constants';
 
-export function setupIntegrationRoutes(
-  services: NodeServices,
-  router: IRouter,
-) {
+export function setupIntegrationRoutes(services: NodeServices, router: IRouter) {
   const { integrationService } = services;
 
   const integrationMetadataSchema = schema.object({
     title: schema.string(),
     author: schema.string(),
-    date: schema.string({ defaultValue: "" }),
-    modified: schema.string({ defaultValue: "" }),
-    description: schema.string({ defaultValue: "" }),
+    date: schema.string({ defaultValue: '' }),
+    modified: schema.string({ defaultValue: '' }),
+    description: schema.string({ defaultValue: '' }),
     references: schema.arrayOf(schema.string(), { defaultValue: [] }),
-    documentation: schema.string({ defaultValue: "" }),
+    documentation: schema.string({ defaultValue: '' }),
     supports: schema.arrayOf(schema.string(), { defaultValue: [] }),
   });
 
   const spaceSchema = schema.object({
-    name: schema.string({ defaultValue: "" }),
+    name: schema.string({ defaultValue: '' }),
   });
 
   router.post(
@@ -37,13 +34,13 @@ export function setupIntegrationRoutes(
       validate: {
         body: schema.object({
           document: schema.object({
-            id: schema.string({ defaultValue: "" }),
+            id: schema.string({ defaultValue: '' }),
             category: schema.string(),
             metadata: integrationMetadataSchema,
             tags: schema.nullable(
               schema.object({
                 correlation_id: schema.number(),
-              }),
+              })
             ),
           }),
           space: spaceSchema,
@@ -53,7 +50,7 @@ export function setupIntegrationRoutes(
         query: createQueryValidationSchema(),
       },
     },
-    integrationService.createIntegration,
+    integrationService.createIntegration
   );
 
   router.post(
@@ -64,7 +61,7 @@ export function setupIntegrationRoutes(
         query: createQueryValidationSchema(),
       },
     },
-    integrationService.searchIntegrations,
+    integrationService.searchIntegrations
   );
 
   router.put(
@@ -80,7 +77,7 @@ export function setupIntegrationRoutes(
           decodersCount: schema.maybe(schema.number()),
           kvdbsCount: schema.maybe(schema.number()),
           document: schema.object({
-            id: schema.string({ defaultValue: "" }),
+            id: schema.string({ defaultValue: '' }),
             category: schema.string(),
             metadata: integrationMetadataSchema,
             decoders: schema.arrayOf(schema.string(), { defaultValue: [] }),
@@ -90,7 +87,7 @@ export function setupIntegrationRoutes(
             tags: schema.nullable(
               schema.object({
                 correlation_id: schema.number(),
-              }),
+              })
             ),
           }),
           space: schema.maybe(spaceSchema),
@@ -98,7 +95,7 @@ export function setupIntegrationRoutes(
         query: createQueryValidationSchema(),
       },
     },
-    integrationService.updateIntegration,
+    integrationService.updateIntegration
   );
 
   router.get(
@@ -109,13 +106,13 @@ export function setupIntegrationRoutes(
           space: schema.oneOf(
             Object.entries(AllowedActionsBySpace)
               .filter(([_, actions]) => actions.includes(SPACE_ACTIONS.PROMOTE))
-              .map(([space]) => schema.literal(space)),
+              .map(([space]) => schema.literal(space))
           ),
         }),
         query: createQueryValidationSchema(),
       },
     },
-    integrationService.getPromoteBySpace,
+    integrationService.getPromoteBySpace
   );
 
   router.post(
@@ -126,7 +123,7 @@ export function setupIntegrationRoutes(
         query: createQueryValidationSchema(),
       },
     },
-    integrationService.promoteIntegration,
+    integrationService.promoteIntegration
   );
 
   router.delete(
@@ -140,6 +137,6 @@ export function setupIntegrationRoutes(
         query: createQueryValidationSchema(),
       },
     },
-    integrationService.deleteIntegration,
+    integrationService.deleteIntegration
   );
 }

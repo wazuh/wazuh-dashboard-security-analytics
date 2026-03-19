@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { NotificationsStart } from "opensearch-dashboards/public";
+import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   GetPromote,
   GetPromoteBySpaceResponse,
@@ -12,27 +12,27 @@ import {
   IntegrationWithRules,
   PromoteIntegrationRequestBody,
   RuleItemInfoBase,
-} from "../../types";
-import IntegrationService from "../services/IntegrationService";
-import { errorNotificationToast } from "../utils/helpers";
-import { DataStore } from "./DataStore";
-import { ruleTypes } from "../pages/Rules/utils/constants";
+} from '../../types';
+import IntegrationService from '../services/IntegrationService';
+import { errorNotificationToast } from '../utils/helpers';
+import { DataStore } from './DataStore';
+import { ruleTypes } from '../pages/Rules/utils/constants';
 import {
   DATA_SOURCE_NOT_SET_ERROR,
   integrationCategoryFilters,
   integrationsByCategories,
-} from "../utils/constants";
-import { getIntegrationLabel } from "../pages/Integrations/utils/helpers";
+} from '../utils/constants';
+import { getIntegrationLabel } from '../pages/Integrations/utils/helpers';
 
 export class IntegrationStore {
   constructor(
     private service: IntegrationService,
-    private notifications: NotificationsStart,
+    private notifications: NotificationsStart
   ) {}
 
   private formatRelatedEntitiesList(entities: string[]): string {
     if (entities.length === 0) {
-      return "related entities";
+      return 'related entities';
     }
 
     if (entities.length === 1) {
@@ -43,33 +43,31 @@ export class IntegrationStore {
       return `${entities[0]} and ${entities[1]}`;
     }
 
-    return `${entities.slice(0, -1).join(", ")}, and ${entities[entities.length - 1]}`;
+    return `${entities.slice(0, -1).join(', ')}, and ${entities[entities.length - 1]}`;
   }
 
   public async getIntegration(
     id: string,
-    spaceFilter?: string | null,
+    spaceFilter?: string | null
   ): Promise<IntegrationWithRules | undefined> {
     const integrationsRes = await this.service.searchIntegrations({
       id,
       spaceFilter,
     });
     if (integrationsRes.ok) {
-      const integrations: Integration[] =
-        integrationsRes.response.hits.hits.map((hit) => {
-          return {
-            id: hit._id,
-            ...hit._source,
-          };
-        });
+      const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
+        return {
+          id: hit._id,
+          ...hit._source,
+        };
+      });
 
       let detectionRules: RuleItemInfoBase[] = [];
 
       if (integrations[0]) {
-        const integrationName =
-          integrations[0].document.metadata?.title?.toLowerCase() ?? "";
+        const integrationName = integrations[0].document.metadata?.title?.toLowerCase() ?? '';
         detectionRules = await DataStore.rules.getAllRules({
-          "rule.category": [integrationName],
+          'rule.category': [integrationName],
         });
       }
 
@@ -85,14 +83,13 @@ export class IntegrationStore {
         spaceFilter,
       });
       if (integrationsRes.ok) {
-        const integrations: Integration[] =
-          integrationsRes.response.hits.hits.map((hit) => {
-            return {
-              id: hit._id,
-              ...hit._source,
-              space: hit._source.space,
-            };
-          });
+        const integrations: Integration[] = integrationsRes.response.hits.hits.map((hit) => {
+          return {
+            id: hit._id,
+            ...hit._source,
+            space: hit._source.space,
+          };
+        });
 
         ruleTypes.splice(
           0,
@@ -100,14 +97,14 @@ export class IntegrationStore {
           ...integrations
             .map(({ id, document: { category, metadata }, space }) => ({
               label: getIntegrationLabel(metadata?.title),
-              value: metadata?.title ?? "",
+              value: metadata?.title ?? '',
               id,
               category,
-              isStandard: space.name === "Standard",
+              isStandard: space.name === 'Standard',
             }))
             .sort((a, b) => {
               return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
-            }),
+            })
         );
 
         // Set integration category types
@@ -117,22 +114,20 @@ export class IntegrationStore {
         integrations.forEach((integration) => {
           integrationsByCategories[integration.document.category] =
             integrationsByCategories[integration.document.category] || [];
-          integrationsByCategories[integration.document.category].push(
-            integration,
-          );
+          integrationsByCategories[integration.document.category].push(integration);
         });
         integrationCategoryFilters.splice(
           0,
           integrationCategoryFilters.length,
           ...Object.keys(integrationsByCategories).sort((a, b) => {
-            if (a === "Other") {
+            if (a === 'Other') {
               return 1;
-            } else if (b === "Other") {
+            } else if (b === 'Other') {
               return -1;
             } else {
               return a < b ? -1 : a > b ? 1 : 0;
             }
-          }),
+          })
         );
 
         return integrations;
@@ -143,9 +138,9 @@ export class IntegrationStore {
       if (error.message === DATA_SOURCE_NOT_SET_ERROR) {
         errorNotificationToast(
           this.notifications,
-          "Fetch",
-          "Integrations",
-          "Select valid data source.",
+          'Fetch',
+          'Integrations',
+          'Select valid data source.'
         );
         return [];
       }
@@ -154,45 +149,32 @@ export class IntegrationStore {
     }
   }
 
-  public async createIntegration(
-    integration: IntegrationBase,
-  ): Promise<boolean> {
+  public async createIntegration(integration: IntegrationBase): Promise<boolean> {
     const createRes = await this.service.createIntegration(integration);
 
     if (!createRes.ok) {
       errorNotificationToast(
         this.notifications,
-        "create",
-        "integration",
-        createRes?.error?.message || createRes.error, // TODO: I am not sure about the error structure here
+        'create',
+        'integration',
+        createRes?.error?.message || createRes.error // TODO: I am not sure about the error structure here
       );
     }
 
     return createRes.ok;
   }
 
-  public async updateIntegration(
-    integrationId: string,
-    document: Integration,
-  ): Promise<boolean> {
+  public async updateIntegration(integrationId: string, document: Integration): Promise<boolean> {
     try {
-      const updateRes = await this.service.updateIntegration(
-        integrationId,
-        document,
-      );
+      const updateRes = await this.service.updateIntegration(integrationId, document);
 
       if (!updateRes.ok) {
         const errorMsg =
-          typeof updateRes.error === "string"
+          typeof updateRes.error === 'string'
             ? updateRes.error
             : ((updateRes.error as { message?: string })?.message ??
               JSON.stringify(updateRes.error));
-        errorNotificationToast(
-          this.notifications,
-          "update",
-          "integration",
-          errorMsg,
-        );
+        errorNotificationToast(this.notifications, 'update', 'integration', errorMsg);
         return false;
       }
 
@@ -201,16 +183,10 @@ export class IntegrationStore {
       const errorMsg =
         error instanceof Error
           ? error.message
-          : ((error as { body?: { message?: string }; message?: string })?.body
-              ?.message ??
+          : ((error as { body?: { message?: string }; message?: string })?.body?.message ??
             (error as { message?: string })?.message ??
-            "An unexpected error occurred.");
-      errorNotificationToast(
-        this.notifications,
-        "update",
-        "integration",
-        errorMsg,
-      );
+            'An unexpected error occurred.');
+      errorNotificationToast(this.notifications, 'update', 'integration', errorMsg);
       return false;
     }
   }
@@ -222,10 +198,9 @@ export class IntegrationStore {
       if (!deleteRes.ok) {
         errorNotificationToast(
           this.notifications,
-          "delete",
-          "integration",
-          deleteRes.error.message ||
-            "Error occurred while deleting integration.",
+          'delete',
+          'integration',
+          deleteRes.error.message || 'Error occurred while deleting integration.'
         );
       }
 
@@ -233,29 +208,27 @@ export class IntegrationStore {
     } catch (e: any) {
       errorNotificationToast(
         this.notifications,
-        "delete",
-        "integration",
-        e?.message || "An unexpected error occurred.",
+        'delete',
+        'integration',
+        e?.message || 'An unexpected error occurred.'
       );
       return {
         ok: false,
-        error: { message: e?.message || "An unexpected error occurred." },
+        error: { message: e?.message || 'An unexpected error occurred.' },
       };
     }
   }
 
   public async getPromote(
-    data: GetPromote,
-  ): Promise<
-    [GetPromoteBySpaceResponse["ok"], GetPromoteBySpaceResponse["response"]]
-  > {
+    data: GetPromote
+  ): Promise<[GetPromoteBySpaceResponse['ok'], GetPromoteBySpaceResponse['response']]> {
     const promoteRes = await this.service.getPromoteIntegration(data);
     if (!promoteRes.ok) {
       errorNotificationToast(
         this.notifications,
-        "promote",
-        "integration",
-        promoteRes.error.message || promoteRes.error,
+        'promote',
+        'integration',
+        promoteRes.error.message || promoteRes.error
       );
     }
 
@@ -265,12 +238,7 @@ export class IntegrationStore {
   public async promoteIntegration(data: PromoteIntegrationRequestBody) {
     const promoteRes = await this.service.promoteIntegration(data);
     if (!promoteRes.ok) {
-      errorNotificationToast(
-        this.notifications,
-        "promote",
-        "integration",
-        promoteRes.error,
-      );
+      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
     }
 
     return promoteRes.ok;
@@ -282,8 +250,7 @@ export class IntegrationStore {
    */
   public canDeleteIntegration(integration: Integration): boolean {
     const rules = (integration as Integration & { rules?: unknown }).rules;
-    const decoders = (integration as Integration & { decoders?: unknown })
-      .decoders;
+    const decoders = (integration as Integration & { decoders?: unknown }).decoders;
     const kvdbs = (integration as Integration & { kvdbs?: unknown }).kvdbs;
     const rulesCount = Array.isArray(rules) ? rules.length : 0;
     const decodersCount = Array.isArray(decoders) ? decoders.length : 0;
@@ -301,9 +268,9 @@ export class IntegrationStore {
     hasKVDBs: boolean;
   }): string {
     const relatedEntities = [
-      hasRules ? "detection rules" : null,
-      hasDecoders ? "decoders" : null,
-      hasKVDBs ? "KVDBs" : null,
+      hasRules ? 'detection rules' : null,
+      hasDecoders ? 'decoders' : null,
+      hasKVDBs ? 'KVDBs' : null,
     ].filter(Boolean) as string[];
 
     return this.formatRelatedEntitiesList(relatedEntities);
