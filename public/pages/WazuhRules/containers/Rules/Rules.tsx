@@ -44,7 +44,7 @@ import {
 const DEFAULT_PAGE_SIZE = 25;
 
 const SORT_FIELD_TO_OS: Record<string, string | undefined> = {
-  title: 'document.title',
+  title: 'document.metadata.title',
   level: 'document.level',
   category: 'document.logsource.category',
 };

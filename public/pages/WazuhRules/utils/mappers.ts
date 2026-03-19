@@ -50,12 +50,14 @@ export const mapRuleToYamlObject = (rule: Rule): any => {
     description: rule.metadata?.description || rule.description || '',
     references: rule.metadata?.references?.length
       ? rule.metadata.references
-      : rule.references?.map((ref) => ref.value) ?? [],
+      : rule.references?.length
+      ? rule.references.map((ref) => ref.value)
+      : [''],
+    documentation: rule.metadata?.documentation ?? '',
+    supports: rule.metadata?.supports?.length ? rule.metadata.supports : [''],
   };
-  if (rule.metadata?.date) metadata.date = rule.metadata.date;
+
   if (rule.metadata?.modified) metadata.modified = rule.metadata.modified;
-  if (rule.metadata?.documentation) metadata.documentation = rule.metadata.documentation;
-  if (rule.metadata?.supports?.length) metadata.supports = rule.metadata.supports;
 
   const yamlObject: any = {
     id: rule.id || '',
@@ -80,6 +82,10 @@ export const mapYamlObjectToRule = (obj: any): Rule => {
   const mitre = safeDump(obj.mitre);
   const compliance = safeDump(obj.compliance);
   const meta = obj.metadata ?? {};
+  const references = (meta.references ?? []).filter(Boolean);
+  const supports = (meta.supports ?? []).filter(Boolean);
+  const tags = (obj.tags ?? []).filter(Boolean);
+  const falsepositives = (obj.falsepositives ?? []).filter(Boolean);
 
   return {
     id: obj.id,
@@ -87,13 +93,11 @@ export const mapYamlObjectToRule = (obj: any): Rule => {
     log_source: {},
     title: meta.title || '',
     description: meta.description || '',
-    tags: obj.tags ? obj.tags.map((tag: string) => ({ value: tag })) : [],
-    false_positives: obj.falsepositives
-      ? obj.falsepositives.map((fp: string) => ({ value: fp }))
-      : [],
+    tags: tags.map((tag: string) => ({ value: tag })),
+    false_positives: falsepositives.map((fp: string) => ({ value: fp })),
     level: obj.level,
     status: obj.status,
-    references: meta.references ? meta.references.map((ref: string) => ({ value: ref })) : [],
+    references: references.map((ref: string) => ({ value: ref })),
     author: meta.author || '',
     enabled: obj.enabled ?? true,
     detection,
@@ -101,11 +105,11 @@ export const mapYamlObjectToRule = (obj: any): Rule => {
       title: meta.title || '',
       author: meta.author || '',
       description: meta.description || '',
-      references: meta.references ?? [],
+      references,
       date: meta.date,
       modified: meta.modified,
       documentation: meta.documentation,
-      supports: meta.supports ?? [],
+      supports,
     },
     mitre,
     compliance,

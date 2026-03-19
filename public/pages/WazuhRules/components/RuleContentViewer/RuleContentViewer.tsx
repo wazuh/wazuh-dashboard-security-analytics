@@ -95,6 +95,38 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
           <EuiSpacer />
 
           <EuiFlexGroup>
+            <EuiFlexItem>
+              <EuiFormLabel>Documentation</EuiFormLabel>
+              <EuiText size="s" data-test-subj={'rule_flyout_rule_documentation'}>
+                {ruleData.metadata?.documentation || DEFAULT_EMPTY_DATA}
+              </EuiText>
+            </EuiFlexItem>
+            <EuiFlexItem>
+              <EuiFormLabel>Supports</EuiFormLabel>
+              <div data-test-subj={'rule_flyout_rule_supports'}>
+                {ruleData.metadata?.supports?.length ? (
+                  <EuiFlexGroup
+                    direction="row"
+                    wrap
+                    gutterSize="s"
+                    data-test-subj={'rule_flyout_rule_supports_list'}
+                  >
+                    {ruleData.metadata.supports.map((support: string, i: number) => (
+                      <EuiFlexItem grow={false} key={i}>
+                        <EuiBadge color={'#DDD'}>{support}</EuiBadge>
+                      </EuiFlexItem>
+                    ))}
+                  </EuiFlexGroup>
+                ) : (
+                  <div>{DEFAULT_EMPTY_DATA}</div>
+                )}
+              </div>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+
+          <EuiSpacer />
+
+          <EuiFlexGroup>
             <EuiFlexItem data-test-subj={'rule_flyout_rule_source'}>
               <EuiFormLabel>Source</EuiFormLabel>
               <EuiText size="s">{prePackaged ? 'Standard' : 'Custom'}</EuiText>

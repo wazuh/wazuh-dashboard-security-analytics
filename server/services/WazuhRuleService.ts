@@ -65,7 +65,7 @@ export default class WazuhRulesService {
       logsource:
         rule.log_source && Object.keys(rule.log_source).length > 0
           ? rule.log_source
-          : { category: rule.category },
+          : { product: rule.category },
       detection: load(rule.detection),
       enabled: rule.enabled ?? true,
     };
