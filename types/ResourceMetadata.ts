@@ -28,7 +28,7 @@ export interface ResourceMetadata {
 /**
  * Policy-specific metadata with compatibility field.
  */
-export interface PolicyMetadata extends Omit<ResourceMetadata, 'supports'> {
+export interface PolicyMetadata extends Omit<ResourceMetadata, "supports"> {
   compatibility?: string[];
 }
 
@@ -36,6 +36,9 @@ export interface PolicyMetadata extends Omit<ResourceMetadata, 'supports'> {
  * Metadata for catalog resources (Integration, Decoder, Rule, KVDB, Filter).
  * Extends base metadata with supports field.
  */
-export interface CatalogResourceMetadata extends Omit<ResourceMetadata, 'compatibility'> {
+export interface CatalogResourceMetadata extends Omit<
+  ResourceMetadata,
+  "compatibility"
+> {
   supports?: string[];
 }

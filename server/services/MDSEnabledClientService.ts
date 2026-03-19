@@ -10,10 +10,7 @@ import {
 import { RequestHandlerContext } from '../../../../src/core/server';
 
 export abstract class MDSEnabledClientService {
-  constructor(
-    private osDriver: ILegacyCustomClusterClient,
-    private dataSourceEnabled: boolean
-  ) {}
+  constructor(private osDriver: ILegacyCustomClusterClient, private dataSourceEnabled: boolean) {}
 
   protected getClient(request: OpenSearchDashboardsRequest, context: RequestHandlerContext) {
     const dataSourceId = (request.query as any).dataSourceId;

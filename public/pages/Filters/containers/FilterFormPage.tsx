@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from "react";
 import {
   EuiCompressedFieldText,
   EuiCompressedFormRow,
@@ -18,47 +18,47 @@ import {
   EuiSpacer,
   EuiText,
   EuiToolTip,
-} from '@elastic/eui';
-import { Form, Formik, FormikErrors } from 'formik';
-import { NotificationsStart } from 'opensearch-dashboards/public';
-import { RouteComponentProps } from 'react-router-dom';
-import FormFieldHeader from '../../../components/FormFieldHeader';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+} from "@elastic/eui";
+import { Form, Formik, FormikErrors } from "formik";
+import { NotificationsStart } from "opensearch-dashboards/public";
+import { RouteComponentProps } from "react-router-dom";
+import FormFieldHeader from "../../../components/FormFieldHeader";
+import { PageHeader } from "../../../components/PageHeader/PageHeader";
+import { DataStore } from "../../../store/DataStore";
+import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
 import {
   errorNotificationToast,
   setBreadcrumbs,
   successNotificationToast,
-} from '../../../utils/helpers';
-import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
-import { FILTER_NAME_REGEX } from '../../../utils/validation';
+} from "../../../utils/helpers";
+import { useSpaceSelector } from "../../../hooks/useSpaceSelector";
+import { FILTER_NAME_REGEX } from "../../../utils/validation";
 import {
   FilterFormModel,
   filterFormDefaultValue,
   mapFilterToForm,
   mapFormToFilterResource,
-} from '../utils/mappers';
+} from "../utils/mappers";
 
 const FILTER_TYPE_OPTIONS = [
-  { value: 'pre-filter', text: 'Pre-filter' },
-  { value: 'post-filter', text: 'Post-filter' },
+  { value: "pre-filter", text: "Pre-filter" },
+  { value: "post-filter", text: "Post-filter" },
 ];
 
 const FILTER_ACTION = {
-  CREATE: 'create',
-  EDIT: 'edit',
+  CREATE: "create",
+  EDIT: "edit",
 } as const;
 type FilterAction = (typeof FILTER_ACTION)[keyof typeof FILTER_ACTION];
 
 const actionLabels: Record<FilterAction, string> = {
-  create: 'Create',
-  edit: 'Edit',
+  create: "Create",
+  edit: "Edit",
 };
 
 type FilterFormPageProps = {
   notifications: NotificationsStart;
-  history: RouteComponentProps['history'];
+  history: RouteComponentProps["history"];
   action: FilterAction;
   match: { params: { id?: string } };
 };
@@ -71,7 +71,9 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
 }) => {
   const filterId = match.params.id;
   const [isLoading, setIsLoading] = useState(false);
-  const [initialValue, setInitialValue] = useState<FilterFormModel>(filterFormDefaultValue);
+  const [initialValue, setInitialValue] = useState<FilterFormModel>(
+    filterFormDefaultValue,
+  );
   const { spaceFilter } = useSpaceSelector();
 
   // load existing filter when editing
@@ -96,9 +98,9 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
       } catch {
         errorNotificationToast(
           notifications,
-          'retrieve',
-          'filter',
-          `Could not retrieve filter ${filterId}.`
+          "retrieve",
+          "filter",
+          `Could not retrieve filter ${filterId}.`,
         );
       } finally {
         setIsLoading(false);
@@ -107,23 +109,30 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
     fetchFilter();
   }, [action, filterId, notifications]);
 
-  const validateForm = useCallback((values: FilterFormModel): FormikErrors<FilterFormModel> => {
-    const errors: FormikErrors<FilterFormModel> = {};
-    const trimmedName = values.name.trim();
-    if (!trimmedName) {
-      errors.name = 'Name is required';
-    } else if (!FILTER_NAME_REGEX.test(trimmedName)) {
-      errors.name = 'Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0).';
-    }
-    if (!values.type) errors.type = 'Type is required';
-    if (!values.check.trim()) errors.check = 'Check expression is required';
-    return errors;
-  }, []);
+  const validateForm = useCallback(
+    (values: FilterFormModel): FormikErrors<FilterFormModel> => {
+      const errors: FormikErrors<FilterFormModel> = {};
+      const trimmedName = values.name.trim();
+      if (!trimmedName) {
+        errors.name = "Name is required";
+      } else if (!FILTER_NAME_REGEX.test(trimmedName)) {
+        errors.name =
+          "Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0).";
+      }
+      if (!values.type) errors.type = "Type is required";
+      if (!values.check.trim()) errors.check = "Check expression is required";
+      return errors;
+    },
+    [],
+  );
 
   const handleSubmitForm = useCallback(
-    async (values: FilterFormModel, { setSubmitting }: { setSubmitting: (v: boolean) => void }) => {
+    async (
+      values: FilterFormModel,
+      { setSubmitting }: { setSubmitting: (v: boolean) => void },
+    ) => {
       const resource = mapFormToFilterResource(values);
-      const space = spaceFilter || 'draft';
+      const space = spaceFilter || "draft";
       try {
         if (action === FILTER_ACTION.CREATE) {
           const result = await DataStore.filters.createFilter({
@@ -131,7 +140,12 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
             resource,
           });
           if (result) {
-            successNotificationToast(notifications, 'created', 'filter', result.message);
+            successNotificationToast(
+              notifications,
+              "created",
+              "filter",
+              result.message,
+            );
             history.push(ROUTES.FILTERS);
           }
         } else if (filterId) {
@@ -140,7 +154,12 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
             resource,
           });
           if (result) {
-            successNotificationToast(notifications, 'updated', 'filter', result.message);
+            successNotificationToast(
+              notifications,
+              "updated",
+              "filter",
+              result.message,
+            );
             history.push(ROUTES.FILTERS);
           }
         }
@@ -148,7 +167,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
         setSubmitting(false);
       }
     },
-    [action, filterId, spaceFilter, notifications, history]
+    [action, filterId, spaceFilter, notifications, history],
   );
 
   const isSubmitDisabled = (errors: FormikErrors<FilterFormModel>) =>
@@ -158,7 +177,11 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
     <>
       {isLoading ? (
         <EuiPanel>
-          <EuiFlexGroup justifyContent="center" alignItems="center" style={{ minHeight: '400px' }}>
+          <EuiFlexGroup
+            justifyContent="center"
+            alignItems="center"
+            style={{ minHeight: "400px" }}
+          >
             <EuiFlexItem grow={false}>
               <EuiLoadingSpinner size="xl" />
             </EuiFlexItem>
@@ -166,7 +189,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
         </EuiPanel>
       ) : (
         <Formik
-          key={filterId || 'new-filter'}
+          key={filterId || "new-filter"}
           initialValues={initialValue}
           validateOnMount
           enableReinitialize
@@ -190,35 +213,35 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   </EuiText>
                   <EuiText size="s" color="subdued">
                     {action === FILTER_ACTION.CREATE
-                      ? 'Create a new event filter.'
-                      : 'Edit the filter configuration.'}
+                      ? "Create a new event filter."
+                      : "Edit the filter configuration."}
                   </EuiText>
                   <EuiSpacer />
                 </PageHeader>
 
                 <EuiCompressedFormRow
-                  label={'Name'}
+                  label={"Name"}
                   fullWidth
                   isInvalid={!!errors.name && touched.name}
                   error={errors.name}
                   helpText={
                     !(errors.name && touched.name)
-                      ? 'Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0)'
+                      ? "Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0)"
                       : undefined
                   }
                 >
                   <EuiCompressedFieldText
                     placeholder="filter/prefilter/0"
                     value={values.name}
-                    onChange={(e) => setFieldValue('name', e.target.value)}
-                    onBlur={() => setFieldTouched('name')}
+                    onChange={(e) => setFieldValue("name", e.target.value)}
+                    onBlur={() => setFieldTouched("name")}
                     isInvalid={!!errors.name && touched.name}
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={'Type'}
+                  label={"Type"}
                   fullWidth
                   isInvalid={!!errors.type && touched.type}
                   error={errors.type}
@@ -226,15 +249,15 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   <EuiCompressedSelect
                     options={FILTER_TYPE_OPTIONS}
                     value={values.type}
-                    onChange={(e) => setFieldValue('type', e.target.value)}
-                    onBlur={() => setFieldTouched('type')}
+                    onChange={(e) => setFieldValue("type", e.target.value)}
+                    onBlur={() => setFieldTouched("type")}
                     isInvalid={!!errors.type && touched.type}
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={'Check expression'}
+                  label={"Check expression"}
                   fullWidth
                   isInvalid={!!errors.check && touched.check}
                   error={errors.check}
@@ -243,19 +266,19 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   <EuiCompressedTextArea
                     placeholder="$host.os.platform == 'ubuntu'"
                     value={values.check}
-                    onChange={(e) => setFieldValue('check', e.target.value)}
-                    onBlur={() => setFieldTouched('check')}
+                    onChange={(e) => setFieldValue("check", e.target.value)}
+                    onBlur={() => setFieldTouched("check")}
                     isInvalid={!!errors.check && touched.check}
                     rows={3}
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
 
-                <EuiCompressedFormRow label={'Enabled'} fullWidth>
+                <EuiCompressedFormRow label={"Enabled"} fullWidth>
                   <EuiCompressedSwitch
-                    label={values.enabled ? 'Enabled' : 'Disabled'}
+                    label={values.enabled ? "Enabled" : "Disabled"}
                     checked={values.enabled}
-                    onChange={(e) => setFieldValue('enabled', e.target.checked)}
+                    onChange={(e) => setFieldValue("enabled", e.target.checked)}
                   />
                 </EuiCompressedFormRow>
 
@@ -264,7 +287,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiCompressedFormRow
                   label={
                     <>
-                      {'Description - '}
+                      {"Description - "}
                       <em>optional</em>
                     </>
                   }
@@ -273,7 +296,9 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   <EuiCompressedTextArea
                     placeholder="Brief description of what this filter does"
                     value={values.description}
-                    onChange={(e) => setFieldValue('description', e.target.value)}
+                    onChange={(e) =>
+                      setFieldValue("description", e.target.value)
+                    }
                     rows={2}
                   />
                 </EuiCompressedFormRow>
@@ -282,7 +307,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiCompressedFormRow
                   label={
                     <>
-                      {'Author - '}
+                      {"Author - "}
                       <em>optional</em>
                     </>
                   }
@@ -291,7 +316,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   <EuiCompressedFieldText
                     placeholder="Wazuh, Inc."
                     value={values.author}
-                    onChange={(e) => setFieldValue('author', e.target.value)}
+                    onChange={(e) => setFieldValue("author", e.target.value)}
                   />
                 </EuiCompressedFormRow>
               </EuiPanel>
@@ -299,12 +324,16 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
               <EuiSpacer size="xl" />
               <EuiFlexGroup justifyContent="flexEnd">
                 <EuiFlexItem grow={false}>
-                  <EuiSmallButton href={`#${ROUTES.FILTERS}`}>Cancel</EuiSmallButton>
+                  <EuiSmallButton href={`#${ROUTES.FILTERS}`}>
+                    Cancel
+                  </EuiSmallButton>
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
                   <EuiToolTip
                     content={
-                      isSubmitDisabled(errors) ? 'Please fill in all required fields' : undefined
+                      isSubmitDisabled(errors)
+                        ? "Please fill in all required fields"
+                        : undefined
                     }
                     position="top"
                   >

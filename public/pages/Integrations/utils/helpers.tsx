@@ -3,16 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useEffect } from 'react';
-import { EuiLink, EuiPanel } from '@elastic/eui';
-import { Integration } from '../../../../types';
-import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
-import { capitalize, startCase } from 'lodash';
-import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { DEFAULT_EMPTY_DATA, integrationCategoryFilters } from '../../../utils/constants';
-import { integrationLabels } from './constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
-import { IntegrationBase, PolicyItem } from '../../../../types';
+import React, { useState, useEffect } from "react";
+import { EuiLink, EuiPanel } from "@elastic/eui";
+import { Integration } from "../../../../types";
+import { SPACE_ACTIONS, UserSpacesOrder } from "../../../../common/constants";
+import { capitalize, startCase } from "lodash";
+import { Search } from "@opensearch-project/oui/src/eui_components/basic_table";
+import {
+  DEFAULT_EMPTY_DATA,
+  integrationCategoryFilters,
+} from "../../../utils/constants";
+import { integrationLabels } from "./constants";
+import { actionIsAllowedOnSpace } from "../../../../common/helpers";
+import { IntegrationBase, PolicyItem } from "../../../../types";
 
 export interface IntegrationTableItem {
   id: string;
@@ -26,15 +29,17 @@ export interface IntegrationTableItem {
 }
 
 export const mapPolicyToIntegrationTableItems = (
-  policy: PolicyItem | undefined
+  policy: PolicyItem | undefined,
 ): IntegrationTableItem[] => {
   if (!policy) return [];
 
   return Object.values(policy.integrationsMap ?? {})
-    .filter((source): source is IntegrationBase & { _id: string } => Boolean(source && source._id))
+    .filter((source): source is IntegrationBase & { _id: string } =>
+      Boolean(source && source._id),
+    )
     .map((source) => ({
       id: source._id,
-      title: source.document.metadata?.title ?? '',
+      title: source.document.metadata?.title ?? "",
       description: source.document.metadata?.description,
       category: source.document.category,
       space: source.space.name,
@@ -46,7 +51,7 @@ export const mapPolicyToIntegrationTableItems = (
 
 export const hasRelatedEntity = (
   item: IntegrationTableItem,
-  entity: 'rules' | 'decoders' | 'kvdbs'
+  entity: "rules" | "decoders" | "kvdbs",
 ): boolean => {
   return Array.isArray(item[entity]) && (item[entity] as any[]).length > 0;
 };
@@ -56,68 +61,75 @@ export const getIntegrationsTableColumns = ({
   setItemForAction,
 }: {
   showDetails: (id: string) => void;
-  setItemForAction: (options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null) => void;
+  setItemForAction: (
+    options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null,
+  ) => void;
 }) => [
   {
-    field: 'title',
-    name: 'Title',
+    field: "title",
+    name: "Title",
     sortable: true,
     render: (name: string, item: Integration) => {
-      return <EuiLink onClick={() => showDetails(item.id)}>{getIntegrationLabel(name)}</EuiLink>;
+      return (
+        <EuiLink onClick={() => showDetails(item.id)}>
+          {getIntegrationLabel(name)}
+        </EuiLink>
+      );
     },
   },
   {
-    field: 'description',
-    name: 'Description',
+    field: "description",
+    name: "Description",
     truncateText: false,
   },
   {
-    field: 'category',
-    name: 'Category',
+    field: "category",
+    name: "Category",
     truncateText: false,
   },
   {
-    field: 'space',
-    name: 'Space',
+    field: "space",
+    name: "Space",
     render: (spaceName: string) => capitalize(spaceName),
   },
   {
-    field: 'decoders',
-    name: 'Decoders',
+    field: "decoders",
+    name: "Decoders",
     sortable: true,
     render: (decoders: string[]) => decoders?.length ?? 0,
   },
   {
-    field: 'kvdbs',
-    name: 'KVDBs',
+    field: "kvdbs",
+    name: "KVDBs",
     sortable: true,
     render: (kvdbs: string[]) => kvdbs?.length ?? 0,
   },
   {
-    field: 'rules',
-    name: 'Rules',
+    field: "rules",
+    name: "Rules",
     sortable: true,
     render: (rules: any[]) => rules?.length ?? 0,
   },
   {
-    name: 'Actions',
+    name: "Actions",
     actions: [
       {
-        name: 'Details',
-        description: 'Show details',
-        type: 'icon',
-        icon: 'inspect',
+        name: "Details",
+        description: "Show details",
+        type: "icon",
+        icon: "inspect",
         onClick: (item) => {
           showDetails(item.id);
         },
       },
       {
-        name: 'Remove',
-        description: 'Remove integration',
-        type: 'icon',
-        icon: 'trash',
-        color: 'danger',
-        available: (item) => actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.DELETE),
+        name: "Remove",
+        description: "Remove integration",
+        type: "icon",
+        icon: "trash",
+        color: "danger",
+        available: (item) =>
+          actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.DELETE),
         onClick: (item) => {
           setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },
@@ -131,17 +143,17 @@ export const getIntegrationsTableSearchConfig = (options?: {
 }): Search => {
   return {
     box: {
-      placeholder: 'Search integrations',
+      placeholder: "Search integrations",
       schema: true,
       compressed: true,
     },
     filters: [
       {
-        type: 'field_value_selection',
-        field: 'category',
-        name: 'Category',
+        type: "field_value_selection",
+        field: "category",
+        name: "Category",
         compressed: true,
-        multiSelect: 'or',
+        multiSelect: "or",
         options: integrationCategoryFilters.map((category) => ({
           value: category,
         })),
@@ -152,7 +164,9 @@ export const getIntegrationsTableSearchConfig = (options?: {
 };
 
 export const getIntegrationLabel = (name: string) => {
-  return !name ? DEFAULT_EMPTY_DATA : integrationLabels[name.toLowerCase()] || startCase(name);
+  return !name
+    ? DEFAULT_EMPTY_DATA
+    : integrationLabels[name.toLowerCase()] || startCase(name);
 };
 
 export const withGuardAsync =
@@ -160,7 +174,7 @@ export const withGuardAsync =
     condition: (props: any) => Promise<{ ok: boolean; data: any }>,
     ComponentFulfillsCondition: React.FC,
     ComponentLoadingResolution: null | React.FC = null,
-    options: { rerunOn?: (props) => any[] }
+    options: { rerunOn?: (props) => any[] },
   ) =>
   (WrappedComponent: React.FC) =>
   (props: any) => {
@@ -174,7 +188,9 @@ export const withGuardAsync =
       try {
         setLoading(true);
         setFulfillsCondition({ ok: false, data: {} });
-        setFulfillsCondition(await condition({ ...props, check: execCondition }));
+        setFulfillsCondition(
+          await condition({ ...props, check: execCondition }),
+        );
       } catch (error) {
         setFulfillsCondition({ ok: false, data: { error } });
       } finally {
@@ -189,7 +205,9 @@ export const withGuardAsync =
     }, dependenciesRun);
 
     if (loading) {
-      return ComponentLoadingResolution ? <ComponentLoadingResolution {...props} /> : null;
+      return ComponentLoadingResolution ? (
+        <ComponentLoadingResolution {...props} />
+      ) : null;
     }
 
     return fulfillsCondition.ok ? (
@@ -199,7 +217,11 @@ export const withGuardAsync =
         check={execCondition}
       />
     ) : (
-      <WrappedComponent {...props} {...(fulfillsCondition?.data ?? {})} check={execCondition} />
+      <WrappedComponent
+        {...props}
+        {...(fulfillsCondition?.data ?? {})}
+        check={execCondition}
+      />
     );
   };
 
@@ -218,7 +240,10 @@ export const withWrapComponent =
   (WrapComponent, mapWrapComponentProps = () => {}) =>
   (WrappedComponent) =>
   (props) => (
-    <WrapComponent {...props} {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}>
+    <WrapComponent
+      {...props}
+      {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}
+    >
       <WrappedComponent {...props}></WrappedComponent>
     </WrapComponent>
   );
@@ -234,8 +259,8 @@ export const withModal = (options) =>
       panelRef,
       color,
       className,
-      'aria-label': ariaLabel,
-      'data-test-subj': dataTestSubject,
+      "aria-label": ariaLabel,
+      "data-test-subj": dataTestSubject,
       children,
     }) => {
       const panelProps = {
@@ -247,13 +272,13 @@ export const withModal = (options) =>
         panelRef,
         color,
         className,
-        'aria-label': ariaLabel,
-        'data-test-subj': dataTestSubject,
+        "aria-label": ariaLabel,
+        "data-test-subj": dataTestSubject,
         children,
       };
       return <EuiPanel {...panelProps}>{children}</EuiPanel>;
     },
-    () => options
+    () => options,
   );
 
 export const getNextSpace = (space: string) => {
@@ -273,10 +298,10 @@ type useAsyncActionRunOnStartDependenciesReturns<T> = {
 type useAsyncActionRunOnStartAction<T> = (
   dependencies: any[],
   state: {
-    data: useAsyncActionRunOnStartDependenciesReturns<T>['data'];
-    error: useAsyncActionRunOnStartDependenciesReturns<T>['error'];
-    running: useAsyncActionRunOnStartDependenciesReturns<T>['running'];
-  }
+    data: useAsyncActionRunOnStartDependenciesReturns<T>["data"];
+    error: useAsyncActionRunOnStartDependenciesReturns<T>["error"];
+    running: useAsyncActionRunOnStartDependenciesReturns<T>["running"];
+  },
 ) => Promise<T>;
 type useAsyncActionRunOnStartDependencies = any[];
 
@@ -285,7 +310,7 @@ export function useAsyncActionRunOnStart<T>(
   dependencies: useAsyncActionRunOnStartDependencies = [],
   { refreshDataOnPreRun }: { refreshDataOnPreRun: boolean } = {
     refreshDataOnPreRun: true,
-  }
+  },
 ): useAsyncActionRunOnStartDependenciesReturns<T> {
   const [running, setRunning] = useState(true);
   const [data, setData] = useState<T | null>(null);

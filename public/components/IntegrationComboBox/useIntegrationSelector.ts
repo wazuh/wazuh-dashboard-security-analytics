@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useEffect, useState } from 'react';
-import { NotificationsStart } from 'opensearch-dashboards/public';
-import { DataStore } from '../../store/DataStore';
-import { errorNotificationToast } from '../../utils/helpers';
+import { useEffect, useState } from "react";
+import { NotificationsStart } from "opensearch-dashboards/public";
+import { DataStore } from "../../store/DataStore";
+import { errorNotificationToast } from "../../utils/helpers";
 
 export interface IntegrationOption {
   value: string;
@@ -38,10 +38,10 @@ export function useIntegrationSelector({
         if (!cancelled) {
           setOptions(
             result.map((option: any) => ({
-              value: option._source.document.metadata?.title ?? '',
-              label: option._source.document.metadata?.title ?? '',
+              value: option._source.document.metadata?.title ?? "",
+              label: option._source.document.metadata?.title ?? "",
               id: option._id,
-            }))
+            })),
           );
         }
       })
@@ -49,9 +49,9 @@ export function useIntegrationSelector({
         if (!cancelled) {
           errorNotificationToast(
             notifications,
-            'retrieve',
-            'integration types',
-            'There was an error retrieving the integration types.'
+            "retrieve",
+            "integration types",
+            "There was an error retrieving the integration types.",
           );
         }
       })

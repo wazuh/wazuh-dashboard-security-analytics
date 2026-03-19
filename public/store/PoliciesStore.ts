@@ -23,10 +23,7 @@ export interface PoliciesSearchParams {
 }
 
 export class PoliciesStore {
-  constructor(
-    private service: PoliciesService,
-    private notifications: NotificationsStart
-  ) {}
+  constructor(private service: PoliciesService, private notifications: NotificationsStart) {}
 
   public async searchPolicies(
     space: string,

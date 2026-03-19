@@ -95,7 +95,8 @@ export interface ThreatIntelIocUploadSourcePayload extends ThreatIntelSourcePayl
   source: FileUploadSource;
 }
 
-export interface ThreatIntelCustomSchemaIocUploadSourcePayload extends ThreatIntelSourcePayloadBase {
+export interface ThreatIntelCustomSchemaIocUploadSourcePayload
+  extends ThreatIntelSourcePayloadBase {
   type: ThreatIntelIocSourceType.IOC_UPLOAD;
   source: CustomSchemaFileUploadSource;
   ioc_schema: {
@@ -338,9 +339,11 @@ export enum ThreatIntelSourceFormInputErrorKeys {
 export interface ThreatIntelSourceFormInputErrors {
   name?: string;
   description?: string;
-  [ThreatIntelSourceFormInputErrorKeys.s3]?: Partial<{
-    [field in keyof S3ConnectionSource['s3']]: string;
-  }> & { customSchema?: string };
+  [ThreatIntelSourceFormInputErrorKeys.s3]?: Partial<
+    {
+      [field in keyof S3ConnectionSource['s3']]: string;
+    }
+  > & { customSchema?: string };
   [ThreatIntelSourceFormInputErrorKeys.fileUpload]?: {
     file?: string;
     customSchema?: string;

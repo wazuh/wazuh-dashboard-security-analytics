@@ -44,9 +44,8 @@ export default class FiltersService {
   };
 
   deleteFilter = async (filterId: string): Promise<ServerResponse<CUDFilterResponse>> => {
-    return (await this.httpClient.delete(
-      `${this.baseUrl}/${filterId}`,
-      {}
-    )) as ServerResponse<CUDFilterResponse>;
+    return (await this.httpClient.delete(`${this.baseUrl}/${filterId}`, {})) as ServerResponse<
+      CUDFilterResponse
+    >;
   };
 }

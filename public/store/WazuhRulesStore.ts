@@ -253,13 +253,9 @@ export class RulesStore implements IWazuhRulesStore {
         author: doc.author ?? doc.metadata?.author ?? '',
         status: doc.status ?? '',
         detection: doc.detection ? dump(doc.detection) : '',
-        references: (doc.references ?? doc.metadata?.references ?? []).map((r: string) => ({
-          value: r,
-        })),
+        references: (doc.references ?? doc.metadata?.references ?? []).map((r: string) => ({ value: r })),
         tags: (doc.tags ?? doc.metadata?.tags ?? []).map((t: string) => ({ value: t })),
-        false_positives: (doc.falsepositives ?? doc.metadata?.false_positives ?? []).map(
-          (fp: string) => ({ value: fp })
-        ),
+        false_positives: (doc.falsepositives ?? doc.metadata?.false_positives ?? []).map((fp: string) => ({ value: fp })),
         log_source: logsource,
         last_update_time: doc.modified ?? doc.metadata?.modified ?? doc.date ?? '',
         rule: '',

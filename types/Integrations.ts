@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { RuleItemInfoBase } from './Rule';
-import { CatalogResourceMetadata } from './ResourceMetadata';
+import { RuleItemInfoBase } from "./Rule";
+import { CatalogResourceMetadata } from "./ResourceMetadata";
 
 export interface IntegrationWithRules extends Integration {
   detectionRules: RuleItemInfoBase[];
@@ -18,8 +18,8 @@ export interface IntegrationItem extends Integration {
 
 export interface Integration {
   id: string;
-  document: IntegrationBase['document'];
-  space: IntegrationBase['space'];
+  document: IntegrationBase["document"];
+  space: IntegrationBase["space"];
 }
 
 export interface IntegrationMetadata extends CatalogResourceMetadata {}
@@ -61,7 +61,7 @@ export interface CreateIntegrationResponse {
 
 export interface UpdateIntegrationParams {
   integrationId: string;
-  body: { resource: IntegrationBase['document'] };
+  body: { resource: IntegrationBase["document"] };
 }
 
 export interface UpdateIntegrationResponse {
@@ -77,14 +77,14 @@ export interface DeleteIntegrationResponse {}
 
 export interface PromoteIntegrationResponse {}
 
-export type UserSpace = 'draft' | 'test' | 'custom';
-export type PromoteSpaces = Omit<UserSpace, 'custom'>; // TODO: use the centralized items on constants instead
-export type PromoteNextSpaces = Omit<UserSpace, 'draft'>; // TODO: use the centralized items on constants instead
-export type NonUserSpace = 'standard';
+export type UserSpace = "draft" | "test" | "custom";
+export type PromoteSpaces = Omit<UserSpace, "custom">; // TODO: use the centralized items on constants instead
+export type PromoteNextSpaces = Omit<UserSpace, "draft">; // TODO: use the centralized items on constants instead
+export type NonUserSpace = "standard";
 export type Space = UserSpace | NonUserSpace;
 
-export type PromoteOperations = 'update' | 'add' | 'delete';
-export type PromoteOperationsPolicy = 'update';
+export type PromoteOperations = "update" | "add" | "delete";
+export type PromoteOperationsPolicy = "update";
 
 export interface PromoteChanges {
   policy: { operation: PromoteOperationsPolicy; id: string }[];

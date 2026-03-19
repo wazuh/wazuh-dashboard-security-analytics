@@ -31,7 +31,8 @@ describe('<RuleContentViewer /> spec', () => {
                   value: 'EventID: 4800',
                 },
               ],
-              rule: 'id: 25b9c01c-350d-4b95-bed1-836d04a4f324\ntitle: My Rule\ndescription: My Rule\nstatus: stable\nauthor: aleksandar\ndate: 2022/11/23\nmodified: 2022/11/23\nlogsource:\n  category: dns\nlevel: high\ndetection:\n  selection:\n    EventID: 4800\n  condition: selection\n',
+              rule:
+                'id: 25b9c01c-350d-4b95-bed1-836d04a4f324\ntitle: My Rule\ndescription: My Rule\nstatus: stable\nauthor: aleksandar\ndate: 2022/11/23\nmodified: 2022/11/23\nlogsource:\n  category: dns\nlevel: high\ndetection:\n  selection:\n    EventID: 4800\n  condition: selection\n',
               detection: 'selection:\n  EventID: 4800\ncondition: selection\n',
             },
           } as any

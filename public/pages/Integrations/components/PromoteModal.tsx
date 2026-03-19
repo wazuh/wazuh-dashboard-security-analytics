@@ -12,15 +12,22 @@ import {
   EuiSpacer,
   EuiText,
   EuiAccordion,
-} from '@elastic/eui';
-import React, { useState, useMemo } from 'react';
-import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
-import { getNextSpace } from '../../../../common/helpers';
-import { PromoteChangeDiff } from './PromoteChangeDiff';
-import { PROMOTE_ENTITIES_LABELS, PROMOTE_ENTITIES_ORDER } from '../../../utils/constants';
+} from "@elastic/eui";
+import React, { useState, useMemo } from "react";
+import {
+  GetPromoteBySpaceResponse,
+  PromoteChangeGroup,
+  PromoteSpaces,
+} from "../../../../types";
+import { getNextSpace } from "../../../../common/helpers";
+import { PromoteChangeDiff } from "./PromoteChangeDiff";
+import {
+  PROMOTE_ENTITIES_LABELS,
+  PROMOTE_ENTITIES_ORDER,
+} from "../../../utils/constants";
 
 export interface PromoteBySpaceModalProps {
-  promote: GetPromoteBySpaceResponse['response'];
+  promote: GetPromoteBySpaceResponse["response"];
   closeModal: () => void;
   onConfirm: () => boolean;
   space: PromoteSpaces;
@@ -29,7 +36,7 @@ export interface PromoteBySpaceModalProps {
 const PromoteEntity: React.FC<{
   label: string;
   entity: PromoteChangeGroup;
-  data: GetPromoteBySpaceResponse['response'];
+  data: GetPromoteBySpaceResponse["response"];
 }> = ({ label, data, entity }) => {
   const memoizedData = useMemo(
     () =>
@@ -38,7 +45,7 @@ const PromoteEntity: React.FC<{
         id,
         name: data.available_promotions[entity][id],
       })),
-    [data.promote.changes[entity]]
+    [data.promote.changes[entity]],
   );
 
   return (
@@ -46,9 +53,13 @@ const PromoteEntity: React.FC<{
       id={`promote-${label}`}
       buttonContent={`${label} (${data.promote.changes[entity].length})`}
     >
-      <div style={{ marginLeft: '2rem' }}>
+      <div style={{ marginLeft: "2rem" }}>
         {memoizedData.map(({ id, name, operation }, i) => (
-          <PromoteChangeDiff key={`${id}-${i}`} name={name || id} operation={operation} />
+          <PromoteChangeDiff
+            key={`${id}-${i}`}
+            name={name || id}
+            operation={operation}
+          />
         ))}
       </div>
     </EuiAccordion>
@@ -61,14 +72,14 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
   promote,
   space,
 }) => {
-  const [confirmActionText, setconfirmActionText] = useState('');
+  const [confirmActionText, setconfirmActionText] = useState("");
 
   const onConfirmClick = async () => {
     // Generate promote payload
     (await onConfirm()) && closeModal();
   };
 
-  const expectedConfirmActionText = 'promote';
+  const expectedConfirmActionText = "promote";
 
   const nextSpace = getNextSpace(space);
 
@@ -84,16 +95,17 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
         }
         onCancel={closeModal}
         onConfirm={onConfirmClick}
-        cancelButtonText={'Cancel'}
+        cancelButtonText={"Cancel"}
         confirmButtonText={`Promote`}
-        buttonColor={'primary'}
+        buttonColor={"primary"}
         defaultFocusedButton="confirm"
         confirmButtonDisabled={confirmActionText !== expectedConfirmActionText}
       >
         <EuiForm>
           <p>
             <EuiText size="s">
-              The entities will be promoted to <b>{nextSpace}</b>. This action is irreversible.
+              The entities will be promoted to <b>{nextSpace}</b>. This action
+              is irreversible.
             </EuiText>
           </p>
 
@@ -111,8 +123,10 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
           })}
 
           <EuiSpacer size="m" />
-          <p style={{ marginBottom: '0.3rem' }}>
-            <EuiText size="s">Type {<b>{expectedConfirmActionText}</b>} to confirm</EuiText>
+          <p style={{ marginBottom: "0.3rem" }}>
+            <EuiText size="s">
+              Type {<b>{expectedConfirmActionText}</b>} to confirm
+            </EuiText>
           </p>
           <EuiCompressedFormRow>
             <EuiCompressedFieldText

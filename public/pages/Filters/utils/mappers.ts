@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { FilterDocument, FilterResource } from '../../../../types/Filters';
+import { FilterDocument, FilterResource } from "../../../../types/Filters";
 
 export interface FilterFormModel {
   name: string;
@@ -15,27 +15,29 @@ export interface FilterFormModel {
 }
 
 export const filterFormDefaultValue: FilterFormModel = {
-  name: '',
-  type: 'pre-filter',
-  check: '',
+  name: "",
+  type: "pre-filter",
+  check: "",
   enabled: true,
-  description: '',
-  author: '',
+  description: "",
+  author: "",
 };
 
 export const mapFilterToForm = (document: FilterDocument): FilterFormModel => {
   const author = document.metadata?.author;
   return {
-    name: document.name ?? '',
-    type: document.type ?? '',
-    check: document.check ?? '',
+    name: document.name ?? "",
+    type: document.type ?? "",
+    check: document.check ?? "",
     enabled: document.enabled ?? true,
-    description: document.metadata?.description ?? '',
-    author: typeof author === 'string' ? author : (author?.name ?? ''),
+    description: document.metadata?.description ?? "",
+    author: typeof author === "string" ? author : (author?.name ?? ""),
   };
 };
 
-export const mapFormToFilterResource = (values: FilterFormModel): FilterResource => {
+export const mapFormToFilterResource = (
+  values: FilterFormModel,
+): FilterResource => {
   const now = new Date().toISOString();
   return {
     name: values.name,
@@ -44,12 +46,12 @@ export const mapFormToFilterResource = (values: FilterFormModel): FilterResource
     enabled: values.enabled,
     metadata: {
       title: values.name,
-      author: values.author?.trim() ?? '',
+      author: values.author?.trim() ?? "",
       date: now,
       modified: now,
-      description: values.description || '',
+      description: values.description || "",
       references: [],
-      documentation: '',
+      documentation: "",
       supports: [],
     },
   };

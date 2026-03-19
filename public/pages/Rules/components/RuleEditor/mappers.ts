@@ -3,9 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Rule } from '../../../../../types';
-import { getLogTypeFromLogSource } from '../../utils/helpers';
-import { RuleEditorFormModel, ruleEditorStateDefaultValue } from './RuleEditorFormModel';
+import { Rule } from "../../../../../types";
+import { getLogTypeFromLogSource } from "../../utils/helpers";
+import {
+  RuleEditorFormModel,
+  ruleEditorStateDefaultValue,
+} from "./RuleEditorFormModel";
 
 export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
   const references = formState.references.map((ref) => ({ value: ref }));
@@ -30,7 +33,7 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
       author: formState.author,
       description: formState.description,
       references: refs,
-      documentation: '',
+      documentation: "",
       supports: [],
     },
   };
@@ -41,18 +44,21 @@ export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
   const title = rule.metadata?.title ?? rule.title;
   const description = rule.metadata?.description ?? rule.description;
   const author = rule.metadata?.author ?? rule.author;
-  const refs = rule.metadata?.references ?? rule.references?.map((r) => r.value) ?? [];
+  const refs =
+    rule.metadata?.references ?? rule.references?.map((r) => r.value) ?? [];
 
   return {
     id: rule.id,
     log_source: rule.log_source,
-    logType: logType || '',
+    logType: logType || "",
     name: title,
     description,
     status: rule.status,
     author,
     references: refs.length ? refs : ruleEditorStateDefaultValue.references,
-    tags: rule.tags?.length ? rule.tags.map((tag) => tag.value) : ruleEditorStateDefaultValue.tags,
+    tags: rule.tags?.length
+      ? rule.tags.map((tag) => tag.value)
+      : ruleEditorStateDefaultValue.tags,
     detection: rule.detection,
     level: rule.level,
     falsePositives: rule.false_positives?.length

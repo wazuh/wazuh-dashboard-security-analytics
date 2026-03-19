@@ -25,8 +25,9 @@ export interface ContentEntry {
 }
 
 export const KVDBContentEditor: React.FC = () => {
-  const { values, errors, touched, setFieldValue, setFieldTouched, submitCount } =
-    useFormikContext<KVDBFormModel>();
+  const { values, errors, touched, setFieldValue, setFieldTouched, submitCount } = useFormikContext<
+    KVDBFormModel
+  >();
 
   const contentErrors = errors.contentEntries as FormikErrors<ContentEntry>[] | undefined;
   const contentTouched = touched.contentEntries as FormikTouched<ContentEntry>[] | undefined;

@@ -14,16 +14,14 @@ import { RuleItemInfoBase } from '../../../../../types';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import { getUseUpdatedUx } from '../../../../services/utils/constants';
 
-export interface EditRuleProps extends RouteComponentProps<
-  any,
-  any,
-  { ruleItem: RuleItemInfoBase }
-> {
+export interface EditRuleProps
+  extends RouteComponentProps<any, any, { ruleItem: RuleItemInfoBase }> {
   services: BrowserServices;
   notifications?: NotificationsStart;
 }
 
 export const EditRule: React.FC<EditRuleProps> = ({ history, location, notifications }) => {
+
   useEffect(() => {
     const ruleItemTitle = location.state.ruleItem._source.title;
     const ruleEditDetailsBreadcrumb = BREADCRUMBS.RULE_EDIT_DETAILS(ruleItemTitle);

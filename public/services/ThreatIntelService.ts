@@ -16,10 +16,7 @@ import { API } from '../../server/utils/constants';
 import { errorNotificationToast, successNotificationToast } from '../utils/helpers';
 
 export default class ThreatIntelService {
-  constructor(
-    private httpClient: HttpSetup,
-    private notifications: NotificationsStart
-  ) {}
+  constructor(private httpClient: HttpSetup, private notifications: NotificationsStart) {}
 
   addThreatIntelSource = async (
     source: AddThreatIntelSourcePayload

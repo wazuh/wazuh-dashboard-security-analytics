@@ -8,7 +8,7 @@ export const ALLOWED_ENRICHMENTS = [
   'connection',
 ] as const;
 
-export type EnrichmentType = (typeof ALLOWED_ENRICHMENTS)[number];
+export type EnrichmentType = typeof ALLOWED_ENRICHMENTS[number];
 
 export const ENRICHMENT_LABELS: Record<EnrichmentType, string> = {
   geo: 'Geolocation',

@@ -4,16 +4,19 @@
  */
 
 const KEYWORD_SEARCH_FIELDS = [
-  'document.name',
-  'document.metadata.module',
-  'document.metadata.compatibility',
-  'document.metadata.versions',
-  'document.metadata.author',
+  "document.name",
+  "document.metadata.module",
+  "document.metadata.compatibility",
+  "document.metadata.versions",
+  "document.metadata.author",
 ];
 
-const TEXT_SEARCH_FIELDS = ['document.metadata.title', 'document.metadata.description'];
+const TEXT_SEARCH_FIELDS = [
+  "document.metadata.title",
+  "document.metadata.description",
+];
 
-const escapeWildcard = (str: string) => str.replace(/[*?]/g, '\\$&');
+const escapeWildcard = (str: string) => str.replace(/[*?]/g, "\\$&");
 
 export const buildDecodersSearchQuery = (searchText: string) => {
   const trimmed = searchText.trim();
