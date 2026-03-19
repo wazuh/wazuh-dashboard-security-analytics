@@ -43,6 +43,17 @@ const renderValue = (value: string | undefined | null): React.ReactNode => {
   );
 };
 
+/** Read metadata fields with fallback to legacy top-level fields (backward compat) */
+const getMetadataValue = (
+  doc: PolicyDocument,
+  field: "title" | "author" | "description" | "documentation" | "references",
+): string | string[] | undefined => {
+  const value = doc.metadata?.[field];
+  if (value !== undefined && value !== null) return value;
+  const legacy = doc as unknown as Record<string, unknown>;
+  return legacy[field] as string | string[] | undefined;
+};
+
 export const withPolicyGuard: <T>(
   searchPolicyOptions: SearchPolicyOptions,
   withGuardOptions?: { rerunOn?: (props) => any[] },
@@ -125,8 +136,14 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
   notifications: NotificationsStart;
   space: Space;
   onEditPolicy: () => void;
-  refreshKey: boolean;
+  refresh?: number;
 }) => {
+  const title = getMetadataValue(policyDocumentData, "title");
+  const documentation = getMetadataValue(policyDocumentData, "documentation");
+  const author = getMetadataValue(policyDocumentData, "author");
+  const description = getMetadataValue(policyDocumentData, "description");
+  const references = getMetadataValue(policyDocumentData, "references");
+
   return (
     <EuiCard
       textAlign="left"
@@ -170,7 +187,7 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
               <EuiDescriptionList>
                 <EuiDescriptionListTitle>Title</EuiDescriptionListTitle>
                 <EuiDescriptionListDescription>
-                  {renderValue(policyDocumentData.title)}
+                  {renderValue(typeof title === "string" ? title : undefined)}
                 </EuiDescriptionListDescription>
               </EuiDescriptionList>
             </EuiFlexItem>
@@ -178,7 +195,11 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
               <EuiDescriptionList>
                 <EuiDescriptionListTitle>Documentation</EuiDescriptionListTitle>
                 <EuiDescriptionListDescription>
-                  {renderValue(policyDocumentData.documentation)}
+                  {renderValue(
+                    typeof documentation === "string"
+                      ? documentation
+                      : undefined,
+                  )}
                 </EuiDescriptionListDescription>
               </EuiDescriptionList>
             </EuiFlexItem>
@@ -212,7 +233,7 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
               <EuiDescriptionList>
                 <EuiDescriptionListTitle>Author</EuiDescriptionListTitle>
                 <EuiDescriptionListDescription>
-                  {renderValue(policyDocumentData.author)}
+                  {renderValue(typeof author === "string" ? author : undefined)}
                 </EuiDescriptionListDescription>
               </EuiDescriptionList>
             </EuiFlexItem>
@@ -244,7 +265,9 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
               <EuiDescriptionList>
                 <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
                 <EuiDescriptionListDescription>
-                  {renderValue(policyDocumentData.description)}
+                  {renderValue(
+                    typeof description === "string" ? description : undefined,
+                  )}
                 </EuiDescriptionListDescription>
               </EuiDescriptionList>
             </EuiFlexItem>
@@ -252,7 +275,11 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
               <EuiDescriptionList>
                 <EuiDescriptionListTitle>References</EuiDescriptionListTitle>
                 <EuiDescriptionListDescription>
-                  {renderValue(policyDocumentData.references?.join(", ") ?? "")}
+                  {renderValue(
+                    Array.isArray(references)
+                      ? references.join(", ")
+                      : ((references as string) ?? ""),
+                  )}
                 </EuiDescriptionListDescription>
               </EuiDescriptionList>
             </EuiFlexItem>
