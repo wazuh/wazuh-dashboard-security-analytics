@@ -40,6 +40,8 @@ export default class WazuhRulesService {
       : prePackaged === false
         ? { filter: [CUSTOM_SPACE_TERM] }
         : { filter: [STANDARD_SPACE_TERM] };
+        ? { filter: [CUSTOM_SPACE_TERM] }
+        : { filter: [STANDARD_SPACE_TERM] };
 
     if (incomingQuery && !incomingQuery.match_all) {
       bool.must = [incomingQuery];
@@ -106,6 +108,10 @@ export default class WazuhRulesService {
         prePackaged: boolean;
         space?: string;
       };
+      const { prePackaged, space } = request.query as {
+        prePackaged: boolean;
+        space?: string;
+      };
       const { from = 0, size = 5000, query, sort } = (request.body as any) ?? {};
       const client = this.getClient(request);
       const searchBody: any = {
@@ -129,6 +135,10 @@ export default class WazuhRulesService {
       });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - getRules:', error);
+      return response.custom({
+        statusCode: 200,
+        body: { ok: false, error: error.message },
+      });
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: error.message },
@@ -159,8 +169,16 @@ export default class WazuhRulesService {
           resource: this.buildRuleResource(rule),
           integration: integrationId,
         },
+        body: {
+          resource: this.buildRuleResource(rule),
+          integration: integrationId,
+        },
       });
 
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: createResponse },
+      });
       return response.custom({
         statusCode: 200,
         body: { ok: true, response: createResponse },
@@ -198,6 +216,10 @@ export default class WazuhRulesService {
         statusCode: 200,
         body: { ok: true, response: updateResponse },
       });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: updateResponse },
+      });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - updateRule:', error);
       return response.custom({
@@ -221,8 +243,16 @@ export default class WazuhRulesService {
         statusCode: 200,
         body: { ok: true, response: {} },
       });
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: {} },
+      });
     } catch (error) {
       console.error('Security Analytics - RulesService - deleteRule:', error);
+      return response.custom({
+        statusCode: 200,
+        body: { ok: false, error: error.message },
+      });
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: error.message },

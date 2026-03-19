@@ -26,11 +26,11 @@ export interface Rule {
   references: Array<{ value: string }>;
   author: string;
   detection: string;
-  /** Normalized metadata for API payload (document.metadata.*). When present, used by buildRuleResource. */
-  metadata?: RuleMetadata;
   mitre: string;
   compliance: string;
   enabled: boolean;
+  /** Normalized metadata for API payload (document.metadata.*). When present, used by buildRuleResource. */
+  metadata?: RuleMetadata;
 }
 
 export type RuleSource = Rule & {
