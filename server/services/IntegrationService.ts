@@ -32,6 +32,8 @@ import { get, sortBy } from "lodash";
 const INTEGRATIONS_INDEX = ".cti-integrations";
 const DECODERS_INDEX = ".cti-decoders";
 const KVDBS_INDEX = ".cti-kvdbs";
+const FILTERS_INDEX = ".engine-filters";
+const POLICIES_INDEX = ".cti-policies";
 
 export class IntegrationService extends MDSEnabledClientService {
   createIntegration = async (
@@ -245,10 +247,12 @@ export class IntegrationService extends MDSEnabledClientService {
         params,
       );
 
-      const availablePromotions = {
+      const availablePromotions: Record<string, Record<string, string>> = {
         integrations: {},
         decoders: {},
         kvdbs: {},
+        filters: {},
+        policy: {},
       };
 
       //
@@ -284,6 +288,32 @@ export class IntegrationService extends MDSEnabledClientService {
           promoteSpace.changes.kvdbs,
           {
             index: KVDBS_INDEX,
+            space,
+            nameProp: "document.metadata.title",
+            idProp: "document.id",
+          },
+        );
+      }
+
+      if (promoteSpace.changes.filters.length > 0) {
+        availablePromotions["filters"] = await this.resolvePromoteEntity(
+          client,
+          promoteSpace.changes.filters,
+          {
+            index: FILTERS_INDEX,
+            space,
+            nameProp: "document.metadata.title",
+            idProp: "document.id",
+          },
+        );
+      }
+
+      if (promoteSpace.changes.policy.length > 0) {
+        availablePromotions["policy"] = await this.resolvePromoteEntity(
+          client,
+          promoteSpace.changes.policy,
+          {
+            index: POLICIES_INDEX,
             space,
             nameProp: "document.metadata.title",
             idProp: "document.id",
