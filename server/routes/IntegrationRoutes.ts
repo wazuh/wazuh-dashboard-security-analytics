@@ -75,6 +75,10 @@ export function setupIntegrationRoutes(
           integrationId: schema.string(),
         }),
         body: schema.object({
+          id: schema.maybe(schema.string()),
+          detectionRulesCount: schema.maybe(schema.number()),
+          decodersCount: schema.maybe(schema.number()),
+          kvdbsCount: schema.maybe(schema.number()),
           document: schema.object({
             id: schema.string({ defaultValue: "" }),
             category: schema.string(),
