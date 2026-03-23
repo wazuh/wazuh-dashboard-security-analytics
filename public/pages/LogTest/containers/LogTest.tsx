@@ -24,7 +24,7 @@ import {
   LogTestForm,
   LogTestFormData,
   LogTestFormErrors,
-  LogTestIntegrationOption,
+  LogTestSpaceOption,
 } from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
 import { MetadataEntry, buildMetadataObject } from '../utils';
@@ -34,46 +34,25 @@ const INITIAL_FORM_DATA: LogTestFormData = {
   location: '',
   event: '',
   traceLevel: 'NONE',
-  integrationId: '',
+  space: '',
   metadataFields: [],
 };
 
 const INITIAL_ERRORS: LogTestFormErrors = {};
+
+const spaceOptions: LogTestSpaceOption[] = [
+  { id: SpaceTypes.TEST.value, label: SpaceTypes.TEST.label },
+  { id: SpaceTypes.STANDARD.value, label: SpaceTypes.STANDARD.label },
+];
 
 export const LogTest: React.FC<RouteComponentProps> = () => {
   const [formData, setFormData] = useState<LogTestFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
-  const [isLoadingIntegrations, setIsLoadingIntegrations] = useState(false);
-  const [integrationOptions, setIntegrationOptions] = useState<LogTestIntegrationOption[]>([]);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.LOG_TEST]);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadIntegrationOptions = async () => {
-      setIsLoadingIntegrations(true);
-      try {
-        const integrations = await DataStore.integrations.getIntegrations(SpaceTypes.TEST.value);
-        if (cancelled) return;
-        setIntegrationOptions(
-          integrations
-            .map((integration) => ({ id: integration.id, label: integration.document.title }))
-            .sort((a, b) => a.label.localeCompare(b.label))
-        );
-      } finally {
-        if (!cancelled) setIsLoadingIntegrations(false);
-      }
-    };
-
-    loadIntegrationOptions();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   const validateForm = useCallback((): boolean => {
@@ -91,8 +70,8 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
       newErrors.event = 'Log event is required';
     }
 
-    if (!formData.integrationId) {
-      newErrors.integrationId = 'Integration is required';
+    if (!formData.space) {
+      newErrors.space = 'Space is required';
     }
 
     setErrors(newErrors);
@@ -106,7 +85,7 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
 
     setIsLoading(true);
 
-    const agentMetadata = buildMetadataObject(formData.metadataFields);
+    const metadata = buildMetadataObject(formData.metadataFields);
 
     const result = await DataStore.logTests.executeLogTest({
       document: {
@@ -115,10 +94,10 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
         event: formData.event.trim(),
         trace_level: formData.traceLevel,
         ...{
-          metadata: agentMetadata,
+          metadata,
         },
+        space: formData.space,
       },
-      integrationId: formData.integrationId,
     });
 
     setIsLoading(false);
@@ -173,8 +152,7 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
             errors={errors}
             onFormChange={handleFormChange}
             onMetadataFieldsChange={handleMetadataFieldsChange}
-            integrationOptions={integrationOptions}
-            isLoadingIntegrations={isLoadingIntegrations}
+            spaceOptions={spaceOptions}
             disabled={isLoading}
           />
 

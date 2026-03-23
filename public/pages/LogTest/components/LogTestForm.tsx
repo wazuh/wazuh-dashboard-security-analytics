@@ -26,7 +26,7 @@ const TRACE_LEVEL_OPTIONS: Array<{ value: LogTestTraceLevel; text: string }> = [
   { value: 'ALL', text: 'All' },
 ];
 
-export interface LogTestIntegrationOption {
+export interface LogTestSpaceOption {
   id: string;
   label: string;
 }
@@ -36,7 +36,7 @@ export interface LogTestFormData {
   location: string;
   event: string;
   traceLevel: LogTestTraceLevel;
-  integrationId: string;
+  space: string;
   metadataFields: MetadataEntry[];
 }
 
@@ -44,7 +44,7 @@ export interface LogTestFormErrors {
   queue?: string;
   location?: string;
   event?: string;
-  integrationId?: string;
+  space?: string;
 }
 
 export interface LogTestFormProps {
@@ -52,8 +52,7 @@ export interface LogTestFormProps {
   errors: LogTestFormErrors;
   onFormChange: (field: keyof LogTestFormData, value: any) => void;
   onMetadataFieldsChange: (fields: MetadataEntry[]) => void;
-  integrationOptions: LogTestIntegrationOption[];
-  isLoadingIntegrations: boolean;
+  spaceOptions: LogTestSpaceOption[];
   disabled?: boolean;
 }
 
@@ -62,16 +61,11 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
   errors,
   onFormChange,
   onMetadataFieldsChange,
-  integrationOptions,
-  isLoadingIntegrations,
+  spaceOptions,
   disabled = false,
 }) => {
-  const integrationSelectOptions = [
-    {
-      value: '',
-      text: isLoadingIntegrations ? 'Loading integrations...' : 'Select integration',
-    },
-    ...integrationOptions.map((option) => ({ value: option.id, text: option.label })),
+  const spaceSelectOptions = [
+    ...spaceOptions.map((option) => ({ value: option.id, text: option.label })),
   ];
 
   return (
@@ -129,40 +123,18 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
           </EuiFormRow>
         </EuiFlexItem>
         <EuiFlexItem style={{ minWidth: '280px' }}>
-          <EuiFormRow
-            label="Integration"
-            isInvalid={!!errors.integrationId}
-            error={errors.integrationId}
-            fullWidth
-          >
+          <EuiFormRow label="Space" isInvalid={!!errors.space} error={errors.space} fullWidth>
             <EuiSelect
-              options={integrationSelectOptions}
-              value={formData.integrationId}
-              onChange={(e) => onFormChange('integrationId', e.target.value)}
-              isInvalid={!!errors.integrationId}
-              disabled={disabled || isLoadingIntegrations || integrationOptions.length === 0}
+              options={spaceSelectOptions}
+              value={formData.space}
+              onChange={(e) => onFormChange('space', e.target.value)}
+              isInvalid={!!errors.space}
+              disabled={disabled || spaceSelectOptions.length === 0}
               fullWidth
             />
           </EuiFormRow>
         </EuiFlexItem>
       </EuiFlexGroup>
-
-      {!isLoadingIntegrations && integrationOptions.length === 0 && (
-        <>
-          <EuiSpacer size="m" />
-          <EuiCallOut
-            title="No integrations available in test space"
-            color="warning"
-            iconType="alert"
-          >
-            <p>
-              There are no integrations in test space available for Log test. Promote or create
-              integrations before running this test.
-            </p>
-          </EuiCallOut>
-        </>
-      )}
-
       <EuiSpacer size="m" />
       <EuiAccordion
         id="agent-metadata-accordion"
