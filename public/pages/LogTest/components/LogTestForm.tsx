@@ -10,6 +10,7 @@ import {
   EuiFlexItem,
   EuiFormRow,
   EuiFieldText,
+  EuiFieldNumber,
   EuiTextArea,
   EuiAccordion,
   EuiSpacer,

@@ -33,7 +33,6 @@ import { IntegrationDetectionRules } from '../components/IntegrationDetectionRul
 import { IntegrationDecoders } from '../components/IntegrationDecoders';
 import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
-import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
 import {
   errorNotificationToast,
   setBreadcrumbs,
@@ -42,6 +41,7 @@ import {
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
 import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
+import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
 
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -87,7 +87,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         return;
       }
 
-      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.title }]);
+      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.metadata?.title ?? '' }]);
       const integrationItem = {
         ...details,
         detectionRulesCount: details.document?.rules?.length ?? 0,
@@ -101,13 +101,16 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     getIntegrationDetails();
   }, [integrationId]);
 
+  const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
   const { items: rules, loading: loadingRules, refresh: refreshRules } = useIntegrationRules({
+    ruleIds,
     space: integrationDetails?.space?.name ?? '',
   });
 
-  const decoderIds = useMemo(() => integrationDetails?.document.decoders ?? [], [
-    integrationDetails,
-  ]);
+  const decoderIds = useMemo(
+    () => integrationDetails?.document.decoders ?? [],
+    [integrationDetails]
+  );
   const {
     items: decoderItems,
     loading: loadingDecoders,
@@ -118,8 +121,13 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   });
 
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
-  const { items: kvdbItems, loading: loadingKvdbs, refresh: refreshKvdbs } = useIntegrationKVDBs({
+  const {
+    items: kvdbItems,
+    loading: loadingKvdbs,
+    refresh: refreshKvdbs,
+  } = useIntegrationKVDBs({
     kvdbIds,
+    space: integrationDetails?.space?.name ?? '',
   });
 
   const renderTabContent = () => {
@@ -319,7 +327,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       {showDeleteModal && (
         <DeleteIntegrationModal
           integrationId={integrationDetails.id}
-          integrationName={integrationDetails.document.title}
+          integrationName={integrationDetails.document.metadata?.title ?? ''}
           detectionRulesCount={integrationDetails.detectionRulesCount} // TODO: refactor to avoid passing this prop
           decodersCount={integrationDetails.decodersCount}
           kvdbsCount={integrationDetails.kvdbsCount}
@@ -331,7 +339,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         <EuiFlexGroup>
           <EuiFlexItem>
             <EuiTitle>
-              <h1>{integrationDetails.document.title}</h1>
+              <h1>{integrationDetails.document.metadata?.title}</h1>
             </EuiTitle>
           </EuiFlexItem>
           <EuiFlexItem>
@@ -348,7 +356,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           listItems={[
             {
               title: 'Description',
-              description: integrationDetails.document.description,
+              description: integrationDetails.document.metadata?.description ?? '',
             },
           ]}
         />

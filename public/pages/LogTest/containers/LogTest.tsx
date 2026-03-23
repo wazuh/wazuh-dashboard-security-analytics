@@ -114,7 +114,9 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
         location: formData.location.trim(),
         event: formData.event.trim(),
         trace_level: formData.traceLevel,
-        agent_metadata: agentMetadata,
+        ...{
+          metadata: agentMetadata,
+        },
       },
       integrationId: formData.integrationId,
     });
