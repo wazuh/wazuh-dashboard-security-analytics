@@ -5,7 +5,6 @@
 
 import React from 'react';
 import {
-  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiFormRow,
