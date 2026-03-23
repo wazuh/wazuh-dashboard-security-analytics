@@ -241,11 +241,11 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
           <EuiSpacer />
 
           <EuiFlexGroup>
-            <EuiFlexItem>
+            <EuiFlexItem style={{ minWidth: 0 }}>
               <EuiFormLabel>References</EuiFormLabel>
               {ruleData.references.length > 0 ? (
                 ruleData.references.map((reference: any, i: number) => (
-                  <div key={i} className="eui-textTruncate">
+                  <div key={i} style={{ wordBreak: 'break-all' }}>
                     <EuiText size="s">
                       <EuiLink
                         href={reference.value}
