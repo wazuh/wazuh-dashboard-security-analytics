@@ -428,8 +428,8 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       </PageHeader>
       <EuiSpacer />
       <EuiPanel grow={false}>
-        <div className="integration-summary-panel">
-          <div className="integration-summary-panel__id">
+        <div className="integration-details-summary-panel">
+          <div className="integration-details-summary-panel__id">
             <EuiDescriptionList
               listItems={[
                 {
@@ -443,7 +443,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               ]}
             />
           </div>
-          <div className="integration-summary-panel__date">
+          <div className="integration-details-summary-panel__date">
             <EuiDescriptionList
               listItems={[
                 {
@@ -455,7 +455,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               ]}
             />
           </div>
-          <div className="integration-summary-panel__modified">
+          <div className="integration-details-summary-panel__modified">
             <EuiDescriptionList
               listItems={[
                 {
@@ -467,7 +467,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               ]}
             />
           </div>
-          <div className="integration-summary-panel__space">
+          <div className="integration-details-summary-panel__space">
             <EuiDescriptionList
               listItems={[
                 {
@@ -477,7 +477,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               ]}
             />
           </div>
-          <div className="integration-summary-panel__rules">
+          <div className="integration-details-summary-panel__rules">
             <EuiDescriptionList
               listItems={[
                 {
@@ -487,7 +487,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               ]}
             />
           </div>
-          <div className="integration-summary-panel__decoders">
+          <div className="integration-details-summary-panel__decoders">
             <EuiDescriptionList
               listItems={[
                 {
@@ -497,7 +497,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               ]}
             />
           </div>
-          <div className="integration-summary-panel__kvdbs">
+          <div className="integration-details-summary-panel__kvdbs">
             <EuiDescriptionList
               listItems={[
                 {
