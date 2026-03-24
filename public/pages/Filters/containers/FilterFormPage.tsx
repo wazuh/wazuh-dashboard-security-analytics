@@ -245,16 +245,13 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                             <div style={{ paddingLeft: '16px' }}>
                               <EuiText size="xs">
                                 <p>
-                                  <strong>Pre-filter:</strong> Takes effect before decoders run. Use
-                                  this to drop or allow events early in the pipeline, before any
-                                  decoding occurs.
+                                  <strong>Pre-filter:</strong> Takes effect before decoders run.
                                 </p>
                               </EuiText>
                               <EuiSpacer size="s" />
                               <EuiText size="xs">
                                 <p>
-                                  <strong>Post-filter:</strong> Takes effect after decoders run. Use
-                                  this to filter events based on decoded fields.
+                                  <strong>Post-filter:</strong> Takes effect after decoders run.
                                 </p>
                               </EuiText>
                             </div>
