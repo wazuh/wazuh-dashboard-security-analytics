@@ -278,6 +278,23 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
+                  label={'Author'}
+                  fullWidth
+                  isInvalid={!!errors.author && touched.author}
+                  error={errors.author}
+                >
+                  <EuiCompressedFieldText
+                    placeholder="Wazuh, Inc."
+                    value={values.author}
+                    onChange={(e) => setFieldValue('author', e.target.value)}
+                    onBlur={() => setFieldTouched('author')}
+                    isInvalid={!!errors.author && touched.author}
+                  />
+                </EuiCompressedFormRow>
+                
+                <EuiSpacer size="m" />
+
+                <EuiCompressedFormRow
                   label={'Check expression'}
                   fullWidth
                   isInvalid={!!errors.check && touched.check}
@@ -304,22 +321,6 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 </EuiCompressedFormRow>
 
                 <EuiSpacer size="l" />
-
-                <EuiCompressedFormRow
-                  label={'Author'}
-                  fullWidth
-                  isInvalid={!!errors.author && touched.author}
-                  error={errors.author}
-                >
-                  <EuiCompressedFieldText
-                    placeholder="Wazuh, Inc."
-                    value={values.author}
-                    onChange={(e) => setFieldValue('author', e.target.value)}
-                    onBlur={() => setFieldTouched('author')}
-                    isInvalid={!!errors.author && touched.author}
-                  />
-                </EuiCompressedFormRow>
-                <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
                   label={
