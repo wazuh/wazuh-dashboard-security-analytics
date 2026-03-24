@@ -74,13 +74,23 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
 
   return (
     <EuiModalBody>
-      <EuiButtonGroup
-        data-test-subj="change-editor-type"
-        legend="This is editor type selector"
-        options={editorTypes}
-        idSelected={selectedEditorType}
-        onChange={(id) => setSelectedEditorType(id)}
-      />
+      <EuiFlexGroup alignItems="center">
+        <EuiFlexItem>
+          <EuiButtonGroup
+            data-test-subj="change-editor-type"
+            legend="This is editor type selector"
+            options={editorTypes}
+            idSelected={selectedEditorType}
+            onChange={(id) => setSelectedEditorType(id)}
+            />
+        </EuiFlexItem>
+        <EuiFlexItem>
+            <div data-test-subj={'rule_flyout_rule_enabled'}>
+              <EuiHealth color={ruleData.enabled !== false ? 'success' : 'subdued'}>
+                {ruleData.enabled !== false ? 'Enabled' : 'Disabled'}                </EuiHealth>
+            </div>
+        </EuiFlexItem>
+      </EuiFlexGroup>
       <EuiSpacer size="xl" />
       {selectedEditorType === 'visual' && (
         <>
@@ -169,22 +179,14 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
               </div>
             </EuiFlexItem>
             <EuiFlexItem>
-              <EuiFormLabel>Enabled</EuiFormLabel>
-              <div data-test-subj={'rule_flyout_rule_enabled'}>
-                <EuiHealth color={ruleData.enabled !== false ? 'success' : 'subdued'}>
-                  {ruleData.enabled !== false ? 'Enabled' : 'Disabled'}
-                </EuiHealth>
-              </div>
+              <EuiFormLabel>Date</EuiFormLabel>
+              <EuiText size="s">{ruleData.metadata?.date || DEFAULT_EMPTY_DATA}</EuiText>
             </EuiFlexItem>
           </EuiFlexGroup>
 
           <EuiSpacer />
 
           <EuiFlexGroup>
-            <EuiFlexItem>
-              <EuiFormLabel>Date</EuiFormLabel>
-              <EuiText size="s">{ruleData.metadata?.date || DEFAULT_EMPTY_DATA}</EuiText>
-            </EuiFlexItem>
             <EuiFlexItem>
               <EuiFormLabel>Last Updated</EuiFormLabel>
               <EuiText size="s">{ruleData.last_update_time || DEFAULT_EMPTY_DATA}</EuiText>
