@@ -72,6 +72,9 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   onConfirm,
 }) => {
  
+  /*The enabled field is only shown when creating a new integration
+  * When editing, the enabled property is changed using the Actions button
+  */
   const showEnabledField = isEditMode && !integrationDetails.id;
   const [titleError, setTitleError] = useState('');
   const [categoryError, setCategoryError] = useState('');
