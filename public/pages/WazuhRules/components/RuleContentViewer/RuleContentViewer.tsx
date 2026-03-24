@@ -273,8 +273,8 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
 
           <EuiSpacer />
 
-          <EuiFlexGroup>
-            <EuiFlexItem style={{ minWidth: 0 }}>
+          <EuiFlexGroup direction="column">
+            <EuiFlexItem >
               <EuiFormLabel>References</EuiFormLabel>
               {ruleData.references.length > 0 ? (
                 ruleData.references.map((reference: any, i: number) => (
