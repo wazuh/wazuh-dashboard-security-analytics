@@ -9,10 +9,19 @@ import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { DEFAULT_EMPTY_DATA, integrationCategoryFilters } from '../../../utils/constants';
+import {
+  DEFAULT_EMPTY_DATA,
+  integrationCategories,
+  integrationCategoryFilters,
+} from '../../../utils/constants';
 import { integrationLabels } from './constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { IntegrationBase, PolicyItem } from '../../../../types';
+
+const getIntegrationCategoryFilterDisplayName = (value: string): string => {
+  const match = integrationCategories.find((c) => c.value === value);
+  return match?.label ?? startCase(value.replace(/-/g, ' '));
+};
 
 export interface IntegrationTableItem {
   id: string;
@@ -75,6 +84,7 @@ export const getIntegrationsTableColumns = ({
     field: 'category',
     name: 'Category',
     truncateText: false,
+    render: (category: string) => getIntegrationCategoryFilterDisplayName(category ?? ''),
   },
   {
     field: 'rules',
@@ -139,6 +149,7 @@ export const getIntegrationsTableSearchConfig = (options?: {
         multiSelect: 'or',
         options: integrationCategoryFilters.map((category) => ({
           value: category,
+          name: getIntegrationCategoryFilterDisplayName(category),
         })),
       },
     ],
