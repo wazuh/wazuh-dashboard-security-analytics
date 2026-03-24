@@ -13,11 +13,13 @@ import {
   EuiDescriptionList,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiHealth,
   EuiLoadingSpinner,
   EuiPanel,
   EuiSpacer,
   EuiTab,
   EuiTabs,
+  EuiText,
   EuiTitle,
   EuiPopover,
   EuiContextMenuPanel,
@@ -74,6 +76,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   >(undefined);
 
   const [isEditMode, setIsEditMode] = useState(false);
+  const [togglingEnabled, setTogglingEnabled] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -198,16 +201,44 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     setIsActionsMenuOpen(false);
   };
 
+  const toggleIntegrationEnabled = async (checked: boolean) => {
+    if (!integrationDetails) {
+      return;
+    }
+    setTogglingEnabled(true);
+    const next: IntegrationItem = {
+      ...integrationDetails,
+      document: {
+        ...integrationDetails.document,
+        enabled: checked,
+      },
+    };
+    const success = await DataStore.integrations.updateIntegration(integrationDetails.id, next);
+    if (success) {
+      setIntegrationDetails(next);
+      setInitialIntegrationDetails(next);
+      successNotificationToast(
+        notifications,
+        'updated',
+        `integration ${next.document.metadata?.title ?? ''}`
+      );
+    }
+    setTogglingEnabled(false);
+  };
+
   const spaceName = (integrationDetails?.space.name ?? '') as Space;
   const isCreateDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.CREATE);
   const isEditDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.EDIT);
   const isDeleteDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.DELETE);
+
+  const integrationEnabled = integrationDetails?.document.enabled === true;
 
   const actionsButton = (
     <EuiPopover
       id={'integrationsActionsPopover'}
       button={
         <EuiSmallButton
+          isLoading={togglingEnabled}
           iconType={'arrowDown'}
           iconSide={'right'}
           onClick={toggleActionsMenu}
@@ -284,6 +315,25 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiHorizontalRule margin="xs" />,
           <EuiContextMenuItem
+            key={'toggleIntegrationEnabled'}
+            icon={'empty'}
+            disabled={isEditDisabled || togglingEnabled}
+            onClick={() => {
+              closeActionsPopover();
+              toggleIntegrationEnabled(!integrationEnabled);
+            }}
+            data-test-subj={'integrationEnableDisableMenuItem'}
+            toolTipContent={
+              isEditDisabled
+                ? `Integration can only be edited in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.EDIT
+                  ).join(', ')}`
+                : undefined
+            }
+          >
+            {integrationEnabled ? 'Disable integration' : 'Enable integration'}
+          </EuiContextMenuItem>,
+          <EuiContextMenuItem
             key={'Edit'}
             onClick={() => {
               closeActionsPopover();
@@ -342,12 +392,32 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           onConfirm={deleteIntegration}
         />
       )}
-      <PageHeader appRightControls={[{ renderComponent: actionsButton }]}>
-        <EuiFlexGroup>
+      <PageHeader
+        appBadgeControls={[
+          {
+            renderComponent: (
+              <EuiHealth color={integrationEnabled ? 'success' : 'subdued'}>
+                {integrationEnabled ? 'Enabled' : 'Disabled'}
+              </EuiHealth>
+            ),
+          },
+        ]}
+        appRightControls={[{ renderComponent: actionsButton }]}
+      >
+        <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
           <EuiFlexItem>
-            <EuiTitle>
-              <h1>{integrationDetails.document.metadata?.title}</h1>
-            </EuiTitle>
+            <EuiFlexGroup alignItems="center" responsive={false} wrap>
+              <EuiFlexItem grow={false}>
+                <EuiText data-test-subj="integration-detail-title" size="s">
+                  <h1>{integrationDetails.document.metadata?.title}</h1>
+                </EuiText>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiHealth color={integrationEnabled ? 'success' : 'subdued'}>
+                  {integrationEnabled ? 'Enabled' : 'Disabled'}
+                </EuiHealth>
+              </EuiFlexItem>
+            </EuiFlexGroup>
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
@@ -398,7 +468,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               ]}
             />
           </div>
-          <div className="integration-summary-panel__spacer" aria-hidden />
           <div className="integration-summary-panel__space">
             <EuiDescriptionList
               listItems={[
