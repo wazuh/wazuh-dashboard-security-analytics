@@ -26,6 +26,7 @@ const makeLabel = (framework: ComplianceFramework) => (
       <EuiFlexItem grow={false}>
         <EuiText size="s">
           <strong>{framework.label}</strong>
+          <i> - optional</i>
         </EuiText>
       </EuiFlexItem>
     </EuiFlexGroup>

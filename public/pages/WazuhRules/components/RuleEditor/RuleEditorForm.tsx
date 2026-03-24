@@ -622,18 +622,12 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
 
                       <FieldTextArray
                         name="false_positives"
-                        placeholder={'format?'}
+                        placeholder={'False positive when...'}
                         label={
                           <>
                             <EuiText size={'m'}>
                               <strong>False positive cases </strong>
                               <i>- optional</i>
-                            </EuiText>
-
-                            <EuiSpacer size={'m'} />
-
-                            <EuiText size={'xs'}>
-                              <strong>Description</strong>
                             </EuiText>
                           </>
                         }
