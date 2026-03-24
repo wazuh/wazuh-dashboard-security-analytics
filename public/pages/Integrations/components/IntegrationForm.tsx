@@ -352,7 +352,6 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
               </>
             }
             values={editingIntegration?.document?.metadata?.supports || []}
-            placeholder="Support (e.g. windows, linux)"
             readOnly={false}
             addButtonLabel="Add support"
             onChange={(supports) => {
