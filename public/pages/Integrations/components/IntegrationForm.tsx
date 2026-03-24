@@ -11,6 +11,7 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiCompressedFormRow,
+  EuiCompressedSwitch,
   EuiSpacer,
   EuiCompressedSuperSelect,
   EuiCompressedTextArea,
@@ -70,6 +71,8 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   onCancel,
   onConfirm,
 }) => {
+ 
+  const showEnabledField = isEditMode && !integrationDetails.id;
   const [titleError, setTitleError] = useState('');
   const [categoryError, setCategoryError] = useState('');
   const [categoryTouched, setCategoryTouched] = useState(false);
@@ -223,7 +226,32 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
             <ReadOnlyField value={integrationDetails?.document.metadata?.author} />
           )}
         </EuiCompressedFormRow>
-        <EuiSpacer />
+        {showEnabledField ? (
+          <>
+            <EuiSpacer />
+            <EuiCompressedFormRow label="Enabled">
+              <EuiCompressedSwitch
+                label={editingIntegration?.document.enabled === true ? 'Enabled' : 'Disabled'}
+                checked={editingIntegration?.document.enabled === true}
+                onChange={(e) => {
+                  const newIntegration = {
+                    ...editingIntegration!,
+                    document: {
+                      ...editingIntegration!.document,
+                      enabled: e.target.checked,
+                    },
+                  };
+                  setEditingIntegration(newIntegration);
+                  updateErrors(newIntegration);
+                }}
+                data-test-subj="integration_enabled_toggle"
+              />
+            </EuiCompressedFormRow>
+            <EuiSpacer />
+          </>
+        ) : (
+          <EuiSpacer />
+        )}
         <EuiCompressedFormRow
           label={
             isEditMode ? (
@@ -342,7 +370,6 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
             </>
           )
         )}
-        <EuiSpacer />
         {isEditMode ? (
           <FormFieldArray
             label={
