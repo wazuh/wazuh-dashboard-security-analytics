@@ -23,6 +23,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Changed the management of rules [#96](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/96)
 - Renamed Dectection rules to rules [#96](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/96)
 - Updated Detectors management feature [#111](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/111)
+
 ### Removed
 
 - Removed Threat Intelligence section entirely [#11](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/11) [#20](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/20)
