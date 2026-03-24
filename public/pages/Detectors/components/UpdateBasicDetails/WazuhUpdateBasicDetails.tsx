@@ -44,7 +44,10 @@ import {
   CreateDetectorRulesState,
   DetectionRules,
 } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/DetectionRules';
-import { RuleItem, RuleItemInfo } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
+import {
+  RuleItem,
+  RuleItemInfo,
+} from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
 import { DataStore } from '../../../../store/DataStore';
 import ConfigureFieldMapping from '../../../CreateDetector/components/ConfigureFieldMapping';
 
@@ -53,7 +56,9 @@ export interface WazuhUpdateDetectorBasicDetailsProps
   notifications: NotificationsStart;
 }
 
-export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicDetailsProps> = (props) => {
+export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicDetailsProps> = (
+  props
+) => {
   const saContext = useContext(SecurityAnalyticsContext);
   const [detector, setDetector] = useState<Detector>(
     (props.location.state?.detectorHit?._source || EMPTY_DEFAULT_DETECTOR) as Detector
