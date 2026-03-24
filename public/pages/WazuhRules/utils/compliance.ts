@@ -72,10 +72,10 @@ export const COMPLIANCE_FRAMEWORKS: ComplianceFramework[] = [
   },
   {
     key: 'iso_27001',
-    label: 'ISO/IEC 27001',
+    label: 'ISO 27001',
     columnHeader: 'Control',
     placeholder: 'e.g. A.9.1.1',
-    addButtonName: 'Add ISO/IEC 27001 control',
+    addButtonName: 'Add ISO 27001 control',
   },
   {
     key: 'nis2',
