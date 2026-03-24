@@ -42,6 +42,13 @@ import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
 import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
 import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
+import moment from 'moment';
+
+const formatIntegrationMetadataDate = (value?: string) => {
+  if (!value?.trim()) return '';
+  const m = moment(value);
+  return m.isValid() ? m.format('MM/DD/YY') : value;
+};
 
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -352,52 +359,47 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
       </PageHeader>
       <EuiSpacer />
       <EuiPanel grow={false}>
-        <EuiDescriptionList
-          listItems={[
-            {
-              title: 'Description',
-              description: integrationDetails.document.metadata?.description ?? '',
-            },
-          ]}
-        />
-        <EuiSpacer />
-        <EuiFlexGroup>
-          <EuiFlexItem>
-            <EuiDescriptionList
-              listItems={[{ title: 'ID', description: integrationDetails.document.id }]}
-            />
-          </EuiFlexItem>
-          <EuiFlexItem>
+        <div className="integration-summary-panel">
+          <div className="integration-summary-panel__id">
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Rules',
-                  description: integrationDetails.detectionRulesCount,
+                  title: 'ID',
+                  description: (
+                    <span style={{ overflowWrap: 'anywhere' }}>
+                      {integrationDetails.document.id}
+                    </span>
+                  ),
                 },
               ]}
             />
-          </EuiFlexItem>
-          <EuiFlexItem>
+          </div>
+          <div className="integration-summary-panel__date">
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Decoders',
-                  description: integrationDetails.decodersCount,
+                  title: 'Date',
+                  description: formatIntegrationMetadataDate(
+                    integrationDetails.document.metadata?.date
+                  ),
                 },
               ]}
             />
-          </EuiFlexItem>
-          <EuiFlexItem>
+          </div>
+          <div className="integration-summary-panel__modified">
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'KVDBs',
-                  description: integrationDetails.kvdbsCount,
+                  title: 'Modified',
+                  description: formatIntegrationMetadataDate(
+                    integrationDetails.document.metadata?.modified
+                  ),
                 },
               ]}
             />
-          </EuiFlexItem>
-          <EuiFlexItem>
+          </div>
+          <div className="integration-summary-panel__spacer" aria-hidden />
+          <div className="integration-summary-panel__space">
             <EuiDescriptionList
               listItems={[
                 {
@@ -406,8 +408,38 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
                 },
               ]}
             />
-          </EuiFlexItem>
-        </EuiFlexGroup>
+          </div>
+          <div className="integration-summary-panel__rules">
+            <EuiDescriptionList
+              listItems={[
+                {
+                  title: 'Rules',
+                  description: integrationDetails.detectionRulesCount,
+                },
+              ]}
+            />
+          </div>
+          <div className="integration-summary-panel__decoders">
+            <EuiDescriptionList
+              listItems={[
+                {
+                  title: 'Decoders',
+                  description: integrationDetails.decodersCount,
+                },
+              ]}
+            />
+          </div>
+          <div className="integration-summary-panel__kvdbs">
+            <EuiDescriptionList
+              listItems={[
+                {
+                  title: 'KVDBs',
+                  description: integrationDetails.kvdbsCount,
+                },
+              ]}
+            />
+          </div>
+        </div>
       </EuiPanel>
       <EuiSpacer />
       <EuiTabs size="s">
