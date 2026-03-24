@@ -181,19 +181,10 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
           <EuiSpacer />
 
           <EuiFlexGroup>
-            {prePackaged && (
-              <EuiFlexItem>
-                <EuiFormLabel>License</EuiFormLabel>
-                <EuiText size="s">
-                  <EuiLink
-                    target={'_blank'}
-                    href={'https://github.com/SigmaHQ/sigma/blob/master/LICENSE.Detection.Rules.md'}
-                  >
-                    Detection Rule License (DLR)
-                  </EuiLink>
-                </EuiText>
-              </EuiFlexItem>
-            )}
+            <EuiFlexItem>
+              <EuiFormLabel>Date</EuiFormLabel>
+              <EuiText size="s">{ruleData.metadata?.date || DEFAULT_EMPTY_DATA}</EuiText>
+            </EuiFlexItem>
             <EuiFlexItem>
               <EuiFormLabel>Last Updated</EuiFormLabel>
               <EuiText size="s">{ruleData.last_update_time || DEFAULT_EMPTY_DATA}</EuiText>
@@ -240,6 +231,48 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
 
           <EuiSpacer />
 
+          {hasMitre && (
+            <>
+              <EuiSpacer />
+              <EuiFormLabel>MITRE ATT&CK</EuiFormLabel>
+              <EuiSpacer size="s" />
+              <EuiFlexGroup
+                direction="column"
+                gutterSize="s"
+                data-test-subj={'rule_flyout_rule_mitre'}
+              >
+                {MITRE_SECTIONS.map((section) => (
+                  <EuiFlexItem key={section.field}>
+                    <BadgeGroup label={section.title} values={mitreData[section.field]} />
+                  </EuiFlexItem>
+                ))}
+              </EuiFlexGroup>
+            </>
+          )}
+
+          {hasCompliance && (
+            <>
+              <EuiSpacer />
+              <EuiFormLabel>Compliance</EuiFormLabel>
+              <EuiSpacer size="s" />
+              <EuiFlexGroup
+                direction="column"
+                gutterSize="s"
+                data-test-subj={'rule_flyout_rule_compliance'}
+              >
+                {COMPLIANCE_FRAMEWORKS.map((framework) =>
+                  complianceData[framework.key].length > 0 ? (
+                    <EuiFlexItem key={framework.key}>
+                      <BadgeGroup label={framework.label} values={complianceData[framework.key]} />
+                    </EuiFlexItem>
+                  ) : null
+                )}
+              </EuiFlexGroup>
+            </>
+          )}
+
+          <EuiSpacer />
+
           <EuiFlexGroup>
             <EuiFlexItem style={{ minWidth: 0 }}>
               <EuiFormLabel>References</EuiFormLabel>
@@ -276,49 +309,6 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
               </div>
             </EuiFlexItem>
           </EuiFlexGroup>
-
-          {hasMitre && (
-            <>
-              <EuiSpacer />
-              <EuiFormLabel>MITRE ATT&CK</EuiFormLabel>
-              <EuiSpacer size="s" />
-              <EuiFlexGroup
-                direction="column"
-                gutterSize="s"
-                data-test-subj={'rule_flyout_rule_mitre'}
-              >
-                {MITRE_SECTIONS.map((section) => (
-                  <EuiFlexItem key={section.field}>
-                    <BadgeGroup label={section.title} values={mitreData[section.field]} />
-                  </EuiFlexItem>
-                ))}
-              </EuiFlexGroup>
-            </>
-          )}
-
-          {hasCompliance && (
-            <>
-              <EuiSpacer />
-              <EuiFormLabel>Compliance</EuiFormLabel>
-              <EuiSpacer size="s" />
-              <EuiFlexGroup
-                direction="column"
-                gutterSize="s"
-                data-test-subj={'rule_flyout_rule_compliance'}
-              >
-                {COMPLIANCE_FRAMEWORKS.map((framework) =>
-                  complianceData[framework.key].length > 0 ? (
-                    <EuiFlexItem key={framework.key}>
-                      <BadgeGroup
-                        label={framework.label}
-                        values={complianceData[framework.key]}
-                      />
-                    </EuiFlexItem>
-                  ) : null
-                )}
-              </EuiFlexGroup>
-            </>
-          )}
 
           <EuiSpacer />
 
