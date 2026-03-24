@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel } from '@elastic/eui';
 import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
-import { capitalize, startCase } from 'lodash';
+import { startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { DEFAULT_EMPTY_DATA, integrationCategoryFilters } from '../../../utils/constants';
 import { integrationLabels } from './constants';
@@ -75,11 +75,6 @@ export const getIntegrationsTableColumns = ({
     field: 'category',
     name: 'Category',
     truncateText: false,
-  },
-  {
-    field: 'space',
-    name: 'Space',
-    render: (spaceName: string) => capitalize(spaceName),
   },
   {
     field: 'rules',
