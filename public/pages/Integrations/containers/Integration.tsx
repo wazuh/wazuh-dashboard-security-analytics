@@ -316,7 +316,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           <EuiHorizontalRule margin="xs" />,
           <EuiContextMenuItem
             key={'toggleIntegrationEnabled'}
-            icon={'empty'}
             disabled={isEditDisabled || togglingEnabled}
             onClick={() => {
               closeActionsPopover();
@@ -331,7 +330,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
                 : undefined
             }
           >
-            {integrationEnabled ? 'Disable integration' : 'Enable integration'}
+            {integrationEnabled ? 'Disable' : 'Enable'}
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'Edit'}

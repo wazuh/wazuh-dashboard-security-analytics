@@ -9,11 +9,8 @@ import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { startCase } from 'lodash';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import {
-  DEFAULT_EMPTY_DATA,
-  integrationCategories,
-  integrationCategoryFilters,
-} from '../../../utils/constants';
+import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
+import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
 import { integrationLabels } from './constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { IntegrationBase, PolicyItem } from '../../../../types';
@@ -147,10 +144,7 @@ export const getIntegrationsTableSearchConfig = (options?: {
         name: 'Category',
         compressed: true,
         multiSelect: 'or',
-        options: integrationCategoryFilters.map((category) => ({
-          value: category,
-          name: getIntegrationCategoryFilterDisplayName(category),
-        })),
+        options: getIntegrationCategoryFilterOptions(false),
       },
     ],
     toolsRight: options?.toolsRight,
