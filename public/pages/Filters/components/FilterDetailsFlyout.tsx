@@ -5,40 +5,30 @@
 
 import React, { useState } from 'react';
 import {
+  EuiBadge,
   EuiButtonGroup,
   EuiCodeBlock,
-  EuiFlexGrid,
   EuiFlexGroup,
   EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiFormLabel,
+  EuiLink,
   EuiModalBody,
   EuiSmallButtonIcon,
   EuiSpacer,
   EuiText,
+  EuiHealth,
 } from '@elastic/eui';
-import { get } from 'lodash';
+import moment from 'moment';
 import { FilterItem } from '../../../../types';
-import { Metadata } from '../../KVDBs/components/Metadata';
+import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 
 interface FilterDetailsFlyoutProps {
   filter: FilterItem;
   onClose: () => void;
 }
-
-const detailsMapLabels: { [key: string]: string } = {
-  'document.id': 'ID',
-  'document.name': 'Name',
-  'document.type': 'Type',
-  'document.check': 'Check',
-  'document.enabled': 'Enabled',
-  'document.metadata.description': 'Description',
-  'document.metadata.author': 'Author',
-  'space.name': 'Space',
-  'hash.sha256': 'SHA256',
-};
 
 const editorType = {
   visual: 'visual',
@@ -52,6 +42,16 @@ const getAuthorDisplay = (author: string | { name?: string } | undefined): strin
   return author.name ?? '';
 };
 
+const formatDate = (value?: string): string => {
+  if (!value) return DEFAULT_EMPTY_DATA;
+  try {
+    const d = moment(value);
+    return d.isValid() ? d.format('MMM DD, YYYY @ HH:mm:ss.SSS') : value;
+  } catch {
+    return value;
+  }
+};
+
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
   const [selectedEditorType, setSelectedEditorType] = useState(editorType.visual);
 
@@ -63,43 +63,131 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     enabled: false,
   };
 
-  const filterData = {
-    'document.id': document.id || filter.id,
-    'document.name': document.name,
-    'document.type': document.type,
-    'document.check': document.check,
-    'document.enabled': document.enabled,
-    'document.metadata.description': document.metadata?.description,
-    'document.metadata.author': getAuthorDisplay(document.metadata?.author),
-    'space.name': filter.space?.name,
-    'hash.sha256': filter.hash?.sha256,
-  };
+  const metadata = document.metadata ?? {};
+  const references = metadata.references ?? [];
+  const supports = metadata.supports ?? [];
 
   const visualTab = (
-    <EuiFlexGrid columns={2}>
-      {[
-        'document.id',
-        'document.name',
-        'document.type',
-        'document.check',
-        ['document.enabled', 'boolean_yesno'],
-        'document.metadata.description',
-        'document.metadata.author',
-        'space.name',
-        'hash.sha256',
-      ].map((item) => {
-        const [field, type] = typeof item === 'string' ? [item, 'text'] : item;
-        return (
-          <EuiFlexItem key={field}>
-            <Metadata
-              label={<EuiFormLabel>{detailsMapLabels[field]}</EuiFormLabel>}
-              value={get(filterData, field)}
-              type={type as 'text' | 'date' | 'boolean_yesno' | 'url'}
-            />
-          </EuiFlexItem>
-        );
-      })}
-    </EuiFlexGrid>
+    <>
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiFormLabel>Name</EuiFormLabel>
+          <EuiText size="s">{document.name || DEFAULT_EMPTY_DATA}</EuiText>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiFormLabel>Type</EuiFormLabel>
+          <EuiText size="s">{document.type || DEFAULT_EMPTY_DATA}</EuiText>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+
+      <EuiSpacer />
+
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiFormLabel>Description</EuiFormLabel>
+          <EuiText size="s">{metadata.description || DEFAULT_EMPTY_DATA}</EuiText>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiFormLabel>Author</EuiFormLabel>
+          <EuiText size="s">{getAuthorDisplay(metadata.author) || DEFAULT_EMPTY_DATA}</EuiText>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+
+      <EuiSpacer />
+
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiFormLabel>Documentation</EuiFormLabel>
+          <EuiText size="s">
+            {metadata.documentation ? (
+              <EuiLink href={metadata.documentation} target="_blank">
+                {metadata.documentation}
+              </EuiLink>
+            ) : (
+              DEFAULT_EMPTY_DATA
+            )}
+          </EuiText>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiFormLabel>Supports</EuiFormLabel>
+          <div>
+            {supports.length > 0 ? (
+              <EuiFlexGroup direction="row" wrap gutterSize="s">
+                {supports.map((entry, i) => (
+                  <EuiFlexItem grow={false} key={i}>
+                    <EuiBadge>{entry}</EuiBadge>
+                  </EuiFlexItem>
+                ))}
+              </EuiFlexGroup>
+            ) : (
+              <div>{DEFAULT_EMPTY_DATA}</div>
+            )}
+          </div>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+
+      <EuiSpacer />
+
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiFormLabel>Created</EuiFormLabel>
+          <EuiText size="s">{formatDate(metadata.date)}</EuiText>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiFormLabel>Modified</EuiFormLabel>
+          <EuiText size="s">{formatDate(metadata.modified)}</EuiText>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+
+      <EuiSpacer />
+
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiFormLabel>Space</EuiFormLabel>
+          <EuiText size="s">{filter.space?.name || DEFAULT_EMPTY_DATA}</EuiText>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiFormLabel>ID</EuiFormLabel>
+          <EuiText size="s">{document.id || filter.id || DEFAULT_EMPTY_DATA}</EuiText>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+
+      <EuiSpacer />
+
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiFormLabel>SHA256</EuiFormLabel>
+          <EuiText size="s" style={{ wordBreak: 'break-all' }}>
+            {filter.hash?.sha256 || DEFAULT_EMPTY_DATA}
+          </EuiText>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+
+      <EuiSpacer />
+
+      <EuiFlexGroup direction="column">
+        <EuiFlexItem>
+          <EuiFormLabel>Check</EuiFormLabel>
+          <EuiText size="s">{document.check || DEFAULT_EMPTY_DATA}</EuiText>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiFormLabel>References</EuiFormLabel>
+          {references.length > 0 ? (
+            references.map((ref, i) => (
+              <div key={i} style={{ wordBreak: 'break-all' }}>
+                <EuiText size="s">
+                  <EuiLink href={ref} target="_blank" data-test-subj={'filter_flyout_reference'}>
+                    {ref}
+                  </EuiLink>
+                </EuiText>
+              </div>
+            ))
+          ) : (
+            <div>{DEFAULT_EMPTY_DATA}</div>
+          )}
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </>
   );
 
   const jsonTab = (
@@ -131,16 +219,27 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
         <EuiModalBody>
-          <EuiButtonGroup
-            data-test-subj="change-editor-type"
-            legend="This is editor type selector"
-            options={[
-              { id: editorType.visual, label: 'Visual' },
-              { id: editorType.json, label: 'JSON' },
-            ]}
-            idSelected={selectedEditorType}
-            onChange={(id) => setSelectedEditorType(id)}
-          />
+          <EuiFlexGroup alignItems="center">
+            <EuiFlexItem>
+              <EuiButtonGroup
+                data-test-subj="change-editor-type"
+                legend="This is editor type selector"
+                options={[
+                  { id: editorType.visual, label: 'Visual' },
+                  { id: editorType.json, label: 'JSON' },
+                ]}
+                idSelected={selectedEditorType}
+                onChange={(id) => setSelectedEditorType(id)}
+              />
+            </EuiFlexItem>
+            <EuiFlexItem>
+              <div data-test-subj={'filter_flyout_enabled'}>
+                <EuiHealth color={document.enabled !== false ? 'success' : 'subdued'}>
+                  {document.enabled !== false ? 'Enabled' : 'Disabled'}
+                </EuiHealth>
+              </div>
+            </EuiFlexItem>
+          </EuiFlexGroup>
           <EuiSpacer size="xl" />
           {selectedEditorType === editorType.visual ? visualTab : jsonTab}
         </EuiModalBody>
