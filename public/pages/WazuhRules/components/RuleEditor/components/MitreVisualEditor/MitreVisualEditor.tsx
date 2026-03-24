@@ -25,6 +25,7 @@ const makeLabel = (section: MitreSection) => (
       <EuiFlexItem grow={false}>
         <EuiText size="s">
           <strong>{section.title}</strong>
+          <i> - optional</i>
         </EuiText>
       </EuiFlexItem>
     </EuiFlexGroup>
