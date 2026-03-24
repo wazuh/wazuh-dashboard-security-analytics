@@ -82,6 +82,12 @@ export const getIntegrationsTableColumns = ({
     render: (spaceName: string) => capitalize(spaceName),
   },
   {
+    field: 'rules',
+    name: 'Rules',
+    sortable: true,
+    render: (rules: any[]) => rules?.length ?? 0,
+  },
+  {
     field: 'decoders',
     name: 'Decoders',
     sortable: true,
@@ -92,12 +98,6 @@ export const getIntegrationsTableColumns = ({
     name: 'KVDBs',
     sortable: true,
     render: (kvdbs: string[]) => kvdbs?.length ?? 0,
-  },
-  {
-    field: 'rules',
-    name: 'Rules',
-    sortable: true,
-    render: (rules: any[]) => rules?.length ?? 0,
   },
   {
     name: 'Actions',
