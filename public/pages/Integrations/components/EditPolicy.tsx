@@ -31,7 +31,7 @@ import { FormFieldArray } from '../../../components/FormFieldArray';
 import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validation';
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
 import { SPACE_ACTIONS } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { actionIsAllowedOnSpace, getSpaceTypeLabel } from '../../../../common/helpers';
 import { ALLOWED_ENRICHMENTS, ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 
 const DECODER_SEARCH_SIZE = 25;
@@ -508,6 +508,7 @@ export const EditPolicy: React.FC<EditPolicyProps> = ({
   space,
   notifications,
 }) => {
+  const editSpaceTitle = `Edit ${getSpaceTypeLabel(space)}`;
   const [canClose, setCanClose] = useState(true);
   const [canNotCloseIsOpen, setCanNotCloseIsOpen] = useState(false);
   const onFlyoutClose = function () {
@@ -523,7 +524,7 @@ export const EditPolicy: React.FC<EditPolicyProps> = ({
       <EuiFlyout onClose={onFlyoutClose} ownFocus size="s">
         <EuiFlyoutHeader hasBorder={true}>
           <EuiText size="s">
-            <h2>Edit</h2>
+            <h2>{editSpaceTitle}</h2>
           </EuiText>
         </EuiFlyoutHeader>
         <EditForm
