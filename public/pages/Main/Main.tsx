@@ -51,7 +51,7 @@ import CreateDetector from '../CreateDetector/containers/CreateDetector';
 // Wazuh: hide Alerts app and routes.
 // import Alerts from "../Alerts";
 import { DetectorDetails } from '../Detectors/containers/Detector/DetectorDetails';
-import { WazuhUpdateDetectorBasicDetails as UpdateDetectorBasicDetails } from '../Detectors/components/UpdateBasicDetails/WazuhUpdateBasicDetails';
+import { WazuhUpdateDetectorBasicDetails as UpdateDetectorBasicDetails } from '../Detectors/components/WazuhUpdateBasicDetails';
 import { UpdateDetectorRules } from '../Detectors/components/UpdateRules/UpdateRules';
 import UpdateFieldMappings from '../Detectors/components/UpdateFieldMappings/UpdateFieldMappings';
 // Wazuh: hide Alert triggers edit route.
