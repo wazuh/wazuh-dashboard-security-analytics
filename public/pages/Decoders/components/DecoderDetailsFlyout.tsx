@@ -23,6 +23,7 @@ import {
 import { DecoderItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { createTextDetailsGroup } from '../../../utils/helpers';
+import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 
 interface DecoderDetailsFlyoutProps {
   decoderId: string;
@@ -215,7 +216,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
     <EuiCodeBlock language="yaml" isCopyable={true}>
       {typeof decoder?.decoder === 'string'
         ? decoder?.decoder
-        : (JSON.stringify(decoder?.decoder, null, 2) ?? '')}
+        : JSON.stringify(decoder?.decoder, null, 2) ?? ''}
     </EuiCodeBlock>
   );
 
@@ -275,14 +276,26 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
         <EuiModalBody>
-          <EuiButtonGroup
-            data-test-subj="decoder-details-view-selector"
-            legend="Decoder view selector"
-            options={decoderViewOptions}
-            idSelected={selectedView}
-            onChange={(id) => setSelectedView(id)}
-            isDisabled={loading || !!error || !decoder}
-          />
+          <EuiFlexGroup alignItems="center">
+            <EuiFlexItem>
+              <EuiButtonGroup
+                data-test-subj="decoder-details-view-selector"
+                legend="Decoder view selector"
+                options={decoderViewOptions}
+                idSelected={selectedView}
+                onChange={(id) => setSelectedView(id)}
+                isDisabled={loading || !!error || !decoder}
+              />
+            </EuiFlexItem>
+            {decoder && (
+              <EuiFlexItem>
+                <EnabledHealth
+                  enabled={decoder.document?.enabled}
+                  data-test-subj="decoder_flyout_enabled"
+                />
+              </EuiFlexItem>
+            )}
+          </EuiFlexGroup>
           <EuiSpacer size="xl" />
           {renderContent()}
         </EuiModalBody>
