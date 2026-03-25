@@ -281,7 +281,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   error={errors.author}
                 >
                   <EuiCompressedFieldText
-                    placeholder="Wazuh, Inc."
+                    placeholder="Enter author name"
                     value={values.author}
                     onChange={(e) => setFieldValue('author', e.target.value)}
                     onBlur={() => setFieldTouched('author')}
@@ -347,7 +347,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   fullWidth
                 >
                   <EuiCompressedFieldText
-                    placeholder="https://documentation.wazuh.com/..."
+                    placeholder="Enter documentation URL"
                     value={values.documentation}
                     onChange={(e) => setFieldValue('documentation', e.target.value)}
                   />
