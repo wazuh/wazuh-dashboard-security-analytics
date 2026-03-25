@@ -104,7 +104,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
     async (
       detectorType: string,
       space: string,
-      enabledRuleIds: string[] = []
+      enabledRuleIds?: string[]
     ): Promise<RuleItemInfo[]> => {
       if (!detectorType) {
         setRulesState({ page: { index: 0 }, allRules: [] });
@@ -117,7 +117,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
       const spaceRules = allRules.filter((rule) => rule.space === space);
       const ruleItems: RuleItemInfo[] = spaceRules.map((rule) => ({
         ...rule,
-        enabled: enabledRuleIds.length > 0 ? enabledRuleIds.includes(rule._id) : true,
+        enabled: enabledRuleIds !== undefined ? enabledRuleIds.includes(rule._id) : true,
       }));
       setRulesState({ page: { index: 0 }, allRules: ruleItems });
       setLoadingRules(false);
