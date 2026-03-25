@@ -147,9 +147,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     spaceFilter,
     SPACE_ACTIONS.REARRANGE_INTEGRATIONS
   );
+  const canEditSpaceDetails =
+    actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DEFINE_ROOT_DECODER) ||
+    actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS) ||
+    actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS);
   const onEditPolicy = () => {
     setItemForAction({ action: SPACE_ACTIONS.EDIT_POLICY });
     setIsPopoverOpen(false);
+    setIsOverviewActionsOpen(false);
   };
 
   const deleteSelectedIntegrations = useCallback(async () => {
@@ -238,30 +243,45 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     </EuiPopover>
   );
 
+  const overviewActionsMenuItems: React.ReactElement[] = [];
+  if (canEditSpaceDetails) {
+    overviewActionsMenuItems.push(
+      <EuiContextMenuItem
+        key="edit-space"
+        icon="pencil"
+        onClick={onEditPolicy}
+        data-test-subj="overviewEditSpaceDetails"
+      >
+        Edit
+      </EuiContextMenuItem>
+    );
+  }
+  overviewActionsMenuItems.push(
+    <EuiContextMenuItem
+      key="promote"
+      icon="share"
+      onClick={() => {
+        history.push({ pathname: ROUTES.PROMOTE, search: `?space=${spaceFilter}` });
+        setIsOverviewActionsOpen(false);
+      }}
+      disabled={isPromoteActionDisabled}
+      toolTipContent={
+        isPromoteActionDisabled
+          ? `Integration can only be promoted in the spaces: ${getSpacesAllowAction(
+              SPACE_ACTIONS.PROMOTE
+            ).join(', ')}`
+          : undefined
+      }
+    >
+      Promote
+    </EuiContextMenuItem>
+  );
+
   const overviewActionsButton = buildActionsPopOver(
     'overviewActionsPopover',
     isOverviewActionsOpen,
     () => setIsOverviewActionsOpen((prev) => !prev),
-    [
-      <EuiContextMenuItem
-        key="promote"
-        icon="share"
-        onClick={() => {
-          history.push({ pathname: ROUTES.PROMOTE, search: `?space=${spaceFilter}` });
-          setIsOverviewActionsOpen(false);
-        }}
-        disabled={isPromoteActionDisabled}
-        toolTipContent={
-          isPromoteActionDisabled
-            ? `Integration can only be promoted in the spaces: ${getSpacesAllowAction(
-                SPACE_ACTIONS.PROMOTE
-              ).join(', ')}`
-            : undefined
-        }
-      >
-        Promote
-      </EuiContextMenuItem>,
-    ]
+    overviewActionsMenuItems
   );
 
   const actionsButton = buildActionsPopOver(
@@ -433,7 +453,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       <PolicyInfoCard
         space={spaceFilter}
         notifications={notifications}
-        onEditPolicy={onEditPolicy}
         refresh={policyRefresh}
       />
       <EuiSpacer size={'m'} />

@@ -100,6 +100,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
   );
 
   const [isEnrichmentPopoverOpen, setIsEnrichmentPopoverOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Flag to determine if the space allows editing non-enrichments fields
   const canEditPolicy = actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY);
@@ -193,18 +194,10 @@ const EditForm: React.FC<{}> = withPolicyGuard({
     }
   };
 
-  const onConfirm = async () => {
-    const payload = sanitizatePolicy(policyDetails);
-    const [ok] = await DataStore.policies.updatePolicy(space, payload);
-
-    if (ok) {
-      successNotificationToast(notifications, 'updated', `[${space}] space`);
-      if (onSuccess) onSuccess();
-      onClose();
+  const onConfirmClicked = useCallback(async () => {
+    if (isSaving) {
+      return;
     }
-  };
-
-  const onConfirmClicked = useCallback(() => {
     const { titleInvalid, authorInvalid } = updateErrors(policyDetails);
 
     if (titleInvalid || authorInvalid) {
@@ -215,8 +208,23 @@ const EditForm: React.FC<{}> = withPolicyGuard({
       });
       return;
     }
-    onConfirm();
-  }, [onConfirm, notifications, policyDetails]);
+
+    setIsSaving(true);
+    try {
+      const payload = sanitizatePolicy(policyDetails);
+      const [ok] = await DataStore.policies.updatePolicy(space, payload);
+
+      if (ok) {
+        successNotificationToast(notifications, 'updated', `[${space}] space`);
+        if (onSuccess) onSuccess();
+        onClose();
+      } else {
+        setIsSaving(false);
+      }
+    } catch {
+      setIsSaving(false);
+    }
+  }, [isSaving, notifications, onClose, onSuccess, policyDetails, space]);
 
   return (
     <>
@@ -472,7 +480,12 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             <EuiButtonEmpty onClick={onFlyoutClose}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton fill onClick={onConfirmClicked} isDisabled={!hasChanges}>
+            <EuiButton
+              fill
+              onClick={onConfirmClicked}
+              isDisabled={!hasChanges || isSaving}
+              isLoading={isSaving}
+            >
               Save
             </EuiButton>
           </EuiFlexItem>
@@ -510,7 +523,7 @@ export const EditPolicy: React.FC<EditPolicyProps> = ({
       <EuiFlyout onClose={onFlyoutClose} ownFocus size="s">
         <EuiFlyoutHeader hasBorder={true}>
           <EuiText size="s">
-            <h2>Edit space details</h2>
+            <h2>Edit</h2>
           </EuiText>
         </EuiFlyoutHeader>
         <EditForm

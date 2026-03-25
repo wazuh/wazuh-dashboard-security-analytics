@@ -6,17 +6,13 @@ import {
   EuiFlexItem,
   EuiText,
   EuiTitle,
-  EuiToolTip,
   EuiCard,
-  EuiButtonIcon,
   EuiDescriptionListTitle,
   EuiDescriptionListDescription,
   EuiDescriptionList,
 } from '@elastic/eui';
 import { DecoderSource, PolicyDocument, SearchPolicyOptions, Space } from '../../../../types';
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { SPACE_ACTIONS } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 
 const truncateStyle: React.CSSProperties = {
@@ -113,14 +109,12 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
   policyDocumentData,
   rootDecoder,
   notifications,
-  space,
-  onEditPolicy,
+  space: _space,
 }: {
   policyDocumentData: PolicyDocument;
   rootDecoder: DecoderSource;
   notifications: NotificationsStart;
   space: Space;
-  onEditPolicy: () => void;
   refresh?: number;
 }) => {
   const title = getMetadataValue(policyDocumentData, 'title');
@@ -134,26 +128,9 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
       textAlign="left"
       paddingSize="m"
       title={
-        <EuiFlexGroup justifyContent="spaceBetween" gutterSize="none">
-          <EuiFlexItem>
-            <EuiTitle size="s">
-              <h3>Space details</h3>
-            </EuiTitle>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            {(actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) ||
-              actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS) ||
-              actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS)) && (
-              <EuiToolTip content={'Edit space details'}>
-                <EuiButtonIcon
-                  onClick={onEditPolicy}
-                  iconType="pencil"
-                  aria-label="Edit space details"
-                />
-              </EuiToolTip>
-            )}
-          </EuiFlexItem>
-        </EuiFlexGroup>
+        <EuiTitle size="s">
+          <h3>Space details</h3>
+        </EuiTitle>
       }
     >
       <EuiFlexGroup direction="column" gutterSize="l">
