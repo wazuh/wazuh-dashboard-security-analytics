@@ -89,7 +89,7 @@ const settingsSkeletonRows = (
     <EuiFlexGroup gutterSize="l" alignItems="flexStart" responsive={false} wrap={false}>
       <EuiFlexItem style={COL}>
         <EuiDescriptionList>
-          <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
+          <EuiDescriptionListTitle>Status</EuiDescriptionListTitle>
           <EuiDescriptionListDescription>
             <ValueSkeleton />
           </EuiDescriptionListDescription>
@@ -241,7 +241,7 @@ const renderSettingsPanel = (
     <EuiFlexGroup gutterSize="l" alignItems="flexStart" responsive={false} wrap={false}>
       <EuiFlexItem style={COL}>
         <EuiDescriptionList>
-          <EuiDescriptionListTitle>Enabled</EuiDescriptionListTitle>
+          <EuiDescriptionListTitle>Status</EuiDescriptionListTitle>
           <EuiDescriptionListDescription>
             {!hasPolicy ? (
               '-'
