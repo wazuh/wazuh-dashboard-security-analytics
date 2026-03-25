@@ -51,6 +51,7 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
         <EuiButtonGroup
           data-test-subj="space-selector"
           legend="Space selector"
+          color="primary"
           options={visibleSpaceTypes.map((spaceType) => ({
             id: spaceType.value,
             label: spaceType.label,

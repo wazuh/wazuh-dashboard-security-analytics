@@ -37,7 +37,7 @@ import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SPACE_ACTIONS } from '../../../../common/constants';
-import { PolicyInfoCard } from '../components/PolicyInfo';
+import { PolicyInfoCard } from '../components/PolicyInfoCard';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';

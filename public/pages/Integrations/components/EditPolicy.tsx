@@ -22,7 +22,7 @@ import {
   EuiConfirmModal,
 } from '@elastic/eui';
 
-import { withPolicyGuard } from './PolicyInfo';
+import { withPolicyGuard } from './PolicyGuard';
 import { DecoderSource, PolicyDocument, Space } from '../../../../types';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DataStore } from '../../../store/DataStore';
