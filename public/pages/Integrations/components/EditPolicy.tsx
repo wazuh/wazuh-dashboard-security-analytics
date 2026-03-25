@@ -20,6 +20,8 @@ import {
   EuiFilterSelectItem,
   EuiOverlayMask,
   EuiConfirmModal,
+  EuiSpacer,
+  EuiHorizontalRule
 } from '@elastic/eui';
 
 import { withPolicyGuard } from './PolicyGuard';
@@ -229,6 +231,10 @@ const EditForm: React.FC<{}> = withPolicyGuard({
   return (
     <>
       <EuiFlyoutBody>
+        <EuiText size="s">
+          <h3>Details</h3>
+        </EuiText>
+        <EuiSpacer size="s" />
         <EuiCompressedFormRow label="Title" isInvalid={!!titleError} error={titleError}>
           {canEditPolicy ? (
             <EuiCompressedFieldText
@@ -323,10 +329,14 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             renderTextValue(policyDetails.metadata?.documentation)
           )}
         </EuiCompressedFormRow>
-        <EuiCompressedFormRow label={!canEditToggles ? 'Enabled' : undefined}>
+        <EuiHorizontalRule />
+        <EuiText size="s">
+          <h3>Settings</h3>
+        </EuiText>
+        <EuiSpacer size="s" />
+        <EuiCompressedFormRow label={'Status'}>
           {canEditToggles ? (
             <EuiSwitch
-              label="Enabled"
               compressed
               checked={policyDetails.enabled || false}
               onChange={(e) => {
@@ -340,44 +350,6 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             />
           ) : (
             renderBooleanValue(policyDetails.enabled)
-          )}
-        </EuiCompressedFormRow>
-        <EuiCompressedFormRow label={!canEditToggles ? 'Index unclassified events' : undefined}>
-          {canEditToggles ? (
-            <EuiSwitch
-              label="Index unclassified events"
-              compressed
-              checked={policyDetails.index_unclassified_events || false}
-              onChange={(e) => {
-                const newPolicy = {
-                  ...policyDetails,
-                  index_unclassified_events: e.target.checked,
-                };
-                setPolicyDetails(newPolicy);
-                updateErrors(newPolicy);
-              }}
-            />
-          ) : (
-            renderBooleanValue(policyDetails.index_unclassified_events)
-          )}
-        </EuiCompressedFormRow>
-        <EuiCompressedFormRow label={!canEditToggles ? 'Index discarded events' : undefined}>
-          {canEditToggles ? (
-            <EuiSwitch
-              label="Index discarded events"
-              compressed
-              checked={policyDetails.index_discarded_events || false}
-              onChange={(e) => {
-                const newPolicy = {
-                  ...policyDetails,
-                  index_discarded_events: e.target.checked,
-                };
-                setPolicyDetails(newPolicy);
-                updateErrors(newPolicy);
-              }}
-            />
-          ) : (
-            renderBooleanValue(policyDetails.index_discarded_events)
           )}
         </EuiCompressedFormRow>
         <EuiCompressedFormRow label="Root Decoder">
@@ -405,6 +377,50 @@ const EditForm: React.FC<{}> = withPolicyGuard({
           ) : (
             renderTextValue(rootDecoder?.document?.name)
           )}
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow>
+          <EuiFlexGroup>
+            <EuiFlexItem>
+              <EuiCompressedFormRow label={'Index unclassified events'}>
+                {canEditToggles ? (
+                  <EuiSwitch
+                    compressed
+                    checked={policyDetails.index_unclassified_events || false}
+                    onChange={(e) => {
+                      const newPolicy = {
+                        ...policyDetails,
+                        index_unclassified_events: e.target.checked,
+                      };
+                      setPolicyDetails(newPolicy);
+                      updateErrors(newPolicy);
+                    }}
+                  />
+                ) : (
+                  renderBooleanValue(policyDetails.index_unclassified_events)
+                )}
+              </EuiCompressedFormRow>
+            </EuiFlexItem>
+            <EuiFlexItem>
+              <EuiCompressedFormRow label={'Index discarded events'}>
+                {canEditToggles ? (
+                  <EuiSwitch
+                    compressed
+                    checked={policyDetails.index_discarded_events || false}
+                    onChange={(e) => {
+                      const newPolicy = {
+                        ...policyDetails,
+                        index_discarded_events: e.target.checked,
+                      };
+                      setPolicyDetails(newPolicy);
+                      updateErrors(newPolicy);
+                    }}
+                  />
+                ) : (
+                  renderBooleanValue(policyDetails.index_discarded_events)
+                )}
+              </EuiCompressedFormRow>
+            </EuiFlexItem>
+          </EuiFlexGroup>
         </EuiCompressedFormRow>
         <EuiCompressedFormRow
           label={
