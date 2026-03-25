@@ -191,8 +191,8 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   </EuiText>
                   <EuiText size="s" color="subdued">
                     {action === FILTER_ACTION.CREATE
-                      ? 'Create a new event filter.'
-                      : 'Edit the filter configuration.'}
+                      ? <>Create a new event filter in the <strong>{spaceFilter || 'draft'}</strong> space.</>
+                      : <>Edit the filter configuration in the <strong>{spaceFilter || 'draft'}</strong> space.</>}
                   </EuiText>
                   <EuiSpacer />
                 </PageHeader>
@@ -245,13 +245,13 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                             <div style={{ paddingLeft: '16px' }}>
                               <EuiText size="xs">
                                 <p>
-                                  <strong>Pre-filter:</strong> Takes effect before decoders run.
+                                  <strong>Pre-filter:</strong> Processed before input is passed to the space decoder tree.
                                 </p>
                               </EuiText>
                               <EuiSpacer size="s" />
                               <EuiText size="xs">
                                 <p>
-                                  <strong>Post-filter:</strong> Takes effect after decoders run.
+                                  <strong>Post-filter:</strong> Processed after event is normalized by the space decoder tree, and enriched.
                                 </p>
                               </EuiText>
                             </div>
@@ -272,23 +272,6 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                     isInvalid={!!errors.type && touched.type}
                   />
                 </EuiCompressedFormRow>
-                <EuiSpacer size="m" />
-
-                <EuiCompressedFormRow
-                  label={'Author'}
-                  fullWidth
-                  isInvalid={!!errors.author && touched.author}
-                  error={errors.author}
-                >
-                  <EuiCompressedFieldText
-                    placeholder="Enter author name"
-                    value={values.author}
-                    onChange={(e) => setFieldValue('author', e.target.value)}
-                    onBlur={() => setFieldTouched('author')}
-                    isInvalid={!!errors.author && touched.author}
-                  />
-                </EuiCompressedFormRow>
-                
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
@@ -318,6 +301,23 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 </EuiCompressedFormRow>
 
                 <EuiSpacer size="l" />
+
+                <EuiCompressedFormRow
+                  label={'Author'}
+                  fullWidth
+                  isInvalid={!!errors.author && touched.author}
+                  error={errors.author}
+                >
+                  <EuiCompressedFieldText
+                    placeholder="Enter author name"
+                    value={values.author}
+                    onChange={(e) => setFieldValue('author', e.target.value)}
+                    onBlur={() => setFieldTouched('author')}
+                    isInvalid={!!errors.author && touched.author}
+                  />
+                </EuiCompressedFormRow>
+                
+                <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
                   label={
