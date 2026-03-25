@@ -5,25 +5,23 @@
 
 import React, { useState } from 'react';
 import {
-  EuiBadge,
   EuiButtonGroup,
   EuiCodeBlock,
+  EuiFlexGrid,
   EuiFlexGroup,
   EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiFormLabel,
-  EuiLink,
   EuiModalBody,
   EuiSmallButtonIcon,
   EuiSpacer,
   EuiText,
   EuiHealth,
 } from '@elastic/eui';
-import moment from 'moment';
 import { FilterItem } from '../../../../types';
-import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { Metadata } from '../../KVDBs/components/Metadata';
 
 interface FilterDetailsFlyoutProps {
   filter: FilterItem;
@@ -42,16 +40,6 @@ const getAuthorDisplay = (author: string | { name?: string } | undefined): strin
   return author.name ?? '';
 };
 
-const formatDate = (value?: string): string => {
-  if (!value) return DEFAULT_EMPTY_DATA;
-  try {
-    const d = moment(value);
-    return d.isValid() ? d.format('MMM DD, YYYY @ HH:mm:ss.SSS') : value;
-  } catch {
-    return value;
-  }
-};
-
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
   const [selectedEditorType, setSelectedEditorType] = useState(editorType.visual);
 
@@ -67,127 +55,38 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
   const references = metadata.references ?? [];
   const supports = metadata.supports ?? [];
 
+  const fields: Array<{
+    label: string;
+    value: any;
+    type?: 'text' | 'date' | 'url';
+  }> = [
+    { label: 'Name', value: document.name },
+    { label: 'Type', value: document.type },
+    { label: 'Description', value: metadata.description },
+    { label: 'Author', value: getAuthorDisplay(metadata.author) },
+    { label: 'Documentation', value: metadata.documentation, type: 'url' },
+    { label: 'Supports', value: supports },
+    { label: 'Created', value: metadata.date, type: 'date' },
+    { label: 'Modified', value: metadata.modified, type: 'date' },
+    { label: 'Space', value: filter.space?.name },
+    { label: 'ID', value: document.id || filter.id },
+    { label: 'SHA256', value: filter.hash?.sha256 },
+    { label: 'Check', value: document.check },
+    { label: 'References', value: references, type: 'url' },
+  ];
+
   const visualTab = (
-    <>
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiFormLabel>Name</EuiFormLabel>
-          <EuiText size="s">{document.name || DEFAULT_EMPTY_DATA}</EuiText>
+    <EuiFlexGrid columns={2}>
+      {fields.map(({ label, value, type = 'text' }) => (
+        <EuiFlexItem key={label}>
+          <Metadata
+            label={<EuiFormLabel>{label}</EuiFormLabel>}
+            value={value}
+            type={type}
+          />
         </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiFormLabel>Type</EuiFormLabel>
-          <EuiText size="s">{document.type || DEFAULT_EMPTY_DATA}</EuiText>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-
-      <EuiSpacer />
-
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiFormLabel>Description</EuiFormLabel>
-          <EuiText size="s">{metadata.description || DEFAULT_EMPTY_DATA}</EuiText>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiFormLabel>Author</EuiFormLabel>
-          <EuiText size="s">{getAuthorDisplay(metadata.author) || DEFAULT_EMPTY_DATA}</EuiText>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-
-      <EuiSpacer />
-
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiFormLabel>Documentation</EuiFormLabel>
-          <EuiText size="s">
-            {metadata.documentation ? (
-              <EuiLink href={metadata.documentation} target="_blank">
-                {metadata.documentation}
-              </EuiLink>
-            ) : (
-              DEFAULT_EMPTY_DATA
-            )}
-          </EuiText>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiFormLabel>Supports</EuiFormLabel>
-          <div>
-            {supports.length > 0 ? (
-              <EuiFlexGroup direction="row" wrap gutterSize="s">
-                {supports.map((entry, i) => (
-                  <EuiFlexItem grow={false} key={i}>
-                    <EuiBadge>{entry}</EuiBadge>
-                  </EuiFlexItem>
-                ))}
-              </EuiFlexGroup>
-            ) : (
-              <div>{DEFAULT_EMPTY_DATA}</div>
-            )}
-          </div>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-
-      <EuiSpacer />
-
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiFormLabel>Created</EuiFormLabel>
-          <EuiText size="s">{formatDate(metadata.date)}</EuiText>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiFormLabel>Modified</EuiFormLabel>
-          <EuiText size="s">{formatDate(metadata.modified)}</EuiText>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-
-      <EuiSpacer />
-
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiFormLabel>Space</EuiFormLabel>
-          <EuiText size="s">{filter.space?.name || DEFAULT_EMPTY_DATA}</EuiText>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiFormLabel>ID</EuiFormLabel>
-          <EuiText size="s">{document.id || filter.id || DEFAULT_EMPTY_DATA}</EuiText>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-
-      <EuiSpacer />
-
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiFormLabel>SHA256</EuiFormLabel>
-          <EuiText size="s" style={{ wordBreak: 'break-all' }}>
-            {filter.hash?.sha256 || DEFAULT_EMPTY_DATA}
-          </EuiText>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-
-      <EuiSpacer />
-
-      <EuiFlexGroup direction="column">
-        <EuiFlexItem>
-          <EuiFormLabel>Check</EuiFormLabel>
-          <EuiText size="s">{document.check || DEFAULT_EMPTY_DATA}</EuiText>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiFormLabel>References</EuiFormLabel>
-          {references.length > 0 ? (
-            references.map((ref, i) => (
-              <div key={i} style={{ wordBreak: 'break-all' }}>
-                <EuiText size="s">
-                  <EuiLink href={ref} target="_blank" data-test-subj={'filter_flyout_reference'}>
-                    {ref}
-                  </EuiLink>
-                </EuiText>
-              </div>
-            ))
-          ) : (
-            <div>{DEFAULT_EMPTY_DATA}</div>
-          )}
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    </>
+      ))}
+    </EuiFlexGrid>
   );
 
   const jsonTab = (
