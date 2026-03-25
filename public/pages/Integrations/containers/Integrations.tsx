@@ -151,6 +151,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DEFINE_ROOT_DECODER) ||
     actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS) ||
     actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS);
+  const isEditSpaceDetailsDisabled = !canEditSpaceDetails;
+  const spacesAllowingSpacePolicyEdit = Array.from(
+    new Set([
+      ...getSpacesAllowAction(SPACE_ACTIONS.DEFINE_ROOT_DECODER),
+      ...getSpacesAllowAction(SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS),
+      ...getSpacesAllowAction(SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS),
+    ])
+  );
   const onEditPolicy = () => {
     setItemForAction({ action: SPACE_ACTIONS.EDIT_POLICY });
     setIsPopoverOpen(false);
@@ -243,19 +251,24 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     </EuiPopover>
   );
 
-  const overviewActionsMenuItems: React.ReactElement[] = [];
-  if (canEditSpaceDetails) {
-    overviewActionsMenuItems.push(
-      <EuiContextMenuItem
-        key="edit-space"
-        icon="pencil"
-        onClick={onEditPolicy}
-        data-test-subj="overviewEditSpaceDetails"
-      >
-        Edit
-      </EuiContextMenuItem>
-    );
-  }
+  const overviewActionsMenuItems: React.ReactElement[] = [
+    <EuiContextMenuItem
+      key="edit-space"
+      icon="pencil"
+      onClick={onEditPolicy}
+      disabled={isEditSpaceDetailsDisabled}
+      toolTipContent={
+        isEditSpaceDetailsDisabled
+          ? `Space policy can only be edited in the spaces: ${spacesAllowingSpacePolicyEdit.join(
+              ', '
+            )}`
+          : undefined
+      }
+      data-test-subj="overviewEditSpaceDetails"
+    >
+      Edit
+    </EuiContextMenuItem>,
+  ];
   overviewActionsMenuItems.push(
     <EuiContextMenuItem
       key="promote"
