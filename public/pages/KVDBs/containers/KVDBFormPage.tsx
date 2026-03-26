@@ -356,7 +356,6 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   addButtonLabel="Add reference"
                   onChange={(references) => formikProps.setFieldValue('references', references)}
                 />
-                <EuiSpacer size="m" />
                 <FormFieldArray
                   label={<FormFieldHeader headerTitle={'Supports'} optionalField={true} />}
                   values={formikProps.values.supports}
