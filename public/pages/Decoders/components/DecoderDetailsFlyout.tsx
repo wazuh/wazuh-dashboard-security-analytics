@@ -8,22 +8,23 @@ import {
   EuiButtonGroup,
   EuiCallOut,
   EuiCodeBlock,
+  EuiFlexGrid,
   EuiFlexGroup,
   EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutHeader,
+  EuiFormLabel,
   EuiLoadingContent,
   EuiModalBody,
   EuiSmallButtonIcon,
   EuiSpacer,
   EuiText,
-  EuiTitle,
 } from '@elastic/eui';
 import { DecoderItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import { createTextDetailsGroup } from '../../../utils/helpers';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
+import { Metadata } from '../../KVDBs/components/Metadata';
 
 interface DecoderDetailsFlyoutProps {
   decoderId: string;
@@ -55,47 +56,6 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [selectedView, setSelectedView] = useState(decoderViewOptions[0].id);
-
-  const formatTextValue = (value: unknown) => {
-    if (value === null || value === undefined || value === '') {
-      return undefined;
-    }
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      return String(value);
-    }
-    if (Array.isArray(value)) {
-      const formatted = value
-        .map((entry) => {
-          if (entry === null || entry === undefined) {
-            return '';
-          }
-          if (
-            typeof entry === 'string' ||
-            typeof entry === 'number' ||
-            typeof entry === 'boolean'
-          ) {
-            return String(entry);
-          }
-          if (typeof entry === 'object' && 'name' in entry && typeof entry.name === 'string') {
-            return entry.name;
-          }
-          return JSON.stringify(entry);
-        })
-        .filter(Boolean)
-        .join(', ');
-      return formatted || undefined;
-    }
-    if (typeof value === 'object') {
-      if ('name' in value && typeof value.name === 'string') {
-        return value.name;
-      }
-      if ('value' in value && typeof value.value === 'string') {
-        return value.value;
-      }
-      return JSON.stringify(value);
-    }
-    return undefined;
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -141,75 +101,38 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
     }
   }, [decoder]);
 
-  const integrations = decoder?.integrations?.length ? decoder.integrations.join(', ') : undefined;
+  const fields: Array<{
+    label: string;
+    value: any;
+    type?: 'text' | 'date' | 'url';
+  }> = [
+    { label: 'ID', value: decoder?.document?.id },
+    { label: 'Integration', value: decoder?.integrations },
+    { label: 'Title', value: decoder?.document?.metadata?.title },
+    { label: 'Module', value: decoder?.document?.metadata?.module },
+    { label: 'Compatibility', value: decoder?.document?.metadata?.compatibility },
+    { label: 'Versions', value: decoder?.document?.metadata?.versions },
+    { label: 'Author', value: decoder?.document?.metadata?.author },
+    { label: 'Description', value: decoder?.document?.metadata?.description },
+    { label: 'Date', value: decoder?.document?.metadata?.date, type: 'date' },
+    { label: 'Modified', value: decoder?.document?.metadata?.modified, type: 'date' },
+    { label: 'References', value: decoder?.document?.metadata?.references, type: 'url' },
+    { label: 'Documentation', value: decoder?.document?.metadata?.documentation, type: 'url' },
+    { label: 'Supports', value: decoder?.document?.metadata?.supports },
+  ];
 
   const detailsContent = (
-    <>
-      {createTextDetailsGroup([
-        { label: 'ID', content: formatTextValue(decoder?.document?.id) },
-        { label: 'Integration', content: integrations },
-      ])}
-      {createTextDetailsGroup([
-        {
-          label: 'Title',
-          content: formatTextValue(decoder?.document?.metadata?.title),
-        },
-        {
-          label: 'Module',
-          content: formatTextValue(decoder?.document?.metadata?.module),
-        },
-      ])}
-      {createTextDetailsGroup([
-        {
-          label: 'Compatibility',
-          content: formatTextValue(decoder?.document?.metadata?.compatibility),
-        },
-        {
-          label: 'Versions',
-          content: formatTextValue(decoder?.document?.metadata?.versions),
-        },
-      ])}
-      {createTextDetailsGroup([
-        {
-          label: 'Author',
-          content: formatTextValue(decoder?.document?.metadata?.author),
-        },
-        {
-          label: 'Date',
-          content: formatTextValue(decoder?.document?.metadata?.date),
-        },
-        {
-          label: 'Modified',
-          content: formatTextValue(decoder?.document?.metadata?.modified),
-        },
-      ])}
-      {createTextDetailsGroup([
-        {
-          label: 'References',
-          content: formatTextValue(decoder?.document?.metadata?.references),
-        },
-        {
-          label: 'Documentation',
-          content: formatTextValue(decoder?.document?.metadata?.documentation),
-        },
-        {
-          label: 'Supports',
-          content: formatTextValue(decoder?.document?.metadata?.supports),
-        },
-      ])}
-
-      {formatTextValue(decoder?.document?.metadata?.description) && (
-        <>
-          <EuiTitle size="xs">
-            <h3>Description</h3>
-          </EuiTitle>
-          <EuiSpacer size="s" />
-          <EuiText size="s">
-            <p>{formatTextValue(decoder.document.metadata.description)}</p>
-          </EuiText>
-        </>
-      )}
-    </>
+    <EuiFlexGrid columns={2}>
+      {fields.map(({ label, value, type = 'text' }) => (
+        <EuiFlexItem key={label}>
+          <Metadata
+            label={<EuiFormLabel>{label}</EuiFormLabel>}
+            value={value}
+            type={type}
+          />
+        </EuiFlexItem>
+      ))}
+    </EuiFlexGrid>
   );
 
   const yamlContent = (
