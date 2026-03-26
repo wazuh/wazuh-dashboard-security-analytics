@@ -16,18 +16,14 @@ import {
 } from '../utils/constants';
 import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
 
-/**
- * Indexer may expose lifecycle field as `space` (Wazuh) or legacy `source`. Map to `source` for the UI.
- */
+/** Indexer stores lifecycle as `space`; UI model keeps `source` (Sigma → Standard). */
 function mapLogTypeFromHit(hit: {
   _id: string;
   _source: LogTypeBase & { space?: string };
 }): LogType {
   const src = hit._source;
-  const { space, source: legacySource, ...rest } = src;
-  const spaceVal = typeof space === 'string' ? space : undefined;
-  const sourceVal = typeof legacySource === 'string' ? legacySource : undefined;
-  const raw = spaceVal ?? sourceVal ?? '';
+  const { space, source: _, ...rest } = src;
+  const raw = typeof space === 'string' ? space : '';
   const source = raw.toLowerCase() === 'sigma' ? 'Standard' : raw;
   return {
     id: hit._id,
