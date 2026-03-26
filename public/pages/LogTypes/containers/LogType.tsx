@@ -1,9 +1,6 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
- *
- * Wazuh modification: deviates from upstream OpenSearch — log type lifecycle field `source`
- * renamed to `space` (indexer/API alignment; see wazuh-dashboard-plugins#8240).
  */
 
 import React from 'react';
@@ -195,9 +192,9 @@ export const LogType: React.FC<LogTypeProps> = ({ notifications, history }) => {
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Space',
+                  title: 'Source',
                   description:
-                    logTypeDetails.space === 'Sigma' ? 'Standard' : logTypeDetails.space,
+                    logTypeDetails.source === 'Sigma' ? 'Standard' : logTypeDetails.source,
                 },
               ]}
             />

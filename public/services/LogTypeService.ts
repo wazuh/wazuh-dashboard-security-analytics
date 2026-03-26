@@ -1,9 +1,6 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
- *
- * Wazuh modification: deviates from upstream OpenSearch — log type lifecycle field `source`
- * renamed to `space` (indexer/API alignment; see wazuh-dashboard-plugins#8240).
  */
 
 import { HttpSetup } from 'opensearch-dashboards/public';
@@ -44,7 +41,7 @@ export default class LogTypeService {
             must: {
               query_string: {
                 query:
-                  '(space: Sigma and !(name: others*) and !(name: test*)) or (space: Custom)',
+                  '((space: Sigma OR source: Sigma) and !(name: others*) and !(name: test*)) or (space: Custom OR source: Custom)',
               },
             },
           },

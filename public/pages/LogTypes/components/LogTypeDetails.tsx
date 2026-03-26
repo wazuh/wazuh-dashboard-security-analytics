@@ -1,9 +1,6 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
- *
- * Wazuh modification: deviates from upstream OpenSearch — log type lifecycle field `source`
- * renamed to `space` (indexer/API alignment; see wazuh-dashboard-plugins#8240).
  */
 
 import { EuiSmallButton, EuiDescriptionList } from '@elastic/eui';
@@ -46,7 +43,7 @@ export const LogTypeDetails: React.FC<LogTypeDetailsProps> = ({
       title="Details"
       actions={
         !isEditMode &&
-        logTypeDetails.space.toLocaleLowerCase() !== 'standard' && [
+        logTypeDetails.source.toLocaleLowerCase() !== 'standard' && [
           <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>,
         ]
       }

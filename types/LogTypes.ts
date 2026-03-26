@@ -1,9 +1,6 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
- *
- * Wazuh modification: deviates from upstream OpenSearch — log type lifecycle field `source`
- * renamed to `space` (indexer/API alignment; see wazuh-dashboard-plugins#8240).
  */
 
 import { RuleItemInfoBase } from './Rule';
@@ -23,7 +20,7 @@ export interface LogType extends LogTypeBase {
 export interface LogTypeBase {
   name: string;
   description: string;
-  space: string;
+  source: string;
   category: string;
   tags: {
     correlation_id: number;

@@ -1,9 +1,6 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
- *
- * Wazuh modification: deviates from upstream OpenSearch — log type lifecycle field `source`
- * renamed to `space` (indexer/API alignment; see wazuh-dashboard-plugins#8240).
  */
 
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -19,19 +16,23 @@ import {
 } from '../utils/constants';
 import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
 
-/** Maps indexer hits to {@link LogType}; supports legacy `source` field (renamed to `space`). */
+/**
+ * Indexer may expose lifecycle field as `space` (Wazuh) or legacy `source`. Map to `source` for the UI.
+ */
 function mapLogTypeFromHit(hit: {
   _id: string;
-  _source: LogTypeBase & { source?: string };
+  _source: LogTypeBase & { space?: string };
 }): LogType {
   const src = hit._source;
-  const { source: legacySource, ...rest } = src;
-  const rawLifecycle = rest.space ?? legacySource ?? '';
-  const space = rawLifecycle.toLowerCase() === 'sigma' ? 'Standard' : rawLifecycle;
+  const { space, source: legacySource, ...rest } = src;
+  const spaceVal = typeof space === 'string' ? space : undefined;
+  const sourceVal = typeof legacySource === 'string' ? legacySource : undefined;
+  const raw = spaceVal ?? sourceVal ?? '';
+  const source = raw.toLowerCase() === 'sigma' ? 'Standard' : raw;
   return {
     id: hit._id,
     ...rest,
-    space,
+    source,
   };
 }
 
@@ -68,12 +69,12 @@ export class LogTypeStore {
           0,
           ruleTypes.length,
           ...logTypes
-            .map(({ category, id, name, space }) => ({
+            .map(({ category, id, name, source }) => ({
               label: getLogTypeLabel(name),
               value: name,
               id,
               category,
-              isStandard: space === 'Standard',
+              isStandard: source === 'Standard',
             }))
             .sort((a, b) => {
               return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
@@ -136,13 +137,13 @@ export class LogTypeStore {
     id,
     name,
     description,
-    space,
+    source,
     tags,
   }: LogType): Promise<boolean> {
     const updateRes = await this.service.updateLogType(id, {
       name,
       description,
-      space,
+      source,
       tags,
       category,
     });
