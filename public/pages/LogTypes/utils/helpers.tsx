@@ -1,6 +1,9 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Wazuh modification: deviates from upstream OpenSearch — log type lifecycle field `source`
+ * renamed to `space` (indexer/API alignment; see wazuh-dashboard-plugins#8240).
  */
 
 import React from 'react';
@@ -35,9 +38,9 @@ export const getLogTypesTableColumns = (
     truncateText: false,
   },
   {
-    field: 'source',
-    name: 'Source',
-    render: (source: string) => capitalize(source),
+    field: 'space',
+    name: 'Space',
+    render: (space: string) => capitalize(space),
   },
   {
     name: 'Actions',
@@ -80,12 +83,12 @@ export const getLogTypesTableSearchConfig = (): Search => {
       },
       {
         type: 'field_value_selection',
-        field: 'source',
-        name: 'Source',
+        field: 'space',
+        name: 'Space',
         compressed: true,
         multiSelect: 'or',
-        options: ruleSource.map((source: string) => ({
-          value: source,
+        options: ruleSource.map((space: string) => ({
+          value: space,
         })),
       },
     ],

@@ -1,6 +1,9 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Wazuh modification: deviates from upstream OpenSearch — log type lifecycle field `source`
+ * renamed to `space` (indexer/API alignment; see wazuh-dashboard-plugins#8240).
  */
 
 import { LogTypeBase } from '../../../../types';
@@ -19,7 +22,7 @@ export const logTypeDetailsTabs = [
 export const defaultLogType: LogTypeBase = {
   name: '',
   description: '',
-  source: 'Custom',
+  space: 'Custom',
   tags: null,
   category: '',
 };

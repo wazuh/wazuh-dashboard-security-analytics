@@ -1,6 +1,9 @@
 /*
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Wazuh modification: deviates from upstream OpenSearch — log type lifecycle field `source`
+ * renamed to `space` (indexer/API alignment; see wazuh-dashboard-plugins#8240).
  */
 
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -16,18 +19,29 @@ import {
 } from '../utils/constants';
 import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
 
+/** Maps indexer hits to {@link LogType}; supports legacy `source` field (renamed to `space`). */
+function mapLogTypeFromHit(hit: {
+  _id: string;
+  _source: LogTypeBase & { source?: string };
+}): LogType {
+  const src = hit._source;
+  const { source: legacySource, ...rest } = src;
+  const rawLifecycle = rest.space ?? legacySource ?? '';
+  const space = rawLifecycle.toLowerCase() === 'sigma' ? 'Standard' : rawLifecycle;
+  return {
+    id: hit._id,
+    ...rest,
+    space,
+  };
+}
+
 export class LogTypeStore {
   constructor(private service: LogTypeService, private notifications: NotificationsStart) {}
 
   public async getLogType(id: string): Promise<LogTypeWithRules | undefined> {
     const logTypesRes = await this.service.searchLogTypes(id);
     if (logTypesRes.ok) {
-      const logTypes: LogType[] = logTypesRes.response.hits.hits.map((hit) => {
-        return {
-          id: hit._id,
-          ...hit._source,
-        };
-      });
+      const logTypes: LogType[] = logTypesRes.response.hits.hits.map((hit) => mapLogTypeFromHit(hit));
 
       let detectionRules: RuleItemInfoBase[] = [];
 
@@ -48,24 +62,18 @@ export class LogTypeStore {
     try {
       const logTypesRes = await this.service.searchLogTypes();
       if (logTypesRes.ok) {
-        const logTypes: LogType[] = logTypesRes.response.hits.hits.map((hit) => {
-          return {
-            id: hit._id,
-            ...hit._source,
-            source: hit._source.source.toLowerCase() === 'sigma' ? 'Standard' : hit._source.source,
-          };
-        });
+        const logTypes: LogType[] = logTypesRes.response.hits.hits.map((hit) => mapLogTypeFromHit(hit));
 
         ruleTypes.splice(
           0,
           ruleTypes.length,
           ...logTypes
-            .map(({ category, id, name, source }) => ({
+            .map(({ category, id, name, space }) => ({
               label: getLogTypeLabel(name),
               value: name,
               id,
               category,
-              isStandard: source === 'Standard',
+              isStandard: space === 'Standard',
             }))
             .sort((a, b) => {
               return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
@@ -128,13 +136,13 @@ export class LogTypeStore {
     id,
     name,
     description,
-    source,
+    space,
     tags,
   }: LogType): Promise<boolean> {
     const updateRes = await this.service.updateLogType(id, {
       name,
       description,
-      source,
+      space,
       tags,
       category,
     });
