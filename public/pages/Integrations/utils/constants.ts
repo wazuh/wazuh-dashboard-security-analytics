@@ -10,7 +10,7 @@ export const OVERVIEW_TAB = {
   FILTERS: 'filters',
 } as const;
 
-export type OverviewTabId = (typeof OVERVIEW_TAB)[keyof typeof OVERVIEW_TAB];
+export type OverviewTabId = typeof OVERVIEW_TAB[keyof typeof OVERVIEW_TAB];
 
 export const integrationDetailsTabs = [
   {
@@ -70,3 +70,6 @@ export const integrationLabels: { [value: string]: string } = {
   linux: 'Linux System Logs',
   azure: 'Microsoft Azure',
 };
+
+const acronymList = ['fim', 'aws', 'dns', 'uls'];
+export const acronymPattern = new RegExp(`\\b(${acronymList.join('|')})\\b`, 'gi');
