@@ -43,7 +43,7 @@ export const LogTypeDetails: React.FC<LogTypeDetailsProps> = ({
       title="Details"
       actions={
         !isEditMode &&
-        logTypeDetails.source.toLocaleLowerCase() !== 'standard' && [
+        logTypeDetails.space.toLocaleLowerCase() !== 'standard' && [
           <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>,
         ]
       }

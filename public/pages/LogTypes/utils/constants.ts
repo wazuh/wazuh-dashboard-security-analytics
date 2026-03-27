@@ -19,7 +19,7 @@ export const logTypeDetailsTabs = [
 export const defaultLogType: LogTypeBase = {
   name: '',
   description: '',
-  source: 'Custom',
+  space: 'Custom',
   tags: null,
   category: '',
 };

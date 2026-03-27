@@ -35,9 +35,9 @@ export const getLogTypesTableColumns = (
     truncateText: false,
   },
   {
-    field: 'source',
+    field: 'space',
     name: 'Source',
-    render: (source: string) => capitalize(source),
+    render: (space: string) => capitalize(space),
   },
   {
     name: 'Actions',
@@ -80,7 +80,7 @@ export const getLogTypesTableSearchConfig = (): Search => {
       },
       {
         type: 'field_value_selection',
-        field: 'source',
+        field: 'space',
         name: 'Source',
         compressed: true,
         multiSelect: 'or',
