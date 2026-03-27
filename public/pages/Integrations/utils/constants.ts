@@ -63,7 +63,7 @@ export const integrationLabels: { [value: string]: string } = {
   okta: 'Okta',
   waf: 'WAF',
   s3: 'AWS S3',
-  github: 'Github',
+  github: 'GitHub',
   gworkspace: 'Google Workspace',
   windows: 'Microsoft Windows',
   network: 'Network',
@@ -71,5 +71,5 @@ export const integrationLabels: { [value: string]: string } = {
   azure: 'Microsoft Azure',
 };
 
-const acronymList = ['fim', 'aws', 'dns', 'uls'];
+const acronymList = ['fim', 'aws', 'dns', 'uls', 'http', 'asa', 'ftd', 'ios', 'gcp', 'scc', 'dhcp', 'iis'];
 export const acronymPattern = new RegExp(`\\b(${acronymList.join('|')})\\b`, 'gi');
