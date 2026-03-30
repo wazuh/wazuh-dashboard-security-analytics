@@ -218,6 +218,10 @@ parse_arguments() {
       TAG=true
       shift
       ;;
+    --set-as-main)
+      set_as_main="yes"
+      shift 1
+      ;;
     --help)
       usage
       exit 0
@@ -229,6 +233,12 @@ parse_arguments() {
       ;;
     esac
   done
+
+  if [[ -n "$set_as_main" ]]; then
+      skip_urls="yes"
+  else
+      skip_urls="no"
+  fi
 }
 
 # Function to validate input parameters

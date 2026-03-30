@@ -5,23 +5,28 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Target version (e.g. 4.12.0)'
-        default: ''
+        description: "Target version (e.g. 4.12.0)"
+        default: ""
         required: false
         type: string
       stage:
-        description: 'Version stage (e.g. alpha0)'
-        default: ''
+        description: "Version stage (e.g. alpha0)"
+        default: ""
         required: false
         type: string
       issue-link:
-        description: 'Issue link in format https://github.com/wazuh/<REPO>/issues/<ISSUE-NUMBER>'
+        description: "Issue link in format https://github.com/wazuh/<REPO>/issues/<ISSUE-NUMBER>"
         required: true
         type: string
       id:
-        description: 'Optional identifier for the run'
+        description: "Optional identifier for the run"
         required: false
         type: string
+      set_as_main:
+        description: "Enable main branch mode: bump version values only, keep branch references pointing to main"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   bump:
@@ -86,6 +91,10 @@ jobs:
             script_params="--version ${version} --stage ${stage}"
           elif [[ -z "$version" && -n "$stage" ]]; then
             script_params="--stage ${stage}"
+          fi
+
+          if [[ "$set_as_main" == "true" ]]; then
+            script_params="${script_params} --set-as-main"
           fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
