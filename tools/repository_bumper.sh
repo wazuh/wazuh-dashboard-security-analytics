@@ -17,6 +17,8 @@ VERSION=""
 REVISION="00"
 TAG=false
 CURRENT_VERSION=""
+# When --set-as-main: skip replacing branch refs (e.g. main) in workflows; set in parse_arguments()
+skip_urls="no"
 
 # --- Helper Functions ---
 
@@ -37,6 +39,7 @@ usage() {
   echo "  --stage STAGE       Specify the stage (e.g., alpha0, beta1, rc2, etc.)"
   echo "                      Required if --tag is not used"
   echo "  --tag               Generate a tag"
+  echo "  --set-as-main       Bump version values only; keep branch defaults (e.g. main) unchanged"
   echo "  --help              Display this help message"
   echo ""
   echo "Example:"
@@ -489,6 +492,29 @@ update_manual_build_workflow() {
   log "Updating $WAZUH_DASHBOARD_SECURITY_ANALYTICS_WORKFLOW_FILE workflow..."
 }
 
+# Replace "main" in default: reference inputs (5_* workflows only) when not in --set-as-main mode.
+update_branch_reference_defaults() {
+  if [[ "$skip_urls" == "yes" ]]; then
+    log "skip_urls is yes (--set-as-main): leaving workflow branch defaults unchanged"
+    return 0
+  fi
+
+  local bump_string="$VERSION"
+  local files=(
+    "${REPO_PATH}/.github/workflows/5_builderpackage_security_analytics_plugin.yml"
+    "${REPO_PATH}/.github/workflows/5_builderprecompiled_base-dev-environment.yml"
+  )
+  local f
+  for f in "${files[@]}"; do
+    if [ ! -f "$f" ]; then
+      log "WARNING: $f not found. Skipping main→${bump_string} default update."
+      continue
+    fi
+    log "Replacing default: main with default: ${bump_string} in $f (where applicable)"
+    sed_inplace "s/^\\([[:space:]]*default:[[:space:]]*\\)main\\([[:space:]]*\\)$/\\1${bump_string}\\2/" "$f"
+  done
+}
+
 # Function to update specFile URL in docker/imposter/wazuh-config.yml
 update_imposter_config() {
   local new_version="$1"
@@ -576,6 +602,7 @@ main() {
   update_root_version_json
   update_package_json
   update_changelog
+  update_branch_reference_defaults
   update_manual_build_workflow
 
   # Update docker/imposter/wazuh-config.yml
