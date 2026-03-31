@@ -501,7 +501,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
         <EuiSpacer size="m" />
 
-        <ConfigureFieldMapping
+        {/* <ConfigureFieldMapping
           {...props}
           isEdit={true}
           detector={detector}
@@ -512,7 +512,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
           replaceFieldMappings={replaceFieldMappings}
         />
 
-        <EuiSpacer size="l" />
+        <EuiSpacer size="l" /> */}
 
         <ThreatIntelligence
           isEdit={true}
