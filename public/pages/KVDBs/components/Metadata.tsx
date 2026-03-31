@@ -78,7 +78,7 @@ const mapFieldRenderers: {
 export const Metadata: React.FC<{
   type?: MetadataFieldType;
   value: string | number;
-  label?: string;
+  label?: React.ReactNode;
 }> = ({ value, label, type = "text" }) => {
   return (
     <div>

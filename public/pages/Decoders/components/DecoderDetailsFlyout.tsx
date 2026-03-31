@@ -106,15 +106,16 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
     value: any;
     type?: 'text' | 'date' | 'url';
   }> = [
-    { label: 'ID', value: decoder?.document?.id },
+    { label: 'Space', value: decoder?.space },
     { label: 'Integration', value: decoder?.integrations },
     { label: 'Title', value: decoder?.document?.metadata?.title },
+    { label: 'ID', value: decoder?.document?.id },
     { label: 'Author', value: decoder?.document?.metadata?.author },
     { label: 'Description', value: decoder?.document?.metadata?.description },
     { label: 'Date', value: decoder?.document?.metadata?.date, type: 'date' },
     { label: 'Modified', value: decoder?.document?.metadata?.modified, type: 'date' },
-    { label: 'References', value: decoder?.document?.metadata?.references, type: 'url' },
     { label: 'Documentation', value: decoder?.document?.metadata?.documentation, type: 'url' },
+    { label: 'References', value: decoder?.document?.metadata?.references, type: 'url' },
     { label: 'Supports', value: decoder?.document?.metadata?.supports },
   ];
 
