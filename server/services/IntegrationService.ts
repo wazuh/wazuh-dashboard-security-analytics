@@ -206,7 +206,10 @@ export class IntegrationService extends MDSEnabledClientService {
       });
 
       return Object.fromEntries(
-        searchResponse.hits.hits.map(({ _source }) => [get(_source, idProp), get(_source, nameProp)])
+        searchResponse.hits.hits.map(({ _source }) => [
+          get(_source, idProp),
+          get(_source, nameProp),
+        ])
       );
     };
 
