@@ -460,6 +460,10 @@ update_package_json() {
 }
 
 update_manual_build_workflow() {
+  if [[ "$skip_urls" == "yes" ]]; then
+    log "skip_urls is yes (--set-as-main): skipping manual workflow default updates"
+    return 0
+  fi
   local WORKFLOW_FILE="$WAZUH_DASHBOARD_SECURITY_ANALYTICS_WORKFLOW_FILE"
   if [ -f "$WORKFLOW_FILE" ]; then
     log "Processing $WORKFLOW_FILE"
