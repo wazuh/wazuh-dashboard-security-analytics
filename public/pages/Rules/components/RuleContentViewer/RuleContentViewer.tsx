@@ -37,6 +37,10 @@ const editorTypes = [
     id: 'yaml',
     label: 'YAML',
   },
+  {
+    id: 'json',
+    label: 'JSON',
+  },
 ];
 
 export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
@@ -227,6 +231,11 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
         <EuiCompressedFormRow label="Rule" fullWidth>
           <RuleContentYamlViewer rule={ruleData} />
         </EuiCompressedFormRow>
+      )}
+      {selectedEditorType === 'json' && (
+        <EuiCodeBlock language="json" isCopyable>
+          {JSON.stringify(ruleData, null, 2)}
+        </EuiCodeBlock>
       )}
     </EuiModalBody>
   );
