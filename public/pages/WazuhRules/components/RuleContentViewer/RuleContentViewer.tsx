@@ -58,9 +58,7 @@ const BadgeGroup: React.FC<BadgeGroupProps> = ({ label, values }) => {
   );
 };
 
-export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
-  rule,
-}) => {
+export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({ rule }) => {
   const { prePackaged, _source: ruleData, _id: ruleId } = rule;
   if (!ruleData.id) {
     ruleData.id = ruleId;
