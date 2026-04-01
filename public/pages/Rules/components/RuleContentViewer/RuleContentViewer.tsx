@@ -22,6 +22,7 @@ import React, { useState } from 'react';
 import { RuleContentYamlViewer } from './RuleContentYamlViewer';
 import { RuleItemInfoBase } from '../../../../../types';
 import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
+import { getSeverityBadge } from '../../../../utils/helpers';
 
 export interface RuleContentViewerProps {
   rule: RuleItemInfoBase;
@@ -124,7 +125,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem data-test-subj={'rule_flyout_rule_severity'}>
               <EuiFormLabel>Rule level</EuiFormLabel>
-              <EuiText size="s">{ruleData.level}</EuiText>
+              <div>{getSeverityBadge(ruleData.level)}</div>
             </EuiFlexItem>
           </EuiFlexGroup>
 
