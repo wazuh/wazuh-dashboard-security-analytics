@@ -22,6 +22,7 @@ import { ServerResponse } from '../models/types';
 import { load } from 'js-yaml';
 import { Rule } from '../../types';
 
+const INTEGRATIONS_INDEX = '.cti-integrations';
 const RULES_INDEX = '.cti-rules';
 const STANDARD_SPACE_TERM = { term: { 'space.name': 'standard' } };
 const CUSTOM_SPACE_TERM = { term: { 'space.name': 'custom' } };
@@ -96,6 +97,39 @@ export default class WazuhRulesService {
     return resource;
   }
 
+  private async fetchIntegrationMap(client: any, ruleIds: string[]) {
+    const integrationMap = new Map();
+    if (!ruleIds.length) return integrationMap;
+    
+    try {
+      const integrationResponse = await client('search', {
+        index: INTEGRATIONS_INDEX,
+        body: {
+          size: 10000,
+          query: {
+            terms: {
+              'document.rules': ruleIds,
+            },
+          },
+          _source: true,
+        },
+      });
+      const hits = integrationResponse?.hits?.hits || [];
+      hits.forEach((hit: any) => {
+        const rules = hit?._source?.document?.rules || [];
+        rules.forEach((ruleId: string) => {
+          if (!integrationMap.has(ruleId)) {
+            integrationMap.set(ruleId, hit._source);
+          }
+        });
+      });
+    } catch (error: any) {
+      console.warn('Security Analytics - WazuhRulesService - fetchIntegrationMap:', error?.message);
+    }
+    
+    return integrationMap;
+  }
+
   getRules = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<{}, GetRulesParams>,
@@ -121,19 +155,31 @@ export default class WazuhRulesService {
         body: searchBody,
       });
 
+      const ruleHits = searchResponse?.hits?.hits || [];
+      const ruleIds = ruleHits.map((hit: any) => hit._id);
+      const integrationMap = await this.fetchIntegrationMap(client, ruleIds);
+      const enrichedHits = ruleHits.map((hit: any) => ({
+        ...hit,
+        integration: integrationMap.get(hit._id) || null,
+      }));
+
+      const enrichedResponse = {
+        ...searchResponse,
+        hits: {
+          ...searchResponse.hits,
+          hits: enrichedHits,
+        },
+      };
+
       return response.custom({
         statusCode: 200,
         body: {
           ok: true,
-          response: searchResponse,
+          response: enrichedResponse,
         },
       });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - getRules:', error);
-      return response.custom({
-        statusCode: 200,
-        body: { ok: false, error: error.message },
-      });
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: error.message },

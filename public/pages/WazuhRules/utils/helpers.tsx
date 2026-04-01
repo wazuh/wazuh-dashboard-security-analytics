@@ -26,6 +26,7 @@ export interface RuleTableItem {
   description: string;
   ruleInfo: RuleItemInfoBase;
   ruleId: string;
+  integration?: any;
 }
 
 export function validateRule(

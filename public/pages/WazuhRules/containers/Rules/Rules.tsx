@@ -62,6 +62,7 @@ const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
   description: rule._source.description,
   ruleInfo: rule,
   ruleId: rule._id,
+  integration: rule.integration,
 });
 
 export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
@@ -184,6 +185,9 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         field: 'category',
         name: 'Integration',
         sortable: true,
+        render: (_: any, row: RuleTableItem) => {
+          return row.integration?.document?.metadata?.title || row.category || '-';
+        },
       },
       {
         field: 'description',
