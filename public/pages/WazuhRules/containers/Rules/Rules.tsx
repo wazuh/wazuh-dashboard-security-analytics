@@ -184,7 +184,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       {
         field: 'category',
         name: 'Integration',
-        sortable: true,
+        sortable: false,
         render: (_: any, row: RuleTableItem) => {
           return row.integration?.document?.metadata?.title || row.category || '-';
         },
