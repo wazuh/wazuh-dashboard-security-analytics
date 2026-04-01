@@ -88,7 +88,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
 
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem>
-              <EuiFormLabel>Last Updated</EuiFormLabel>
+              <EuiFormLabel>Modified</EuiFormLabel>
               <EuiText size="s">{ruleData.last_update_time}</EuiText>
             </EuiFlexItem>
             <EuiFlexItem data-test-subj={'rule_flyout_rule_author'}>
@@ -101,7 +101,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
 
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem data-test-subj={'rule_flyout_rule_source'}>
-              <EuiFormLabel>Source</EuiFormLabel>
+              <EuiFormLabel>Space</EuiFormLabel>
               <EuiText size="s">{prePackaged ? 'Standard' : 'Custom'}</EuiText>
             </EuiFlexItem>
             {prePackaged ? (
