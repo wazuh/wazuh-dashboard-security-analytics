@@ -39,8 +39,8 @@ export default class WazuhRulesService {
     const bool: any = space
       ? { filter: [{ term: { 'space.name': space } }] }
       : prePackaged === false
-        ? { filter: [CUSTOM_SPACE_TERM] }
-        : { filter: [STANDARD_SPACE_TERM] };
+      ? { filter: [CUSTOM_SPACE_TERM] }
+      : { filter: [STANDARD_SPACE_TERM] };
 
     if (incomingQuery && !incomingQuery.match_all) {
       bool.must = [incomingQuery];
@@ -97,18 +97,29 @@ export default class WazuhRulesService {
     return resource;
   }
 
-  private async fetchIntegrationMap(client: any, ruleIds: string[]) {
+  private async fetchIntegrationMap(client: any, ruleIds: string[], space: string) {
     const integrationMap = new Map();
     if (!ruleIds.length) return integrationMap;
-    
+
     try {
       const integrationResponse = await client('search', {
         index: INTEGRATIONS_INDEX,
         body: {
           size: 10000,
           query: {
-            terms: {
-              'document.rules': ruleIds,
+            bool: {
+              must: [
+                {
+                  terms: {
+                    'document.rules': ruleIds,
+                  },
+                },
+                {
+                  term: {
+                    'space.name': space,
+                  },
+                },
+              ],
             },
           },
           _source: true,
@@ -126,7 +137,7 @@ export default class WazuhRulesService {
     } catch (error: any) {
       console.warn('Security Analytics - WazuhRulesService - fetchIntegrationMap:', error?.message);
     }
-    
+
     return integrationMap;
   }
 
@@ -156,11 +167,11 @@ export default class WazuhRulesService {
       });
 
       const ruleHits = searchResponse?.hits?.hits || [];
-      const ruleIds = ruleHits.map((hit: any) => hit._id);
-      const integrationMap = await this.fetchIntegrationMap(client, ruleIds);
+      const ruleIds = ruleHits.map((hit: any) => hit._source?.document?.id || hit.document?.id);
+      const integrationMap = await this.fetchIntegrationMap(client, ruleIds, space);
       const enrichedHits = ruleHits.map((hit: any) => ({
         ...hit,
-        integration: integrationMap.get(hit._id) || null,
+        integration: integrationMap.get(hit._source?.document?.id || hit.document?.id) || null,
       }));
 
       const enrichedResponse = {
