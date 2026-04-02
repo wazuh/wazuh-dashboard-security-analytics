@@ -104,7 +104,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({ rule }) =>
               <EuiText data-test-subj={'rule_flyout_rule_log_type'} size="s">
                 {rule.integration && typeof rule.integration.document?.metadata?.title === 'string'
                   ? rule.integration.document?.metadata?.title
-                  : getLogTypeLabel(ruleData.category)}
+                  : '-' }
               </EuiText>
             </EuiFlexItem>
           </EuiFlexGroup>

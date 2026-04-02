@@ -122,15 +122,20 @@ export default class WazuhRulesService {
               ],
             },
           },
-          _source: true,
+          _source: ['document.id', 'document.metadata.title', 'document.rules'],
         },
       });
-      const hits = integrationResponse?.hits?.hits || [];
-      hits.forEach((hit: any) => {
-        const rules = hit?._source?.document?.rules || [];
+      const integrationHits = integrationResponse?.hits?.hits || [];
+      integrationHits.forEach((integrationHit: any) => {
+        const rules = integrationHit?._source?.document?.rules || [];
         rules.forEach((ruleId: string) => {
           if (!integrationMap.has(ruleId)) {
-            integrationMap.set(ruleId, hit._source);
+            integrationMap.set(ruleId, {
+              document: {
+                metadata: integrationHit._source.document.metadata,
+                id: integrationHit._source.document.id,
+              }
+            });
           }
         });
       });

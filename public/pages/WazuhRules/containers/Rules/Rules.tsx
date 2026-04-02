@@ -186,7 +186,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         name: 'Integration',
         sortable: false,
         render: (_: any, row: RuleTableItem) => {
-          return row.integration?.document?.metadata?.title || row.category || '-';
+          return row.integration?.document?.metadata?.title || '-';
         },
       },
       {
