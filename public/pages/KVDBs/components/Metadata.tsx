@@ -27,9 +27,10 @@ export const MetadataFieldURL: React.FC<{ value: string | number }> = ({
 }) => {
   const url = String(value);
   return (
-    <EuiLink target="_blank" rel="noopener noreferrer" href={url}>
-      {url}
-    </EuiLink>
+    value ?
+      <EuiLink target="_blank" rel="noopener noreferrer" href={url}>
+        {url}
+      </EuiLink> : DEFAULT_EMPTY_DATA
   );
 };
 

@@ -23,6 +23,7 @@ import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import { RuleItemInfoBase } from '../../../../../types';
 import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
 import { Metadata } from '../../../KVDBs/components/Metadata';
+import { getSeverityBadge } from '../../../../utils/helpers';
 import { RuleContentYamlViewer } from './RuleContentYamlViewer';
 import { MITRE_SECTIONS, parseMitreYml } from '../../utils/mitre';
 import { COMPLIANCE_FRAMEWORKS, COMPLIANCE_KEYS, parseComplianceYml } from '../../utils/compliance';
@@ -34,34 +35,41 @@ export interface RuleContentViewerProps {
 const editorTypes = [
   { id: 'visual', label: 'Visual' },
   { id: 'yaml', label: 'YAML' },
+  { id: 'json', label: 'JSON' },
 ];
 
 interface BadgeGroupProps {
-  label: string;
-  values: string[];
+  label?: string;
+  values: string[] | React.ReactNode;
+  emptyValue?: React.ReactNode;
 }
 
-const BadgeGroup: React.FC<BadgeGroupProps> = ({ label, values }) => {
-  if (!values.length) return null;
+const BadgeGroup: React.FC<BadgeGroupProps> = ({ label, values, emptyValue = null }) => {
+  if (!values?.length) return emptyValue;
   return (
     <div>
-      <EuiText size="xs" color="subdued">
-        <strong>{label}</strong>
-      </EuiText>
+      {label ?
+        <EuiText size="xs" color="subdued">
+          <strong>{label}</strong>
+        </EuiText> : null
+      }
       <EuiSpacer size="xs" />
       <EuiFlexGroup gutterSize="xs" wrap responsive={false}>
-        {values.map((v, i) => (
-          <EuiFlexItem grow={false} key={i}>
-            <EuiBadge>{v}</EuiBadge>
-          </EuiFlexItem>
-        ))}
+        {values?.length ?
+          values.map((v, i) => (
+            <EuiFlexItem grow={false} key={i}>
+              <EuiBadge>{v}</EuiBadge>
+            </EuiFlexItem>
+          )) : <EuiFlexItem grow={false}>
+            {DEFAULT_EMPTY_DATA}
+          </EuiFlexItem>}
       </EuiFlexGroup>
     </div>
   );
 };
 
 export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
-  rule: { prePackaged, _source: ruleData, _id: ruleId, space },
+  rule: { prePackaged, _source: ruleData, _id: ruleId, integration, space },
 }) => {
   if (!ruleData.id) {
     ruleData.id = ruleId;
@@ -80,16 +88,18 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
     type?: 'text' | 'date' | 'url';
   }> = [
     { label: 'Space', value: space },
-    { label: 'Integration', value: getLogTypeLabel(ruleData.category) },
+    { label: 'Integration', value: integration?.document?.metadata?.title },
     { label: 'Title', value: ruleData.title },
     { label: 'ID', value: ruleData.id },
     { label: 'Author', value: ruleData.author },
     { label: 'Description', value: ruleData.description },
     { label: 'Date', value: ruleData.metadata?.date, type: 'date' },
     { label: 'Modified', value: ruleData.last_update_time, type: 'date' },
+    { label: 'Rule level', value: getSeverityBadge(ruleData.level) },
+    { label: 'Rule status', value: ruleData.status },
     { label: 'Documentation', value: ruleData.metadata?.documentation, type: 'url' },
+    { label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={ruleData.metadata?.supports} /> },
     { label: 'References', value: ruleData.references?.map((r: any) => r.value), type: 'url' },
-    { label: 'Supports', value: ruleData.metadata?.supports },
   ];
 
   return (
@@ -122,71 +132,6 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
               </EuiFlexItem>
             ))}
           </EuiFlexGrid>
-
-          <EuiSpacer />
-
-          <EuiFlexGroup>
-            <EuiFlexItem data-test-subj={'rule_flyout_rule_source'}>
-              <EuiFormLabel>Source</EuiFormLabel>
-              <EuiText size="s">{prePackaged ? 'Standard' : 'Custom'}</EuiText>
-            </EuiFlexItem>
-            <EuiFlexItem data-test-subj={'rule_flyout_rule_severity'}>
-              <EuiFormLabel>Rule level</EuiFormLabel>
-              <EuiText size="s">{ruleData.level}</EuiText>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-
-          <EuiSpacer />
-
-          <EuiFlexGroup>
-            <EuiFlexItem>
-              <EuiFormLabel>Rule Status</EuiFormLabel>
-              <div data-test-subj={'rule_flyout_rule_status'}>
-                <EuiText size="s">{ruleData.status}</EuiText>
-              </div>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-
-          <EuiSpacer />
-
-          <EuiFormLabel>Tags</EuiFormLabel>
-          {ruleData.tags.length > 0 ? (
-            <EuiFlexGroup
-              direction="row"
-              wrap
-              gutterSize="s"
-              data-test-subj={'rule_flyout_rule_tags'}
-            >
-              {ruleData.tags.map((tag: { value: string }, i: number) => {
-                const isLinkable = !!tag.value.match(/attack\.t[0-9]+/);
-                let tagComponent: React.ReactNode = tag.value;
-
-                if (isLinkable) {
-                  const link = `https://attack.mitre.org/techniques/${tag.value
-                    .split('.')
-                    .slice(1)
-                    .join('/')
-                    .toUpperCase()}`;
-                  tagComponent = (
-                    <EuiLink href={link} target="_blank">
-                      {tag.value}
-                    </EuiLink>
-                  );
-                }
-
-                return (
-                  <EuiFlexItem grow={false} key={i}>
-                    <EuiBadge>{tagComponent}</EuiBadge>
-                  </EuiFlexItem>
-                );
-              })}
-            </EuiFlexGroup>
-          ) : (
-            <div>{DEFAULT_EMPTY_DATA}</div>
-          )}
-
-          <EuiSpacer />
-
           {hasMitre && (
             <>
               <EuiSpacer />
@@ -205,7 +150,6 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
               </EuiFlexGroup>
             </>
           )}
-
           {hasCompliance && (
             <>
               <EuiSpacer />
@@ -226,9 +170,41 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
               </EuiFlexGroup>
             </>
           )}
-
           <EuiSpacer />
-
+          <EuiFormLabel>Tags</EuiFormLabel>
+          <EuiSpacer size="s" />
+          {ruleData.tags.length > 0 ? (
+            <EuiFlexGroup
+            direction="row"
+            wrap
+            gutterSize="s"
+            data-test-subj={'rule_flyout_rule_tags'}
+            >
+              {ruleData.tags.map((tag: { value: string }, i: number) => (
+                <EuiFlexItem grow={false} key={i}>
+                  <EuiBadge>
+                    {tag.value.match(/attack\.t[0-9]+/) ? (
+                      <EuiLink
+                      href={`https://attack.mitre.org/techniques/${tag.value
+                        .split('.')
+                        .slice(1)
+                        .join('/')
+                        .toUpperCase()}`}
+                        target="_blank"
+                        >
+                        {tag.value}
+                      </EuiLink>
+                    ) : (
+                      tag.value
+                    )}
+                  </EuiBadge>
+                </EuiFlexItem>
+              ))}
+            </EuiFlexGroup>
+          ) : (
+            <div>{DEFAULT_EMPTY_DATA}</div>
+          )}
+          <EuiSpacer />
           <EuiFormLabel>False positive cases</EuiFormLabel>
           <div data-test-subj={'rule_flyout_rule_false_positives'}>
             {ruleData.false_positives.length > 0 ? (
@@ -241,9 +217,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
               <div>{DEFAULT_EMPTY_DATA}</div>
             )}
           </div>
-
           <EuiSpacer />
-
           <EuiCompressedFormRow label="Detection" fullWidth>
             <EuiCodeBlock language="yaml" data-test-subj={'rule_flyout_rule_detection'}>
               {ruleData.detection}
@@ -255,6 +229,11 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
         <EuiCompressedFormRow label="Rule" fullWidth>
           <RuleContentYamlViewer rule={ruleData} />
         </EuiCompressedFormRow>
+      )}
+      {selectedEditorType === 'json' && (
+        <EuiCodeBlock language="json" isCopyable>
+          {JSON.stringify(ruleData, null, 2)}
+        </EuiCodeBlock>
       )}
     </EuiModalBody>
   );
