@@ -237,23 +237,23 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
           <EuiSpacer size="s" />
           {ruleData.tags.length > 0 ? (
             <EuiFlexGroup
-              direction="row"
-              wrap
-              gutterSize="s"
-              data-test-subj={'rule_flyout_rule_tags'}
+            direction="row"
+            wrap
+            gutterSize="s"
+            data-test-subj={'rule_flyout_rule_tags'}
             >
               {ruleData.tags.map((tag: { value: string }, i: number) => (
                 <EuiFlexItem grow={false} key={i}>
                   <EuiBadge>
                     {tag.value.match(/attack\.t[0-9]+/) ? (
                       <EuiLink
-                        href={`https://attack.mitre.org/techniques/${tag.value
-                          .split('.')
-                          .slice(1)
-                          .join('/')
-                          .toUpperCase()}`}
+                      href={`https://attack.mitre.org/techniques/${tag.value
+                        .split('.')
+                        .slice(1)
+                        .join('/')
+                        .toUpperCase()}`}
                         target="_blank"
-                      >
+                        >
                         {tag.value}
                       </EuiLink>
                     ) : (
@@ -267,6 +267,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
             <div>{DEFAULT_EMPTY_DATA}</div>
           )}
 
+          <EuiSpacer />
           <EuiFlexGroup direction="column">
             <EuiFlexItem>
               <EuiFormLabel>References</EuiFormLabel>
