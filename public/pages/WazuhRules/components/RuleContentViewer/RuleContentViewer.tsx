@@ -21,8 +21,8 @@ import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
 import React, { useState } from 'react';
 import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import { RuleItemInfoBase } from '../../../../../types';
-import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
-import { Metadata } from '../../../KVDBs/components/Metadata';
+import { Metadata } from '../../../../components/Utility/Metadata';
+import { BadgeGroup } from '../../../../components/Utility/BadgeGroup';
 import { getSeverityBadge } from '../../../../utils/helpers';
 import { RuleContentYamlViewer } from './RuleContentYamlViewer';
 import { MITRE_SECTIONS, parseMitreYml } from '../../utils/mitre';
@@ -37,36 +37,6 @@ const editorTypes = [
   { id: 'yaml', label: 'YAML' },
   { id: 'json', label: 'JSON' },
 ];
-
-interface BadgeGroupProps {
-  label?: string;
-  values: string[] | React.ReactNode;
-  emptyValue?: React.ReactNode;
-}
-
-const BadgeGroup: React.FC<BadgeGroupProps> = ({ label, values, emptyValue = null }) => {
-  if (!values?.length) return emptyValue;
-  return (
-    <div>
-      {label ?
-        <EuiText size="xs" color="subdued">
-          <strong>{label}</strong>
-        </EuiText> : null
-      }
-      <EuiSpacer size="xs" />
-      <EuiFlexGroup gutterSize="xs" wrap responsive={false}>
-        {values?.length ?
-          values.map((v, i) => (
-            <EuiFlexItem grow={false} key={i}>
-              <EuiBadge>{v}</EuiBadge>
-            </EuiFlexItem>
-          )) : <EuiFlexItem grow={false}>
-            {DEFAULT_EMPTY_DATA}
-          </EuiFlexItem>}
-      </EuiFlexGroup>
-    </div>
-  );
-};
 
 export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
   rule: { prePackaged, _source: ruleData, _id: ruleId, integration, space },

@@ -6,7 +6,7 @@
 import React from "react";
 import { EuiLink } from "@elastic/eui";
 import moment from "moment";
-import { DEFAULT_EMPTY_DATA } from "../../../utils/constants";
+import { DEFAULT_EMPTY_DATA } from "../../utils/constants";
 
 type MetadataFieldType =
   | "text"

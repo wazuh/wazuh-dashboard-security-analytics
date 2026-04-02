@@ -24,7 +24,10 @@ import {
 import { DecoderItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
-import { Metadata } from '../../KVDBs/components/Metadata';
+import { Metadata } from '../../../components/Utility/Metadata';
+import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
+
 
 interface DecoderDetailsFlyoutProps {
   decoderId: string;
@@ -116,7 +119,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
     { label: 'Modified', value: decoder?.document?.metadata?.modified, type: 'date' },
     { label: 'Documentation', value: decoder?.document?.metadata?.documentation, type: 'url' },
     { label: 'References', value: decoder?.document?.metadata?.references, type: 'url' },
-    { label: 'Supports', value: decoder?.document?.metadata?.supports },
+    { label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={decoder?.document?.metadata?.supports} /> },
   ];
 
   const detailsContent = (
