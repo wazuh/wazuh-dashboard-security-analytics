@@ -211,10 +211,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             type: 'icon',
             icon: 'pencil',
             onClick: (item: RuleTableItem) =>
-              history.push({
-                pathname: ROUTES.RULES_EDIT,
-                state: { ruleItem: item.ruleInfo },
-              }),
+              history.push(`${ROUTES.RULES_EDIT}/${item.ruleId}`),
             available: () => spaceFilter === SpaceTypes.DRAFT.value,
           },
           {
