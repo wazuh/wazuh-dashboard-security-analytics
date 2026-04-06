@@ -62,6 +62,7 @@ const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
   description: rule._source.description,
   ruleInfo: rule,
   ruleId: rule._id,
+  integration: rule.integration,
 });
 
 export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
@@ -183,7 +184,10 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       {
         field: 'category',
         name: 'Integration',
-        sortable: true,
+        sortable: false,
+        render: (_: any, row: RuleTableItem) => {
+          return row.integration?.document?.metadata?.title || '-';
+        },
       },
       {
         field: 'description',
@@ -206,11 +210,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             description: 'Edit rule',
             type: 'icon',
             icon: 'pencil',
-            onClick: (item: RuleTableItem) =>
-              history.push({
-                pathname: ROUTES.RULES_EDIT,
-                state: { ruleItem: item.ruleInfo },
-              }),
+            onClick: (item: RuleTableItem) => history.push(`${ROUTES.RULES_EDIT}/${item.ruleId}`),
             available: () => spaceFilter === SpaceTypes.DRAFT.value,
           },
           {
@@ -254,8 +254,8 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         !isDraftSpace
           ? `Cannot delete rules in the ${spaceFilter} space.`
           : selectedItems.length === 0
-            ? 'Select rules to delete'
-            : undefined
+          ? 'Select rules to delete'
+          : undefined
       }
     >
       Delete selected ({selectedItems.length})
