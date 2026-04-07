@@ -42,6 +42,8 @@ export const LogTypeDetails: React.FC<LogTypeDetailsProps> = ({
     <ContentPanel
       title="Details"
       actions={
+        // Wazuh: upstream used `source` for lifecycle; we use `space` (aligned with indexer rename
+        // wazuh-indexer-security-analytics / issue #142) — same "Standard" vs custom semantics.
         !isEditMode &&
         logTypeDetails.space.toLocaleLowerCase() !== 'standard' && [
           <EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>,
