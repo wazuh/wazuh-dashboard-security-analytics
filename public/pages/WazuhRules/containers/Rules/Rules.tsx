@@ -62,6 +62,7 @@ const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
   description: rule._source.description,
   ruleInfo: rule,
   ruleId: rule._id,
+  integration: rule.integration,
 });
 
 export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
@@ -183,7 +184,10 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       {
         field: 'category',
         name: 'Integration',
-        sortable: true,
+        sortable: false,
+        render: (_: any, row: RuleTableItem) => {
+          return row.integration?.document?.metadata?.title || '-';
+        },
       },
       {
         field: 'description',
@@ -207,10 +211,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             type: 'icon',
             icon: 'pencil',
             onClick: (item: RuleTableItem) =>
-              history.push({
-                pathname: ROUTES.RULES_EDIT,
-                state: { ruleItem: item.ruleInfo },
-              }),
+              history.push(`${ROUTES.RULES_EDIT}/${item.ruleId}`),
             available: () => spaceFilter === SpaceTypes.DRAFT.value,
           },
           {
