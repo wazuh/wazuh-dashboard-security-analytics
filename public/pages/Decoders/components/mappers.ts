@@ -17,6 +17,7 @@ export interface DecoderFormModel {
   prematch?: string;
   decoder?: any;
   check?: any;
+  parents?: string[];
 }
 
 export const decoderFormDefaultValue: DecoderFormModel = {
