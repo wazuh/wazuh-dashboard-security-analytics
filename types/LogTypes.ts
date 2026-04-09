@@ -20,7 +20,9 @@ export interface LogType extends LogTypeBase {
 export interface LogTypeBase {
   name: string;
   description: string;
-  source: string;
+  /** Lifecycle space: "Sigma" (built-in) or "Custom" (user-created) in the indexer.
+   *  The UI normalises "Sigma" → "Standard" for display. */
+  space: string;
   category: string;
   tags: {
     correlation_id: number;

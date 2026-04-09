@@ -16,19 +16,15 @@ import {
 } from '../utils/constants';
 import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
 
-/** Indexer stores lifecycle as `space`; UI model keeps `source` (Sigma → Standard). */
-function mapLogTypeFromHit(hit: {
-  _id: string;
-  _source: LogTypeBase & { space?: string };
-}): LogType {
-  const src = hit._source;
-  const { space, source: _, ...rest } = src;
-  const raw = typeof space === 'string' ? space : '';
-  const source = raw.toLowerCase() === 'sigma' ? 'Standard' : raw;
+/** Normalise the indexer `space` value to a UI-friendly label.
+ *  The indexer stores built-in log types with `space: "Sigma"`;
+ *  the UI exposes that as "Standard" to avoid confusion with Sigma-rule semantics. */
+function mapLogTypeFromHit(hit: { _id: string; _source: LogTypeBase }): LogType {
+  const { space, ...rest } = hit._source;
   return {
     id: hit._id,
     ...rest,
-    source,
+    space: space?.toLowerCase() === 'sigma' ? 'Standard' : space ?? '',
   };
 }
 
@@ -65,12 +61,12 @@ export class LogTypeStore {
           0,
           ruleTypes.length,
           ...logTypes
-            .map(({ category, id, name, source }) => ({
+            .map(({ category, id, name, space }) => ({
               label: getLogTypeLabel(name),
               value: name,
               id,
               category,
-              isStandard: source === 'Standard',
+              isStandard: space === 'Standard',
             }))
             .sort((a, b) => {
               return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
@@ -133,13 +129,13 @@ export class LogTypeStore {
     id,
     name,
     description,
-    source,
+    space,
     tags,
   }: LogType): Promise<boolean> {
     const updateRes = await this.service.updateLogType(id, {
       name,
       description,
-      source,
+      space,
       tags,
       category,
     });
