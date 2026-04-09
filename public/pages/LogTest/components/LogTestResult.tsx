@@ -111,16 +111,9 @@ const ValidationErrorItem: React.FC<{ error: LogTestValidationError; index: numb
       id={`validation-error-${index}`}
       initialIsOpen={false}
       buttonContent={
-        <EuiFlexGroup alignItems="center" gutterSize="s">
-          <EuiFlexItem grow={false}>
-            <EuiBadge color="danger">{error.kind}</EuiBadge>
-          </EuiFlexItem>
-          <EuiFlexItem>
-            <EuiText size="s">
-              <code>{error.path}</code>
-            </EuiText>
-          </EuiFlexItem>
-        </EuiFlexGroup>
+         <EuiText size="s">
+           <code>{error.path}</code>
+         </EuiText>
       }
       paddingSize="none"
     >
