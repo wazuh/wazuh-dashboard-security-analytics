@@ -258,11 +258,14 @@ export class DecodersService {
       const space = (request.query as { space?: string })?.space;
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
+      const baseQuery = space
+        ? { term: { 'document.id': decoderId } }
+        : { ids: { values: [decoderId] } };
       const searchResponse = await client('search', {
         index: DECODERS_INDEX,
         body: {
           size: 1,
-          query: this.applySpaceFilter({ ids: { values: [decoderId] } }, space, searchFields),
+          query: this.applySpaceFilter(baseQuery, space, searchFields),
         },
       });
 

@@ -179,7 +179,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
             description: 'View decoder details',
             type: 'icon',
             icon: 'inspect',
-            onClick: (item: DecoderItem) => setSelectedDecoder({ id: item.id, space: item.space }),
+            onClick: (item: DecoderItem) =>
+              setSelectedDecoder({ id: item.document?.id ?? item.id, space: item.space }),
           },
           {
             name: 'Edit',
