@@ -22,6 +22,7 @@ import ThreatIntelService from './ThreatIntelService';
 import DecodersService from './DecodersService';
 import KVDBsService from './KVDBsService';
 import FiltersService from './FiltersService';
+import SpaceService from './SpaceService';
 
 export {
   SaContextConsumer,
@@ -44,4 +45,5 @@ export {
   ThreatIntelService,
   KVDBsService,
   FiltersService,
+  SpaceService,
 };

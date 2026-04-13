@@ -19,6 +19,7 @@ import { KVDBsStore } from './KVDBsStore';
 import { FiltersStore } from './FiltersStore';
 import { PoliciesStore } from './PoliciesStore';
 import { LogTestStore } from './LogTestStore';
+import { SpaceStore } from './SpaceStore';
 
 export class DataStore {
   public static rules: RulesStore;
@@ -35,7 +36,7 @@ export class DataStore {
   public static alerts: AlertsStore;
   public static threatIntel: ThreatIntelStore;
   public static documents: DocumentStore;
-
+  public static spaces: SpaceStore;
   public static init = (services: BrowserServices, notifications: NotificationsStart) => {
     const rulesStore = new RulesStore(services.ruleService, notifications);
     DataStore.rules = rulesStore;
@@ -78,5 +79,6 @@ export class DataStore {
     DataStore.threatIntel = new ThreatIntelStore(services.findingsService);
 
     DataStore.documents = new DocumentStore(services.opensearchService);
+    DataStore.spaces = new SpaceStore(services.spaceService, notifications);
   };
 }
