@@ -53,7 +53,7 @@ export default class DecodersService {
 
   getDecoder = async (
     decoderId: string,
-    space?: string
+    space: string
   ): Promise<ServerResponse<GetDecoderResponse>> => {
     const url = `${this.baseUrl}/${decoderId}`;
     const normalizedSpace = this.normalizeSpace(space);

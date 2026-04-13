@@ -180,14 +180,15 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
             type: 'icon',
             icon: 'inspect',
             onClick: (item: DecoderItem) =>
-              setSelectedDecoder({ id: item.document?.id ?? item.id, space: item.space }),
+              setSelectedDecoder({ id: item.document.id, space: item.space }),
           },
           {
             name: 'Edit',
             description: 'Edit decoder',
             type: 'icon',
             icon: 'pencil',
-            onClick: (item: DecoderDocument) => history.push(`${ROUTES.DECODERS_EDIT}/${item.id}`),
+            onClick: (item: DecoderItem) =>
+              history.push(`${ROUTES.DECODERS_EDIT}/${item.document.id}?space=${item.space}`),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT),
           },
           {
