@@ -474,9 +474,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         >
           <p>
             This will reset the <strong>draft</strong> space to its initial state, removing all
-            integrations, rules, decoders, KVDBs, and filters. Detectors will not be affected.
-            This action cannot be undone.
+            integrations, rules, decoders, KVDBs, and filters.
           </p>
+          <p>Detectors will not be affected. This action cannot be undone.</p>
         </EuiConfirmModal>
       )}
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
