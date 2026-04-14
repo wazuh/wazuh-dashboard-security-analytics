@@ -20,7 +20,6 @@ import {
   DecodersService,
   KVDBsService,
   FiltersService,
-  SpaceService,
 } from '../services';
 import CorrelationService from '../services/CorrelationService';
 import LogTestService from '../services/LogTestService';
@@ -48,7 +47,6 @@ export interface BrowserServices {
   logTestService: LogTestService;
   metricsService: MetricsService;
   threatIntelService: ThreatIntelService;
-  spaceService: SpaceService;
 }
 
 export interface RuleOptions {

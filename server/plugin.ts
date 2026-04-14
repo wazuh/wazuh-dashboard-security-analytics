@@ -29,7 +29,6 @@ import {
   setupDecodersRoutes,
   setupKVDBsRoutes,
   setupFiltersRoutes,
-  setupSpaceRoutes,
 } from './routes';
 import { setupMetricsRoutes } from './routes/MetricsRoutes';
 import {
@@ -56,7 +55,6 @@ import { securityAnalyticsPlugin } from './clusters/securityAnalyticsPlugin';
 import ThreatIntelService from './services/ThreatIntelService';
 import { setupThreatIntelRoutes } from './routes/ThreatIntel';
 import { DecodersService } from './services/DecodersService';
-import { SpaceService } from './services/SpaceService';
 import { setupLogTestRoutes } from './routes/LogTestRoutes';
 import { LogTestService } from './services/LogTestService';
 
@@ -102,7 +100,6 @@ export class SecurityAnalyticsPlugin
       metricsService: new MetricsService(),
       threatIntelService: new ThreatIntelService(securityAnalyticsClient, dataSourceEnabled),
       decodersService: new DecodersService(securityAnalyticsClient),
-      spaceService: new SpaceService(securityAnalyticsClient),
     };
 
     // Create router
@@ -127,8 +124,6 @@ export class SecurityAnalyticsPlugin
     setupMetricsRoutes(services, router);
     setupThreatIntelRoutes(services, router);
     setupDecodersRoutes(services, router);
-
-    setupSpaceRoutes(services, router);
 
     // @ts-ignore
     const config$ = this.initializerContext.config.create();

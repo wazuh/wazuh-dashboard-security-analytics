@@ -53,7 +53,6 @@ import {
   PoliciesService,
   KVDBsService,
   FiltersService,
-  SpaceService,
   NotificationsService,
   OpenSearchService,
 } from '../services';
@@ -772,7 +771,6 @@ export function initializeServices(
   const decodersService = new DecodersService(http);
   const kvdbsService = new KVDBsService(http);
   const filtersService = new FiltersService(http);
-  const spaceService = new SpaceService(http);
   const logTestService = new LogTestService(http);
   const metricsService = new MetricsService(http);
   const threatIntelService = new ThreatIntelService(http, coreStart.notifications);
@@ -798,7 +796,6 @@ export function initializeServices(
     logTestService,
     metricsService,
     threatIntelService,
-    spaceService,
   };
   setBrowserServices(services);
   DataStore.init(services, coreStart.notifications);

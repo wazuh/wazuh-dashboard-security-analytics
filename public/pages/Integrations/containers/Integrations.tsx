@@ -168,9 +168,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const clearSpace = useCallback(async () => {
     setIsClearingSpace(true);
     try {
-      const ok = await DataStore.spaces.deleteSpace(spaceFilter);
+      const ok = await DataStore.policies.deleteSpace(spaceFilter);
       if (ok) {
         successNotificationToast(notifications, 'cleared', 'space');
+        setPolicyRefresh((prev) => prev + 1);
         await loadIntegrations();
       }
     } finally {
@@ -179,7 +180,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         setItemForAction(null);
       }
     }
-  }, [spaceFilter, loadIntegrations, notifications]);
+  }, [spaceFilter, loadIntegrations, notifications, setPolicyRefresh]);
 
   const onEditPolicy = () => {
     setItemForAction({ action: SPACE_ACTIONS.EDIT_POLICY });
@@ -472,9 +473,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           isLoading={isClearingSpace}
         >
           <p>
-            This will remove all entities (integrations, rules, decoders, KVDBs) from the{' '}
-            <strong>draft</strong> space and reset it to its initial state. This action cannot be
-            undone.
+            This will reset the <strong>draft</strong> space to its initial state, removing all
+            integrations, rules, decoders, KVDBs, and filters. Detectors will not be affected.
+            This action cannot be undone.
           </p>
         </EuiConfirmModal>
       )}

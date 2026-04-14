@@ -21,7 +21,6 @@ import { addKVDBsMethods } from './addKVDBsMethods';
 import { addFiltersMethods } from './addFiltersMethods';
 import { addLogTestMethods } from './addLogTestMethods';
 import { addWazuhRulesMethods } from './addWazuhRuleMethods';
-import { addSpaceMethods } from './addSpaceMethods';
 
 export function securityAnalyticsPlugin(Client: any, config: any, components: any) {
   const createAction = components.clientAction.factory;
@@ -46,5 +45,4 @@ export function securityAnalyticsPlugin(Client: any, config: any, components: an
   addFiltersMethods(securityAnalytics, createAction);
   addLogTestMethods(securityAnalytics, createAction);
   addWazuhRulesMethods(securityAnalytics, createAction);
-  addSpaceMethods(securityAnalytics, createAction);
 }

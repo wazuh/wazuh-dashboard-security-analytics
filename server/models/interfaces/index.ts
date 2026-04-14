@@ -24,7 +24,6 @@ import ThreatIntelService from '../../services/ThreatIntelService';
 import { KVDBsService } from '../../services/KVDBsService';
 import { LogTestService } from '../../services/LogTestService';
 import { FiltersService } from '../../services/FiltersService';
-import { SpaceService } from '../../services/SpaceService';
 
 export interface SecurityAnalyticsApi {
   readonly DETECTORS_BASE: string;
@@ -80,7 +79,6 @@ export interface NodeServices {
   threatIntelService: ThreatIntelService;
   decodersService: DecodersService;
   logTestService: LogTestService;
-  spaceService: SpaceService;
 }
 
 export interface GetIndicesResponse {

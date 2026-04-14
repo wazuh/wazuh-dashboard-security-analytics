@@ -18,4 +18,3 @@ export * from './RuleRoutes';
 export * from './DecodersRoutes';
 export * from './KVDBsRoutes';
 export * from './FiltersRoutes';
-export * from './SpaceRoutes';
