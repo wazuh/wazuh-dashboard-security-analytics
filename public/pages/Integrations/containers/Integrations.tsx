@@ -180,7 +180,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         setItemForAction(null);
       }
     }
-  }, [spaceFilter, loadIntegrations, notifications, setPolicyRefresh]);
+  }, [spaceFilter, loadIntegrations, notifications]);
 
   const onEditPolicy = () => {
     setItemForAction({ action: SPACE_ACTIONS.EDIT_POLICY });
