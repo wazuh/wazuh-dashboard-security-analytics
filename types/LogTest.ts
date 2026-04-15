@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export type LogTestTraceLevel = 'NONE' | 'ASSET_ONLY' | 'ALL';
+export type LogTestTraceLevel = "NONE" | "ASSET_ONLY" | "ALL";
 
 export interface LogTestRequestBody {
   queue: number;
@@ -12,6 +12,7 @@ export interface LogTestRequestBody {
   event: string;
   trace_level?: LogTestTraceLevel;
   space: string;
+  integration?: string;
 }
 
 export interface LogTestAssetTrace {
@@ -20,19 +21,9 @@ export interface LogTestAssetTrace {
   traces: string[];
 }
 
-export interface LogTestMatchedRule {
-  id?: string;
-  rule_id?: string;
-  name?: string;
-  title?: string;
-  level?: string;
-  severity?: string;
-  [key: string]: unknown;
-}
-
 export interface LogTestValidationError {
   path: string;
-  kind: 'unknown_field' | 'invalid_type' | 'temporary_field_not_allowed';
+  kind: "unknown_field" | "invalid_type" | "temporary_field_not_allowed";
   expected?: string | null;
   actual?: string | null;
   [key: string]: unknown;
@@ -43,16 +34,40 @@ export interface LogTestValidation {
   errors: LogTestValidationError[];
 }
 
-export interface LogTestResult {
+export interface LogTestNormalizationResult {
   output: object;
   asset_traces?: LogTestAssetTrace[];
-  matched_rules?: LogTestMatchedRule[];
   validation?: LogTestValidation;
+}
+
+export type LogTestDetectionStatus = "success" | "skipped" | "failure";
+
+export interface LogTestDetectionRuleMatch {
+  rule: {
+    id: string;
+    title: string;
+    level: string;
+    tags: string[];
+  };
+  matched_conditions: string[];
+}
+
+export interface LogTestDetectionResult {
+  status: LogTestDetectionStatus;
+  rules_evaluated?: number;
+  rules_matched?: number;
+  matches?: LogTestDetectionRuleMatch[];
+  reason?: string;
+}
+
+export interface LogTestResponseMessage {
+  normalization: LogTestNormalizationResult;
+  detection: LogTestDetectionResult;
 }
 
 export interface LogTestResponse {
   status: string;
-  message: LogTestResult;
+  message: LogTestResponseMessage;
 }
 
 export interface LogTestApiRequest {

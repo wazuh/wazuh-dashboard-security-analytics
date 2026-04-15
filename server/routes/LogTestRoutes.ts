@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { IRouter } from 'opensearch-dashboards/server';
-import { schema } from '@osd/config-schema';
-import { NodeServices } from '../models/interfaces';
-import { API } from '../utils/constants';
-import { createQueryValidationSchema } from '../utils/helpers';
+import { IRouter } from "opensearch-dashboards/server";
+import { schema } from "@osd/config-schema";
+import { NodeServices } from "../models/interfaces";
+import { API } from "../utils/constants";
+import { createQueryValidationSchema } from "../utils/helpers";
 
 export function setupLogTestRoutes(services: NodeServices, router: IRouter) {
   const { logTestService } = services;
@@ -20,21 +20,24 @@ export function setupLogTestRoutes(services: NodeServices, router: IRouter) {
           document: schema.object({
             queue: schema.number(),
             location: schema.string(),
-            metadata: schema.maybe(schema.recordOf(schema.string(), schema.any())),
+            metadata: schema.maybe(
+              schema.recordOf(schema.string(), schema.any()),
+            ),
             event: schema.string(),
             trace_level: schema.maybe(
               schema.oneOf([
-                schema.literal('NONE'),
-                schema.literal('ASSET_ONLY'),
-                schema.literal('ALL'),
-              ])
+                schema.literal("NONE"),
+                schema.literal("ASSET_ONLY"),
+                schema.literal("ALL"),
+              ]),
             ),
             space: schema.string(),
+            integration: schema.maybe(schema.string()),
           }),
         }),
         query: createQueryValidationSchema(),
       },
     },
-    logTestService.logTest
+    logTestService.logTest,
   );
 }
