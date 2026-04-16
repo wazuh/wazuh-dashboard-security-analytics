@@ -16,11 +16,13 @@ import {
   EuiText,
   EuiButtonGroup,
 } from '@elastic/eui';
+import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
 import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import React, { useState } from 'react';
 import { RuleContentYamlViewer } from './RuleContentYamlViewer';
 import { RuleItemInfoBase } from '../../../../../types';
 import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
+import { getSeverityBadge } from '../../../../utils/helpers';
 
 export interface RuleContentViewerProps {
   rule: RuleItemInfoBase;
@@ -34,6 +36,10 @@ const editorTypes = [
   {
     id: 'yaml',
     label: 'YAML',
+  },
+  {
+    id: 'json',
+    label: 'JSON',
   },
 ];
 
@@ -64,10 +70,13 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem>
               <EuiFormLabel>Rule Name</EuiFormLabel>
-              <EuiText data-test-subj={'rule_flyout_rule_name'} size="s">{ruleData.title}</EuiText>
+              <EuiText data-test-subj={'rule_flyout_rule_name'} size="s">
+                {ruleData.title}
+              </EuiText>
             </EuiFlexItem>
             <EuiFlexItem>
-              <EuiFormLabel>Log Type</EuiFormLabel>
+              {/* Replace Log type to Integration by Wazuh */}
+              <EuiFormLabel>Integration</EuiFormLabel>
               <EuiText data-test-subj={'rule_flyout_rule_log_type'} size="s">
                 {getLogTypeLabel(ruleData.category)}
               </EuiText>
@@ -84,7 +93,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
 
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem>
-              <EuiFormLabel>Last Updated</EuiFormLabel>
+              <EuiFormLabel>Modified</EuiFormLabel>
               <EuiText size="s">{ruleData.last_update_time}</EuiText>
             </EuiFlexItem>
             <EuiFlexItem data-test-subj={'rule_flyout_rule_author'}>
@@ -97,7 +106,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
 
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem data-test-subj={'rule_flyout_rule_source'}>
-              <EuiFormLabel>Source</EuiFormLabel>
+              <EuiFormLabel>Space</EuiFormLabel>
               <EuiText size="s">{prePackaged ? 'Standard' : 'Custom'}</EuiText>
             </EuiFlexItem>
             {prePackaged ? (
@@ -120,7 +129,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem data-test-subj={'rule_flyout_rule_severity'}>
               <EuiFormLabel>Rule level</EuiFormLabel>
-              <EuiText size="s">{ruleData.level}</EuiText>
+              <div>{getSeverityBadge(ruleData.level)}</div>
             </EuiFlexItem>
           </EuiFlexGroup>
 
@@ -193,9 +202,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
             {ruleData.false_positives.length > 0 ? (
               ruleData.false_positives.map((falsepositive: any, i: number) => (
                 <div key={i}>
-                  <EuiText size="s">
-                    {falsepositive.value}
-                  </EuiText>
+                  <EuiText size="s">{falsepositive.value}</EuiText>
                   <EuiSpacer />
                 </div>
               ))
@@ -224,6 +231,11 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
         <EuiCompressedFormRow label="Rule" fullWidth>
           <RuleContentYamlViewer rule={ruleData} />
         </EuiCompressedFormRow>
+      )}
+      {selectedEditorType === 'json' && (
+        <EuiCodeBlock language="json" isCopyable>
+          {JSON.stringify(ruleData, null, 2)}
+        </EuiCodeBlock>
       )}
     </EuiModalBody>
   );
