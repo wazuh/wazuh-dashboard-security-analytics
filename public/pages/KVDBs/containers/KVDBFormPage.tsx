@@ -4,6 +4,9 @@
  */
 
 import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSwitch,
@@ -369,24 +372,34 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   <KVDBContentEditor />
                 </EuiCompressedFormRow>
               </EuiPanel>
-              <EuiSpacer size="xl" />
-              <EuiFlexGroup justifyContent="flexEnd">
-                <EuiFlexItem grow={false}>
-                  <EuiSmallButton href={`#${ROUTES.KVDBS}`}>Cancel</EuiSmallButton>
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiToolTip content={getSubmitTooltip(formikProps.errors)} position="top">
-                    <EuiSmallButton
-                      disabled={isSubmitDisabled(formikProps.errors)}
-                      isLoading={formikProps.isSubmitting}
-                      onClick={() => formikProps.handleSubmit()}
-                      fill
-                    >
-                      {actionLabels[action]} KVDB
-                    </EuiSmallButton>
-                  </EuiToolTip>
-                </EuiFlexItem>
-              </EuiFlexGroup>
+
+              <EuiSpacer size="xxl" />
+              <EuiSpacer size="xxl" />
+
+              <EuiBottomBar>
+                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
+                  <EuiFlexItem grow={false}>
+                    <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${ROUTES.KVDBS}`}>
+                      Cancel
+                    </EuiButtonEmpty>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiToolTip content={getSubmitTooltip(formikProps.errors)} position="top">
+                      <EuiButton
+                        color="primary"
+                        fill
+                        iconType="check"
+                        size="s"
+                        disabled={isSubmitDisabled(formikProps.errors)}
+                        isLoading={formikProps.isSubmitting}
+                        onClick={() => formikProps.handleSubmit()}
+                      >
+                        {actionLabels[action]} KVDB
+                      </EuiButton>
+                    </EuiToolTip>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiBottomBar>
             </Form>
           )}
         </Formik>

@@ -7,6 +7,9 @@ import React, { useState } from 'react';
 import { Formik, Form, FormikErrors } from 'formik';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiFlexGroup,
   EuiFlexItem,
   EuiCompressedFormRow,
@@ -701,43 +704,50 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
             )}
           </EuiPanel>
 
-          <EuiSpacer />
+          <EuiSpacer size="xxl" />
 
-          <EuiFlexGroup justifyContent="flexEnd">
-            <EuiFlexItem grow={false}>
-              <EuiSmallButton onClick={cancel}>Cancel</EuiSmallButton>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EuiToolTip
-                content={
-                  <>
-                    <p>
-                      {mode === 'create' && !integrationId
-                        ? 'Select an integration to enable creating the rule'
-                        : ''}
-                    </p>
-                    <p>
-                      {Object.keys(props.errors).length > 0
-                        ? 'Please fix the errors in the form to proceed'
-                        : ''}
-                    </p>
-                  </>
-                }
-                position="top"
-              >
-                <EuiSmallButton
-                  disabled={
-                    (mode === 'create' && !integrationId) || Object.keys(props.errors).length > 0
+          <EuiBottomBar>
+            <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
+              <EuiFlexItem grow={false}>
+                <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={cancel}>
+                  Cancel
+                </EuiButtonEmpty>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiToolTip
+                  content={
+                    <>
+                      <p>
+                        {mode === 'create' && !integrationId
+                          ? 'Select an integration to enable creating the rule'
+                          : ''}
+                      </p>
+                      <p>
+                        {Object.keys(props.errors).length > 0
+                          ? 'Please fix the errors in the form to proceed'
+                          : ''}
+                      </p>
+                    </>
                   }
-                  onClick={() => props.handleSubmit()}
-                  data-test-subj={'submit_rule_form_button'}
-                  fill
+                  position="top"
                 >
-                  {mode === 'create' ? 'Create rule' : 'Save changes'}
-                </EuiSmallButton>
-              </EuiToolTip>
-            </EuiFlexItem>
-          </EuiFlexGroup>
+                  <EuiButton
+                    color="primary"
+                    fill
+                    iconType="check"
+                    size="s"
+                    disabled={
+                      (mode === 'create' && !integrationId) || Object.keys(props.errors).length > 0
+                    }
+                    onClick={() => props.handleSubmit()}
+                    data-test-subj={'submit_rule_form_button'}
+                  >
+                    {mode === 'create' ? 'Create rule' : 'Save changes'}
+                  </EuiButton>
+                </EuiToolTip>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiBottomBar>
         </Form>
       )}
     </Formik>

@@ -5,6 +5,9 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiButtonIcon,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
@@ -380,29 +383,35 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 />
               </EuiPanel>
 
-              <EuiSpacer size="xl" />
-              <EuiFlexGroup justifyContent="flexEnd">
-                <EuiFlexItem grow={false}>
-                  <EuiSmallButton href={`#${ROUTES.FILTERS}`}>Cancel</EuiSmallButton>
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiToolTip
-                    content={
-                      isSubmitDisabled(errors) ? 'Please fill in all required fields' : undefined
-                    }
-                    position="top"
-                  >
-                    <EuiSmallButton
-                      fill
-                      disabled={isSubmitDisabled(errors)}
-                      isLoading={isSubmitting}
-                      onClick={() => formikSubmit()}
+              <EuiBottomBar>
+                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
+                  <EuiFlexItem grow={false}>
+                    <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${ROUTES.FILTERS}`}>
+                      Cancel
+                    </EuiButtonEmpty>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiToolTip
+                      content={
+                        isSubmitDisabled(errors) ? 'Please fill in all required fields' : undefined
+                      }
+                      position="top"
                     >
-                      {actionLabels[action]} filter
-                    </EuiSmallButton>
-                  </EuiToolTip>
-                </EuiFlexItem>
-              </EuiFlexGroup>
+                      <EuiButton
+                        color="primary"
+                        fill
+                        iconType="check"
+                        size="s"
+                        disabled={isSubmitDisabled(errors)}
+                        isLoading={isSubmitting}
+                        onClick={() => formikSubmit()}
+                      >
+                        {actionLabels[action]} filter
+                      </EuiButton>
+                    </EuiToolTip>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiBottomBar>
             </Form>
           )}
         </Formik>

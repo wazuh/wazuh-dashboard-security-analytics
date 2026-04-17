@@ -6,8 +6,10 @@
 import React, { Component } from "react";
 import { RouteComponentProps } from "react-router-dom";
 import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiSmallButton,
-  EuiSmallButtonEmpty,
   EuiFlexGroup,
   EuiFlexItem,
   EuiSpacer,
@@ -452,12 +454,16 @@ export default class CreateDetector extends Component<
           </EuiFlexItem>
         </EuiFlexGroup>
 
-        <EuiFlexGroup alignItems={"center"} justifyContent={"flexEnd"}>
-          <EuiFlexItem grow={false}>
-            <EuiSmallButtonEmpty href={`#${ROUTES.DETECTORS}`}>
-              Cancel
-            </EuiSmallButtonEmpty>
-          </EuiFlexItem>
+        <EuiSpacer size="xxl" />
+        <EuiSpacer size="xxl" />
+
+        <EuiBottomBar>
+          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${ROUTES.DETECTORS}`}>
+                Cancel
+              </EuiButtonEmpty>
+            </EuiFlexItem>
 
           {/* Wazuh: hide Configure Alerts step in detector creation wizard. */}
           {/* {currentStep > DetectorCreationStep.DEFINE_DETECTOR && (
@@ -493,20 +499,24 @@ export default class CreateDetector extends Component<
             </EuiFlexItem>
           )} */}
 
-          <EuiFlexItem grow={false}>
-            <EuiSmallButton
-              disabled={
-                creatingDetector ||
-                !stepDataValid[DetectorCreationStep.DEFINE_DETECTOR]
-              }
-              isLoading={creatingDetector}
-              fill={true}
-              onClick={this.onCreateClick}
-            >
-              Create detector
-            </EuiSmallButton>
-          </EuiFlexItem>
-        </EuiFlexGroup>
+            <EuiFlexItem grow={false}>
+              <EuiButton
+                color="primary"
+                fill
+                iconType="check"
+                size="s"
+                disabled={
+                  creatingDetector ||
+                  !stepDataValid[DetectorCreationStep.DEFINE_DETECTOR]
+                }
+                isLoading={creatingDetector}
+                onClick={this.onCreateClick}
+              >
+                Create detector
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiBottomBar>
       </form>
     );
   }
