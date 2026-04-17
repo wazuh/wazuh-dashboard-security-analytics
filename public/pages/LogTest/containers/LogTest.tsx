@@ -14,8 +14,9 @@ import {
   EuiHorizontalRule,
 } from '@elastic/eui';
 import { RouteComponentProps } from 'react-router-dom';
+import { NotificationsStart } from 'opensearch-dashboards/public';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { setBreadcrumbs } from '../../../utils/helpers';
+import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
 import { BREADCRUMBS } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { SpaceTypes } from '../../../../common/constants';
@@ -25,6 +26,7 @@ import {
   LogTestFormData,
   LogTestFormErrors,
   LogTestSpaceOption,
+  LogTestIntegrationOption,
 } from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
 import { MetadataEntry, buildMetadataObject } from '../utils';
@@ -36,6 +38,7 @@ const INITIAL_FORM_DATA: LogTestFormData = {
   traceLevel: 'NONE',
   space: SpaceTypes.STANDARD.value,
   metadataFields: [],
+  integration: '',
 };
 
 const INITIAL_ERRORS: LogTestFormErrors = {};
@@ -45,22 +48,52 @@ const spaceOptions: LogTestSpaceOption[] = [
   { id: SpaceTypes.TEST.value, label: SpaceTypes.TEST.label },
 ];
 
-export const LogTest: React.FC<RouteComponentProps> = () => {
+interface LogTestProps extends RouteComponentProps {
+  notifications?: NotificationsStart;
+}
+
+export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
   const [formData, setFormData] = useState<LogTestFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
+  const [integrationOptions, setIntegrationOptions] = useState<
+    LogTestIntegrationOption[]
+  >([]);
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.LOG_TEST]);
   }, []);
 
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, integration: '' }));
+    setIntegrationOptions([]);
+
+    DataStore.integrations
+      .getIntegrations(formData.space)
+      .then((integrations) => {
+        setIntegrationOptions(
+          integrations
+            .filter((i) => i.document?.enabled)
+            .map((i) => ({
+              id: i.id,
+              label: i.document?.metadata?.title ?? i.id,
+            })),
+        );
+      })
+      .catch((error) => {
+        console.error('Security Analytics - LogTest - getIntegrations:', error);
+        errorNotificationToast(
+          notifications,
+          'retrieve',
+          'integrations',
+          error,
+        );
+      });
+  }, [formData.space]);
+
   const validateForm = useCallback((): boolean => {
     const newErrors: LogTestFormErrors = {};
-
-    // if (formData.queue === undefined || formData.queue < 1 || formData.queue > 255) {
-    //     newErrors.queue = 'Queue is required and must be a number between 1 and 255';
-    // }
 
     if (!formData.event.trim()) {
       newErrors.event = 'Log event is required';
@@ -89,6 +122,7 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
         trace_level: formData.traceLevel,
         metadata: buildMetadataObject(formData.metadataFields),
         space: formData.space,
+        integration: formData.integration || undefined,
       },
     });
 
@@ -112,7 +146,7 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
         });
       }
     },
-    [errors]
+    [errors],
   );
 
   const handleMetadataFieldsChange = useCallback((fields: MetadataEntry[]) => {
@@ -126,16 +160,16 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
   }, []);
 
   return (
-    <EuiFlexGroup direction="column" gutterSize="m">
+    <EuiFlexGroup direction='column' gutterSize='m'>
       <EuiFlexItem grow={false}>
         <PageHeader>
-          <EuiText size="s">
+          <EuiText size='s'>
             <h1>Log Test</h1>
           </EuiText>
         </PageHeader>
       </EuiFlexItem>
 
-      <EuiSpacer size="m" />
+      <EuiSpacer size='m' />
 
       <EuiFlexItem>
         <EuiPanel>
@@ -145,16 +179,17 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
             onFormChange={handleFormChange}
             onMetadataFieldsChange={handleMetadataFieldsChange}
             spaceOptions={spaceOptions}
+            integrationOptions={integrationOptions}
             disabled={isLoading}
           />
 
-          <EuiSpacer size="l" />
+          <EuiSpacer size='l' />
 
-          <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
+          <EuiFlexGroup justifyContent='spaceBetween' alignItems='center'>
             <EuiFlexItem grow={false}>
               <EuiButton
                 fill
-                iconType="play"
+                iconType='play'
                 onClick={handleExecuteLogTest}
                 isLoading={isLoading}
                 disabled={isLoading}
@@ -164,7 +199,11 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
             </EuiFlexItem>
 
             <EuiFlexItem grow={false}>
-              <EuiButton iconType="broom" onClick={handleClearSession} disabled={isLoading}>
+              <EuiButton
+                iconType='broom'
+                onClick={handleClearSession}
+                disabled={isLoading}
+              >
                 Clear session
               </EuiButton>
             </EuiFlexItem>
@@ -172,7 +211,7 @@ export const LogTest: React.FC<RouteComponentProps> = () => {
 
           {testResult && (
             <>
-              <EuiHorizontalRule margin="l" />
+              <EuiHorizontalRule margin='l' />
               <LogTestResult result={testResult} />
             </>
           )}
