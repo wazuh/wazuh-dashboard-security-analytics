@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React from "react";
+import React from 'react';
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -14,15 +14,15 @@ import {
   EuiSpacer,
   EuiSelect,
   EuiTitle,
-} from "@elastic/eui";
-import { LogTestTraceLevel } from "../../../../types";
-import { MetadataEntry } from "../utils";
-import { MetadataFieldsEditor } from "./MetadataFieldsEditor";
+} from '@elastic/eui';
+import { LogTestTraceLevel } from '../../../../types';
+import { MetadataEntry } from '../utils';
+import { MetadataFieldsEditor } from './MetadataFieldsEditor';
 
 const TRACE_LEVEL_OPTIONS: Array<{ value: LogTestTraceLevel; text: string }> = [
-  { value: "NONE", text: "None" },
-  { value: "ASSET_ONLY", text: "Asset only" },
-  { value: "ALL", text: "All" },
+  { value: 'NONE', text: 'None' },
+  { value: 'ASSET_ONLY', text: 'Asset only' },
+  { value: 'ALL', text: 'All' },
 ];
 
 export interface LogTestSpaceOption {
@@ -76,7 +76,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
   ];
 
   const integrationSelectOptions = [
-    { value: "", text: "Select an integration" },
+    { value: '', text: 'Select an integration' },
     ...integrationOptions.map((option) => ({
       value: option.id,
       text: option.label,
@@ -85,14 +85,14 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
 
   return (
     <>
-      <EuiTitle size="xs">
+      <EuiTitle size='xs'>
         <h3>Normalization</h3>
       </EuiTitle>
-      <EuiSpacer size="s" />
-      <EuiFlexGroup gutterSize="m" wrap>
-        <EuiFlexItem style={{ minWidth: "280px" }}>
+      <EuiSpacer size='s' />
+      <EuiFlexGroup gutterSize='m' wrap>
+        <EuiFlexItem style={{ minWidth: '280px' }}>
           <EuiFormRow
-            label="Space"
+            label='Space'
             isInvalid={!!errors.space}
             error={errors.space}
             fullWidth
@@ -100,18 +100,18 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
             <EuiSelect
               options={spaceSelectOptions}
               value={formData.space}
-              onChange={(e) => onFormChange("space", e.target.value)}
+              onChange={(e) => onFormChange('space', e.target.value)}
               isInvalid={!!errors.space}
               disabled={disabled || spaceSelectOptions.length === 0}
               fullWidth
             />
           </EuiFormRow>
         </EuiFlexItem>
-        <EuiFlexItem style={{ minWidth: "300px" }}>
+        <EuiFlexItem style={{ minWidth: '300px' }}>
           <EuiFormRow
             label={
               <>
-                {"Location - "}
+                {'Location - '}
                 <em>optional</em>
               </>
             }
@@ -119,20 +119,20 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
           >
             <EuiFieldText
               value={formData.location}
-              onChange={(e) => onFormChange("location", e.target.value)}
-              placeholder="/var/log/auth.log"
+              onChange={(e) => onFormChange('location', e.target.value)}
+              placeholder='/var/log/auth.log'
               disabled={disabled}
               fullWidth
             />
           </EuiFormRow>
         </EuiFlexItem>
-        <EuiFlexItem style={{ minWidth: "200px" }}>
-          <EuiFormRow label="Trace level" fullWidth>
+        <EuiFlexItem style={{ minWidth: '200px' }}>
+          <EuiFormRow label='Trace level' fullWidth>
             <EuiSelect
               options={TRACE_LEVEL_OPTIONS}
               value={formData.traceLevel}
               onChange={(e) =>
-                onFormChange("traceLevel", e.target.value as LogTestTraceLevel)
+                onFormChange('traceLevel', e.target.value as LogTestTraceLevel)
               }
               disabled={disabled}
               fullWidth
@@ -140,13 +140,13 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
           </EuiFormRow>
         </EuiFlexItem>
       </EuiFlexGroup>
-      <EuiSpacer size="m" />
+      <EuiSpacer size='m' />
       <EuiAccordion
-        id="agent-metadata-accordion"
-        buttonContent="Metadata (optional)"
-        paddingSize="m"
+        id='agent-metadata-accordion'
+        buttonContent='Metadata (optional)'
+        paddingSize='m'
       >
-        <EuiSpacer size="s" />
+        <EuiSpacer size='s' />
         <MetadataFieldsEditor
           entries={formData.metadataFields}
           onChange={onMetadataFieldsChange}
@@ -154,18 +154,18 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
         />
       </EuiAccordion>
 
-      <EuiSpacer size="l" />
+      <EuiSpacer size='l' />
 
-      <EuiTitle size="xs">
+      <EuiTitle size='xs'>
         <h3>Detection</h3>
       </EuiTitle>
-      <EuiSpacer size="s" />
-      <EuiFlexGroup gutterSize="m">
-        <EuiFlexItem style={{ minWidth: "300px" }}>
+      <EuiSpacer size='s' />
+      <EuiFlexGroup gutterSize='m'>
+        <EuiFlexItem style={{ minWidth: '300px' }}>
           <EuiFormRow
             label={
               <>
-                {"Integration - "}
+                {'Integration - '}
                 <em>optional</em>
               </>
             }
@@ -174,7 +174,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
             <EuiSelect
               options={integrationSelectOptions}
               value={formData.integration}
-              onChange={(e) => onFormChange("integration", e.target.value)}
+              onChange={(e) => onFormChange('integration', e.target.value)}
               disabled={disabled || integrationSelectOptions.length <= 1}
               fullWidth
             />
@@ -182,18 +182,18 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
         </EuiFlexItem>
       </EuiFlexGroup>
 
-      <EuiSpacer size="l" />
+      <EuiSpacer size='l' />
 
       <EuiFormRow
-        label="Log event"
+        label='Log event'
         isInvalid={!!errors.event}
         error={errors.event}
         fullWidth
       >
         <EuiTextArea
-          placeholder="Enter log data to test..."
+          placeholder='Enter log data to test...'
           value={formData.event}
-          onChange={(e) => onFormChange("event", e.target.value)}
+          onChange={(e) => onFormChange('event', e.target.value)}
           rows={6}
           isInvalid={!!errors.event}
           disabled={disabled}

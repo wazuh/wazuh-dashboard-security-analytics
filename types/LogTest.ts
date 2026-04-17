@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export type LogTestTraceLevel = "NONE" | "ASSET_ONLY" | "ALL";
+export type LogTestTraceLevel = 'NONE' | 'ASSET_ONLY' | 'ALL';
 
 export interface LogTestRequestBody {
   queue: number;
@@ -23,7 +23,7 @@ export interface LogTestAssetTrace {
 
 export interface LogTestValidationError {
   path: string;
-  kind: "unknown_field" | "invalid_type" | "temporary_field_not_allowed";
+  kind: 'unknown_field' | 'invalid_type' | 'temporary_field_not_allowed';
   expected?: string | null;
   actual?: string | null;
   [key: string]: unknown;
@@ -40,7 +40,7 @@ export interface LogTestNormalizationResult {
   validation?: LogTestValidation;
 }
 
-export type LogTestDetectionStatus = "success" | "skipped" | "error";
+export type LogTestDetectionStatus = 'success' | 'skipped' | 'error';
 
 export interface LogTestDetectionRuleMatch {
   rule: {

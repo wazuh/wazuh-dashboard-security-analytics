@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -12,33 +12,33 @@ import {
   EuiText,
   EuiButton,
   EuiHorizontalRule,
-} from "@elastic/eui";
-import { RouteComponentProps } from "react-router-dom";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import { errorNotificationToast, setBreadcrumbs } from "../../../utils/helpers";
-import { BREADCRUMBS } from "../../../utils/constants";
-import { DataStore } from "../../../store/DataStore";
-import { SpaceTypes } from "../../../../common/constants";
-import { LogTestResponse } from "../../../../types";
+} from '@elastic/eui';
+import { RouteComponentProps } from 'react-router-dom';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
+import { BREADCRUMBS } from '../../../utils/constants';
+import { DataStore } from '../../../store/DataStore';
+import { SpaceTypes } from '../../../../common/constants';
+import { LogTestResponse } from '../../../../types';
 import {
   LogTestForm,
   LogTestFormData,
   LogTestFormErrors,
   LogTestSpaceOption,
   LogTestIntegrationOption,
-} from "../components/LogTestForm";
-import { LogTestResult } from "../components/LogTestResult";
-import { MetadataEntry, buildMetadataObject } from "../utils";
+} from '../components/LogTestForm';
+import { LogTestResult } from '../components/LogTestResult';
+import { MetadataEntry, buildMetadataObject } from '../utils';
 
 const INITIAL_FORM_DATA: LogTestFormData = {
   queue: undefined,
-  location: "",
-  event: "",
-  traceLevel: "NONE",
+  location: '',
+  event: '',
+  traceLevel: 'NONE',
   space: SpaceTypes.STANDARD.value,
   metadataFields: [],
-  integration: "",
+  integration: '',
 };
 
 const INITIAL_ERRORS: LogTestFormErrors = {};
@@ -66,7 +66,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
   }, []);
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, integration: "" }));
+    setFormData((prev) => ({ ...prev, integration: '' }));
     setIntegrationOptions([]);
 
     DataStore.integrations
@@ -82,11 +82,11 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
         );
       })
       .catch((error) => {
-        console.error("Security Analytics - LogTest - getIntegrations:", error);
+        console.error('Security Analytics - LogTest - getIntegrations:', error);
         errorNotificationToast(
           notifications,
-          "retrieve",
-          "integrations",
+          'retrieve',
+          'integrations',
           error,
         );
       });
@@ -96,11 +96,11 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
     const newErrors: LogTestFormErrors = {};
 
     if (!formData.event.trim()) {
-      newErrors.event = "Log event is required";
+      newErrors.event = 'Log event is required';
     }
 
     if (!formData.space) {
-      newErrors.space = "Space is required";
+      newErrors.space = 'Space is required';
     }
 
     setErrors(newErrors);
@@ -117,7 +117,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
     const result = await DataStore.logTests.executeLogTest({
       document: {
         queue: 1, // temporary hardcoded queue value
-        location: String(formData.location ?? "").trim(),
+        location: String(formData.location ?? '').trim(),
         event: formData.event.trim(),
         trace_level: formData.traceLevel,
         metadata: buildMetadataObject(formData.metadataFields),
@@ -160,16 +160,16 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
   }, []);
 
   return (
-    <EuiFlexGroup direction="column" gutterSize="m">
+    <EuiFlexGroup direction='column' gutterSize='m'>
       <EuiFlexItem grow={false}>
         <PageHeader>
-          <EuiText size="s">
+          <EuiText size='s'>
             <h1>Log Test</h1>
           </EuiText>
         </PageHeader>
       </EuiFlexItem>
 
-      <EuiSpacer size="m" />
+      <EuiSpacer size='m' />
 
       <EuiFlexItem>
         <EuiPanel>
@@ -183,24 +183,24 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
             disabled={isLoading}
           />
 
-          <EuiSpacer size="l" />
+          <EuiSpacer size='l' />
 
-          <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
+          <EuiFlexGroup justifyContent='spaceBetween' alignItems='center'>
             <EuiFlexItem grow={false}>
               <EuiButton
                 fill
-                iconType="play"
+                iconType='play'
                 onClick={handleExecuteLogTest}
                 isLoading={isLoading}
                 disabled={isLoading}
               >
-                {isLoading ? "Testing..." : "Test"}
+                {isLoading ? 'Testing...' : 'Test'}
               </EuiButton>
             </EuiFlexItem>
 
             <EuiFlexItem grow={false}>
               <EuiButton
-                iconType="broom"
+                iconType='broom'
                 onClick={handleClearSession}
                 disabled={isLoading}
               >
@@ -211,7 +211,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
 
           {testResult && (
             <>
-              <EuiHorizontalRule margin="l" />
+              <EuiHorizontalRule margin='l' />
               <LogTestResult result={testResult} />
             </>
           )}
