@@ -4,7 +4,9 @@
  */
 
 import {
-  EuiSmallButton,
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiComboBoxOptionOption,
   EuiFlexGroup,
   EuiFlexItem,
@@ -13,7 +15,6 @@ import {
   EuiTitle,
   EuiCompressedComboBox,
   EuiCompressedFormRow,
-  EuiText,
 } from '@elastic/eui';
 import { PeriodSchedule } from '../../../../../models/interfaces';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -522,26 +523,43 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         <EuiSpacer size="l" />
       </EuiPanel>
 
-      <EuiSpacer />
+      <EuiSpacer size="xxl" />
+      <EuiSpacer size="xxl" />
 
-      <EuiFlexGroup justifyContent="flexEnd">
-        <EuiFlexItem grow={false}>
-          <EuiSmallButton onClick={onCancel} disabled={loading}>
-            Cancel
-          </EuiSmallButton>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          <EuiSmallButton
-            onClick={onSave}
-            fill={true}
-            disabled={loading || submitting}
-            isLoading={submitting}
-            data-test-subj={'save-basic-details-edits'}
-          >
-            Save changes
-          </EuiSmallButton>
-        </EuiFlexItem>
-      </EuiFlexGroup>
+      <EuiBottomBar>
+        <EuiFlexGroup
+          gutterSize="s"
+          justifyContent="flexEnd"
+          alignItems="center"
+          responsive={false}
+        >
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty
+              color="ghost"
+              size="s"
+              iconType="cross"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              Cancel
+            </EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiButton
+              color="primary"
+              fill
+              iconType="check"
+              size="s"
+              onClick={onSave}
+              disabled={loading || submitting}
+              isLoading={submitting}
+              data-test-subj={'save-basic-details-edits'}
+            >
+              Edit detector
+            </EuiButton>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiBottomBar>
     </>
   );
 };

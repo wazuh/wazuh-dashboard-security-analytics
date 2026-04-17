@@ -15,13 +15,15 @@ import {
 } from '../../../utils/helpers';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiPanel,
   EuiText,
   EuiSpacer,
   EuiButtonGroup,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiSmallButton,
   EuiToolTip,
   EuiLoadingSpinner,
 } from '@elastic/eui';
@@ -311,40 +313,53 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                 )}
               </EuiPanel>
 
-              <EuiSpacer size="xl" />
+              <EuiSpacer size="xxl" />
+              <EuiSpacer size="xxl" />
 
-              <EuiFlexGroup justifyContent="flexEnd">
-                <EuiFlexItem grow={false}>
-                  <EuiSmallButton href={`#${ROUTES.DECODERS}`}>Cancel</EuiSmallButton>
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiToolTip
-                    content={
-                      <>
-                        <p>
-                          {!integrationType
-                            ? 'Select an integration to enable creating the decoder'
-                            : ''}
-                        </p>
-                        <p>
-                          {Object.keys(props.errors).length > 0
-                            ? 'Please fix the errors in the form to proceed'
-                            : ''}
-                        </p>
-                      </>
-                    }
-                    position="top"
-                  >
-                    <EuiSmallButton
-                      disabled={!integrationType || Object.keys(props.errors).length > 0}
-                      onClick={() => props.handleSubmit()}
-                      fill
+              <EuiBottomBar>
+                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
+                  <EuiFlexItem grow={false}>
+                    <EuiButtonEmpty
+                      color="ghost"
+                      size="s"
+                      iconType="cross"
+                      href={`#${ROUTES.DECODERS}`}
                     >
-                      {actionLabels[action]} decoder
-                    </EuiSmallButton>
-                  </EuiToolTip>
-                </EuiFlexItem>
-              </EuiFlexGroup>
+                      Cancel
+                    </EuiButtonEmpty>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiToolTip
+                      content={
+                        <>
+                          <p>
+                            {!integrationType
+                              ? 'Select an integration to enable creating the decoder'
+                              : ''}
+                          </p>
+                          <p>
+                            {Object.keys(props.errors).length > 0
+                              ? 'Please fix the errors in the form to proceed'
+                              : ''}
+                          </p>
+                        </>
+                      }
+                      position="top"
+                    >
+                      <EuiButton
+                        color="primary"
+                        fill
+                        iconType="check"
+                        size="s"
+                        disabled={!integrationType || Object.keys(props.errors).length > 0}
+                        onClick={() => props.handleSubmit()}
+                      >
+                        {actionLabels[action]} decoder
+                      </EuiButton>
+                    </EuiToolTip>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiBottomBar>
             </Form>
           )}
         </Formik>

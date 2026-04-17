@@ -3,7 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { EuiSmallButton, EuiFlexGroup, EuiFlexItem, EuiSpacer, EuiTitle } from '@elastic/eui';
+import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiSpacer,
+  EuiTitle,
+} from '@elastic/eui';
 import {
   DetectorHit,
   SearchDetectorsResponse,
@@ -319,25 +327,40 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
 
         <EuiSpacer size="xl" />
 
-        <EuiFlexGroup justifyContent="flexEnd">
-          <EuiFlexItem grow={false}>
-            <EuiSmallButton disabled={submitting} onClick={onCancel}>
-              Cancel
-            </EuiSmallButton>
-          </EuiFlexItem>
-
-          <EuiFlexItem grow={false}>
-            <EuiSmallButton
-              disabled={loading}
-              fill={true}
-              isLoading={submitting}
-              onClick={onSave}
-              data-test-subj={'save-detector-rules-edits'}
-            >
-              Save changes
-            </EuiSmallButton>
-          </EuiFlexItem>
-        </EuiFlexGroup>
+        <EuiBottomBar>
+          <EuiFlexGroup
+            gutterSize="s"
+            justifyContent="flexEnd"
+            alignItems="center"
+            responsive={false}
+          >
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty
+                color="ghost"
+                size="s"
+                iconType="cross"
+                disabled={submitting}
+                onClick={onCancel}
+              >
+                Cancel
+              </EuiButtonEmpty>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButton
+                color="primary"
+                fill
+                iconType="check"
+                size="s"
+                disabled={loading}
+                isLoading={submitting}
+                onClick={onSave}
+                data-test-subj={'save-detector-rules-edits'}
+              >
+                Edit detector rules
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiBottomBar>
       </ContentPanel>
     </div>
   );

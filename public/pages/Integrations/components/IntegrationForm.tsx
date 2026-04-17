@@ -420,7 +420,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       </div>
       {isEditMode ? (
         <EuiBottomBar>
-          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
+          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
             <EuiFlexItem grow={false}>
               <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={onCancelClicked}>
                 Cancel
