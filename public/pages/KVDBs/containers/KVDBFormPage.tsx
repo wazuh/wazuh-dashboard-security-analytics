@@ -15,7 +15,6 @@ import {
   EuiFlexItem,
   EuiLoadingSpinner,
   EuiPanel,
-  EuiSmallButton,
   EuiSpacer,
   EuiText,
   EuiToolTip,
@@ -379,7 +378,12 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
               <EuiBottomBar>
                 <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
                   <EuiFlexItem grow={false}>
-                    <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${ROUTES.KVDBS}`}>
+                    <EuiButtonEmpty
+                      color="ghost"
+                      size="s"
+                      iconType="cross"
+                      href={`#${ROUTES.KVDBS}`}
+                    >
                       Cancel
                     </EuiButtonEmpty>
                   </EuiFlexItem>

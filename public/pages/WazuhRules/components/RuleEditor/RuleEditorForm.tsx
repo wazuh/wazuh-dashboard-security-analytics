@@ -14,7 +14,6 @@ import {
   EuiFlexItem,
   EuiCompressedFormRow,
   EuiCompressedFieldText,
-  EuiSmallButton,
   EuiSpacer,
   EuiAccordion,
   EuiCompressedComboBox,
@@ -707,7 +706,12 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
           <EuiSpacer size="xxl" />
 
           <EuiBottomBar>
-            <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
+            <EuiFlexGroup
+              gutterSize="s"
+              justifyContent="flexEnd"
+              alignItems="center"
+              responsive={false}
+            >
               <EuiFlexItem grow={false}>
                 <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={cancel}>
                   Cancel
@@ -742,7 +746,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     onClick={() => props.handleSubmit()}
                     data-test-subj={'submit_rule_form_button'}
                   >
-                    {mode === 'create' ? 'Create rule' : 'Save changes'}
+                    {mode === 'create' ? 'Create rule' : 'Edit rule'}
                   </EuiButton>
                 </EuiToolTip>
               </EuiFlexItem>

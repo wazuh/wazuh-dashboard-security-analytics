@@ -24,7 +24,6 @@ import {
   EuiButtonGroup,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiSmallButton,
   EuiToolTip,
   EuiLoadingSpinner,
 } from '@elastic/eui';
@@ -320,7 +319,12 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
               <EuiBottomBar>
                 <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
                   <EuiFlexItem grow={false}>
-                    <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${ROUTES.DECODERS}`}>
+                    <EuiButtonEmpty
+                      color="ghost"
+                      size="s"
+                      iconType="cross"
+                      href={`#${ROUTES.DECODERS}`}
+                    >
                       Cancel
                     </EuiButtonEmpty>
                   </EuiFlexItem>
