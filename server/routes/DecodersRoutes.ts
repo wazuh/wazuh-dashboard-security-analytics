@@ -86,10 +86,7 @@ export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
     {
       path: `${API.DECODERS_BASE}`,
       validate: {
-        body: schema.object({
-          document: decoderDocumentSchema,
-          integrationId: schema.string(),
-        }),
+        body: schema.any(),
         query: createQueryValidationSchema({
           space: schema.maybe(schema.string()),
         }),
@@ -105,9 +102,7 @@ export function setupDecodersRoutes(services: NodeServices, router: IRouter) {
         params: schema.object({
           decoderId: schema.string(),
         }),
-        body: schema.object({
-          document: decoderDocumentSchema,
-        }),
+        body: schema.any(),
         query: createQueryValidationSchema({
           space: schema.maybe(schema.string()),
         }),
