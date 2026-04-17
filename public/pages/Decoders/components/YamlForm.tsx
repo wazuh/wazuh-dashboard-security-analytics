@@ -3,12 +3,11 @@ import { DecoderDocument } from '../../../../types';
 import { EuiCompressedFormRow, EuiCodeEditor, EuiSpacer, EuiText, EuiCallOut } from '@elastic/eui';
 import FormFieldHeader from '../../../components/FormFieldHeader';
 import { YamlEditorState } from '../../Rules/components/RuleEditor/components/YamlRuleEditorComponent/YamlRuleEditorComponent';
-import { load } from 'js-yaml';
 import {
   DecoderFormModel,
   mapDecoderToYamlObject,
-  mapYamlObjectToDecoder,
   mapYamlObjectToYamlString,
+  mapYamlToLosslessDecoder,
 } from './mappers';
 
 interface YamlFormProps {
@@ -47,9 +46,9 @@ export const YamlForm: React.FC<YamlFormProps> = ({
       return;
     }
     try {
-      const yamlObject = load(value);
-      const parsedDecoder = mapYamlObjectToDecoder(yamlObject);
-      change(parsedDecoder);
+      const yamlObject = mapYamlToLosslessDecoder(value);
+
+      change(yamlObject);
       setState((prev) => ({ ...prev, errors: null }));
     } catch (err) {
       setState((prev) => ({ ...prev, errors: ['Invalid YAML'] }));

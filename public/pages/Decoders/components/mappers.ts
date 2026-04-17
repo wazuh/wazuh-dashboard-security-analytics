@@ -1,5 +1,7 @@
 import { dump } from 'js-yaml';
 import { DecoderDocument, DecoderMetadata } from '../../../../types/Decoders';
+import YAML from 'yaml';
+import { LosslessNumber } from 'lossless-json';
 
 export interface DecoderFormModel {
   id?: string;
@@ -53,7 +55,7 @@ const rootDecoderFields: (keyof DecoderFormModel)[] = [
   'decoder',
   'check',
   'parents',
-  'definitions'
+  'definitions',
 ];
 
 // Convert from DecoderDocument (API) to DecoderFormModel (form)
@@ -119,4 +121,32 @@ export const mapYamlObjectToYamlString = (decoder: DecoderFormModel): string => 
 
 export const mapYamlObjectToDecoder = (obj: any): DecoderFormModel => {
   return mapDecoderToForm(obj);
+};
+
+export const mapYamlToLosslessDecoder = (yaml: string): DecoderFormModel => {
+  const yamlString = YAML.parseDocument(yaml);
+
+  YAML.visit(yamlString, {
+    Scalar(key, node) {
+      if (typeof node.value === 'number') {
+        let rawText;
+
+        if (node.range && node.range.length >= 2) {
+          rawText = yaml.slice(node.range[0], node.range[1]).trim();
+        }
+
+        if (!rawText) {
+          rawText = String(node.value);
+          if (!rawText.includes('.')) rawText += '.0';
+        }
+
+        node.value = new LosslessNumber(rawText);
+      }
+    },
+  });
+
+  // Transform the string into an object with lossless numbers
+  const yamlObject = yamlString.toJS() as DecoderFormModel;
+
+  return yamlObject;
 };

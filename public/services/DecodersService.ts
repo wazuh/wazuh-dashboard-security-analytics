@@ -7,6 +7,7 @@ import { HttpSetup } from 'opensearch-dashboards/public';
 import { API } from '../../server/utils/constants';
 import { ServerResponse } from '../../server/models/types';
 import { CUDDecoderResponse, GetDecoderResponse, SearchDecodersResponse } from '../../types';
+import { stringify as LosslessStringify } from 'lossless-json';
 
 export default class DecodersService {
   private readonly httpClient: HttpSetup;
@@ -80,7 +81,10 @@ export default class DecodersService {
     try {
       const url = `${this.baseUrl}`;
       return await this.httpClient.post(url, {
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          documentJson: LosslessStringify(body.document),
+          integrationId: body.integrationId,
+        }),
       });
     } catch (error: any) {
       return { ok: false, error: this.parseHttpError(error) };
@@ -94,7 +98,9 @@ export default class DecodersService {
     try {
       const url = `${this.baseUrl}/${decoderId}`;
       return await this.httpClient.put(url, {
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          documentJson: LosslessStringify(body.document),
+        }),
       });
     } catch (error: any) {
       return { ok: false, error: this.parseHttpError(error) };
