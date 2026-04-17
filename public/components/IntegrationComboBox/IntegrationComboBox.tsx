@@ -3,10 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { EuiCallOut, EuiCompressedComboBox, EuiCompressedFormRow, EuiSpacer } from '@elastic/eui';
+import {
+  EuiButtonEmpty,
+  EuiCallOut,
+  EuiCompressedComboBox,
+  EuiCompressedFormRow,
+  EuiSpacer,
+} from '@elastic/eui';
 import React from 'react';
 import FormFieldHeader from '../FormFieldHeader';
 import { getLogTypeLabel } from '../../pages/LogTypes/utils/helpers';
+import { ROUTES } from '../../utils/constants';
 import { IntegrationOption } from './useIntegrationSelector';
 
 interface IntegrationComboBoxProps {
@@ -74,6 +81,15 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
               There are no integrations in draft status available to add {resourceName}. Please
               create or draft an integration first before adding {resourceName}.
             </p>
+            <EuiButtonEmpty
+              size="s"
+              iconType="popout"
+              href={`#${ROUTES.INTEGRATIONS_CREATE}`}
+              target="_blank"
+              flush="left"
+            >
+              Create integration
+            </EuiButtonEmpty>
           </EuiCallOut>
         </>
       )}
