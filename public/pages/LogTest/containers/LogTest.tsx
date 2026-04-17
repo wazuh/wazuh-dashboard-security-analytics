@@ -73,10 +73,12 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
       .getIntegrations(formData.space)
       .then((integrations) => {
         setIntegrationOptions(
-          integrations.map((i) => ({
-            id: i.id,
-            label: i.document?.metadata?.title ?? i.id,
-          })),
+          integrations
+            .filter((i) => i.document?.enabled)
+            .map((i) => ({
+              id: i.id,
+              label: i.document?.metadata?.title ?? i.id,
+            })),
         );
       })
       .catch((error) => {
