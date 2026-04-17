@@ -40,7 +40,7 @@ export interface LogTestNormalizationResult {
   validation?: LogTestValidation;
 }
 
-export type LogTestDetectionStatus = "success" | "skipped" | "failure";
+export type LogTestDetectionStatus = "success" | "skipped" | "error";
 
 export interface LogTestDetectionRuleMatch {
   rule: {

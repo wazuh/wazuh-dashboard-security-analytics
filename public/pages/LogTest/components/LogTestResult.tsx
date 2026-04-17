@@ -301,6 +301,14 @@ const DetectionSection: React.FC<{ data: LogTestDetectionResult }> = ({
     );
   }
 
+  if (data.status === "error") {
+    return (
+      <EuiCallOut title="Detection error" color="danger" iconType="alert">
+        <p>{data.reason || "Detection failed due to an unexpected error."}</p>
+      </EuiCallOut>
+    );
+  }
+
   const matches = data.matches ?? [];
 
   if (matches.length === 0) {
