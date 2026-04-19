@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { SpaceSelector } from "../components/SpaceSelector/SpaceSelector";
-import { useSpaceFilter } from "./useSpaceFilter";
-import { Space } from "../../types";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { SpaceSelector } from '../components/SpaceSelector/SpaceSelector';
+import { useSpaceFilter } from './useSpaceFilter';
+import { Space } from '../../types';
 
 interface UseSpaceSelectorOptions {
   isDisabled?: boolean;
@@ -16,7 +16,7 @@ interface UseSpaceSelectorOptions {
 }
 
 export const useSpaceSelector = (
-  options: UseSpaceSelectorOptions = {},
+  options: UseSpaceSelectorOptions = {}
 ): { component: React.ReactComponentElement; spaceFilter: Space } => {
   const { isDisabled, isLoading, documentationUrl, onSpaceChange } = options;
   const [spaceFilter, setSpaceFilter] = useSpaceFilter();
@@ -39,7 +39,7 @@ export const useSpaceSelector = (
       setSpaceFilter(id);
       onSpaceChange?.(id);
     },
-    [setSpaceFilter, onSpaceChange, spaceFilter, trackPending],
+    [setSpaceFilter, onSpaceChange, spaceFilter, trackPending]
   );
 
   const component = (

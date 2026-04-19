@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from 'react';
 import {
   EuiSmallButton,
   EuiFlexGroup,
@@ -18,45 +18,38 @@ import {
   EuiConfirmModal,
   EuiTab,
   EuiTabs,
-} from "@elastic/eui";
-import { BREADCRUMBS, ROUTES } from "../../../utils/constants";
-import { OVERVIEW_TAB, OverviewTabId } from "../utils/constants";
-import { DataSourceProps } from "../../../../types";
-import { DataStore } from "../../../store/DataStore";
+} from '@elastic/eui';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { OVERVIEW_TAB, OverviewTabId } from '../utils/constants';
+import { DataSourceProps } from '../../../../types';
+import { DataStore } from '../../../store/DataStore';
 import {
   getIntegrationsTableColumns,
   getIntegrationsTableSearchConfig,
   IntegrationTableItem,
   mapPolicyToIntegrationTableItems,
   hasRelatedEntity,
-} from "../utils/helpers";
-import { RouteComponentProps } from "react-router-dom";
-import { useCallback } from "react";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import {
-  setBreadcrumbs,
-  successNotificationToast,
-} from "../../../utils/helpers";
-import { DeleteIntegrationModal } from "../components/DeleteIntegrationModal";
-import { PageHeader } from "../../../components/PageHeader/PageHeader";
-import { SPACE_ACTIONS } from "../../../../common/constants";
-import { PolicyInfoCard } from "../components/PolicyInfoCard";
-import {
-  actionIsAllowedOnSpace,
-  getSpacesAllowAction,
-} from "../../../../common/helpers";
-import { RearrangeIntegrations } from "../components/RearrangeIntegrations";
-import { useSpaceSelector } from "../../../hooks/useSpaceSelector";
-import { EditPolicy } from "../components/EditPolicy";
-import { FiltersTab } from "../../Filters/components/FiltersTab";
+} from '../utils/helpers';
+import { RouteComponentProps } from 'react-router-dom';
+import { useCallback } from 'react';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { SPACE_ACTIONS } from '../../../../common/constants';
+import { PolicyInfoCard } from '../components/PolicyInfoCard';
+import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
+import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
+import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
+import { EditPolicy } from '../components/EditPolicy';
+import { FiltersTab } from '../../Filters/components/FiltersTab';
 
-export interface IntegrationsProps
-  extends RouteComponentProps, DataSourceProps {
+export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
 }
 
-const DELETE_SELECTED_ACTION = "delete_selected" as const;
-const CLEAR_SPACE_ACTION = "clear_space" as const;
+const DELETE_SELECTED_ACTION = 'delete_selected' as const;
+const CLEAR_SPACE_ACTION = 'clear_space' as const;
 
 type ItemForAction =
   | {
@@ -81,15 +74,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const isMountedRef = useRef(true);
   const [integrations, setIntegrations] = useState<IntegrationTableItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [selectedItems, setSelectedItems] = useState<IntegrationTableItem[]>(
-    [],
-  );
-  const [itemForAction, setItemForAction] = useState<ItemForAction | null>(
-    null,
-  );
+  const [selectedItems, setSelectedItems] = useState<IntegrationTableItem[]>([]);
+  const [itemForAction, setItemForAction] = useState<ItemForAction | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [isOverviewActionsOpen, setIsOverviewActionsOpen] =
-    useState<boolean>(false);
+  const [isOverviewActionsOpen, setIsOverviewActionsOpen] = useState<boolean>(false);
   const [isClearingSpace, setIsClearingSpace] = useState<boolean>(false);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading || isClearingSpace,
@@ -97,24 +85,18 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [policyRefresh, setPolicyRefresh] = useState(0);
   // This trusts the changes in the history location causes a rerender in the componnet
   const selectedTab =
-    history.location.pathname === ROUTES.FILTERS
-      ? OVERVIEW_TAB.FILTERS
-      : OVERVIEW_TAB.INTEGRATIONS;
+    history.location.pathname === ROUTES.FILTERS ? OVERVIEW_TAB.FILTERS : OVERVIEW_TAB.INTEGRATIONS;
 
   const onTabChange = (tab: OverviewTabId) => {
-    const path =
-      tab === OVERVIEW_TAB.FILTERS ? ROUTES.FILTERS : ROUTES.INTEGRATIONS;
+    const path = tab === OVERVIEW_TAB.FILTERS ? ROUTES.FILTERS : ROUTES.INTEGRATIONS;
     history.replace(path + history.location.search);
   };
   const loadIntegrations = useCallback(async () => {
     setLoading(true);
 
-    const policiesResult = await DataStore.policies.searchPolicies(
-      spaceFilter,
-      {
-        includeIntegrationFields: ["document", "space"],
-      },
-    );
+    const policiesResult = await DataStore.policies.searchPolicies(spaceFilter, {
+      includeIntegrationFields: ['document', 'space'],
+    });
     const policy = policiesResult.items[0];
     const integrations = mapPolicyToIntegrationTableItems(policy);
 
@@ -129,7 +111,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     const { ok } = await DataStore.integrations.deleteIntegration(id);
 
     if (ok) {
-      successNotificationToast(notifications, "deleted", "integration");
+      successNotificationToast(notifications, 'deleted', 'integration');
       await loadIntegrations();
     }
   };
@@ -144,40 +126,24 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
   }, []);
 
-  const isCreateActionDisabled = !actionIsAllowedOnSpace(
-    spaceFilter,
-    SPACE_ACTIONS.CREATE,
-  );
-  const isPromoteActionDisabled = !actionIsAllowedOnSpace(
-    spaceFilter,
-    SPACE_ACTIONS.PROMOTE,
-  );
-  const isDeleteActionDisabledBySpace = !actionIsAllowedOnSpace(
-    spaceFilter,
-    SPACE_ACTIONS.DELETE,
-  );
+  const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
+  const isPromoteActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.PROMOTE);
+  const isDeleteActionDisabledBySpace = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
 
   const selectedItemsWithoutRelatedEntities = selectedItems.filter(
-    (item) =>
-      !item.rules?.length && !item.decoders?.length && !item.kvdbs?.length,
+    (item) => !item.rules?.length && !item.decoders?.length && !item.kvdbs?.length
   );
   const selectedItemsWithRelatedEntities = selectedItems.filter(
-    (item) => item.rules?.length || item.decoders?.length || item.kvdbs?.length,
+    (item) => item.rules?.length || item.decoders?.length || item.kvdbs?.length
   );
-  const selectedItemsWithRelatedEntitiesCount =
-    selectedItemsWithRelatedEntities.length;
-  const selectedItemsRelatedEntitiesMessage =
-    DataStore.integrations.getRelatedEntitiesMessage({
-      hasRules: selectedItemsWithRelatedEntities.some((item) =>
-        hasRelatedEntity(item, "rules"),
-      ),
-      hasDecoders: selectedItemsWithRelatedEntities.some((item) =>
-        hasRelatedEntity(item, "decoders"),
-      ),
-      hasKVDBs: selectedItemsWithRelatedEntities.some((item) =>
-        hasRelatedEntity(item, "kvdbs"),
-      ),
-    });
+  const selectedItemsWithRelatedEntitiesCount = selectedItemsWithRelatedEntities.length;
+  const selectedItemsRelatedEntitiesMessage = DataStore.integrations.getRelatedEntitiesMessage({
+    hasRules: selectedItemsWithRelatedEntities.some((item) => hasRelatedEntity(item, 'rules')),
+    hasDecoders: selectedItemsWithRelatedEntities.some((item) =>
+      hasRelatedEntity(item, 'decoders')
+    ),
+    hasKVDBs: selectedItemsWithRelatedEntities.some((item) => hasRelatedEntity(item, 'kvdbs')),
+  });
 
   const isDeleteSelectedActionDisabled =
     isDeleteActionDisabledBySpace ||
@@ -185,37 +151,28 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     selectedItemsWithoutRelatedEntities.length === 0;
   const isRearrangeIntegrationsActionDisabled = !actionIsAllowedOnSpace(
     spaceFilter,
-    SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
+    SPACE_ACTIONS.REARRANGE_INTEGRATIONS
   );
   const canEditSpaceDetails =
     actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DEFINE_ROOT_DECODER) ||
-    actionIsAllowedOnSpace(
-      spaceFilter,
-      SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS,
-    ) ||
-    actionIsAllowedOnSpace(
-      spaceFilter,
-      SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS,
-    );
+    actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS) ||
+    actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS);
   const isEditSpaceDetailsDisabled = !canEditSpaceDetails;
   const spacesAllowingSpacePolicyEdit = Array.from(
     new Set([
       ...getSpacesAllowAction(SPACE_ACTIONS.DEFINE_ROOT_DECODER),
       ...getSpacesAllowAction(SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS),
       ...getSpacesAllowAction(SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS),
-    ]),
+    ])
   );
-  const isClearSpaceDisabled = !actionIsAllowedOnSpace(
-    spaceFilter,
-    SPACE_ACTIONS.CLEAR_SPACE,
-  );
+  const isClearSpaceDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CLEAR_SPACE);
 
   const clearSpace = useCallback(async () => {
     setIsClearingSpace(true);
     try {
       const ok = await DataStore.policies.deleteSpace(spaceFilter);
       if (ok) {
-        successNotificationToast(notifications, "cleared", "space");
+        successNotificationToast(notifications, 'cleared', 'space');
         setPolicyRefresh((prev) => prev + 1);
         await loadIntegrations();
       }
@@ -239,11 +196,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     try {
       const deleteResults = await Promise.all(
         selectedItemsWithoutRelatedEntities.map(async (item) => {
-          const { ok } = await DataStore.integrations.deleteIntegration(
-            item?.id,
-          );
+          const { ok } = await DataStore.integrations.deleteIntegration(item?.id);
           return ok;
-        }),
+        })
       );
       const deletedCount = deleteResults.filter(Boolean).length;
       const failedCount = deleteResults.length - deletedCount;
@@ -251,26 +206,26 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       if (deletedCount > 0) {
         successNotificationToast(
           notifications,
-          "deleted",
-          deletedCount === 1 ? "integration" : "integrations",
+          'deleted',
+          deletedCount === 1 ? 'integration' : 'integrations'
         );
       }
 
       if (failedCount > 0) {
         notifications.toasts.addWarning({
-          title: "Some integrations could not be deleted",
-          text: `${failedCount} integration${failedCount !== 1 ? "s" : ""} could not be deleted.`,
+          title: 'Some integrations could not be deleted',
+          text: `${failedCount} integration${failedCount !== 1 ? 's' : ''} could not be deleted.`,
           toastLifeTimeMs: 5000,
         });
       }
 
       if (selectedItemsWithRelatedEntitiesCount > 0) {
         notifications.toasts.addWarning({
-          title: "Some integrations were skipped",
+          title: 'Some integrations were skipped',
           text: `${selectedItemsWithRelatedEntitiesCount} integration${
-            selectedItemsWithRelatedEntitiesCount !== 1 ? "s were" : " was"
+            selectedItemsWithRelatedEntitiesCount !== 1 ? 's were' : ' was'
           } not deleted because ${
-            selectedItemsWithRelatedEntitiesCount !== 1 ? "they have" : "it has"
+            selectedItemsWithRelatedEntitiesCount !== 1 ? 'they have' : 'it has'
           } associated ${selectedItemsRelatedEntitiesMessage}.`,
           toastLifeTimeMs: 5000,
         });
@@ -298,14 +253,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     id: string,
     isOpen: boolean,
     onToggle: () => void,
-    items: React.ReactElement[],
+    items: React.ReactElement[]
   ) => (
     <EuiPopover
       id={id}
       button={
         <EuiSmallButton
-          iconType={"arrowDown"}
-          iconSide={"right"}
+          iconType={'arrowDown'}
+          iconSide={'right'}
           onClick={onToggle}
           data-test-subj={id}
         >
@@ -314,8 +269,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       }
       isOpen={isOpen}
       closePopover={onToggle}
-      panelPaddingSize={"none"}
-      anchorPosition={"downLeft"}
+      panelPaddingSize={'none'}
+      anchorPosition={'downLeft'}
     >
       <EuiContextMenuPanel items={items} size="s" />
     </EuiPopover>
@@ -330,7 +285,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       toolTipContent={
         isEditSpaceDetailsDisabled
           ? `Space policy can only be edited in the spaces: ${spacesAllowingSpacePolicyEdit.join(
-              ", ",
+              ', '
             )}`
           : undefined
       }
@@ -349,8 +304,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       toolTipContent={
         isClearSpaceDisabled
           ? `Clear space is only available in the spaces: ${getSpacesAllowAction(
-              SPACE_ACTIONS.CLEAR_SPACE,
-            ).join(", ")}`
+              SPACE_ACTIONS.CLEAR_SPACE
+            ).join(', ')}`
           : undefined
       }
       data-test-subj="overviewClearSpace"
@@ -363,34 +318,31 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       key="promote"
       icon="share"
       onClick={() => {
-        history.push({
-          pathname: ROUTES.PROMOTE,
-          search: `?space=${spaceFilter}`,
-        });
+        history.push({ pathname: ROUTES.PROMOTE, search: `?space=${spaceFilter}` });
         setIsOverviewActionsOpen(false);
       }}
       disabled={isPromoteActionDisabled}
       toolTipContent={
         isPromoteActionDisabled
           ? `Integration can only be promoted in the spaces: ${getSpacesAllowAction(
-              SPACE_ACTIONS.PROMOTE,
-            ).join(", ")}`
+              SPACE_ACTIONS.PROMOTE
+            ).join(', ')}`
           : undefined
       }
     >
       Promote
-    </EuiContextMenuItem>,
+    </EuiContextMenuItem>
   );
 
   const overviewActionsButton = buildActionsPopOver(
-    "overviewActionsPopover",
+    'overviewActionsPopover',
     isOverviewActionsOpen,
     () => setIsOverviewActionsOpen((prev) => !prev),
-    overviewActionsMenuItems,
+    overviewActionsMenuItems
   );
 
   const actionsButton = buildActionsPopOver(
-    "integrationsActionsPopover",
+    'integrationsActionsPopover',
     isPopoverOpen,
     () => setIsPopoverOpen((prev) => !prev),
     [
@@ -402,8 +354,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         toolTipContent={
           isCreateActionDisabled
             ? `Integration can only be created in the spaces: ${getSpacesAllowAction(
-                SPACE_ACTIONS.CREATE,
-              ).join(", ")}`
+                SPACE_ACTIONS.CREATE
+              ).join(', ')}`
             : undefined
         }
       >
@@ -420,17 +372,15 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         toolTipContent={
           isDeleteActionDisabledBySpace
             ? `Integrations can only be deleted in the space: ${getSpacesAllowAction(
-                SPACE_ACTIONS.DELETE,
-              ).join(", ")}`
+                SPACE_ACTIONS.DELETE
+              ).join(', ')}`
             : selectedItems.length === 0
-              ? "Select integrations to delete."
+              ? 'Select integrations to delete.'
               : selectedItemsWithoutRelatedEntities.length === 0
-                ? "Integrations with associated Rules, Decoders, or KVDBs cannot be deleted."
+                ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
                 : selectedItemsWithRelatedEntitiesCount > 0
                   ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
-                      selectedItemsWithRelatedEntitiesCount !== 1
-                        ? "s have"
-                        : " has"
+                      selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
                     } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
                   : undefined
         }
@@ -448,14 +398,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         toolTipContent={
           isRearrangeIntegrationsActionDisabled
             ? `Integration can only be rearranged in the spaces: ${getSpacesAllowAction(
-                SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
-              ).join(", ")}`
+                SPACE_ACTIONS.REARRANGE_INTEGRATIONS
+              ).join(', ')}`
             : undefined
         }
       >
         Rearrange
       </EuiContextMenuItem>,
-    ],
+    ]
   );
 
   useEffect(() => {
@@ -470,14 +420,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     (id: string) => {
       history.push(`${ROUTES.INTEGRATIONS}/${id}?space=${spaceFilter}`);
     },
-    [spaceFilter],
+    [spaceFilter]
   );
 
   const createIntegrationAction = (
-    <EuiSmallButton
-      fill={true}
-      onClick={() => history.push(ROUTES.INTEGRATIONS_CREATE)}
-    >
+    <EuiSmallButton fill={true} onClick={() => history.push(ROUTES.INTEGRATIONS_CREATE)}>
       Create integration
     </EuiSmallButton>
   );
@@ -528,9 +475,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           isLoading={isClearingSpace}
         >
           <p>
-            This will reset the <strong>draft</strong> space to its initial
-            state, removing all integrations, rules, decoders, KVDBs, and
-            filters.
+            This will reset the <strong>draft</strong> space to its initial state, removing all
+            integrations, rules, decoders, KVDBs, and filters.
           </p>
           <p>Detectors will not be affected. This action cannot be undone.</p>
         </EuiConfirmModal>
@@ -538,7 +484,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
         <EuiConfirmModal
           title={`Delete ${selectedItemsWithoutRelatedEntities.length} integration${
-            selectedItemsWithoutRelatedEntities.length !== 1 ? "s" : ""
+            selectedItemsWithoutRelatedEntities.length !== 1 ? 's' : ''
           }`}
           onCancel={() => setItemForAction(null)}
           onConfirm={deleteSelectedIntegrations}
@@ -551,24 +497,22 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             {`Are you sure you want to delete ${
               selectedItemsWithoutRelatedEntities.length
             } integration${
-              selectedItemsWithoutRelatedEntities.length !== 1 ? "s" : ""
+              selectedItemsWithoutRelatedEntities.length !== 1 ? 's' : ''
             }? This action cannot be undone.`}
           </p>
           {selectedItemsWithRelatedEntitiesCount > 0 && (
             <p>
               {`${selectedItemsWithRelatedEntitiesCount} selected integration${
-                selectedItemsWithRelatedEntitiesCount !== 1 ? "s have" : " has"
+                selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
               } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`}
             </p>
           )}
         </EuiConfirmModal>
       )}
 
-      <PageHeader
-        appRightControls={[{ renderComponent: createIntegrationAction }]}
-      >
+      <PageHeader appRightControls={[{ renderComponent: createIntegrationAction }]}>
         <EuiFlexItem>
-          <EuiFlexGroup alignItems="center" justifyContent={"spaceBetween"}>
+          <EuiFlexGroup alignItems="center" justifyContent={'spaceBetween'}>
             <EuiFlexItem>
               <EuiText size="s">
                 <h1>Overview</h1>
@@ -578,15 +522,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
             <EuiFlexItem grow={false}>{overviewActionsButton}</EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size={"s"} />
+          <EuiSpacer size={'s'} />
         </EuiFlexItem>
       </PageHeader>
-      <PolicyInfoCard
-        space={spaceFilter}
-        notifications={notifications}
-        refresh={policyRefresh}
-      />
-      <EuiSpacer size={"m"} />
+      <PolicyInfoCard space={spaceFilter} notifications={notifications} refresh={policyRefresh} />
+      <EuiSpacer size={'m'} />
       <EuiCard
         textAlign="left"
         paddingSize="m"
@@ -607,10 +547,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           </EuiTabs>
         }
       >
-        <EuiSpacer size={"l"} />
+        <EuiSpacer size={'l'} />
         {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
           <EuiInMemoryTable
-            itemId={"id"}
+            itemId={'id'}
             items={integrations}
             columns={getIntegrationsTableColumns({
               showDetails: showIntegrationDetails,
@@ -619,9 +559,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             pagination={{
               initialPageSize: 25,
             }}
-            search={getIntegrationsTableSearchConfig({
-              toolsRight: [actionsButton],
-            })}
+            search={getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] })}
             selection={{
               onSelectionChange: onSelectionChange,
               initialSelected: [],
@@ -631,11 +569,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             loading={loading}
           />
         ) : (
-          <FiltersTab
-            spaceFilter={spaceFilter}
-            notifications={notifications}
-            history={history}
-          />
+          <FiltersTab spaceFilter={spaceFilter} notifications={notifications} history={history} />
         )}
       </EuiCard>
     </>
