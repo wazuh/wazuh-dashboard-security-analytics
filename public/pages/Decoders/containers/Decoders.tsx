@@ -235,8 +235,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE)
           ? `Cannot delete decoders in the ${spaceFilter} space.`
           : selectedItems.length === 0
-            ? 'Select decoders to delete'
-            : undefined
+          ? 'Select decoders to delete'
+          : undefined
       }
     >
       Delete selected ({selectedItems.length})

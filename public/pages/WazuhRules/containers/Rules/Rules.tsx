@@ -255,8 +255,8 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         !isDraftSpace
           ? `Cannot delete rules in the ${spaceFilter} space.`
           : selectedItems.length === 0
-            ? 'Select rules to delete'
-            : undefined
+          ? 'Select rules to delete'
+          : undefined
       }
     >
       Delete selected ({selectedItems.length})
