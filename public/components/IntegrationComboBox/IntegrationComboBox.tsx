@@ -4,17 +4,22 @@
  */
 
 import {
+  EuiButton,
   EuiButtonEmpty,
   EuiCallOut,
   EuiCompressedComboBox,
   EuiCompressedFormRow,
+  EuiFlexGroup,
+  EuiFlexItem,
   EuiSpacer,
 } from '@elastic/eui';
-import React from 'react';
+import React, { useState } from 'react';
+import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
 import { getLogTypeLabel } from '../../pages/LogTypes/utils/helpers';
 import { ROUTES } from '../../utils/constants';
 import { IntegrationOption } from './useIntegrationSelector';
+import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
 
 interface IntegrationComboBoxProps {
   options: IntegrationOption[];
@@ -22,6 +27,10 @@ interface IntegrationComboBoxProps {
   isLoading: boolean;
   onChange: (options: IntegrationOption[]) => void;
   resourceName: string;
+  /** Required to enable the inline create-integration flyout */
+  notifications?: NotificationsStart;
+  /** Called after a new integration is successfully created via the flyout */
+  onCreateSuccess?: (newOption: IntegrationOption) => void;
   'data-test-subj'?: string;
   isInvalid?: boolean;
   error?: string;
@@ -33,11 +42,20 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   isLoading,
   onChange,
   resourceName,
+  notifications,
+  onCreateSuccess,
   'data-test-subj': dataTestSubj,
   isInvalid,
   error,
 }) => {
+  const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
+
+  const handleFlyoutSuccess = (id: string, title: string) => {
+    setIsFlyoutOpen(false);
+    const newOption: IntegrationOption = { id, value: title, label: title };
+    onCreateSuccess?.(newOption);
+  };
 
   return (
     <>
@@ -73,6 +91,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
           }
         />
       </EuiCompressedFormRow>
+
       {!isLoading && options.length === 0 && (
         <>
           <EuiSpacer size="m" />
@@ -81,17 +100,40 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
               There are no integrations in draft status available to add {resourceName}. Please
               create or draft an integration first before adding {resourceName}.
             </p>
-            <EuiButtonEmpty
-              size="s"
-              iconType="popout"
-              href={`#${ROUTES.INTEGRATIONS_CREATE}`}
-              target="_blank"
-              flush="left"
-            >
-              Create integration
-            </EuiButtonEmpty>
+            <EuiFlexGroup gutterSize="s" responsive={false} wrap>
+              {notifications && (
+                <EuiFlexItem grow={false}>
+                  <EuiButton
+                    size="s"
+                    iconType="plusInCircle"
+                    onClick={() => setIsFlyoutOpen(true)}
+                  >
+                    Create integration
+                  </EuiButton>
+                </EuiFlexItem>
+              )}
+              <EuiFlexItem grow={false}>
+                <EuiButtonEmpty
+                  size="s"
+                  iconType="popout"
+                  href={`#${ROUTES.INTEGRATIONS_CREATE}`}
+                  target="_blank"
+                  flush="left"
+                >
+                  Open in new tab
+                </EuiButtonEmpty>
+              </EuiFlexItem>
+            </EuiFlexGroup>
           </EuiCallOut>
         </>
+      )}
+
+      {isFlyoutOpen && notifications && (
+        <CreateIntegrationFlyout
+          notifications={notifications}
+          onClose={() => setIsFlyoutOpen(false)}
+          onSuccess={handleFlyoutSuccess}
+        />
       )}
     </>
   );
