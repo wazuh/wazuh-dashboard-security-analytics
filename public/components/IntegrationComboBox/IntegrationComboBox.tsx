@@ -3,16 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { EuiCallOut, EuiCompressedComboBox, EuiCompressedFormRow, EuiSpacer } from '@elastic/eui';
-import React, { useState, useMemo } from 'react';
+import {
+  EuiButtonEmpty,
+  EuiCallOut,
+  EuiCompressedComboBox,
+  EuiCompressedFormRow,
+  EuiSpacer,
+} from '@elastic/eui';
+import React, { useState } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
 import { getLogTypeLabel } from '../../pages/LogTypes/utils/helpers';
 import { IntegrationOption } from './useIntegrationSelector';
 import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
-
-/** Sentinel id used for the "Create integration" entry inside the dropdown */
-const CREATE_NEW_ID = '__create_integration__';
 
 interface IntegrationComboBoxProps {
   options: IntegrationOption[];
@@ -20,7 +23,7 @@ interface IntegrationComboBoxProps {
   isLoading: boolean;
   onChange: (options: IntegrationOption[]) => void;
   resourceName: string;
-  /** Required to enable the inline create-integration option in the dropdown */
+  /** Required to enable the inline create-integration flyout */
   notifications?: NotificationsStart;
   /** Called after a new integration is successfully created via the flyout */
   onCreateSuccess?: (newOption: IntegrationOption) => void;
@@ -44,25 +47,6 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
 
-  const createNewOption: IntegrationOption = {
-    id: CREATE_NEW_ID,
-    value: CREATE_NEW_ID,
-    label: '+ Create integration',
-  };
-
-  const comboOptions = useMemo(
-    () => (notifications ? [...options, createNewOption] : options),
-    [options, notifications]
-  );
-
-  const handleChange = (selected: IntegrationOption[]) => {
-    if (selected.some((o) => o.id === CREATE_NEW_ID)) {
-      setIsFlyoutOpen(true);
-      return;
-    }
-    onChange(selected);
-  };
-
   const handleFlyoutSuccess = (id: string, title: string) => {
     setIsFlyoutOpen(false);
     const newOption: IntegrationOption = { id, value: title, label: title };
@@ -85,11 +69,11 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
         <EuiCompressedComboBox
           placeholder="Select integration"
           data-test-subj={dataTestSubj}
-          options={comboOptions}
+          options={options}
           singleSelection={{ asPlainText: true }}
-          onChange={handleChange}
+          onChange={onChange}
           isLoading={isLoading}
-          isDisabled={isLoading}
+          isDisabled={isLoading || options.length === 0}
           isInvalid={isInvalid}
           selectedOptions={
             selectedOption
@@ -103,6 +87,21 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
           }
         />
       </EuiCompressedFormRow>
+
+      {notifications && (
+        <>
+          <EuiSpacer size="xs" />
+          <EuiButtonEmpty
+            size="s"
+            iconType="plusInCircle"
+            onClick={() => setIsFlyoutOpen(true)}
+            flush="left"
+          >
+            Create integration
+          </EuiButtonEmpty>
+          <EuiSpacer size="xs" />
+        </>
+      )}
 
       {!isLoading && options.length === 0 && (
         <>
