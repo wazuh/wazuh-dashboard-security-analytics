@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -43,10 +43,17 @@ const INITIAL_FORM_DATA: LogTestFormData = {
 
 const INITIAL_ERRORS: LogTestFormErrors = {};
 
-const spaceOptions: LogTestSpaceOption[] = [
+const INITIAL_SPACE_OPTIONS: LogTestSpaceOption[] = [
   { id: SpaceTypes.STANDARD.value, label: SpaceTypes.STANDARD.label },
   { id: SpaceTypes.TEST.value, label: SpaceTypes.TEST.label },
 ];
+
+interface SpaceCacheEntry {
+  enabled: boolean;
+  integrations: LogTestIntegrationOption[];
+}
+
+type SpaceCache = Record<string, SpaceCacheEntry>;
 
 interface LogTestProps extends RouteComponentProps {
   notifications?: NotificationsStart;
@@ -57,40 +64,81 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
   const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
-  const [integrationOptions, setIntegrationOptions] = useState<
-    LogTestIntegrationOption[]
-  >([]);
+  const [spaceCache, setSpaceCache] = useState<SpaceCache>({});
 
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.LOG_TEST]);
   }, []);
 
-  useEffect(() => {
-    setFormData((prev) => ({ ...prev, integration: '' }));
-    setIntegrationOptions([]);
+  const refreshSpaceCache = useCallback(async (): Promise<SpaceCache> => {
+    const entries = await Promise.all(
+      INITIAL_SPACE_OPTIONS.map((option) =>
+        DataStore.policies
+          .searchPolicies(option.id, { includeIntegrationFields: ['document'] })
+          .then((response): [string, SpaceCacheEntry] => {
+            const policy = response.items[0];
+            const integrations: LogTestIntegrationOption[] = Object.values(
+              policy?.integrationsMap ?? {}
+            )
+              .filter((i) => i.document?.enabled)
+              .map((i) => ({
+                id: i.document?.id,
+                label: i.document?.metadata?.title ?? i.document?.id,
+              }));
+            return [
+              option.id,
+              {
+                enabled: !!policy && policy.document?.enabled !== false,
+                integrations,
+              },
+            ];
+          })
+          .catch((error): [string, SpaceCacheEntry] => {
+            console.error(`Security Analytics - LogTest - searchPolicies (${option.id}):`, error);
+            errorNotificationToast(notifications, 'retrieve', 'policies', error);
+            return [option.id, { enabled: false, integrations: [] }];
+          })
+      )
+    );
 
-    DataStore.integrations
-      .getIntegrations(formData.space)
-      .then((integrations) => {
-        setIntegrationOptions(
-          integrations
-            .filter((i) => i.document?.enabled)
-            .map((i) => ({
-              id: i.id,
-              label: i.document?.metadata?.title ?? i.id,
-            })),
-        );
-      })
-      .catch((error) => {
-        console.error('Security Analytics - LogTest - getIntegrations:', error);
-        errorNotificationToast(
-          notifications,
-          'retrieve',
-          'integrations',
-          error,
-        );
-      });
+    const cache: SpaceCache = Object.fromEntries(entries);
+    setSpaceCache(cache);
+    setFormData((prev) => {
+      if (cache[prev.space]?.enabled) return prev;
+      const firstEnabledId = INITIAL_SPACE_OPTIONS.find((o) => cache[o.id]?.enabled)?.id;
+      if (!firstEnabledId || firstEnabledId === prev.space) return prev;
+      return { ...prev, space: firstEnabledId, integration: '' };
+    });
+    return cache;
+  }, [notifications]);
+
+  useEffect(() => {
+    refreshSpaceCache();
+  }, [refreshSpaceCache]);
+
+  useEffect(() => {
+    setFormData((prev) => (prev.integration ? { ...prev, integration: '' } : prev));
   }, [formData.space]);
+
+  const spaceOptions = useMemo<LogTestSpaceOption[]>(
+    () =>
+      INITIAL_SPACE_OPTIONS.map((option) => {
+        const isEnabled = spaceCache[option.id]?.enabled ?? false;
+        return {
+          ...option,
+          disabled: !isEnabled,
+          title: !isEnabled
+            ? `The "${option.label}" space is disabled , please enable it`
+            : undefined,
+        };
+      }),
+    [spaceCache]
+  );
+
+  const integrationOptions = useMemo<LogTestIntegrationOption[]>(
+    () => spaceCache[formData.space]?.integrations ?? [],
+    [spaceCache, formData.space]
+  );
 
   const validateForm = useCallback((): boolean => {
     const newErrors: LogTestFormErrors = {};
@@ -131,6 +179,8 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
     if (result.success && result.data) {
       setTestResult(result.data);
     }
+
+    refreshSpaceCache();
   };
 
   const handleFormChange = useCallback(
@@ -146,7 +196,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
         });
       }
     },
-    [errors],
+    [errors]
   );
 
   const handleMetadataFieldsChange = useCallback((fields: MetadataEntry[]) => {
@@ -160,16 +210,16 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
   }, []);
 
   return (
-    <EuiFlexGroup direction='column' gutterSize='m'>
+    <EuiFlexGroup direction="column" gutterSize="m">
       <EuiFlexItem grow={false}>
         <PageHeader>
-          <EuiText size='s'>
+          <EuiText size="s">
             <h1>Log Test</h1>
           </EuiText>
         </PageHeader>
       </EuiFlexItem>
 
-      <EuiSpacer size='m' />
+      <EuiSpacer size="m" />
 
       <EuiFlexItem>
         <EuiPanel>
@@ -183,13 +233,13 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
             disabled={isLoading}
           />
 
-          <EuiSpacer size='l' />
+          <EuiSpacer size="l" />
 
-          <EuiFlexGroup justifyContent='spaceBetween' alignItems='center'>
+          <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
             <EuiFlexItem grow={false}>
               <EuiButton
                 fill
-                iconType='play'
+                iconType="play"
                 onClick={handleExecuteLogTest}
                 isLoading={isLoading}
                 disabled={isLoading}
@@ -199,11 +249,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
             </EuiFlexItem>
 
             <EuiFlexItem grow={false}>
-              <EuiButton
-                iconType='broom'
-                onClick={handleClearSession}
-                disabled={isLoading}
-              >
+              <EuiButton iconType="broom" onClick={handleClearSession} disabled={isLoading}>
                 Clear session
               </EuiButton>
             </EuiFlexItem>
@@ -211,7 +257,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
 
           {testResult && (
             <>
-              <EuiHorizontalRule margin='l' />
+              <EuiHorizontalRule margin="l" />
               <LogTestResult result={testResult} />
             </>
           )}
