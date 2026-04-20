@@ -8,7 +8,6 @@ import { CatalogResourceMetadata } from './ResourceMetadata';
 export type DecoderMetadata = CatalogResourceMetadata;
 
 export interface DecoderDocument {
-  id: string;
   name: string;
   enabled?: boolean;
   metadata: DecoderMetadata;
