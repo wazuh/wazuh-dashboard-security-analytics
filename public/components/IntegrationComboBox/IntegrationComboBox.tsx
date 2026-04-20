@@ -3,23 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  EuiButton,
-  EuiButtonEmpty,
-  EuiCallOut,
-  EuiCompressedComboBox,
-  EuiCompressedFormRow,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiSpacer,
-} from '@elastic/eui';
-import React, { useState } from 'react';
+import { EuiCallOut, EuiCompressedComboBox, EuiCompressedFormRow, EuiSpacer } from '@elastic/eui';
+import React, { useState, useMemo } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
 import { getLogTypeLabel } from '../../pages/LogTypes/utils/helpers';
-import { ROUTES } from '../../utils/constants';
 import { IntegrationOption } from './useIntegrationSelector';
 import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
+
+/** Sentinel id used for the "Create integration" entry inside the dropdown */
+const CREATE_NEW_ID = '__create_integration__';
 
 interface IntegrationComboBoxProps {
   options: IntegrationOption[];
@@ -27,7 +20,7 @@ interface IntegrationComboBoxProps {
   isLoading: boolean;
   onChange: (options: IntegrationOption[]) => void;
   resourceName: string;
-  /** Required to enable the inline create-integration flyout */
+  /** Required to enable the inline create-integration option in the dropdown */
   notifications?: NotificationsStart;
   /** Called after a new integration is successfully created via the flyout */
   onCreateSuccess?: (newOption: IntegrationOption) => void;
@@ -51,6 +44,25 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
 
+  const createNewOption: IntegrationOption = {
+    id: CREATE_NEW_ID,
+    value: CREATE_NEW_ID,
+    label: '+ Create integration',
+  };
+
+  const comboOptions = useMemo(
+    () => (notifications ? [...options, createNewOption] : options),
+    [options, notifications]
+  );
+
+  const handleChange = (selected: IntegrationOption[]) => {
+    if (selected.some((o) => o.id === CREATE_NEW_ID)) {
+      setIsFlyoutOpen(true);
+      return;
+    }
+    onChange(selected);
+  };
+
   const handleFlyoutSuccess = (id: string, title: string) => {
     setIsFlyoutOpen(false);
     const newOption: IntegrationOption = { id, value: title, label: title };
@@ -73,11 +85,11 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
         <EuiCompressedComboBox
           placeholder="Select integration"
           data-test-subj={dataTestSubj}
-          options={options}
+          options={comboOptions}
           singleSelection={{ asPlainText: true }}
-          onChange={onChange}
+          onChange={handleChange}
           isLoading={isLoading}
-          isDisabled={isLoading || options.length === 0}
+          isDisabled={isLoading}
           isInvalid={isInvalid}
           selectedOptions={
             selectedOption
@@ -100,30 +112,6 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
               There are no integrations in draft status available to add {resourceName}. Please
               create or draft an integration first before adding {resourceName}.
             </p>
-            <EuiFlexGroup gutterSize="s" responsive={false} wrap>
-              {notifications && (
-                <EuiFlexItem grow={false}>
-                  <EuiButton
-                    size="s"
-                    iconType="plusInCircle"
-                    onClick={() => setIsFlyoutOpen(true)}
-                  >
-                    Create integration
-                  </EuiButton>
-                </EuiFlexItem>
-              )}
-              <EuiFlexItem grow={false}>
-                <EuiButtonEmpty
-                  size="s"
-                  iconType="popout"
-                  href={`#${ROUTES.INTEGRATIONS_CREATE}`}
-                  target="_blank"
-                  flush="left"
-                >
-                  Open in new tab
-                </EuiButtonEmpty>
-              </EuiFlexItem>
-            </EuiFlexGroup>
           </EuiCallOut>
         </>
       )}
