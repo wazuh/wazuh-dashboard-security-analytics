@@ -70,7 +70,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
     setBreadcrumbs([BREADCRUMBS.LOG_TEST]);
   }, []);
 
-  const refreshSpaceCache = useCallback(async (): Promise<SpaceCache> => {
+  const loadSpaceCache = useCallback(async (): Promise<SpaceCache> => {
     const entries = await Promise.all(
       INITIAL_SPACE_OPTIONS.map((option) =>
         DataStore.policies
@@ -115,7 +115,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
   }, [notifications]);
 
   useEffect(() => {
-    refreshSpaceCache();
+    loadSpaceCache();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
