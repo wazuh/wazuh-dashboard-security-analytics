@@ -10,7 +10,7 @@
     "templateVersion": "3.5.0"
   },
   "wazuh": {
-    "version": "5.0.1",
+    "version": "5.9.9",
     "revision": "00"
   },
   "config": {
