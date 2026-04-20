@@ -74,7 +74,9 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
     const entries = await Promise.all(
       INITIAL_SPACE_OPTIONS.map((option) =>
         DataStore.policies
-          .searchPolicies(option.id, { includeIntegrationFields: ['document'] })
+          .searchPolicies(option.id, {
+            includeIntegrationFields: ['document.id', 'document.metadata', 'document.enabled'],
+          })
           .then((response): [string, SpaceCacheEntry] => {
             const policy = response.items[0];
             const integrations: LogTestIntegrationOption[] = Object.values(
@@ -114,7 +116,8 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
 
   useEffect(() => {
     refreshSpaceCache();
-  }, [refreshSpaceCache]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setFormData((prev) => (prev.integration ? { ...prev, integration: '' } : prev));
