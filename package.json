@@ -10,8 +10,8 @@
     "templateVersion": "3.5.0"
   },
   "wazuh": {
-    "version": "5.0.0",
-    "revision": "01"
+    "version": "5.0.1",
+    "revision": "00"
   },
   "config": {
     "id": "securityAnalyticsDashboards",
