@@ -179,8 +179,6 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
     if (result.success && result.data) {
       setTestResult(result.data);
     }
-
-    refreshSpaceCache();
   };
 
   const handleFormChange = useCallback(
