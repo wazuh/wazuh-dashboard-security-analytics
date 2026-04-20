@@ -286,7 +286,7 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
   );
 
   return (
-    <div>
+    <div style={{ paddingBottom: '60px' }}>
       {flyoutData ? (
         <RuleViewerFlyout
           hideFlyout={() => setFlyoutData(() => null)}

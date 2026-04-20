@@ -177,7 +177,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
     >
       {(props) => (
         <Form>
-          <EuiPanel className={'rule-editor-form'}>
+          <EuiPanel className={'rule-editor-form'} style={{ paddingBottom: '60px' }}>
             <PageHeader appDescriptionControls={subtitleData ? [subtitleData] : undefined}>
               <EuiText size="s">
                 <h1>{title}</h1>
@@ -702,8 +702,6 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
               </>
             )}
           </EuiPanel>
-
-          <EuiSpacer size="xxl" />
 
           <EuiBottomBar>
             <EuiFlexGroup

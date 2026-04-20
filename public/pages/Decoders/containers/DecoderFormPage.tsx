@@ -259,7 +259,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         >
           {(props) => (
             <Form>
-              <EuiPanel className={'rule-editor-form'}>
+              <EuiPanel className={'rule-editor-form'} style={{ paddingBottom: '60px' }}>
                 <PageHeader appDescriptionControls={false}>
                   <EuiText size="s">
                     <h1>{actionLabels[action]}</h1>
@@ -313,11 +313,8 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                 )}
               </EuiPanel>
 
-              <EuiSpacer size="xxl" />
-              <EuiSpacer size="xxl" />
-
               <EuiBottomBar>
-                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
+                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
                   <EuiFlexItem grow={false}>
                     <EuiButtonEmpty
                       color="ghost"

@@ -420,7 +420,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         </EuiTitle>
         <EuiSpacer size="xl" />
       </PageHeader>
-      <EuiPanel>
+      <EuiPanel style={{ paddingBottom: '60px' }}>
         <DetectorBasicDetailsForm
           isEdit={true}
           detectorName={name}
@@ -522,9 +522,6 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         <DetectorSchedule detector={detector} onDetectorScheduleChange={onDetectorScheduleChange} />
         <EuiSpacer size="l" />
       </EuiPanel>
-
-      <EuiSpacer size="xxl" />
-      <EuiSpacer size="xxl" />
 
       <EuiBottomBar>
         <EuiFlexGroup

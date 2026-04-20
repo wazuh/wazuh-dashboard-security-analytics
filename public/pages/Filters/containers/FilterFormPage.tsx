@@ -186,7 +186,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
             handleSubmit: formikSubmit,
           }) => (
             <Form>
-              <EuiPanel>
+              <EuiPanel style={{ paddingBottom: '60px' }}>
                 <PageHeader appDescriptionControls={false as any}>
                   <EuiText size="s">
                     <h1>{actionLabels[action]} filter</h1>
@@ -393,7 +393,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
               </EuiPanel>
 
               <EuiBottomBar>
-                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
+                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
                   <EuiFlexItem grow={false}>
                     <EuiButtonEmpty
                       color="ghost"

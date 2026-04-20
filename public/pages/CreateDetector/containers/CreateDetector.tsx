@@ -436,7 +436,7 @@ export default class CreateDetector extends Component<
       this.createStepsMetadata(currentStep);
 
     return (
-      <form onSubmit={this.onCreateClick}>
+      <form onSubmit={this.onCreateClick} style={{ paddingBottom: '60px' }}>
         <EuiFlexGroup>
           <EuiFlexItem grow={false}>
             <EuiSteps steps={steps} titleSize={"xs"} />
@@ -454,11 +454,8 @@ export default class CreateDetector extends Component<
           </EuiFlexItem>
         </EuiFlexGroup>
 
-        <EuiSpacer size="xxl" />
-        <EuiSpacer size="xxl" />
-
         <EuiBottomBar>
-          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
+          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
             <EuiFlexItem grow={false}>
               <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${ROUTES.DETECTORS}`}>
                 Cancel

@@ -264,7 +264,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
         >
           {(formikProps) => (
             <Form>
-              <EuiPanel>
+              <EuiPanel style={{ paddingBottom: '60px' }}>
                 <PageHeader appDescriptionControls={false}>
                   <EuiText size="s">
                     <h1>{actionLabels[action]} KVDB</h1>
@@ -372,11 +372,8 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                 </EuiCompressedFormRow>
               </EuiPanel>
 
-              <EuiSpacer size="xxl" />
-              <EuiSpacer size="xxl" />
-
               <EuiBottomBar>
-                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center">
+                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
                   <EuiFlexItem grow={false}>
                     <EuiButtonEmpty
                       color="ghost"
