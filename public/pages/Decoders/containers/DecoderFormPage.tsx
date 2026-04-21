@@ -28,6 +28,7 @@ import {
 import { DecoderDocument } from '../../../../types/Decoders';
 import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
+import { validate } from 'joi';
 
 const editorTypes = [
   {
@@ -195,16 +196,17 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     [action, createDecoder, updateDecoder]
   );
 
-  /* 
-  TODO: Check whether we can adapt the validation, because Formik is now using a string with the decoder
-  const validateForm = useCallback((values: DecoderDocument) => {
+  const validateForm = useCallback((values: { rawDecoder: string }) => {
     const errors: FormikErrors<DecoderDocument> = {};
-    return errors;
-    if (!values.name) {
+
+    // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
+    const decoder = mapYamlToLosslessDecoder(values.rawDecoder);
+
+    if (!decoder.name) {
       errors.name = 'Decoder name is required';
     }
 
-    const parts = values.name.split('/');
+    const parts = decoder.name.split('/');
 
     if (parts.length !== 3) {
       errors.name = "Decoder name must have exactly 3 parts 'decoder/<name>/<version>'";
@@ -227,7 +229,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
 
     return errors;
   }, []);
-  */
+
   return (
     <>
       {isLoading ? (
@@ -244,6 +246,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           initialValues={{ rawDecoder: rawDecoder }}
           validateOnMount={true}
           enableReinitialize={true}
+          validate={validateForm}
           onSubmit={(values, { setSubmitting }) => {
             setSubmitting(false);
             handleOnClick(mapYamlToLosslessDecoder(values.rawDecoder));
