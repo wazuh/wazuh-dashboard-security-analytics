@@ -196,7 +196,7 @@ export class PoliciesService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
-        index: POLICIES_INDEX,
+        index: CONTENT_INDICES.POLICIES,
         body: {
           from,
           size,
@@ -264,7 +264,7 @@ export class PoliciesService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const query = {
-        index: POLICIES_INDEX,
+        index: CONTENT_INDICES.POLICIES,
         body: {
           size: 1,
           query: this.applySpaceFilter({ ids: { values: [policyId] } }, space, searchFields),
