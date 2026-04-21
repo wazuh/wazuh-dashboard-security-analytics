@@ -11,6 +11,7 @@ import {
   EuiFlexItem,
   EuiSpacer,
   EuiTitle,
+  EuiSmallButton
 } from '@elastic/eui';
 import {
   DetectorHit,
@@ -326,6 +327,28 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
         ) : null}
 
         <EuiSpacer size="xl" />
+
+        {/* Wazuh: Original Cancel and Create buttons replaced by standardized
+        EuiBottomBar for UI consistency.*/}
+        {/* <EuiFlexGroup justifyContent="flexEnd">
+          <EuiFlexItem grow={false}>
+            <EuiSmallButton disabled={submitting} onClick={onCancel}>
+              Cancel
+            </EuiSmallButton>
+          </EuiFlexItem>
+
+          <EuiFlexItem grow={false}>
+            <EuiSmallButton
+              disabled={loading}
+              fill={true}
+              isLoading={submitting}
+              onClick={onSave}
+              data-test-subj={'save-detector-rules-edits'}
+            >
+              Save changes
+            </EuiSmallButton>
+          </EuiFlexItem>
+        </EuiFlexGroup> */}
 
         <EuiBottomBar>
           <EuiFlexGroup
