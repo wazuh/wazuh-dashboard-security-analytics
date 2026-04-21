@@ -6,6 +6,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   EuiButtonIcon,
+  EuiCodeEditor,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSelect,
@@ -41,6 +42,7 @@ import {
   filterFormDefaultValue,
   mapFilterToForm,
   mapFormToFilterResource,
+  parseCheckYaml,
 } from '../utils/mappers';
 import { FILTER_TYPE_OPTIONS } from '../utils/constants';
 
@@ -54,6 +56,18 @@ const actionLabels: Record<FilterAction, string> = {
   create: 'Create',
   edit: 'Edit',
 };
+
+const checkHelpPreStyle: React.CSSProperties = { margin: '4px 0 0 0' };
+const loadingPanelStyle: React.CSSProperties = { minHeight: '400px' };
+const checkEditorOptions = { tabSize: 2, useSoftTabs: true, showPrintMargin: false };
+
+const checkHelpText = (
+  <div style={{ maxWidth: '600px' }}>
+    Expression evaluated to determine if the filter applies (e.g.{' '}
+    <code>$host.os.platform == 'ubuntu'</code>) or a list of field/value pairs:
+    <pre style={checkHelpPreStyle}>{`- host.os.platform: ubuntu\n- host.os.type: linux`}</pre>
+  </div>
+);
 
 type FilterFormPageProps = {
   notifications: NotificationsStart;
@@ -116,7 +130,8 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
       errors.name = 'Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0).';
     }
     if (!values.type) errors.type = 'Type is required';
-    if (!values.check.trim()) errors.check = 'Check expression is required';
+    const checkResult = parseCheckYaml(values.check);
+    if (!checkResult.ok) errors.check = checkResult.error;
     if (!values.author.trim()) errors.author = 'Author is required';
     return errors;
   }, []);
@@ -152,14 +167,17 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
     [action, filterId, spaceFilter, notifications, history]
   );
 
-  const isSubmitDisabled = (errors: FormikErrors<FilterFormModel>) =>
-    !!(errors.name || errors.type || errors.check || errors.author);
+  const isSubmitDisabled = useCallback(
+    (errors: FormikErrors<FilterFormModel>) =>
+      Boolean(errors.name || errors.type || errors.check || errors.author),
+    []
+  );
 
   return (
     <>
       {isLoading ? (
         <EuiPanel>
-          <EuiFlexGroup justifyContent="center" alignItems="center" style={{ minHeight: '400px' }}>
+          <EuiFlexGroup justifyContent="center" alignItems="center" style={loadingPanelStyle}>
             <EuiFlexItem grow={false}>
               <EuiLoadingSpinner size="xl" />
             </EuiFlexItem>
@@ -275,19 +293,22 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={'Check expression'}
+                  label={'Check'}
                   fullWidth
                   isInvalid={!!errors.check && touched.check}
                   error={errors.check}
-                  helpText="Expression evaluated to determine if the filter applies (e.g. $host.os.platform == 'ubuntu')"
+                  helpText={checkHelpText}
                 >
-                  <EuiCompressedTextArea
-                    placeholder="$host.os.platform == 'ubuntu'"
+                  <EuiCodeEditor
+                    mode="yaml"
+                    width="600px"
+                    height="160px"
                     value={values.check}
-                    onChange={(e) => setFieldValue('check', e.target.value)}
+                    onChange={(value: string) => setFieldValue('check', value)}
                     onBlur={() => setFieldTouched('check')}
-                    isInvalid={!!errors.check && touched.check}
-                    rows={3}
+                    setOptions={checkEditorOptions}
+                    data-test-subj="filter-check-yaml-editor"
+                    aria-label="Check YAML editor"
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />

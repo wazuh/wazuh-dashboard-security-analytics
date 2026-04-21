@@ -20,10 +20,12 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { FilterItem } from '../../../../types';
+import { FilterCheck } from '../../../../types/Filters';
 import { Metadata } from '../../../components/Utility/Metadata';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { checkToYamlString } from '../utils/mappers';
 
 interface FilterDetailsFlyoutProps {
   filter: FilterItem;
@@ -40,6 +42,16 @@ const getAuthorDisplay = (author: string | { name?: string } | undefined): strin
   if (!author) return '';
   if (typeof author === 'string') return author;
   return author.name ?? '';
+};
+
+const renderCheck = (check: FilterCheck | undefined): React.ReactNode => {
+  if (!Array.isArray(check)) return check ?? '';
+  if (check.length === 0) return DEFAULT_EMPTY_DATA;
+  return (
+    <EuiCodeBlock language="yaml" paddingSize="s" isCopyable>
+      {checkToYamlString(check)}
+    </EuiCodeBlock>
+  );
 };
 
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
@@ -71,7 +83,7 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     { label: 'Created', value: metadata.date, type: 'date' },
     { label: 'Modified', value: metadata.modified, type: 'date' },
     { label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={supports} /> },
-    { label: 'Check', value: document.check },
+    { label: 'Check', value: renderCheck(document.check) },
     { label: 'Documentation', value: metadata.documentation, type: 'url' },
     { label: 'SHA256', value: filter.hash?.sha256 },
     { label: 'References', value: references, type: 'url' },

@@ -12,7 +12,9 @@ import { createQueryValidationSchema } from '../utils/helpers';
 const filterResourceSchema = schema.object({
   name: schema.string(),
   enabled: schema.maybe(schema.boolean()),
-  check: schema.maybe(schema.string()),
+  check: schema.maybe(
+    schema.oneOf([schema.string(), schema.arrayOf(schema.recordOf(schema.string(), schema.any()))])
+  ),
   type: schema.maybe(schema.string()),
   metadata: schema.maybe(
     schema.object({
