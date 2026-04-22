@@ -33,6 +33,7 @@ import {
   setBreadcrumbs,
   successNotificationToast,
 } from '../../../../utils/helpers';
+import { isDetectorFormValid } from '../../utils/helpers';
 import { FieldMapping, Detector } from '../../../../../types';
 import { ThreatIntelligence } from '../../../CreateDetector/components/DefineDetector/components/ThreatIntelligence/ThreatIntelligence';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
@@ -412,6 +413,8 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
   const integrationIsInvalid = integrationTouched && !detector.detector_type;
 
+  const isFormValid = isDetectorFormValid(detector);
+
   return (
     <>
       <PageHeader>
@@ -548,7 +551,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
               iconType="check"
               size="s"
               onClick={onSave}
-              disabled={loading || submitting}
+              disabled={loading || submitting || !isFormValid}
               isLoading={submitting}
               data-test-subj={'save-basic-details-edits'}
             >
