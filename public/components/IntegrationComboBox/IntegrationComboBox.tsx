@@ -8,6 +8,8 @@ import {
   EuiCallOut,
   EuiCompressedComboBox,
   EuiCompressedFormRow,
+  EuiFlexGroup,
+  EuiFlexItem,
   EuiSpacer,
 } from '@elastic/eui';
 import React, { useState } from 'react';
@@ -62,46 +64,73 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
             <EuiSpacer size={'s'} />
           </div>
         }
-        fullWidth={true}
         isInvalid={isInvalid}
         error={error}
       >
-        <EuiCompressedComboBox
-          placeholder="Select integration"
-          data-test-subj={dataTestSubj}
-          options={options}
-          singleSelection={{ asPlainText: true }}
-          onChange={onChange}
-          isLoading={isLoading}
-          isDisabled={isLoading || options.length === 0}
-          isInvalid={isInvalid}
-          selectedOptions={
-            selectedOption
-              ? [
-                  {
-                    value: selectedOption.value,
-                    label: getLogTypeLabel(selectedOption.value),
-                  },
-                ]
-              : []
-          }
-        />
-      </EuiCompressedFormRow>
-
-      {notifications && (
-        <>
-          <EuiSpacer size="xs" />
-          <EuiButtonEmpty
-            size="s"
-            iconType="plusInCircle"
-            onClick={() => setIsFlyoutOpen(true)}
-            flush="left"
+        {notifications ? (
+          <EuiFlexGroup
+            gutterSize="s"
+            alignItems="center"
+            responsive={false}
+            justifyContent="flexStart"
           >
-            Create integration
-          </EuiButtonEmpty>
-          <EuiSpacer size="xs" />
-        </>
-      )}
+            <EuiFlexItem grow={true} style={{ minWidth: 0 }}>
+              <EuiCompressedComboBox
+                placeholder="Select integration"
+                data-test-subj={dataTestSubj}
+                options={options}
+                singleSelection={{ asPlainText: true }}
+                onChange={onChange}
+                isLoading={isLoading}
+                isDisabled={isLoading || options.length === 0}
+                isInvalid={isInvalid}
+                fullWidth
+                selectedOptions={
+                  selectedOption
+                    ? [
+                        {
+                          value: selectedOption.value,
+                          label: getLogTypeLabel(selectedOption.value),
+                        },
+                      ]
+                    : []
+                }
+              />
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty
+                size="s"
+                iconType="plusInCircle"
+                iconSide="left"
+                onClick={() => setIsFlyoutOpen(true)}
+              >
+                Create integration
+              </EuiButtonEmpty>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        ) : (
+          <EuiCompressedComboBox
+            placeholder="Select integration"
+            data-test-subj={dataTestSubj}
+            options={options}
+            singleSelection={{ asPlainText: true }}
+            onChange={onChange}
+            isLoading={isLoading}
+            isDisabled={isLoading || options.length === 0}
+            isInvalid={isInvalid}
+            selectedOptions={
+              selectedOption
+                ? [
+                    {
+                      value: selectedOption.value,
+                      label: getLogTypeLabel(selectedOption.value),
+                    },
+                  ]
+                : []
+            }
+          />
+        )}
+      </EuiCompressedFormRow>
 
       {!isLoading && options.length === 0 && (
         <>
