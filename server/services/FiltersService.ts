@@ -14,8 +14,6 @@ import { ServerResponse } from '../models/types';
 import {
   FilterSearchRequest,
   FilterSearchResponse,
-  CreateFilterPayload,
-  UpdateFilterPayload,
   CUDFilterResponse,
 } from '../../types';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
@@ -62,9 +60,11 @@ export class FiltersService extends MDSEnabledClientService {
     response: OpenSearchDashboardsResponseFactory
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<CUDFilterResponse> | ResponseError>> => {
     try {
-      const body = request.body as CreateFilterPayload;
+      const { space, documentJson } = request.body as { space: string; documentJson: string };
       const client = this.getClient(request, context);
-      const createResponse = await client(CLIENT_FILTER_METHODS.CREATE_FILTER, { body });
+      const createResponse = await client(CLIENT_FILTER_METHODS.CREATE_FILTER, {
+        body: `{"space":"${space}","resource":${documentJson}}`,
+      });
       return response.custom({ statusCode: 200, body: { ok: true, response: createResponse } });
     } catch (error) {
       console.error('Security Analytics - FiltersService - createFilter:', error);
@@ -82,9 +82,12 @@ export class FiltersService extends MDSEnabledClientService {
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<CUDFilterResponse> | ResponseError>> => {
     try {
       const { filterId } = request.params;
-      const body = request.body as UpdateFilterPayload;
+      const { space, documentJson } = request.body as { space: string; documentJson: string };
       const client = this.getClient(request, context);
-      const updateResponse = await client(CLIENT_FILTER_METHODS.UPDATE_FILTER, { filterId, body });
+      const updateResponse = await client(CLIENT_FILTER_METHODS.UPDATE_FILTER, {
+        filterId,
+        body: `{"space":"${space}","resource":${documentJson}}`,
+      });
       return response.custom({ statusCode: 200, body: { ok: true, response: updateResponse } });
     } catch (error) {
       console.error('Security Analytics - FiltersService - updateFilter:', error);

@@ -66,14 +66,9 @@ export interface FilterResource {
   };
 }
 
-export interface CreateFilterPayload {
+export interface FilterPayload {
   space: string;
-  resource: FilterResource;
-}
-
-export interface UpdateFilterPayload {
-  space: string;
-  resource: FilterResource;
+  documentJson: string;
 }
 
 export interface CUDFilterResponse {

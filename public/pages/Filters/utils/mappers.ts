@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { dump, load } from 'js-yaml';
+import YAML from 'yaml';
+import { LosslessNumber } from 'lossless-json';
 import {
   FilterCheck,
   FilterCheckListItem,
   FilterDocument,
   FilterResource,
 } from '../../../../types/Filters';
+import { dump } from 'js-yaml';
 
 export interface FilterFormModel {
   name: string;
@@ -56,6 +58,26 @@ export type FilterCheckParseResult =
   | { ok: true; value: FilterCheck }
   | { ok: false; error: string };
 
+const wrapNumbersWithLossless = (yamlString: string): unknown => {
+  const doc = YAML.parseDocument(yamlString);
+  YAML.visit(doc, {
+    Scalar(_, node) {
+      if (typeof node.value === 'number') {
+        let rawText: string | undefined;
+        if (node.range && node.range.length >= 2) {
+          rawText = yamlString.slice(node.range[0], node.range[1]).trim();
+        }
+        if (!rawText) {
+          rawText = String(node.value);
+          if (!rawText.includes('.')) rawText += '.0';
+        }
+        node.value = new LosslessNumber(rawText);
+      }
+    },
+  });
+  return doc.toJS();
+};
+
 export const parseCheckYaml = (yamlText: string): FilterCheckParseResult => {
   const text = yamlText ?? '';
   if (!text.trim()) {
@@ -63,7 +85,7 @@ export const parseCheckYaml = (yamlText: string): FilterCheckParseResult => {
   }
   let parsed: unknown;
   try {
-    parsed = load(text);
+    parsed = wrapNumbersWithLossless(text);
   } catch (err) {
     return { ok: false, error: `Invalid YAML: ${(err as Error).message}` };
   }
