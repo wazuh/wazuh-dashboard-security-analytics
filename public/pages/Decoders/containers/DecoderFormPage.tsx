@@ -62,6 +62,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const [integrationType, setIntegrationType] = useState<string>('');
   const [rawDecoder, setRawDecoder] = useState<string>(decoderFormDefaultValue);
   const [decoder, setDecoder] = useState<DecoderDocument>();
+  const [hasYamlErrors, setHasYamlErrors] = useState(false);
 
   const { loading: loadingIntegrations, options: integrationTypeOptions } = useIntegrationSelector({
     notifications,
@@ -268,7 +269,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                       : 'Edit the decoder to update the normalization of logs from your selected integration.'}
                   </EuiText>
 
-                  <EuiSpacer />
+                  <EuiSpacer size="m" />
                 </PageHeader>
 
                 <EuiButtonGroup
@@ -279,7 +280,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                   onChange={(id) => setSelectedEditorType(id)}
                 />
 
-                <EuiSpacer size="xl" />
+                <EuiSpacer size="m" />
 
                 {action === 'create' && (
                   <>
@@ -291,7 +292,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                       resourceName="decoders"
                       data-test-subj="integration_dropdown"
                     />
-                    <EuiSpacer size="xl" />
+                    <EuiSpacer size="m" />
                   </>
                 )}
 
@@ -305,6 +306,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                     change={(e) => {
                       props.setValues({ rawDecoder: e });
                     }}
+                    onErrors={(errors) => setHasYamlErrors(errors !== null && errors.length > 0)}
                   />
                 )}
               </EuiPanel>
@@ -336,7 +338,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                               : ''}
                           </p>
                           <p>
-                            {Object.keys(props.errors).length > 0
+                            {Object.keys(props.errors).length > 0 || hasYamlErrors
                               ? 'Please fix the errors in the form to proceed'
                               : ''}
                           </p>
@@ -349,7 +351,11 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                         fill
                         iconType="check"
                         size="s"
-                        disabled={!integrationType || Object.keys(props.errors).length > 0}
+                        disabled={
+                          !integrationType ||
+                          Object.keys(props.errors).length > 0 ||
+                          hasYamlErrors
+                        }
                         onClick={() => props.handleSubmit()}
                       >
                         {actionLabels[action]} decoder
