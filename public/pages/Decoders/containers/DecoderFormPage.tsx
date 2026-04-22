@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Form, Formik, FormikErrors } from 'formik';
-import {
-  decoderFormDefaultValue,
-  DecoderFormModel,
-  mapDecoderToForm,
-  mapYamlObjectToDecoder,
-} from '../components/mappers';
+import { decoderFormDefaultValue, mapYamlToLosslessDecoder } from '../components/mappers';
 import { YamlForm } from '../components/YamlForm';
 import {
   errorNotificationToast,
@@ -35,6 +30,7 @@ import {
 import { DecoderDocument } from '../../../../types/Decoders';
 import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
+import { validate } from 'joi';
 
 const editorTypes = [
   {
@@ -64,8 +60,8 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState('yaml');
   const [integrationType, setIntegrationType] = useState<string>('');
-  const [decoder, setDecoder] = useState<DecoderDocument | undefined>(undefined);
-  const [initialValue, setInitialValue] = useState<DecoderFormModel>(decoderFormDefaultValue);
+  const [rawDecoder, setRawDecoder] = useState<string>(decoderFormDefaultValue);
+  const [decoder, setDecoder] = useState<DecoderDocument>();
 
   const { loading: loadingIntegrations, options: integrationTypeOptions } = useIntegrationSelector({
     notifications,
@@ -77,11 +73,9 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         setIsLoading(true);
         try {
           const response = await DataStore.decoders.getDecoder(idDecoder, spaceDecoder);
-          setDecoder(response?.document);
+          setRawDecoder(response?.decoder ?? decoderFormDefaultValue);
+          setDecoder(mapYamlToLosslessDecoder(response?.decoder ?? ''));
           setIntegrationType(response?.integrations?.[0] || '');
-          if (response?.document) {
-            setInitialValue(mapDecoderToForm(response.document));
-          }
           setBreadcrumbs([
             BREADCRUMBS.NORMALIZATION,
             BREADCRUMBS.DECODERS,
@@ -120,7 +114,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   }, []);
 
   const createDecoder = useCallback(
-    async (values: DecoderFormModel) => {
+    async (values: DecoderDocument) => {
       if (!values || !integrationType) {
         errorNotificationToast(
           notifications,
@@ -160,7 +154,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   );
 
   const updateDecoder = useCallback(
-    async (values: DecoderFormModel) => {
+    async (values: DecoderDocument) => {
       if (!values) {
         errorNotificationToast(notifications, 'retrieve', 'decoder', 'No decoder to update');
         return;
@@ -194,7 +188,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   );
 
   const handleOnClick = useCallback(
-    async (values: DecoderFormModel) => {
+    async (values: DecoderDocument) => {
       if (action === 'create') {
         await createDecoder(values);
       } else if (action === 'edit') {
@@ -204,14 +198,17 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     [action, createDecoder, updateDecoder]
   );
 
-  const validateForm = useCallback((values: DecoderFormModel) => {
-    const errors: FormikErrors<DecoderFormModel> = {};
+  const validateForm = useCallback((values: { rawDecoder: string }) => {
+    const errors: FormikErrors<DecoderDocument> = {};
 
-    if (!values.name) {
+    // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
+    const decoder = mapYamlToLosslessDecoder(values.rawDecoder);
+
+    if (!decoder.name) {
       errors.name = 'Decoder name is required';
     }
 
-    const parts = values.name.split('/');
+    const parts = decoder.name.split('/');
 
     if (parts.length !== 3) {
       errors.name = "Decoder name must have exactly 3 parts 'decoder/<name>/<version>'";
@@ -248,13 +245,13 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
       ) : (
         <Formik
           key={decoder?.id || 'new-decoder'}
-          initialValues={initialValue}
+          initialValues={{ rawDecoder: rawDecoder }}
           validateOnMount={true}
           enableReinitialize={true}
           validate={validateForm}
           onSubmit={(values, { setSubmitting }) => {
             setSubmitting(false);
-            handleOnClick(values);
+            handleOnClick(mapYamlToLosslessDecoder(values.rawDecoder));
           }}
         >
           {(props) => (
@@ -300,21 +297,25 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
 
                 {selectedEditorType === 'yaml' && (
                   <YamlForm
-                    decoder={decoder ? decoder : props.values}
+                    rawDecoder={props.values.rawDecoder}
                     isInvalid={Object.keys(props.errors).length > 0}
                     errors={Object.keys(props.errors).map(
-                      (key) => props.errors[key as keyof DecoderFormModel] as string
+                      (key) => (props.errors as Record<string, string>)[key]
                     )}
                     change={(e) => {
-                      const formState = mapYamlObjectToDecoder(e);
-                      props.setValues(formState);
+                      props.setValues({ rawDecoder: e });
                     }}
                   />
                 )}
               </EuiPanel>
 
               <EuiBottomBar>
-                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
+                <EuiFlexGroup
+                  gutterSize="s"
+                  justifyContent="flexEnd"
+                  alignItems="center"
+                  responsive={false}
+                >
                   <EuiFlexItem grow={false}>
                     <EuiButtonEmpty
                       color="ghost"
