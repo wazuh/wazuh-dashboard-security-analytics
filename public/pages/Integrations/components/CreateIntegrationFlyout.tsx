@@ -41,8 +41,8 @@ export const CreateIntegrationFlyout: React.FC<CreateIntegrationFlyoutProps> = (
     async (integrationData: IntegrationItem) => {
       setIsSaving(true);
       try {
-        const id = await DataStore.integrations.createIntegration(integrationData);
-        if (id) {
+        const [ok, id] = await DataStore.integrations.createIntegration(integrationData);
+        if (ok) {
           const title = integrationData.document.metadata?.title ?? '';
           successNotificationToast(notifications, 'created', `integration ${title}`);
           onSuccess(id, title);
