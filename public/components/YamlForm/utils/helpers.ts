@@ -1,21 +1,8 @@
-import { DecoderDocument } from '../../../../types/Decoders';
 import YAML from 'yaml';
 import { LosslessNumber } from 'lossless-json';
 
-export const decoderFormDefaultValue: string = `name: decoder/<name>/<version>
-enabled: true
-metadata:
-  title: Placeholder Decoder
-  description: This is a placeholder decoder. Please update the fields accordingly.
-  author: User
-  date: '${new Date().toISOString().split('T')[0]}'
-  modified: '${new Date().toISOString().split('T')[0]}'
-  references: []
-  documentation: ''
-  supports: []`;
-
 // Convert yaml string to a decoder model with floats with decimal precision
-export const mapYamlToLosslessDecoder = (yamlString: string): DecoderDocument => {
+export const mapYamlToLosslessDecoder = <T>(yamlString: string): T => {
   const yamlObject = YAML.parseDocument(yamlString);
 
   YAML.visit(yamlObject, {
@@ -38,7 +25,7 @@ export const mapYamlToLosslessDecoder = (yamlString: string): DecoderDocument =>
   });
 
   // Transform the yaml into an object with lossless numbers
-  const decoderForm = yamlObject.toJS() as DecoderDocument;
+  const objectForm = yamlObject.toJS() as T;
 
-  return decoderForm;
+  return objectForm;
 };

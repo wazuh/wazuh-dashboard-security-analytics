@@ -21,14 +21,14 @@ import {
   EuiSpacer,
   EuiText,
 } from '@elastic/eui';
-import { DecoderItem } from '../../../../types';
+import { DecoderDocument, DecoderItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { Metadata } from '../../../components/Utility/Metadata';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
 import { stringify as LosslessStringify } from 'lossless-json';
-import { mapYamlToLosslessDecoder } from '../components/mappers';
+import { mapYamlToLosslessDecoder } from '../../../components/YamlForm';
 
 interface DecoderDetailsFlyoutProps {
   decoderId: string;
@@ -95,12 +95,11 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   }, [decoderId, space]);
 
   const decoderJson = useMemo(() => {
-    if (!decoder) return "";
+    if (!decoder) return '';
     try {
-      const rawYaml =
-        typeof decoder.decoder === 'string' ? decoder.decoder : null;
+      const rawYaml = typeof decoder.decoder === 'string' ? decoder.decoder : null;
       if (rawYaml) {
-        const losslessDoc = mapYamlToLosslessDecoder(rawYaml);
+        const losslessDoc = mapYamlToLosslessDecoder<DecoderDocument>(rawYaml);
         return LosslessStringify(losslessDoc, null, 2) ?? '';
       }
       return JSON.stringify(decoder?.document, null, 2);

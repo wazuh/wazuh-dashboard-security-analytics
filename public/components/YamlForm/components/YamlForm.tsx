@@ -1,10 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { EuiCompressedFormRow, EuiCodeEditor, EuiSpacer, EuiText, EuiCallOut } from '@elastic/eui';
 import FormFieldHeader from '../../../components/FormFieldHeader';
-import { YamlEditorState } from '../../Rules/components/RuleEditor/components/YamlRuleEditorComponent/YamlRuleEditorComponent';
+import { YamlEditorState, YAML_TYPE } from '../utils/constants';
 
 interface YamlFormProps {
-  rawDecoder: string;
+  type: YAML_TYPE;
+  value: string;
   change: React.Dispatch<string>;
   isInvalid: boolean;
   errors?: string[];
@@ -12,7 +13,8 @@ interface YamlFormProps {
 }
 
 export const YamlForm: React.FC<YamlFormProps> = ({
-  rawDecoder,
+  type,
+  value,
   change,
   isInvalid,
   errors,
@@ -20,7 +22,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
 }) => {
   const [state, setState] = useState<YamlEditorState>({
     errors: null,
-    value: rawDecoder ?? '',
+    value: value ?? '',
   });
 
   const isFocusedRef = useRef(false);
@@ -33,7 +35,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
 
   const tryParseAndNotify = (value: string) => {
     if (!value || value.trim() === '') {
-      setState((prev) => ({ ...prev, errors: ['Decoder cannot be empty'] }));
+      setState((prev) => ({ ...prev, errors: [`${type} cannot be empty`] }));
       return;
     }
     try {
@@ -41,7 +43,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
       setState((prev) => ({ ...prev, errors: null }));
     } catch (err) {
       setState((prev) => ({ ...prev, errors: ['Invalid YAML'] }));
-      console.warn('Security Analytics - Decoder Editor - Yaml load', err);
+      console.warn(`Security Analytics - ${type} Editor - Yaml load`, err);
     }
   };
 
@@ -87,13 +89,13 @@ export const YamlForm: React.FC<YamlFormProps> = ({
       {renderErrors()}
       <EuiSpacer size="s" />
       <EuiCompressedFormRow
-        label={<FormFieldHeader headerTitle={'Define decoder in YAML'} />}
+        label={<FormFieldHeader headerTitle={`Define ${type} in YAML`} />}
         fullWidth={true}
       >
         <>
           <EuiSpacer />
           <EuiText size="s" color="subdued">
-            Use the YAML editor to define a custom decoder.
+            Use the YAML editor to define a custom {type}.
           </EuiText>
           <EuiSpacer size="s" />
           <EuiCodeEditor
