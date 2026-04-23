@@ -30,7 +30,6 @@ export const filterFormDefaultValue: FilterFormModel = {
   supports: [],
 };
 
-
 export const filterFormDefaultYaml: string = (() => {
   const now = new Date().toISOString().split('T')[0];
   return dump({
@@ -39,10 +38,7 @@ export const filterFormDefaultYaml: string = (() => {
     check: '',
     enabled: true,
     metadata: {
-      title: '',
       author: '',
-      date: now,
-      modified: now,
       description: '',
       documentation: '',
       references: [],

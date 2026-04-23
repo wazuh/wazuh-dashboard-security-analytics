@@ -190,6 +190,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
             errors,
             touched,
             isSubmitting,
+            setValues,
             setFieldValue,
             setFieldTouched,
             handleSubmit: formikSubmit,
@@ -426,13 +427,9 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                     )}
                     change={(yamlString) => {
                       setRawFilter(yamlString);
-                      try {
-                        const parsed = mapYamlToLosslessObject<any>(yamlString);
-                        const formValues = mapYamlToFilterForm(parsed);
-                        setValues(formValues);
-                      } catch {
-                        // YAML inválido, Formik mantiene el estado anterior
-                      }
+                      const parsed = mapYamlToLosslessObject<FilterFormModel>(yamlString);
+                      const formValues = mapYamlToFilterForm(parsed);
+                      setValues(formValues);
                     }}
                   />
                 )}
