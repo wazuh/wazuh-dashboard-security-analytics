@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { ChangeEvent, Component } from 'react';
+import React, { ChangeEvent, Component } from "react";
 import {
   EuiConfirmModal,
   EuiCompressedFieldText,
@@ -12,7 +12,7 @@ import {
   EuiOverlayMask,
   EuiSpacer,
   EuiText,
-} from '@elastic/eui';
+} from "@elastic/eui";
 
 interface DeleteModalProps {
   additionalWarning?: string;
@@ -28,14 +28,14 @@ interface DeleteModalState {
   confirmDeleteText: string;
 }
 
-export const DEFAULT_DELETION_TEXT = 'delete';
+export const DEFAULT_DELETION_TEXT = "delete";
 
 export default class DeleteModal extends Component<DeleteModalProps, DeleteModalState> {
   constructor(props: DeleteModalProps) {
     super(props);
     const { confirmation } = props;
     this.state = {
-      confirmDeleteText: confirmation ? '' : DEFAULT_DELETION_TEXT,
+      confirmDeleteText: confirmation ? "" : DEFAULT_DELETION_TEXT,
     };
   }
 
@@ -58,15 +58,19 @@ export default class DeleteModal extends Component<DeleteModalProps, DeleteModal
     return (
       <EuiOverlayMask>
         <EuiConfirmModal
-          title={<EuiText size="s"><h2>`Delete ${type}`</h2></EuiText>}
+          title={
+            <EuiText size="s">
+              <h2>`Delete ${ids}`</h2>
+            </EuiText>
+          }
           onCancel={closeDeleteModal}
           onConfirm={() => {
             onClickDelete();
             closeDeleteModal();
           }}
-          cancelButtonText={'Cancel'}
+          cancelButtonText={"Cancel"}
           confirmButtonText={confirmButtonText ?? `Delete ${type}`}
-          buttonColor={'danger'}
+          buttonColor={"danger"}
           defaultFocusedButton="confirm"
           confirmButtonDisabled={confirmDeleteText != DEFAULT_DELETION_TEXT}
         >
@@ -76,12 +80,14 @@ export default class DeleteModal extends Component<DeleteModalProps, DeleteModal
             </p>
             <EuiSpacer size="s" />
             {!!confirmation && (
-              <EuiCompressedFormRow helpText={`To confirm deletion, type "${DEFAULT_DELETION_TEXT}".`}>
+              <EuiCompressedFormRow
+                helpText={`To confirm deletion, type "${DEFAULT_DELETION_TEXT}".`}
+              >
                 <EuiCompressedFieldText
                   value={confirmDeleteText}
                   placeholder={DEFAULT_DELETION_TEXT}
                   onChange={this.onChange}
-                  data-test-subj={'deleteTextField'}
+                  data-test-subj={"deleteTextField"}
                 />
               </EuiCompressedFormRow>
             )}
