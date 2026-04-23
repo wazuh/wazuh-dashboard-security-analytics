@@ -74,7 +74,7 @@ export const CreateIntegrationFlyout: React.FC<CreateIntegrationFlyoutProps> = (
     }
   }, [hasChanges, onClose]);
 
-  const onDirtyChange = useCallback(() => setHasChanges(true), []);
+  const onDirtyChange = useCallback((isDirty: boolean) => setHasChanges(isDirty), []);
 
   return (
     <>

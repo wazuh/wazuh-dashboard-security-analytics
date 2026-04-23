@@ -73,8 +73,7 @@ export interface IntegrationFormProps {
   onCancel: () => void;
   onConfirm: (integrationData: IntegrationItem) => void;
   hideBottomBar?: boolean;
-  /** Called the first time the user edits any field */
-  onDirtyChange?: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationFormProps>(
@@ -84,6 +83,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
   ) {
 
   const hasMountedRef = useRef(false);
+  const initialIntegrationRef = useRef(integrationDetails);
   const onDirtyChangeRef = useRef(onDirtyChange);
   useEffect(() => { onDirtyChangeRef.current = onDirtyChange; });
 
@@ -105,7 +105,9 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
       hasMountedRef.current = true;
       return;
     }
-    onDirtyChangeRef.current?.();
+    const isDirty =
+      JSON.stringify(editingIntegration) !== JSON.stringify(initialIntegrationRef.current);
+    onDirtyChangeRef.current?.(isDirty);
   }, [editingIntegration]);
 
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
