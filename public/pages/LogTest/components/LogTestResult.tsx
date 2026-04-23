@@ -157,6 +157,10 @@ const DetectionMatchItem: React.FC<{
       }
       paddingSize='s'
     >
+      <EuiText size='xs' color='subdued'>
+        <strong>ID:</strong> {rule.id}
+      </EuiText>
+      <EuiSpacer size='xs' />
       {rule.tags && rule.tags.length > 0 && (
         <>
           <EuiFlexGroup gutterSize='xs' wrap>
