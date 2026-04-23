@@ -1,8 +1,8 @@
 import YAML from 'yaml';
 import { LosslessNumber } from 'lossless-json';
 
-// Convert yaml string to a decoder model with floats with decimal precision
-export const mapYamlToLosslessDecoder = <T>(yamlString: string): T => {
+// Convert yaml string to a object model with floats with decimal precision
+export const mapYamlToLosslessObject = <T>(yamlString: string): T => {
   const yamlObject = YAML.parseDocument(yamlString);
 
   YAML.visit(yamlObject, {
