@@ -45,7 +45,7 @@ import {
 import { FILTER_TYPE_OPTIONS } from '../utils/constants';
 import { dump } from 'js-yaml';
 import { EuiButtonGroup } from '@elastic/eui';
-import { YamlForm, YAML_TYPE, mapYamlToLosslessDecoder } from '../../../components/YamlForm';
+import { YamlForm, YAML_TYPE, mapYamlToLosslessObject } from '../../../components/YamlForm';
 import { filterFormDefaultYaml, mapYamlToFilterForm } from '../utils/mappers';
 
 const FILTER_ACTION = {
@@ -201,9 +201,17 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                     <h1>{actionLabels[action]} filter</h1>
                   </EuiText>
                   <EuiText size="s" color="subdued">
-                    {action === FILTER_ACTION.CREATE
-                      ? <>Create a new event filter in the <strong>{spaceFilter || 'draft'}</strong> space.</>
-                      : <>Edit the filter configuration in the <strong>{spaceFilter || 'draft'}</strong> space.</>}
+                    {action === FILTER_ACTION.CREATE ? (
+                      <>
+                        Create a new event filter in the <strong>{spaceFilter || 'draft'}</strong>{' '}
+                        space.
+                      </>
+                    ) : (
+                      <>
+                        Edit the filter configuration in the{' '}
+                        <strong>{spaceFilter || 'draft'}</strong> space.
+                      </>
+                    )}
                   </EuiText>
                   <EuiSpacer />
                 </PageHeader>
@@ -271,13 +279,15 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                                 <div style={{ paddingLeft: '16px' }}>
                                   <EuiText size="xs">
                                     <p>
-                                      <strong>Pre-filter:</strong> Processed before input is passed to the space decoder tree.
+                                      <strong>Pre-filter:</strong> Processed before input is passed
+                                      to the space decoder tree.
                                     </p>
                                   </EuiText>
                                   <EuiSpacer size="s" />
                                   <EuiText size="xs">
                                     <p>
-                                      <strong>Post-filter:</strong> Processed after event is normalized by the space decoder tree, and enriched.
+                                      <strong>Post-filter:</strong> Processed after event is
+                                      normalized by the space decoder tree, and enriched.
                                     </p>
                                   </EuiText>
                                 </div>
@@ -342,7 +352,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                         isInvalid={!!errors.author && touched.author}
                       />
                     </EuiCompressedFormRow>
-                    
+
                     <EuiSpacer size="m" />
 
                     <EuiCompressedFormRow
@@ -411,11 +421,13 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                     type={YAML_TYPE.FILTER}
                     value={rawFilter}
                     isInvalid={Object.keys(errors).length > 0}
-                    errors={Object.keys(errors).map((key) => (errors as Record<string, string>)[key])}
+                    errors={Object.keys(errors).map(
+                      (key) => (errors as Record<string, string>)[key]
+                    )}
                     change={(yamlString) => {
                       setRawFilter(yamlString);
                       try {
-                        const parsed = mapYamlToLosslessDecoder<any>(yamlString);
+                        const parsed = mapYamlToLosslessObject<any>(yamlString);
                         const formValues = mapYamlToFilterForm(parsed);
                         setValues(formValues);
                       } catch {

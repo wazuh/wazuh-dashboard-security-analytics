@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Form, Formik, FormikErrors } from 'formik';
 import { decoderFormDefaultValue } from '../utils/constants';
-import { YamlForm, YAML_TYPE, mapYamlToLosslessDecoder } from '../../../components/YamlForm';
+import { YamlForm, YAML_TYPE, mapYamlToLosslessObject } from '../../../components/YamlForm';
 import {
   errorNotificationToast,
   setBreadcrumbs,
@@ -71,7 +71,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         try {
           const response = await DataStore.decoders.getDecoder(idDecoder, spaceDecoder);
           setRawDecoder(response?.decoder ?? decoderFormDefaultValue);
-          setDecoder(mapYamlToLosslessDecoder<DecoderDocument>(response?.decoder ?? ''));
+          setDecoder(mapYamlToLosslessObject<DecoderDocument>(response?.decoder ?? ''));
           setIntegrationType(response?.integrations?.[0] || '');
           setBreadcrumbs([
             BREADCRUMBS.NORMALIZATION,
@@ -199,7 +199,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     const errors: FormikErrors<DecoderDocument> = {};
 
     // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
-    const decoder = mapYamlToLosslessDecoder<DecoderDocument>(values.rawDecoder);
+    const decoder = mapYamlToLosslessObject<DecoderDocument>(values.rawDecoder);
 
     if (!decoder.name) {
       errors.name = 'Decoder name is required';
@@ -248,7 +248,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           validate={validateForm}
           onSubmit={(values, { setSubmitting }) => {
             setSubmitting(false);
-            handleOnClick(mapYamlToLosslessDecoder<DecoderDocument>(values.rawDecoder));
+            handleOnClick(mapYamlToLosslessObject<DecoderDocument>(values.rawDecoder));
           }}
         >
           {(props) => (
