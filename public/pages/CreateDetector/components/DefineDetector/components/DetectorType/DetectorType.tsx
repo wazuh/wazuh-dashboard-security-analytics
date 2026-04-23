@@ -74,19 +74,21 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
     return (
       <>
         <EuiText size="s">
-          <h3>Detection rules</h3>
+          <h3>Rules</h3> {/* Wazuh: rename 'Detection rules' to 'Rules' */}
         </EuiText>
         <EuiText size="s">
+          {/* Replace log type with integration by Wazuh */}
           <p>
-            The detection rules are automatically populated based on your selected log type. Threat
-            intelligence based detection can be enabled for standard log types.{' '}
+            The rules are automatically populated based on your selected integration. Threat
+            intelligence based detection can be enabled for standard integrations.{' '}
           </p>
         </EuiText>
         <EuiSpacer />
         <EuiCompressedFormRow
           label={
             <div>
-              <FormFieldHeader headerTitle={'Log type'} />
+              {/* Replace log type with integration by Wazuh */}
+              <FormFieldHeader headerTitle={'Integration'} />
               <EuiSpacer size={'s'} />
             </div>
           }
@@ -96,7 +98,7 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
         >
           <EuiCompressedComboBox
             isInvalid={this.isInvalid()}
-            placeholder="Select log type"
+            placeholder="Select integration" // Changed Log Type to Integration by Wazuh
             data-test-subj={'log_type_dropdown'}
             options={this.detectorTypeOptions}
             singleSelection={{ asPlainText: true }}
