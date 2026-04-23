@@ -314,13 +314,17 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                         >
                           <div style={{ width: '300px' }}>
                             <EuiText size="s">
-                              <strong>Check Expression</strong>
+                              <strong>Check Expression (YAML)</strong>
                             </EuiText>
                             <EuiSpacer size="s" />
                             <div style={{ paddingLeft: '16px' }}>
                               <EuiText size="xs">
                                 <p>
-                                  TODO: Refer to official documentation
+                                  Define the filter condition in YAML format. Can be a simple expression or a list of field/value pairs.
+                                </p>
+                                <EuiSpacer size="s" />
+                                <p>
+                                  <strong>TODO:</strong> Refer to official documentation
                                 </p>
                               </EuiText>
                             </div>
