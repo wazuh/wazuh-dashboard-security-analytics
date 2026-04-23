@@ -5,6 +5,9 @@
 
 import { RuleService } from '../public/services';
 import { NotificationsStart } from 'opensearch-dashboards/public';
+import { CatalogResourceMetadata } from './ResourceMetadata';
+
+export interface RuleMetadata extends CatalogResourceMetadata {}
 
 export interface Rule {
   id: string;
@@ -23,6 +26,11 @@ export interface Rule {
   references: Array<{ value: string }>;
   author: string;
   detection: string;
+  mitre: string;
+  compliance: string;
+  enabled: boolean;
+  /** Normalized metadata for API payload (document.metadata.*). When present, used by buildRuleResource. */
+  metadata?: RuleMetadata;
 }
 
 export type RuleSource = Rule & {
@@ -44,7 +52,11 @@ export interface DetectorRuleInfo {
   id: string;
 }
 
-export type RuleItemInfoBase = RuleInfo & { prePackaged: boolean };
+export type RuleItemInfoBase = RuleInfo & {
+  prePackaged: boolean;
+  space?: string;
+  integration?: any;
+}; // Wazuh: added space & integration fields
 
 /**
  * API Interfaces
@@ -111,9 +123,9 @@ export interface IRulesStore {
 
   getAllRules: (terms?: { [key: string]: string[] }, query?: any) => Promise<RuleItemInfoBase[]>;
 
-  createRule: (rule: Rule) => Promise<boolean>;
+  createRule: (rule: Rule, integrationId: string) => Promise<boolean>; // Wazuh: added integrationId param
 
-  updateRule: (id: string, category: string, rule: Rule) => Promise<boolean>;
+  updateRule: (id: string, rule: Rule) => Promise<boolean>; // Wazuh: added integrationId param
 
   deleteRule: (id: string) => Promise<boolean>;
 
@@ -126,6 +138,17 @@ export interface IRulesStore {
   getPrePackagedRules: (terms?: { [key: string]: string[] }) => Promise<RuleItemInfoBase[]>;
 
   getCustomRules: (terms?: { [key: string]: string[] }) => Promise<RuleItemInfoBase[]>;
+
+  // Wazuh: search rules with pagination and sorting
+  searchRules: (
+    params: {
+      query?: any;
+      from?: number;
+      size?: number;
+      sort?: Array<Record<string, any>>;
+    },
+    space: string
+  ) => Promise<{ total: number; items: RuleItemInfoBase[] }>;
 }
 
 export type RulesTableColumnFields = 'title' | 'level' | 'category' | 'source' | 'description';

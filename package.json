@@ -5,6 +5,14 @@
   "main": "index.js",
   "license": "Apache-2.0",
   "homepage": "https://github.com/opensearch-project/security-analytics-dashboards-plugin",
+  "opensearchDashboards": {
+    "version": "3.6.0",
+    "templateVersion": "3.6.0"
+  },
+  "wazuh": {
+    "version": "5.0.0",
+    "revision": "01"
+  },
   "config": {
     "id": "securityAnalyticsDashboards",
     "zip_name": "security-analytics-dashboards"
@@ -67,6 +75,8 @@
     "moment": "^2.24.0",
     "react-graph-vis": "^1.0.7",
     "vis-data": "^7.1.2",
-    "vis-util": "^5.0.7"
+    "vis-util": "^5.0.7",
+    "lossless-json": "4.3.0",
+    "yaml": "2.8.3"
   }
 }
