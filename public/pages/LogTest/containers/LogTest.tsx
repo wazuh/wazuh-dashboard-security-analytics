@@ -117,6 +117,11 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
     setFormData((prev) => (prev.integration ? { ...prev, integration: '' } : prev));
   }, [formData.space]);
 
+  const disabledSpaces = useMemo(
+    () => INITIAL_SPACE_OPTIONS.filter((o) => spaceCache[o.id]?.enabled === false).map((o) => o.id),
+    [spaceCache]
+  );
+
   const integrationOptions = useMemo<LogTestIntegrationOption[]>(
     () => spaceCache[formData.space]?.integrations ?? [],
     [spaceCache, formData.space]
@@ -209,6 +214,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
             onFormChange={handleFormChange}
             onMetadataFieldsChange={handleMetadataFieldsChange}
             integrationOptions={integrationOptions}
+            disabledSpaces={disabledSpaces}
             disabled={isLoading}
           />
 
