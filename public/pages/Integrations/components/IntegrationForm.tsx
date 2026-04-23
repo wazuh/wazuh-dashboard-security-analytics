@@ -20,6 +20,7 @@ import {
 import { IntegrationItem } from '../../../../types';
 import React, {
   useEffect,
+  useRef,
   useMemo,
   useCallback,
   useImperativeHandle,
@@ -72,14 +73,20 @@ export interface IntegrationFormProps {
   onCancel: () => void;
   onConfirm: (integrationData: IntegrationItem) => void;
   hideBottomBar?: boolean;
+  /** Called the first time the user edits any field */
+  onDirtyChange?: () => void;
 }
 
 export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationFormProps>(
   function IntegrationForm(
-    { integrationDetails, isEditMode, confirmButtonText, notifications, onCancel, onConfirm, hideBottomBar = false },
+    { integrationDetails, isEditMode, confirmButtonText, notifications, onCancel, onConfirm, hideBottomBar = false, onDirtyChange },
     ref
   ) {
- 
+
+  const hasMountedRef = useRef(false);
+  const onDirtyChangeRef = useRef(onDirtyChange);
+  useEffect(() => { onDirtyChangeRef.current = onDirtyChange; });
+
   const showEnabledField = isEditMode && !integrationDetails.id;
   const [titleError, setTitleError] = useState('');
   const [categoryError, setCategoryError] = useState('');
@@ -92,6 +99,14 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
       setEditingIntegration(integrationDetails);
     }
   }, [isEditMode, integrationDetails]);
+
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    onDirtyChangeRef.current?.();
+  }, [editingIntegration]);
 
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
     const metadata = details.document.metadata;
