@@ -95,7 +95,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
         <>
           <EuiSpacer size="s" />
           <EuiCallOut size="s" color="warning" iconType="alert"
-            title="This space is disabled. Normalization will run, but detection rules will not be evaluated."
+            title="This space is disabled. Log test execution will fail."
           />
         </>
       )}

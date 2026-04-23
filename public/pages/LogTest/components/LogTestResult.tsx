@@ -207,6 +207,14 @@ const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({
   const hasAssetTraces = data?.asset_traces && data.asset_traces.length > 0;
   const hasValidation = data?.validation != null;
 
+  if (data.status === 'error') {
+    return (
+      <EuiCallOut title='Normalization error' color='danger' iconType='alert'>
+        <p>{data.error?.message ?? 'An unexpected error occurred during normalization.'}</p>
+      </EuiCallOut>
+    );
+  }
+
   return (
     <>
       {formattedOutput ? (
