@@ -86,6 +86,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [initialValue, setInitialValue] = useState<FilterFormModel>(filterFormDefaultValue);
   const [typePopoverOpen, setTypePopoverOpen] = useState(false);
+  const [checkPopoverOpen, setCheckPopoverOpen] = useState(false);
   const { spaceFilter } = useSpaceSelector();
 
   // load existing filter when editing
@@ -293,7 +294,41 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 <EuiSpacer size="m" />
 
                 <EuiCompressedFormRow
-                  label={'Check'}
+                  label={
+                    <EuiFlexGroup gutterSize="xs" alignItems="center" responsive={false}>
+                      <EuiFlexItem grow={false}>Check</EuiFlexItem>
+                      <EuiFlexItem grow={false}>
+                        <EuiPopover
+                          button={
+                            <EuiButtonIcon
+                              iconType="iInCircle"
+                              aria-label="Check field information"
+                              onClick={() => setCheckPopoverOpen(!checkPopoverOpen)}
+                              color="primary"
+                              size="xs"
+                            />
+                          }
+                          isOpen={checkPopoverOpen}
+                          closePopover={() => setCheckPopoverOpen(false)}
+                          anchorPosition="downRight"
+                        >
+                          <div style={{ width: '300px' }}>
+                            <EuiText size="s">
+                              <strong>Check Expression</strong>
+                            </EuiText>
+                            <EuiSpacer size="s" />
+                            <div style={{ paddingLeft: '16px' }}>
+                              <EuiText size="xs">
+                                <p>
+                                  TODO: Refer to official documentation
+                                </p>
+                              </EuiText>
+                            </div>
+                          </div>
+                        </EuiPopover>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  }
                   fullWidth
                   isInvalid={!!errors.check && touched.check}
                   error={errors.check}
