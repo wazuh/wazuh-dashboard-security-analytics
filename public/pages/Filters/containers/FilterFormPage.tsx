@@ -25,7 +25,6 @@ import { FormFieldArray } from '../../../components/FormFieldArray';
 import { Form, Formik, FormikErrors } from 'formik';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
-import FormFieldHeader from '../../../components/FormFieldHeader';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -46,7 +45,7 @@ import { FILTER_TYPE_OPTIONS } from '../utils/constants';
 import { dump } from 'js-yaml';
 import { EuiButtonGroup } from '@elastic/eui';
 import { YamlForm, YAML_TYPE, mapYamlToLosslessObject } from '../../../components/YamlForm';
-import { filterFormDefaultYaml, mapYamlToFilterForm } from '../utils/mappers';
+import { mapYamlToFilterForm } from '../utils/mappers';
 
 const FILTER_ACTION = {
   CREATE: 'create',
@@ -83,7 +82,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
   const [typePopoverOpen, setTypePopoverOpen] = useState(false);
   const { spaceFilter } = useSpaceSelector();
   const [selectedEditorType, setSelectedEditorType] = useState('visual');
-  const [rawFilter, setRawFilter] = useState<string>(filterFormDefaultYaml);
+  const [rawFilter, setRawFilter] = useState<string>();
 
   // load existing filter when editing
   useEffect(() => {

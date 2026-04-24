@@ -4,7 +4,6 @@
  */
 
 import { FilterDocument, FilterResource } from '../../../../types/Filters';
-import { dump } from 'js-yaml';
 
 export interface FilterFormModel {
   name: string;
@@ -29,23 +28,6 @@ export const filterFormDefaultValue: FilterFormModel = {
   references: [],
   supports: [],
 };
-
-export const filterFormDefaultYaml: string = (() => {
-  const now = new Date().toISOString().split('T')[0];
-  return dump({
-    name: 'filter/<name>/<version>',
-    type: 'pre-filter',
-    check: '',
-    enabled: true,
-    metadata: {
-      author: '',
-      description: '',
-      documentation: '',
-      references: [],
-      supports: [],
-    },
-  });
-})();
 
 export const mapYamlToFilterForm = (yamlObj: any): FilterFormModel => {
   const author = yamlObj?.metadata?.author;
