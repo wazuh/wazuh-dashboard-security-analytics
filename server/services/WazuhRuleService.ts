@@ -24,7 +24,7 @@ import { Rule } from '../../types';
 import { SpaceTypes } from '../../common/constants';
 
 export default class WazuhRulesService {
-  constructor(private osDriver: ILegacyCustomClusterClient) { }
+  constructor(private osDriver: ILegacyCustomClusterClient) {}
 
   private getClient(request: OpenSearchDashboardsRequest) {
     return this.osDriver.asScoped(request).callAsCurrentUser;
