@@ -71,10 +71,11 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const [integrationType, setIntegrationType] = useState<string>('');
   const [initialValue, setInitialValue] = useState<KVDBFormModel>(kvdbFormDefaultValue);
 
-  const { loading: loadingIntegrations, options: integrationTypeOptions } = useIntegrationSelector({
-    notifications,
-    enabled: action === KVDB_ACTION.CREATE,
-  });
+  const {
+    loading: loadingIntegrations,
+    options: integrationTypeOptions,
+    refresh: refreshIntegrations,
+  } = useIntegrationSelector({ notifications, enabled: action === KVDB_ACTION.CREATE });
 
   useEffect(() => {
     if (action !== KVDB_ACTION.EDIT) return;
@@ -115,6 +116,14 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const onIntegrationChange = useCallback((options: Array<{ id?: string }>) => {
     setIntegrationType(options[0]?.id || '');
   }, []);
+
+  const onIntegrationCreateSuccess = useCallback(
+    (newOption: { id: string }) => {
+      refreshIntegrations();
+      setIntegrationType(newOption.id);
+    },
+    [refreshIntegrations]
+  );
 
   const createKVDB = useCallback(
     async (values: KVDBFormModel) => {
@@ -284,6 +293,8 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                       isLoading={loadingIntegrations}
                       onChange={onIntegrationChange}
                       resourceName="KVDBs"
+                      notifications={notifications}
+                      onCreateSuccess={onIntegrationCreateSuccess}
                     />
                     <EuiSpacer size="m" />
                   </>

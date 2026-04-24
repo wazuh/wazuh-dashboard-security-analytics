@@ -64,9 +64,11 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const [decoder, setDecoder] = useState<DecoderDocument>();
   const [hasYamlErrors, setHasYamlErrors] = useState(false);
 
-  const { loading: loadingIntegrations, options: integrationTypeOptions } = useIntegrationSelector({
-    notifications,
-  });
+  const {
+    loading: loadingIntegrations,
+    options: integrationTypeOptions,
+    refresh: refreshIntegrations,
+  } = useIntegrationSelector({ notifications });
 
   useEffect(() => {
     const fetchDecoder = async () => {
@@ -113,6 +115,14 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const onChange = useCallback((options: Array<{ id?: string }>) => {
     setIntegrationType(options[0]?.id || '');
   }, []);
+
+  const onIntegrationCreateSuccess = useCallback(
+    (newOption: { id: string }) => {
+      refreshIntegrations();
+      setIntegrationType(newOption.id);
+    },
+    [refreshIntegrations]
+  );
 
   const createDecoder = useCallback(
     async (values: DecoderDocument) => {
@@ -291,6 +301,8 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                       onChange={onChange}
                       resourceName="decoders"
                       data-test-subj="integration_dropdown"
+                      notifications={notifications}
+                      onCreateSuccess={onIntegrationCreateSuccess}
                     />
                     <EuiSpacer size="m" />
                   </>

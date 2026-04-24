@@ -96,10 +96,11 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
     !!initialValue.metadata.documentation ||
     initialValue.falsePositives.length > 0;
 
-  const { loading: loadingIntegrations, options: integrationOptions } = useIntegrationSelector({
-    notifications: notifications!,
-    enabled: mode === 'create',
-  });
+  const {
+    loading: loadingIntegrations,
+    options: integrationOptions,
+    refresh: refreshIntegrations,
+  } = useIntegrationSelector({ notifications: notifications!, enabled: mode === 'create' });
 
   const validateTags = (fields: string[]) => {
     let isValid = true;
@@ -175,7 +176,19 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         submit(values, integrationId);
       }}
     >
-      {(props) => (
+      {(props) => {
+        const onIntegrationCreateSuccess = (newOption: {
+          id: string;
+          value: string;
+          label: string;
+        }) => {
+          refreshIntegrations();
+          setIntegrationId(newOption.id);
+          props.setFieldValue('integration', newOption.value ?? newOption.label ?? '', true);
+          props.setFieldTouched('integration', true, false);
+        };
+
+        return (
         <Form>
           <EuiPanel className={'rule-editor-form'} style={{ paddingBottom: '60px' }}>
             <PageHeader appDescriptionControls={subtitleData ? [subtitleData] : undefined}>
@@ -223,6 +236,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                         !!props.errors?.integration
                       }
                       error={props.errors.integration}
+                      notifications={notifications}
+                      onCreateSuccess={onIntegrationCreateSuccess}
                       onChange={(selected) => {
                         const option = selected[0] ?? null;
                         setIntegrationId(option?.id ?? '');
@@ -369,6 +384,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                       (validateOnMount || props.touched.integration) && !!props.errors?.integration
                     }
                     error={props.errors.integration}
+                    notifications={notifications}
+                    onCreateSuccess={onIntegrationCreateSuccess}
                     onChange={(selected) => {
                       const option = selected[0] ?? null;
                       setIntegrationId(option?.id ?? '');
@@ -751,7 +768,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
             </EuiFlexGroup>
           </EuiBottomBar>
         </Form>
-      )}
+        );
+      }}
     </Formik>
   );
 };
