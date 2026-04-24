@@ -4,6 +4,7 @@
  */
 
 import {
+  EuiToolTip,
   EuiBottomBar,
   EuiButton,
   EuiButtonEmpty,
@@ -91,7 +92,6 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
   const showEnabledField = isEditMode && !integrationDetails.id;
   const [titleError, setTitleError] = useState('');
   const [categoryError, setCategoryError] = useState('');
-  const [categoryTouched, setCategoryTouched] = useState(false);
   const [authorError, setAuthorError] = useState('');
   const [editingIntegration, setEditingIntegration] = useState<IntegrationItem>(integrationDetails);
 
@@ -110,11 +110,11 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     onDirtyChangeRef.current?.(isDirty);
   }, [editingIntegration]);
 
-  const updateErrors = (details: IntegrationItem, onSubmit = false) => {
+  const updateErrors = (details: IntegrationItem) => {
     const metadata = details.document.metadata;
     const titleInvalid = !validateName(metadata?.title, LOG_TYPE_NAME_REGEX, false);
     const authorInvalid = !validateName(metadata?.author, INTEGRATION_AUTHOR_REGEX, false);
-    const categoryInvalid = (categoryTouched || onSubmit) && !details.document.category;
+    const categoryInvalid = !details.document.category;
     setTitleError(titleInvalid ? 'Invalid title' : '');
     setCategoryError(categoryInvalid ? 'Select category to assign' : '');
     setAuthorError(authorInvalid ? 'Invalid author' : '');
@@ -141,7 +141,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
   );
 
   const onConfirmClicked = useCallback(() => {
-    const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(editingIntegration, true);
+    const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(editingIntegration);
 
     if (titleInvalid || categoryInvalid || authorInvalid) {
       notifications?.toasts.addDanger({
@@ -158,12 +158,17 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     setEditingIntegration(integrationDetails);
     setTitleError('');
     setCategoryError('');
-    setCategoryTouched(false);
     setAuthorError('');
     onCancel();
   }, [integrationDetails, onCancel]);
 
   useImperativeHandle(ref, () => ({ submit: onConfirmClicked }), [onConfirmClicked]);
+  
+  const missingFields: string[] = [];
+  if (!editingIntegration.document.metadata?.title) missingFields.push('Title');
+  if (!editingIntegration.document.category) missingFields.push('Category');
+  if (!editingIntegration.document.metadata?.author) missingFields.push('Author');
+  const isSubmitDisabled = missingFields.length > 0;
 
   return (
     <>
@@ -214,7 +219,6 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                     category: value,
                   },
                 };
-                setCategoryTouched(true);
                 setEditingIntegration(newIntegration);
                 updateErrors(newIntegration);
               }}
@@ -444,16 +448,38 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
       </div>
       {isEditMode && !hideBottomBar ? (
         <EuiBottomBar>
-          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
+          <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
             <EuiFlexItem grow={false}>
               <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={onCancelClicked}>
                 Cancel
               </EuiButtonEmpty>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiButton color="primary" fill iconType="check" size="s" onClick={onConfirmClicked}>
-                {confirmButtonText}
-              </EuiButton>
+              <EuiToolTip
+                content={
+                  isSubmitDisabled && missingFields.length > 0
+                    ? (
+                        <span>
+                          Complete the following required fields: {missingFields.join(', ')}
+                        </span>
+                      )
+                    : undefined
+                }
+                position="top"
+                delay="regular"
+                display="block"
+              >
+                <EuiButton
+                  color="primary"
+                  fill
+                  iconType="check"
+                  size="s"
+                  onClick={onConfirmClicked}
+                  disabled={isSubmitDisabled}
+                >
+                  {confirmButtonText}
+                </EuiButton>
+              </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
         </EuiBottomBar>
