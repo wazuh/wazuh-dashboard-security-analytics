@@ -9,6 +9,18 @@ const TEXT_SEARCH_FIELDS = ['document.metadata.title', 'document.metadata.descri
 
 const escapeWildcard = (str: string) => str.replace(/[*?]/g, '\\$&');
 
+export const decoderFormDefaultValue: string = `name: decoder/<name>/<version>
+enabled: true
+metadata:
+  title: Placeholder Decoder
+  description: This is a placeholder decoder. Please update the fields accordingly.
+  author: User
+  date: '${new Date().toISOString().split('T')[0]}'
+  modified: '${new Date().toISOString().split('T')[0]}'
+  references: []
+  documentation: ''
+  supports: []`;
+
 export const buildDecodersSearchQuery = (searchText: string) => {
   const trimmed = searchText.trim();
   if (!trimmed) {

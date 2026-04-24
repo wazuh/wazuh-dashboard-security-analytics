@@ -29,6 +29,21 @@ export const filterFormDefaultValue: FilterFormModel = {
   supports: [],
 };
 
+export const mapYamlToFilterForm = (yamlObj: any): FilterFormModel => {
+  const author = yamlObj?.metadata?.author;
+  return {
+    name: yamlObj?.name ?? '',
+    type: yamlObj?.type ?? 'pre-filter',
+    check: yamlObj?.check ?? '',
+    enabled: yamlObj?.enabled ?? true,
+    author: typeof author === 'string' ? author : author?.name ?? '',
+    description: yamlObj?.metadata?.description ?? '',
+    documentation: yamlObj?.metadata?.documentation ?? '',
+    references: yamlObj?.metadata?.references ?? [],
+    supports: yamlObj?.metadata?.supports ?? [],
+  };
+};
+
 export const mapFilterToForm = (document: FilterDocument): FilterFormModel => {
   const author = document.metadata?.author;
   return {
