@@ -33,6 +33,7 @@ import {
 } from '../../../utils/validation';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { useState } from 'react';
+import { isEqual } from 'lodash';
 import { getIntegrationCategoryOptions } from '../../../utils/helpers';
 import { FormFieldArray } from '../../../components/FormFieldArray';
 
@@ -105,8 +106,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
       hasMountedRef.current = true;
       return;
     }
-    const isDirty =
-      JSON.stringify(editingIntegration) !== JSON.stringify(initialIntegrationRef.current);
+    const isDirty = !isEqual(editingIntegration, initialIntegrationRef.current);
     onDirtyChangeRef.current?.(isDirty);
   }, [editingIntegration]);
 
