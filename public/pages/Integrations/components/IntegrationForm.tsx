@@ -18,7 +18,14 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { IntegrationItem } from '../../../../types';
-import React, { useEffect, useMemo, useCallback } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
 import {
   INTEGRATION_AUTHOR_REGEX,
   LOG_TYPE_NAME_REGEX,
@@ -26,6 +33,7 @@ import {
 } from '../../../utils/validation';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { useState } from 'react';
+import { isEqual } from 'lodash';
 import { getIntegrationCategoryOptions } from '../../../utils/helpers';
 import { FormFieldArray } from '../../../components/FormFieldArray';
 
@@ -54,6 +62,10 @@ const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({
   </EuiText>
 );
 
+export interface IntegrationFormHandle {
+  submit: () => void;
+}
+
 export interface IntegrationFormProps {
   integrationDetails: IntegrationItem;
   isEditMode: boolean;
@@ -61,20 +73,21 @@ export interface IntegrationFormProps {
   notifications: NotificationsStart;
   onCancel: () => void;
   onConfirm: (integrationData: IntegrationItem) => void;
+  hideBottomBar?: boolean;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const IntegrationForm: React.FC<IntegrationFormProps> = ({
-  integrationDetails,
-  isEditMode,
-  confirmButtonText,
-  notifications,
-  onCancel,
-  onConfirm,
-}) => {
- 
-  /*The enabled field is only shown when creating a new integration
-  * When editing, the enabled property is changed using the Actions button
-  */
+export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationFormProps>(
+  function IntegrationForm(
+    { integrationDetails, isEditMode, confirmButtonText, notifications, onCancel, onConfirm, hideBottomBar = false, onDirtyChange },
+    ref
+  ) {
+
+  const hasMountedRef = useRef(false);
+  const initialIntegrationRef = useRef(integrationDetails);
+  const onDirtyChangeRef = useRef(onDirtyChange);
+  useEffect(() => { onDirtyChangeRef.current = onDirtyChange; });
+
   const showEnabledField = isEditMode && !integrationDetails.id;
   const [titleError, setTitleError] = useState('');
   const [categoryError, setCategoryError] = useState('');
@@ -87,6 +100,15 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       setEditingIntegration(integrationDetails);
     }
   }, [isEditMode, integrationDetails]);
+
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    const isDirty = !isEqual(editingIntegration, initialIntegrationRef.current);
+    onDirtyChangeRef.current?.(isDirty);
+  }, [editingIntegration]);
 
   const updateErrors = (details: IntegrationItem, onSubmit = false) => {
     const metadata = details.document.metadata;
@@ -141,9 +163,11 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
     onCancel();
   }, [integrationDetails, onCancel]);
 
+  useImperativeHandle(ref, () => ({ submit: onConfirmClicked }), [onConfirmClicked]);
+
   return (
     <>
-      <div style={{ paddingBottom: isEditMode ? '60px' : '0' }}>
+      <div style={{ paddingBottom: isEditMode && !hideBottomBar ? '60px' : '0' }}>
         <EuiCompressedFormRow
           label="Title"
           helpText={
@@ -418,7 +442,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
             )
         )}
       </div>
-      {isEditMode ? (
+      {isEditMode && !hideBottomBar ? (
         <EuiBottomBar>
           <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
             <EuiFlexItem grow={false}>
@@ -436,4 +460,4 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       ) : null}
     </>
   );
-};
+});
