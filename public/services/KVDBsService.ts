@@ -4,6 +4,7 @@
  */
 
 import { HttpSetup } from 'opensearch-dashboards/public';
+import { stringify as LosslessStringify } from 'lossless-json';
 import {
   CreateKVDBPayload,
   CUDKVDBResponse,
@@ -39,7 +40,7 @@ export default class KVDBsService {
   createKVDB = async (body: CreateKVDBPayload): Promise<ServerResponse<CUDKVDBResponse>> => {
     const url = `${this.baseUrl}`;
     return await this.httpClient.post(url, {
-      body: JSON.stringify(body),
+      body: LosslessStringify(body)!,
     });
   };
 
@@ -49,7 +50,7 @@ export default class KVDBsService {
   ): Promise<ServerResponse<CUDKVDBResponse>> => {
     const url = `${this.baseUrl}/${kvdbId}`;
     return await this.httpClient.put(url, {
-      body: JSON.stringify(body),
+      body: LosslessStringify(body)!,
     });
   };
 
