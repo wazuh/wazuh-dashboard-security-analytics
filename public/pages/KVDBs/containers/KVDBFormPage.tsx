@@ -4,6 +4,7 @@
  */
 
 import {
+  EuiButtonGroup,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSwitch,
@@ -36,6 +37,7 @@ import {
   successNotificationToast,
 } from '../../../utils/helpers';
 import { ContentEntry, KVDBContentEditor } from '../components/KVDBContentEditor';
+import { KVDBYamlEditor } from '../components/KVDBYamlEditor';
 import {
   kvdbFormDefaultValue,
   KVDBFormModel,
@@ -55,6 +57,13 @@ const actionLabels: Record<KVDBAction, string> = {
   edit: 'Edit',
 };
 
+type EditorType = 'visual' | 'yaml';
+
+const editorTypes: Array<{ id: EditorType; label: string }> = [
+  { id: 'visual', label: 'Visual Editor' },
+  { id: 'yaml', label: 'YAML Editor' },
+];
+
 type KVDBFormPageProps = {
   notifications: NotificationsStart;
   history: RouteComponentProps['history'];
@@ -66,6 +75,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const kvdbId = props.match.params.id;
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedEditorType, setSelectedEditorType] = useState<EditorType>('visual');
   const [integrationType, setIntegrationType] = useState<string>('');
   const [initialValue, setInitialValue] = useState<KVDBFormModel>(kvdbFormDefaultValue);
 
@@ -269,11 +279,18 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   </EuiText>
                   <EuiText size="s" color="subdued">
                     {action === KVDB_ACTION.CREATE
-                      ? 'Create a new KVDB.'
+                      ? 'Create a afjweiofjaiow.'
                       : 'Edit the KVDB to update its configuration.'}
                   </EuiText>
                   <EuiSpacer />
                 </PageHeader>
+                <EuiButtonGroup
+                  legend="Editor type"
+                  options={editorTypes}
+                  idSelected={selectedEditorType}
+                  onChange={(id) => setSelectedEditorType(id as EditorType)}
+                />
+                <EuiSpacer size="xl" />
                 {action === KVDB_ACTION.CREATE && (
                   <>
                     <IntegrationComboBox
@@ -286,88 +303,106 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                     <EuiSpacer size="m" />
                   </>
                 )}
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Title'} />}
-                  fullWidth={true}
-                  isInvalid={!!formikProps.errors.title && formikProps.touched.title}
-                  error={formikProps.errors.title}
-                >
-                  <EuiCompressedFieldText
-                    placeholder="Enter KVDB title"
-                    value={formikProps.values.title}
-                    onChange={(e) => formikProps.setFieldValue('title', e.target.value)}
-                    onBlur={() => formikProps.setFieldTouched('title')}
-                    isInvalid={!!formikProps.errors.title && formikProps.touched.title}
+                {selectedEditorType === 'visual' && (
+                  <>
+                    <EuiCompressedFormRow
+                      label={<FormFieldHeader headerTitle={'Title'} />}
+                      fullWidth={true}
+                      isInvalid={!!formikProps.errors.title && formikProps.touched.title}
+                      error={formikProps.errors.title}
+                    >
+                      <EuiCompressedFieldText
+                        placeholder="Enter KVDB title"
+                        value={formikProps.values.title}
+                        onChange={(e) => formikProps.setFieldValue('title', e.target.value)}
+                        onBlur={() => formikProps.setFieldTouched('title')}
+                        isInvalid={!!formikProps.errors.title && formikProps.touched.title}
+                      />
+                    </EuiCompressedFormRow>
+                    <EuiSpacer size="m" />
+                    <EuiCompressedFormRow
+                      label={<FormFieldHeader headerTitle={'Author'} />}
+                      fullWidth={true}
+                      isInvalid={!!formikProps.errors.author && formikProps.touched.author}
+                      error={formikProps.errors.author}
+                    >
+                      <EuiCompressedFieldText
+                        placeholder="Enter author name"
+                        value={formikProps.values.author}
+                        onChange={(e) => formikProps.setFieldValue('author', e.target.value)}
+                        onBlur={() => formikProps.setFieldTouched('author')}
+                        isInvalid={!!formikProps.errors.author && formikProps.touched.author}
+                      />
+                    </EuiCompressedFormRow>
+                    <EuiSpacer size="m" />
+                    <EuiCompressedFormRow
+                      label={<FormFieldHeader headerTitle={'Enabled'} />}
+                      fullWidth={true}
+                    >
+                      <EuiCompressedSwitch
+                        label={formikProps.values.enabled ? 'Enabled' : 'Disabled'}
+                        checked={formikProps.values.enabled}
+                        onChange={(e) => formikProps.setFieldValue('enabled', e.target.checked)}
+                      />
+                    </EuiCompressedFormRow>
+                    <EuiSpacer size="m" />
+                    <EuiCompressedFormRow
+                      label={<FormFieldHeader headerTitle={'Description'} optionalField={true} />}
+                      fullWidth={true}
+                    >
+                      <EuiCompressedTextArea
+                        placeholder="Enter a description"
+                        value={formikProps.values.description}
+                        onChange={(e) => formikProps.setFieldValue('description', e.target.value)}
+                      />
+                    </EuiCompressedFormRow>
+                    <EuiSpacer size="m" />
+                    <EuiCompressedFormRow
+                      label={<FormFieldHeader headerTitle={'Documentation'} optionalField={true} />}
+                      fullWidth={true}
+                    >
+                      <EuiCompressedFieldText
+                        placeholder="Enter documentation URL"
+                        value={formikProps.values.documentation}
+                        onChange={(e) =>
+                          formikProps.setFieldValue('documentation', e.target.value)
+                        }
+                      />
+                    </EuiCompressedFormRow>
+                    <EuiSpacer size="m" />
+                    <FormFieldArray
+                      label={<FormFieldHeader headerTitle={'References'} optionalField={true} />}
+                      values={formikProps.values.references}
+                      placeholder="https://example.com/reference"
+                      addButtonLabel="Add reference"
+                      onChange={(references) =>
+                        formikProps.setFieldValue('references', references)
+                      }
+                    />
+                    <FormFieldArray
+                      label={<FormFieldHeader headerTitle={'Supports'} optionalField={true} />}
+                      values={formikProps.values.supports}
+                      addButtonLabel="Add support"
+                      onChange={(supports) => formikProps.setFieldValue('supports', supports)}
+                    />
+                    <EuiCompressedFormRow
+                      label={<FormFieldHeader headerTitle={'Content'} optionalField={true} />}
+                      fullWidth={true}
+                    >
+                      <KVDBContentEditor />
+                    </EuiCompressedFormRow>
+                  </>
+                )}
+                {selectedEditorType === 'yaml' && (
+                  <KVDBYamlEditor
+                    values={formikProps.values}
+                    onChange={(newValues) => formikProps.setValues(newValues)}
+                    isInvalid={Object.keys(formikProps.errors).length > 0}
+                    errors={Object.values(formikProps.errors).filter(
+                      (e): e is string => typeof e === 'string'
+                    )}
                   />
-                </EuiCompressedFormRow>
-                <EuiSpacer size="m" />
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Author'} />}
-                  fullWidth={true}
-                  isInvalid={!!formikProps.errors.author && formikProps.touched.author}
-                  error={formikProps.errors.author}
-                >
-                  <EuiCompressedFieldText
-                    placeholder="Enter author name"
-                    value={formikProps.values.author}
-                    onChange={(e) => formikProps.setFieldValue('author', e.target.value)}
-                    onBlur={() => formikProps.setFieldTouched('author')}
-                    isInvalid={!!formikProps.errors.author && formikProps.touched.author}
-                  />
-                </EuiCompressedFormRow>
-                <EuiSpacer size="m" />
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Enabled'} />}
-                  fullWidth={true}
-                >
-                  <EuiCompressedSwitch
-                    label={formikProps.values.enabled ? 'Enabled' : 'Disabled'}
-                    checked={formikProps.values.enabled}
-                    onChange={(e) => formikProps.setFieldValue('enabled', e.target.checked)}
-                  />
-                </EuiCompressedFormRow>
-                <EuiSpacer size="m" />
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Description'} optionalField={true} />}
-                  fullWidth={true}
-                >
-                  <EuiCompressedTextArea
-                    placeholder="Enter a description"
-                    value={formikProps.values.description}
-                    onChange={(e) => formikProps.setFieldValue('description', e.target.value)}
-                  />
-                </EuiCompressedFormRow>
-                <EuiSpacer size="m" />
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Documentation'} optionalField={true} />}
-                  fullWidth={true}
-                >
-                  <EuiCompressedFieldText
-                    placeholder="Enter documentation URL"
-                    value={formikProps.values.documentation}
-                    onChange={(e) => formikProps.setFieldValue('documentation', e.target.value)}
-                  />
-                </EuiCompressedFormRow>
-                <EuiSpacer size="m" />
-                <FormFieldArray
-                  label={<FormFieldHeader headerTitle={'References'} optionalField={true} />}
-                  values={formikProps.values.references}
-                  placeholder="https://example.com/reference"
-                  addButtonLabel="Add reference"
-                  onChange={(references) => formikProps.setFieldValue('references', references)}
-                />
-                <FormFieldArray
-                  label={<FormFieldHeader headerTitle={'Supports'} optionalField={true} />}
-                  values={formikProps.values.supports}
-                  addButtonLabel="Add support"
-                  onChange={(supports) => formikProps.setFieldValue('supports', supports)}
-                />
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Content'} optionalField={true} />}
-                  fullWidth={true}
-                >
-                  <KVDBContentEditor />
-                </EuiCompressedFormRow>
+                )}
               </EuiPanel>
               <EuiSpacer size="xl" />
               <EuiFlexGroup justifyContent="flexEnd">
