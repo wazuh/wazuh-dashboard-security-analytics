@@ -9,10 +9,9 @@ import {
   FilterSearchRequest,
   FilterSearchResponse,
   ServerResponse,
-  CreateFilterPayload,
-  UpdateFilterPayload,
   CUDFilterResponse,
 } from '../../types';
+import { FilterResource } from '../../types/Filters';
 import FiltersService from '../services/FiltersService';
 import { errorNotificationToast } from '../utils/helpers';
 
@@ -62,7 +61,10 @@ export class FiltersStore {
     return { id: hit._id, ...hit._source };
   }
 
-  public async createFilter(body: CreateFilterPayload): Promise<CUDFilterResponse | undefined> {
+  public async createFilter(body: {
+    space: string;
+    resource: FilterResource;
+  }): Promise<CUDFilterResponse | undefined> {
     const response = await this.service.createFilter(body);
     if (!response.ok) {
       errorNotificationToast(this.notifications, 'create', 'filter', response.error);
@@ -73,7 +75,7 @@ export class FiltersStore {
 
   public async updateFilter(
     filterId: string,
-    body: UpdateFilterPayload
+    body: { space: string; resource: FilterResource }
   ): Promise<CUDFilterResponse | undefined> {
     const response = await this.service.updateFilter(filterId, body);
     if (!response.ok) {

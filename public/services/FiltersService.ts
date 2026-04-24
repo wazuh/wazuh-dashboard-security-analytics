@@ -4,14 +4,14 @@
  */
 
 import { HttpSetup } from 'opensearch-dashboards/public';
+import { stringify as LosslessStringify } from 'lossless-json';
 import {
   FilterSearchRequest,
   FilterSearchResponse,
   ServerResponse,
-  CreateFilterPayload,
-  UpdateFilterPayload,
   CUDFilterResponse,
 } from '../../types';
+import { FilterResource } from '../../types/Filters';
 import { API } from '../../server/utils/constants';
 
 export default class FiltersService {
@@ -28,18 +28,27 @@ export default class FiltersService {
     })) as ServerResponse<FilterSearchResponse>;
   };
 
-  createFilter = async (body: CreateFilterPayload): Promise<ServerResponse<CUDFilterResponse>> => {
+  createFilter = async (body: {
+    space: string;
+    resource: FilterResource;
+  }): Promise<ServerResponse<CUDFilterResponse>> => {
     return (await this.httpClient.post(this.baseUrl, {
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        space: body.space,
+        documentJson: LosslessStringify(body.resource),
+      }),
     })) as ServerResponse<CUDFilterResponse>;
   };
 
   updateFilter = async (
     filterId: string,
-    body: UpdateFilterPayload
+    body: { space: string; resource: FilterResource }
   ): Promise<ServerResponse<CUDFilterResponse>> => {
     return (await this.httpClient.put(`${this.baseUrl}/${filterId}`, {
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        space: body.space,
+        documentJson: LosslessStringify(body.resource),
+      }),
     })) as ServerResponse<CUDFilterResponse>;
   };
 
