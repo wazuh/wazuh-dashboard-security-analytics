@@ -260,13 +260,68 @@ export class IntegrationStore {
     return [promoteRes.ok, promoteRes.response];
   }
 
-  public async promoteIntegration(data: PromoteIntegrationRequestBody) {
+  public async promoteIntegration(
+    data: PromoteIntegrationRequestBody
+  ): Promise<{ ok: boolean; error?: string }> {
     const promoteRes = await this.service.promoteIntegration(data);
+
     if (!promoteRes.ok) {
-      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
+      const errorMessage = this.getErrorMessage(promoteRes.error, 'Failed to promote integration');
+      errorNotificationToast(this.notifications, 'promote', 'integration', errorMessage);
+      return { ok: false, error: errorMessage };
     }
 
-    return promoteRes.ok;
+    const inner: any = (promoteRes as any).response;
+    if (inner && inner.ok === false) {
+      const errorMessage = this.getErrorMessage(
+        inner.error ?? inner.message,
+        'Failed to promote integration'
+      );
+      errorNotificationToast(this.notifications, 'promote', 'integration', errorMessage);
+      return { ok: false, error: errorMessage };
+    }
+
+    return { ok: true };
+  }
+
+  /**
+   * Fetches the bundled children (decoders, rules, kvdbs) of a given set of
+   * integrations in a source space. Used to produce precise dependency
+   * warnings in the promote preview.
+   */
+  public async getIntegrationChildrenMap(
+    space: string,
+    integrationIds: string[]
+  ): Promise<
+    Record<string, { title: string; decoders: string[]; rules: string[]; kvdbs: string[] }>
+  > {
+    if (integrationIds.length === 0) {
+      return {};
+    }
+    try {
+      const searchRes = await this.service.searchIntegrations({ spaceFilter: space });
+      if (!searchRes.ok) {
+        return {};
+      }
+      const wanted = new Set(integrationIds);
+      const result: Record<
+        string,
+        { title: string; decoders: string[]; rules: string[]; kvdbs: string[] }
+      > = {};
+      for (const hit of searchRes.response.hits.hits) {
+        const doc = hit._source.document;
+        if (!wanted.has(doc.id)) continue;
+        result[doc.id] = {
+          title: doc.metadata?.title ?? doc.id,
+          decoders: doc.decoders ?? [],
+          rules: doc.rules ?? [],
+          kvdbs: doc.kvdbs ?? [],
+        };
+      }
+      return result;
+    } catch {
+      return {};
+    }
   }
 
   /**
