@@ -13,10 +13,8 @@ import {
 } from 'opensearch-dashboards/server';
 import { ServerResponse } from '../models/types';
 import { DecoderItem, GetDecoderResponse, SearchDecodersResponse } from '../../types';
-import { CLIENT_DECODER_METHODS } from '../utils/constants';
+import { CLIENT_DECODER_METHODS, CONTENT_INDICES } from '../utils/constants';
 
-const DECODERS_INDEX = '.cti-decoders';
-const INTEGRATIONS_INDEX = '.cti-integrations';
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',
   'space',
@@ -52,7 +50,7 @@ export class DecodersService {
       this.spaceFieldCapsPromise = (async () => {
         try {
           const fieldCapsResponse = await client('fieldCaps', {
-            index: DECODERS_INDEX,
+            index: CONTENT_INDICES.DECODERS,
             fields: SPACE_FIELD_CANDIDATES,
           });
           const fields = fieldCapsResponse?.fields ?? {};
@@ -150,7 +148,7 @@ export class DecodersService {
 
     try {
       const integrationResponse = await client('search', {
-        index: INTEGRATIONS_INDEX,
+        index: CONTENT_INDICES.INTEGRATIONS,
         body: {
           size: 10000,
           query: {
@@ -202,7 +200,7 @@ export class DecodersService {
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
-        index: DECODERS_INDEX,
+        index: CONTENT_INDICES.DECODERS,
         body: {
           from,
           size,
@@ -259,7 +257,7 @@ export class DecodersService {
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
-        index: DECODERS_INDEX,
+        index: CONTENT_INDICES.DECODERS,
         body: {
           size: 1,
           query: this.applySpaceFilter({ term: { 'document.id': decoderId } }, space, searchFields),
@@ -312,11 +310,11 @@ export class DecodersService {
     response: OpenSearchDashboardsResponseFactory
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<{ id: string }> | ResponseError>> => {
     try {
-      const body = request.body as { document: any; integrationId: string };
+      const body = request.body as { documentJson: string; integrationId: string };
       const client = this.getClient(request);
 
-      const { document: decoderDocument, integrationId } = body;
-      if (!decoderDocument) {
+      const { documentJson, integrationId } = body;
+      if (!documentJson) {
         return response.custom({
           statusCode: 200,
           body: {
@@ -327,10 +325,7 @@ export class DecodersService {
       }
 
       const createBody = {
-        body: {
-          resource: decoderDocument,
-          integration: integrationId,
-        },
+        body: `{"resource":${documentJson},"integration":"${integrationId}"}`,
       };
 
       const createResponse = await client(CLIENT_DECODER_METHODS.CREATE_DECODER, createBody);
@@ -361,11 +356,11 @@ export class DecodersService {
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
     try {
       const { decoderId } = request.params;
-      const body = request.body as { document: any };
+      const body = request.body as { documentJson: string };
       const client = this.getClient(request);
 
-      const { document: decoderDocument } = body;
-      if (!decoderDocument) {
+      const { documentJson } = body;
+      if (!documentJson) {
         return response.custom({
           statusCode: 200,
           body: {
@@ -376,10 +371,8 @@ export class DecodersService {
       }
 
       const updateBody = {
-        body: {
-          resource: decoderDocument,
-        },
-        decoderId: decoderId,
+        body: `{"resource":${documentJson}}`,
+        decoderId,
       };
 
       const responseRequest = await client(CLIENT_DECODER_METHODS.UPDATE_DECODER, updateBody);
@@ -442,7 +435,7 @@ export class DecodersService {
     try {
       const client = this.getClient(request);
       const searchResponse = await client('search', {
-        index: INTEGRATIONS_INDEX,
+        index: CONTENT_INDICES.INTEGRATIONS,
         body: {
           size: 10000,
           query: {
