@@ -60,7 +60,7 @@ export default class DeleteModal extends Component<DeleteModalProps, DeleteModal
         <EuiConfirmModal
           title={
             <EuiText size="s">
-              <h2>`Delete {ids}`</h2>
+              <h2>Delete {ids}</h2>
             </EuiText>
           }
           onCancel={closeDeleteModal}
