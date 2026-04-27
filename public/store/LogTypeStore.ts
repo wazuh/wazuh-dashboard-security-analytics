@@ -3,18 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { NotificationsStart } from 'opensearch-dashboards/public';
-import { LogType, LogTypeBase, LogTypeWithRules, RuleItemInfoBase } from '../../types';
-import LogTypeService from '../services/LogTypeService';
-import { errorNotificationToast } from '../utils/helpers';
-import { DataStore } from './DataStore';
-import { ruleTypes } from '../pages/Rules/utils/constants';
+import { NotificationsStart } from "opensearch-dashboards/public";
+import {
+  LogType,
+  LogTypeBase,
+  LogTypeWithRules,
+  RuleItemInfoBase,
+} from "../../types";
+import LogTypeService from "../services/LogTypeService";
+import { errorNotificationToast } from "../utils/helpers";
+import { DataStore } from "./DataStore";
+import { ruleTypes } from "../pages/Rules/utils/constants";
 import {
   DATA_SOURCE_NOT_SET_ERROR,
   logTypeCategories,
   logTypesByCategories,
-} from '../utils/constants';
-import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
+} from "../utils/constants";
+import {
+  DetectorSourceLabel,
+  getDetectorSourceLabel,
+} from "../utils/detectorSource";
+import { getLogTypeLabel } from "../pages/LogTypes/utils/helpers";
 
 /** Indexer stores lifecycle as `space`; UI model keeps `source` (Sigma → Standard). */
 function mapLogTypeFromHit(hit: {
@@ -23,8 +32,8 @@ function mapLogTypeFromHit(hit: {
 }): LogType {
   const src = hit._source;
   const { space, source: _, ...rest } = src;
-  const raw = typeof space === 'string' ? space : '';
-  const source = raw.toLowerCase() === 'sigma' ? 'Standard' : raw;
+  const raw = typeof space === "string" ? space : "";
+  const source = getDetectorSourceLabel(raw) ?? raw;
   return {
     id: hit._id,
     ...rest,
@@ -33,19 +42,24 @@ function mapLogTypeFromHit(hit: {
 }
 
 export class LogTypeStore {
-  constructor(private service: LogTypeService, private notifications: NotificationsStart) {}
+  constructor(
+    private service: LogTypeService,
+    private notifications: NotificationsStart
+  ) {}
 
   public async getLogType(id: string): Promise<LogTypeWithRules | undefined> {
     const logTypesRes = await this.service.searchLogTypes(id);
     if (logTypesRes.ok) {
-      const logTypes: LogType[] = logTypesRes.response.hits.hits.map((hit) => mapLogTypeFromHit(hit));
+      const logTypes: LogType[] = logTypesRes.response.hits.hits.map((hit) =>
+        mapLogTypeFromHit(hit)
+      );
 
       let detectionRules: RuleItemInfoBase[] = [];
 
       if (logTypes[0]) {
         const logTypeName = logTypes[0].name.toLowerCase();
         detectionRules = await DataStore.rules.getAllRules({
-          'rule.category': [logTypeName],
+          "rule.category": [logTypeName],
         });
       }
 
@@ -59,7 +73,9 @@ export class LogTypeStore {
     try {
       const logTypesRes = await this.service.searchLogTypes();
       if (logTypesRes.ok) {
-        const logTypes: LogType[] = logTypesRes.response.hits.hits.map((hit) => mapLogTypeFromHit(hit));
+        const logTypes: LogType[] = logTypesRes.response.hits.hits.map((hit) =>
+          mapLogTypeFromHit(hit)
+        );
 
         ruleTypes.splice(
           0,
@@ -70,7 +86,7 @@ export class LogTypeStore {
               value: name,
               id,
               category,
-              isStandard: source === 'Standard',
+              isStandard: source === DetectorSourceLabel.Standard,
             }))
             .sort((a, b) => {
               return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
@@ -82,16 +98,17 @@ export class LogTypeStore {
           delete logTypesByCategories[key];
         }
         logTypes.forEach((logType) => {
-          logTypesByCategories[logType.category] = logTypesByCategories[logType.category] || [];
+          logTypesByCategories[logType.category] =
+            logTypesByCategories[logType.category] || [];
           logTypesByCategories[logType.category].push(logType);
         });
         logTypeCategories.splice(
           0,
           logTypeCategories.length,
           ...Object.keys(logTypesByCategories).sort((a, b) => {
-            if (a === 'Other') {
+            if (a === "Other") {
               return 1;
-            } else if (b === 'Other') {
+            } else if (b === "Other") {
               return -1;
             } else {
               return a < b ? -1 : a > b ? 1 : 0;
@@ -107,9 +124,9 @@ export class LogTypeStore {
       if (error.message === DATA_SOURCE_NOT_SET_ERROR) {
         errorNotificationToast(
           this.notifications,
-          'Fetch',
-          'Log types',
-          'Select valid data source.'
+          "Fetch",
+          "Log types",
+          "Select valid data source."
         );
         return [];
       }
@@ -122,7 +139,12 @@ export class LogTypeStore {
     const createRes = await this.service.createLogType(logType);
 
     if (!createRes.ok) {
-      errorNotificationToast(this.notifications, 'create', 'log type', createRes.error);
+      errorNotificationToast(
+        this.notifications,
+        "create",
+        "log type",
+        createRes.error
+      );
     }
 
     return createRes.ok;
@@ -145,7 +167,12 @@ export class LogTypeStore {
     });
 
     if (!updateRes.ok) {
-      errorNotificationToast(this.notifications, 'update', 'log type', updateRes.error);
+      errorNotificationToast(
+        this.notifications,
+        "update",
+        "log type",
+        updateRes.error
+      );
     }
 
     return updateRes.ok;
@@ -154,7 +181,12 @@ export class LogTypeStore {
   public async deleteLogType(id: string) {
     const deleteRes = await this.service.deleteLogType(id);
     if (!deleteRes.ok) {
-      errorNotificationToast(this.notifications, 'delete', 'log type', deleteRes.error);
+      errorNotificationToast(
+        this.notifications,
+        "delete",
+        "log type",
+        deleteRes.error
+      );
     }
 
     return deleteRes.ok;

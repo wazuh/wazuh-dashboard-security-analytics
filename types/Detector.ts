@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AlertCondition } from './Alert';
-import { DetectorRuleInfo } from './Rule';
+import { AlertCondition } from "./Alert";
+import { DetectorRuleInfo } from "./Rule";
 
 export interface DetectorInput {
   detector_input: {
@@ -33,6 +33,7 @@ export interface Detector {
   inputs: DetectorInput[];
   triggers: AlertCondition[];
   threat_intel_enabled: boolean;
+  source?: string;
 }
 
 export interface AlertConditionRuleOption {
