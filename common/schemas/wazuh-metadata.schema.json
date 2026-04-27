@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Wazuh resource metadata",
+  "description": "Static metadata schema matching the OpenSearch indexer mapping. Shared across all resource types (decoders, filters, rules, etc.)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "author": {
+      "type": "string",
+      "description": "Author name"
+    },
+    "compatibility": {
+      "type": "string",
+      "description": "Compatibility information"
+    },
+    "date": {
+      "type": "string",
+      "description": "Creation date in ISO 8601 format (YYYY-MM-DD)",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the resource"
+    },
+    "documentation": {
+      "type": "string",
+      "description": "Documentation URL or text"
+    },
+    "modified": {
+      "type": "string",
+      "description": "Last modification date in ISO 8601 format (YYYY-MM-DD)",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "module": {
+      "type": "string",
+      "description": "Module name"
+    },
+    "references": {
+      "type": "string",
+      "description": "Reference URL or citation"
+    },
+    "supports": {
+      "type": "string",
+      "description": "Supported platforms or configurations"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title"
+    },
+    "versions": {
+      "type": "string",
+      "description": "Compatible versions"
+    }
+  },
+  "required": [
+    "module",
+    "title",
+    "description",
+    "compatibility",
+    "versions",
+    "author",
+    "references"
+  ]
+}

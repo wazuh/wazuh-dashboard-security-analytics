@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { Form, Formik, FormikErrors } from 'formik';
+import { Form, Formik } from 'formik';
 import { decoderFormDefaultValue, mapYamlToLosslessDecoder } from '../components/mappers';
 import { YamlForm } from '../components/YamlForm';
 import {
@@ -30,7 +30,17 @@ import {
 import { DecoderDocument } from '../../../../types/Decoders';
 import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
-import { validate } from 'joi';
+import { validateWithJsonSchema } from '../../../utils/jsonSchemaValidation';
+import decoderSchema from '../../../../common/schemas/wazuh-decoders.schema.json';
+import metadataSchema from '../../../../common/schemas/wazuh-metadata.schema.json';
+
+const decoderSchemaWithIndexerMetadata = {
+  ...decoderSchema,
+  properties: {
+    ...decoderSchema.properties,
+    metadata: metadataSchema,
+  },
+};
 
 const editorTypes = [
   {
@@ -210,38 +220,13 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   );
 
   const validateForm = useCallback((values: { rawDecoder: string }) => {
-    const errors: FormikErrors<DecoderDocument> = {};
-
     // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
     const decoder = mapYamlToLosslessDecoder(values.rawDecoder);
-
-    if (!decoder.name) {
-      errors.name = 'Decoder name is required';
-    }
-
-    const parts = decoder.name.split('/');
-
-    if (parts.length !== 3) {
-      errors.name = "Decoder name must have exactly 3 parts 'decoder/<name>/<version>'";
-    }
-
-    if (parts?.[0] !== 'decoder') {
-      errors.name =
-        "Decoder name must start with 'decoder/' and follow the format 'decoder/<name>/<version>'";
-    }
-
-    if (parts?.[1]?.trim().length === 0) {
-      errors.name =
-        "Name cannot have empty parts and must follow the format 'decoder/<name>/<version>'";
-    }
-
-    if (parts?.[2]?.trim().length === 0) {
-      errors.name =
-        "Version cannot have empty parts and must follow the format 'decoder/<name>/<version>'";
-    }
-
-    return errors;
-  }, []);
+    const skippedFields = action === 'create' ? ['id'] : [];
+    return validateWithJsonSchema(decoderSchemaWithIndexerMetadata, decoder, {
+      skipRequired: skippedFields,
+    });
+  }, [action]);
 
   return (
     <>
