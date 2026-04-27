@@ -7,6 +7,7 @@ import YAML from 'yaml';
 import { LosslessNumber } from 'lossless-json';
 import { KVDBDocument, KVDBMetadata, KVDBResource } from '../../../../types/KVDBs';
 import { ContentEntry } from '../components/KVDBContentEditor';
+import { mapYamlToLosslessObject } from '../../../components/YamlForm';
 
 export interface KVDBFormModel {
   title: string;
@@ -30,140 +31,87 @@ export const kvdbFormDefaultValue: KVDBFormModel = {
   contentEntries: [],
 };
 
-/**
- * Convert from API document to form model (for edit mode)
- */
-export const mapKVDBToForm = (document: KVDBDocument): KVDBFormModel => {
-  const metadata = document.metadata;
-  const refs = metadata?.references;
-  const references = Array.isArray(refs) ? refs : refs ? [refs] : [];
+// ── Private helpers ──────────────────────────────────────────────────────────
 
-  const contentEntries: ContentEntry[] = [];
-  if (document.content && typeof document.content === 'object') {
-    for (const [key, value] of Object.entries(document.content)) {
-      contentEntries.push({
-        key,
-        value: typeof value === 'string' ? value : JSON.stringify(value, null, 2),
-      });
+const normalizeStringArray = (value: string | string[] | undefined): string[] =>
+  Array.isArray(value) ? value : value ? [value] : [];
+
+/** Converts any content value to a display string for a form entry. */
+const contentValueToString = (value: unknown): string => {
+  if (value instanceof LosslessNumber) return value.toString();
+  if (typeof value === 'string') return value;
+  return JSON.stringify(value, null, 2);
+};
+
+/** Extracts shared metadata fields from a KVDBMetadata object into form fields. */
+const metadataToFormFields = (metadata: KVDBMetadata | undefined) => ({
+  title: metadata?.title || '',
+  author: metadata?.author || '',
+  description: metadata?.description || '',
+  documentation: metadata?.documentation || '',
+  references: normalizeStringArray(metadata?.references),
+  supports: normalizeStringArray(metadata?.supports),
+});
+
+/** Converts a content object into form entries. */
+const contentToEntries = (content: Record<string, unknown> | undefined): ContentEntry[] =>
+  Object.entries(content ?? {}).map(([key, value]) => ({ key, value: contentValueToString(value) }));
+
+/** Parses a single content entry value: JSON objects/arrays are parsed, strings are kept as-is. */
+const parseContentValue = (value: string): unknown => {
+  const trimmed = value.trim();
+  if (trimmed[0] === '{' || trimmed[0] === '[') {
+    try {
+      return JSON.parse(trimmed);
+    } catch {
+      // not valid JSON — fall through to string
     }
   }
-
-  const supportsRaw = metadata?.supports;
-  const supports = Array.isArray(supportsRaw) ? supportsRaw : supportsRaw ? [supportsRaw] : [];
-
-  return {
-    title: metadata?.title || '',
-    author: metadata?.author || '',
-    description: metadata?.description || '',
-    documentation: metadata?.documentation || '',
-    references,
-    supports,
-    enabled: document.enabled ?? true,
-    contentEntries,
-  };
+  return value;
 };
 
-/**
- * Convert content entries back to an object for the API payload.
- */
-const entriesToContentObject = (entries: ContentEntry[]): Record<string, unknown> => {
-  const result: Record<string, unknown> = {};
-  for (const entry of entries) {
-    const key = entry.key.trim();
-    if (!key) continue;
-
-    const trimmed = entry.value.trim();
-    if (trimmed[0] === '{' || trimmed[0] === '[') {
-      try {
-        result[key] = JSON.parse(trimmed);
-        continue;
-      } catch {
-        // invalid JSON, store as string
-      }
-    }
-    result[key] = entry.value;
-  }
-  return result;
-};
-
-/**
- * Convert from form model to API resource payload.
- * Note: date and modified are set by the indexer; do not send them.
- */
-export const mapFormToKVDBResource = (values: KVDBFormModel): KVDBResource => {
-  return {
-    metadata: {
-      title: values.title,
-      author: values.author,
-      description: values.description,
-      documentation: values.documentation,
-      references: values.references,
-      supports: values.supports,
-    },
-    enabled: values.enabled,
-    content: entriesToContentObject(values.contentEntries),
-  };
-};
-
-/**
- * Serialize a form model to a YAML string for display in the YAML editor.
- */
-export const mapFormToYaml = (values: KVDBFormModel): string => {
-  return YAML.stringify(mapFormToKVDBResource(values), { lineWidth: 0 });
-};
-
-/**
- * Parse a YAML string into a form model.
- * Uses LosslessNumber to preserve exact numeric string representations
- * (e.g. 3.14159265358979323846 stays as that string, not a JS float).
- */
-export const mapYamlToForm = (yamlStr: string): KVDBFormModel => {
-  const doc = YAML.parseDocument(yamlStr);
-
-  YAML.visit(doc, {
-    Scalar(_, node) {
-      if (typeof node.value === 'number') {
-        let rawText: string;
-        if (node.range && node.range.length >= 2) {
-          rawText = yamlStr.slice(node.range[0], node.range[1]).trim();
-        } else {
-          rawText = String(node.value);
-          if (!rawText.includes('.')) rawText += '.0';
-        }
-        node.value = new LosslessNumber(rawText);
-      }
-    },
-  });
-
-  const parsed = doc.toJS() as KVDBResource | null;
-  if (!parsed) return kvdbFormDefaultValue;
-
-  const metadata = (parsed.metadata || {}) as KVDBMetadata;
-  const refs = metadata.references;
-  const references = Array.isArray(refs) ? refs : refs ? [refs] : [];
-  const supportsRaw = metadata.supports;
-  const supports = Array.isArray(supportsRaw) ? supportsRaw : supportsRaw ? [supportsRaw] : [];
-
-  const contentEntries: ContentEntry[] = Object.entries(parsed.content ?? {}).map(
-    ([key, value]) => ({
-      key,
-      value:
-        value instanceof LosslessNumber
-          ? value.toString()
-          : typeof value === 'string'
-          ? value
-          : JSON.stringify(value, null, 2),
-    })
+/** Converts content form entries back to an object for the API payload. */
+const entriesToContentObject = (entries: ContentEntry[]): Record<string, unknown> =>
+  Object.fromEntries(
+    entries
+      .filter(({ key }) => key.trim())
+      .map(({ key, value }) => [key.trim(), parseContentValue(value)])
   );
 
+// ── Public mappers ───────────────────────────────────────────────────────────
+
+/** API document → form model (edit mode). */
+export const mapKVDBToForm = (document: KVDBDocument): KVDBFormModel => ({
+  ...metadataToFormFields(document.metadata),
+  enabled: document.enabled ?? true,
+  contentEntries: contentToEntries(document.content),
+});
+
+/** Form model → API resource payload. date/modified are set by the indexer. */
+export const mapFormToKVDBResource = (values: KVDBFormModel): KVDBResource => ({
+  metadata: {
+    title: values.title,
+    author: values.author,
+    description: values.description,
+    documentation: values.documentation,
+    references: values.references,
+    supports: values.supports,
+  },
+  enabled: values.enabled,
+  content: entriesToContentObject(values.contentEntries),
+});
+
+/** Form model → YAML string (for display in the YAML editor). */
+export const mapFormToYaml = (values: KVDBFormModel): string =>
+  YAML.stringify(mapFormToKVDBResource(values), { lineWidth: 0 });
+
+/** YAML string → form model. Delegates lossless numeric parsing to the shared helper. */
+export const mapYamlToForm = (yamlStr: string): KVDBFormModel => {
+  const parsed = mapYamlToLosslessObject<KVDBResource | null>(yamlStr);
+  if (!parsed) return kvdbFormDefaultValue;
   return {
-    title: metadata.title || '',
-    author: metadata.author || '',
-    description: metadata.description || '',
-    documentation: metadata.documentation || '',
-    references,
-    supports,
+    ...metadataToFormFields(parsed.metadata),
     enabled: parsed.enabled ?? true,
-    contentEntries,
+    contentEntries: contentToEntries(parsed.content),
   };
 };

@@ -37,12 +37,14 @@ import {
   successNotificationToast,
 } from '../../../utils/helpers';
 import { ContentEntry, KVDBContentEditor } from '../components/KVDBContentEditor';
-import { KVDBYamlEditor } from '../components/KVDBYamlEditor';
+import { YamlForm, YAML_TYPE } from '../../../components/YamlForm';
 import {
   kvdbFormDefaultValue,
   KVDBFormModel,
   mapFormToKVDBResource,
+  mapFormToYaml,
   mapKVDBToForm,
+  mapYamlToForm,
 } from '../utils/mappers';
 
 const KVDB_ACTION = {
@@ -76,6 +78,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const kvdbId = props.match.params.id;
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState<EditorType>('visual');
+  const [rawKvdb, setRawKvdb] = useState<string | undefined>(undefined);
   const [integrationType, setIntegrationType] = useState<string>('');
   const [initialValue, setInitialValue] = useState<KVDBFormModel>(kvdbFormDefaultValue);
 
@@ -288,7 +291,10 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   legend="Editor type"
                   options={editorTypes}
                   idSelected={selectedEditorType}
-                  onChange={(id) => setSelectedEditorType(id as EditorType)}
+                  onChange={(id) => {
+                    if (id === 'yaml') setRawKvdb(mapFormToYaml(formikProps.values));
+                    setSelectedEditorType(id as EditorType);
+                  }}
                 />
                 <EuiSpacer size="xl" />
                 {action === KVDB_ACTION.CREATE && (
@@ -394,13 +400,17 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   </>
                 )}
                 {selectedEditorType === 'yaml' && (
-                  <KVDBYamlEditor
-                    values={formikProps.values}
-                    onChange={(newValues) => formikProps.setValues(newValues)}
+                  <YamlForm
+                    type={YAML_TYPE.KVDB}
+                    value={rawKvdb}
                     isInvalid={Object.keys(formikProps.errors).length > 0}
                     errors={Object.values(formikProps.errors).filter(
                       (e): e is string => typeof e === 'string'
                     )}
+                    change={(yamlStr) => {
+                      setRawKvdb(yamlStr);
+                      formikProps.setValues(mapYamlToForm(yamlStr));
+                    }}
                   />
                 )}
               </EuiPanel>
