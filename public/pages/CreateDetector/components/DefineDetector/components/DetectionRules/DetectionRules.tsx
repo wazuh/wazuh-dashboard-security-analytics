@@ -68,10 +68,12 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
       rulesState.allRules.map((rule) => ({
         id: rule._id,
         active: rule.enabled,
-        description: rule._source.description,
+        // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+        description: rule._source.metadata?.description ?? '',
         library: rule.prePackaged ? 'Standard' : 'Custom',
         logType: rule._source.category,
-        name: rule._source.title,
+        // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+        name: rule._source.metadata?.title ?? '',
         severity: rule._source.level,
         ruleInfo: rule,
       })),

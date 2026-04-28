@@ -107,7 +107,6 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
     }
   };
 
-  // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
   createFindingTableColumns(): EuiBasicTableColumn<Finding>[] {
     const { detector } = this.props;
     const { rules } = this.state;
@@ -147,6 +146,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
                   {
                     ...finding,
                     detector: { _id: detector.id as string, _index: '', _source: detector },
+                    // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
                     ruleName: rule.metadata?.title ?? '',
                     ruleSeverity:
                       rule.level === 'critical'

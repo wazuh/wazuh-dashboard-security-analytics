@@ -18,11 +18,14 @@ export interface Rule {
     category?: string;
     service?: string;
   };
+  // title: string;
+  // description: string;
   tags: Array<{ value: string }>;
   false_positives: Array<{ value: string }>;
   level: string;
   status: string;
   references: Array<{ value: string }>;
+  // author: string;
   detection: string;
   mitre: string;
   compliance: string;
@@ -31,9 +34,10 @@ export interface Rule {
   metadata?: RuleMetadata;
 }
 
-// Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
 export type RuleSource = Rule & {
   rule: string;
+  // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+  // last_update_time: string;
   queries: { value: string }[];
   query_field_names: { value: string }[];
 };

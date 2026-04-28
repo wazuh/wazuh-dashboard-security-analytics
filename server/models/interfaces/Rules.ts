@@ -14,11 +14,12 @@ export interface CreateRuleRequest {
   rule: Rule;
 }
 
-// Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
 export interface CreateRuleResponse {
   _id: string;
   _version: number;
   rule: Omit<Rule, 'id'> & {
+    // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+    // last_update_time: number;
     monitor_id: string;
   };
 }
@@ -68,9 +69,10 @@ export interface RuleInfo {
   _version: number;
 }
 
-// Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
 export type RuleSource = Rule & {
   rule: string;
+  // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+  // last_update_time: number;
   queries: { value: string }[];
   query_field_names: { value: string }[];
 };

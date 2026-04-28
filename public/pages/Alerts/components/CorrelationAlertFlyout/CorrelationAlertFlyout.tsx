@@ -114,7 +114,6 @@ export class CorrelationAlertFlyout extends React.Component<
     }
   };
 
-  // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
   createFindingTableColumns(): EuiBasicTableColumn<Finding>[] {
     const { rules } = this.state;
 
@@ -152,6 +151,7 @@ export class CorrelationAlertFlyout extends React.Component<
                 {
                   ...finding,
                   detector: { _id: finding.detector_id as string, _index: '' },
+                  // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
                   ruleName: rule?.metadata?.title || '',
                   ruleSeverity:
                     rule?.level === 'critical'

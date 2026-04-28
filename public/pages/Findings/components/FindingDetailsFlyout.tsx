@@ -255,7 +255,6 @@ export default class FindingDetailsFlyout extends Component<
     return !isThreatIntelQuery(id);
   };
 
-  // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
   renderRuleDetails = (rules: Query[] = []) => {
     const { allRules = {} } = this.state;
     return rules.filter(this.shouldRenderRule).map((rule, key) => {
@@ -268,6 +267,7 @@ export default class FindingDetailsFlyout extends Component<
             buttonClassName="euiAccordionForm__button"
             buttonContent={
               <div data-test-subj={'finding-details-flyout-rule-accordion-button'}>
+                {/* Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time. */}
                 <EuiText size={'s'}>{fullRule.metadata?.title ?? DEFAULT_EMPTY_DATA}</EuiText>
                 <EuiText size={'s'} color={'subdued'}>
                   Severity: {severity}
@@ -281,6 +281,7 @@ export default class FindingDetailsFlyout extends Component<
               <EuiFlexGroup>
                 <EuiFlexItem>
                   <EuiCompressedFormRow label={'Rule name'}>
+                    {/* Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time. */}
                     <EuiLink
                       onClick={() => this.showRuleDetails(fullRule, rule.id)}
                       data-test-subj={`finding-details-flyout-${
@@ -315,6 +316,7 @@ export default class FindingDetailsFlyout extends Component<
                 label={'Description'}
                 data-test-subj={'finding-details-flyout-rule-description'}
               >
+                {/* Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time. */}
                 <EuiText>{fullRule.metadata?.description || DEFAULT_EMPTY_DATA}</EuiText>
               </EuiCompressedFormRow>
 
