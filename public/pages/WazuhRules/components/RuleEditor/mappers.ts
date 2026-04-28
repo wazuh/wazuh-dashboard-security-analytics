@@ -53,14 +53,10 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
 
 export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
   const logType = rule.category || getLogTypeFromLogSource(rule.log_source);
-  const title = rule.metadata?.title ?? rule.title;
-  const description = rule.metadata?.description ?? rule.description;
-  const author = rule.metadata?.author ?? rule.author;
-  const refs = rule.metadata?.references ?? rule.references?.map((r) => r.value) ?? [];
 
-  const metadataTitle = rule.metadata?.title ?? rule.title;
-  const metadataDescription = rule.metadata?.description ?? rule.description;
-  const metadataAuthor = rule.metadata?.author ?? rule.author;
+  const metadataTitle = rule.metadata?.title ?? '';
+  const metadataDescription = rule.metadata?.description ?? '';
+  const metadataAuthor = rule.metadata?.author ?? '';
   const metadataReferences = rule.metadata?.references?.length
     ? rule.metadata.references
     : rule.references?.map((r) => r.value);

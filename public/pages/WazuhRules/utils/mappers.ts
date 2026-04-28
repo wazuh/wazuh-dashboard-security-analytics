@@ -45,9 +45,9 @@ export const mapRuleToYamlObject = (rule: Rule): any => {
   const compliance = safeLoad(rule.compliance);
 
   const metadata: Record<string, any> = {
-    title: rule.metadata?.title || rule.title || '',
-    author: rule.metadata?.author || rule.author || '',
-    description: rule.metadata?.description || rule.description || '',
+    title: rule.metadata?.title || '',
+    author: rule.metadata?.author || '',
+    description: rule.metadata?.description || '',
     references: rule.metadata?.references?.length
       ? rule.metadata.references
       : rule.references?.length
@@ -91,14 +91,11 @@ export const mapYamlObjectToRule = (obj: any): Rule => {
     id: obj.id,
     category: obj.logsource ? obj.logsource.product : undefined,
     log_source: {},
-    title: meta.title || '',
-    description: meta.description || '',
     tags: tags.map((tag: string) => ({ value: tag })),
     false_positives: falsepositives.map((fp: string) => ({ value: fp })),
     level: obj.level,
     status: obj.status,
     references: references.map((ref: string) => ({ value: ref })),
-    author: meta.author || '',
     enabled: obj.enabled ?? true,
     detection,
     metadata: {
