@@ -1,38 +1,73 @@
-const https = require('https');
+#!/usr/bin/env node
+
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
-const packageJson = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
-);
+const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-// Add entries here for each engine resource schema to fetch
+function parseInput(input) {
+  const options = {};
+  for (let i = 0; i < input.length; i++) {
+    if (input[i].startsWith('--')) {
+      const key = input[i].slice(2);
+      const value =
+        input[i + 1] && !input[i + 1].startsWith('--') ? input[i + 1] : true;
+      options[key] = value;
+      if (value !== true) i++;
+    }
+  }
+  return options;
+}
+
+function wazuhUrl(filePath) {
+  return `https://raw.githubusercontent.com/wazuh/wazuh/{branch}/${filePath}`;
+}
+
+function interpolate(template, variables) {
+  return template.replace(/{(\w+)}/g, (_, key) => {
+    return key in variables ? variables[key] : `{${key}}`;
+  });
+}
+
+// Add entries here for each engine resource schema to fetch.
+// Each entry can list multiple urls — they are tried in order until one succeeds.
+// Use wazuhUrl() for version-tracked paths; add a hardcoded main URL as fallback
+// for schemas that may not exist on the version branch yet.
 const SCHEMA_SOURCES = [
   {
     name: 'wazuh-decoders',
-    path: 'src/engine/ruleset/schemas/wazuh-decoders.json',
+    urls: [
+      wazuhUrl('src/engine/ruleset/schemas/wazuh-decoders.json'),
+      'https://raw.githubusercontent.com/wazuh/wazuh/main/src/engine/ruleset/schemas/wazuh-decoders.json',
+    ],
   },
 ];
 
-const OUTPUT_DIR = path.join(__dirname, '..', 'common', 'schemas');
-
-const config = {
-  branch: packageJson.wazuh?.version || 'main',
-};
-
-function wazuhUrl(filePath) {
-  return `https://raw.githubusercontent.com/wazuh/wazuh/${config.branch}/${filePath}`;
-}
-
-function fetch(url) {
+function fetchSchema(url) {
   return new Promise((resolve, reject) => {
     https
       .get(url, (res) => {
         if (res.statusCode === 301 || res.statusCode === 302) {
-          fetch(res.headers.location).then(resolve).catch(reject);
+          fetchSchema(res.headers.location).then(resolve).catch(reject);
           return;
         }
-        resolve({ statusCode: res.statusCode, body: res });
+        if (res.statusCode !== 200) {
+          reject(new Error(`HTTP ${res.statusCode} fetching ${url}`));
+          return;
+        }
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(new Error(`Failed to parse JSON from ${url}: ${e.message}`));
+          }
+        });
       })
       .on('error', (error) => {
         reject(new Error(`Failed to fetch ${url}: ${error.message}`));
@@ -40,54 +75,70 @@ function fetch(url) {
   });
 }
 
-async function fetchJson(url) {
-  const { statusCode, body: res } = await fetch(url);
-
-  if (statusCode === 404 && url.includes(`/${config.branch}/`)) {
-    const fallbackUrl = url.replace(`/${config.branch}/`, '/main/');
-    console.log(`  Branch ${config.branch} not found, falling back to main...`);
-    return fetchJson(fallbackUrl);
-  }
-
-  if (statusCode !== 200) {
-    throw new Error(`HTTP ${statusCode} fetching ${url}`);
-  }
-
-  return new Promise((resolve, reject) => {
-    let data = '';
-    res.on('data', (chunk) => {
-      data += chunk;
-    });
-    res.on('end', () => {
-      try {
-        resolve(JSON.parse(data));
-      } catch (e) {
-        reject(new Error(`Failed to parse JSON from ${url}: ${e.message}`));
-      }
-    });
-  });
-}
-
-async function main() {
-  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-
-  for (const source of SCHEMA_SOURCES) {
-    const url = wazuhUrl(source.path);
-    console.log(`Fetching ${source.name} schema from ${url}...`);
-
+async function fetchSchemaFromUrls(urls) {
+  let lastError;
+  for (const url of urls) {
     try {
-      const schema = await fetchJson(url);
-      const outputPath = path.join(OUTPUT_DIR, `${source.name}.schema.json`);
-      fs.writeFileSync(outputPath, JSON.stringify(schema, null, 2));
-      console.log(`  -> Written to ${outputPath}`);
+      const schema = await fetchSchema(url);
+      return { schema, url };
     } catch (error) {
-      console.error(`  Error: ${error.message}`);
-      process.exit(1);
+      lastError = error;
+      console.log(`  ⚠️  Failed to fetch from ${url}: ${error.message}`);
     }
   }
+  throw lastError;
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exit(1);
-});
+function saveOutput(location, data) {
+  const dir = path.dirname(location);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.writeFileSync(location, JSON.stringify(data, null, 2));
+}
+
+async function processSchema(sourceConfig, config) {
+  console.log(`⚙️  Processing ${sourceConfig.name} schema...`);
+  try {
+    const urls = sourceConfig.urls.map((url) =>
+      interpolate(url, { branch: config.branch }),
+    );
+    const { schema, url } = await fetchSchemaFromUrls(urls);
+    console.log(`  ✅ Successfully fetched from: ${url}`);
+
+    const outputPath = path.resolve(
+      config.destination,
+      `${sourceConfig.name}.schema.json`,
+    );
+    saveOutput(outputPath, schema);
+    console.log(`  ✅ Written to ${outputPath}`);
+
+    return schema;
+  } catch (error) {
+    console.error(`  ❌ Error processing ${sourceConfig.name}: ${error.message}`);
+    throw error;
+  }
+}
+
+async function main(config) {
+  console.log(`📦 Using Wazuh version: ${config.branch}`);
+
+  for (const source of SCHEMA_SOURCES) {
+    await processSchema(source, config);
+  }
+
+  console.log('\n✨ Schema generation completed!');
+}
+
+if (require.main === module) {
+  const config = parseInput(process.argv.slice(2));
+  config.branch = config.branch || packageJson.wazuh?.version || 'main';
+  config.destination = path.resolve(
+    config.destination || path.resolve(__dirname, '..', 'common', 'schemas'),
+  );
+
+  main(config).catch((error) => {
+    console.error('💥 Script failed:', error);
+    process.exit(1);
+  });
+}

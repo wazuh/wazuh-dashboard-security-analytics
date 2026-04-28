@@ -32,15 +32,6 @@ import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
 import { validateWithJsonSchema } from '../../../utils/jsonSchemaValidation';
 import decoderSchema from '../../../../common/schemas/wazuh-decoders.schema.json';
-import metadataSchema from '../../../../common/schemas/wazuh-metadata.schema.json';
-
-const decoderSchemaWithIndexerMetadata = {
-  ...decoderSchema,
-  properties: {
-    ...decoderSchema.properties,
-    metadata: metadataSchema,
-  },
-};
 
 const editorTypes = [
   {
@@ -223,7 +214,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
     const decoder = mapYamlToLosslessDecoder(values.rawDecoder);
     const skippedFields = action === 'create' ? ['id'] : [];
-    return validateWithJsonSchema(decoderSchemaWithIndexerMetadata, decoder, {
+    return validateWithJsonSchema(decoderSchema, decoder, {
       skipRequired: skippedFields,
     });
   }, [action]);

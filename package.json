@@ -31,7 +31,7 @@
     "test:jest": "../../node_modules/.bin/jest --config ./test/jest.config.js",
     "test:jest:dev": "../../node_modules/.bin/jest --watch --config ./test/jest.config.js",
     "test:jest:update-snapshots": "yarn run test:jest -u",
-    "generate:schemas": "node scripts/generate-engine-schemas.js",
+    "generate:schemas": "if [ -f scripts/build-tools/update-engine-schemas ]; then bash scripts/build-tools/update-engine-schemas; else echo 'File does not exist. This could be related to the script file not being included at build time. Skipping...'; fi",
     "prebuild": "yarn generate:schemas",
     "build": "yarn plugin-helpers build",
     "postbuild": "echo Renaming build artifact to [$npm_package_config_zip_name-$npm_package_version.zip] && mv build/$npm_package_config_id*.zip build/$npm_package_config_zip_name-$npm_package_version.zip",
