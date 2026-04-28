@@ -5,6 +5,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 ## Wazuh dashboard v5.0.0 - OpenSearch Dashboards 3.6.0 - Revision 01
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Support for Wazuh 5.0.0
 - Added KVDBs management feature with detailed views [#24](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/24) [#30](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/30) [#37](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/37) [#46](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/46) [#63](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/63) [#82](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/82) [#140](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/140) [#204](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/204) [#205](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/205) [#206](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/206) [#208](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/208) [#214](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/214) 
