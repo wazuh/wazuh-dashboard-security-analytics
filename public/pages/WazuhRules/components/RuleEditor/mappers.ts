@@ -24,7 +24,6 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
     id: formState.id,
     category: formState.integration,
     status: formState.status,
-    references: references.map((ref) => ({ value: ref })),
     tags: formState.tags.map((tag) => ({ value: tag })),
     log_source: logSource,
     detection: formState.detection,
@@ -51,15 +50,12 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
 export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
   const logType = rule.category || getLogTypeFromLogSource(rule.log_source);
 
-  const metadataTitle = rule.metadata?.title ?? '';
-  const metadataDescription = rule.metadata?.description ?? '';
-  const metadataAuthor = rule.metadata?.author ?? '';
-  const metadataReferences = rule.metadata?.references?.length
-    ? rule.metadata.references
-    : rule.references?.map((r) => r.value);
-
-  const metadataDocumentation = rule.metadata?.documentation ?? '';
-  const metadataSupports = rule.metadata?.supports ?? [];
+  const metadataTitle = rule.metadata?.title;
+  const metadataDescription = rule.metadata?.description;
+  const metadataAuthor = rule.metadata?.author;
+  const metadataReferences = rule.metadata?.references;
+  const metadataDocumentation = rule.metadata?.documentation;
+  const metadataSupports = rule.metadata?.supports;
 
   return {
     id: rule.id,
@@ -76,9 +72,9 @@ export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
     compliance: rule.compliance,
     enabled: rule.enabled ?? true,
     metadata: {
-      title: metadataTitle,
-      description: metadataDescription,
-      author: metadataAuthor,
+      title: metadataTitle ?? ruleEditorStateDefaultValue.metadata.title,
+      description: metadataDescription ?? ruleEditorStateDefaultValue.metadata.description,
+      author: metadataAuthor ?? ruleEditorStateDefaultValue.metadata.author,
       references: metadataReferences ?? ruleEditorStateDefaultValue.metadata.references,
       supports: metadataSupports ?? ruleEditorStateDefaultValue.metadata.supports,
       documentation: metadataDocumentation ?? ruleEditorStateDefaultValue.metadata.documentation,

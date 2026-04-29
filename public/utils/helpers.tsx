@@ -189,11 +189,11 @@ export function ruleItemInfosToItems(
     return ruleItemsInfo.map((itemInfo) => ({
       id: itemInfo._id,
       active: itemInfo.enabled,
-      // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+      // Wazuh: Remove duplicated fields in metadata and root: description.
       description: itemInfo._source.metadata?.description ?? '',
       library: itemInfo.prePackaged ? 'Standard' : 'Custom',
       logType: detectorType.toLowerCase(),
-      // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+      // Wazuh: Remove duplicated fields in metadata and root: title.
       name: itemInfo._source.metadata?.title ?? '',
       severity: itemInfo._source.level,
       ruleInfo: itemInfo,

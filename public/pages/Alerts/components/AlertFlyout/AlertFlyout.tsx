@@ -146,7 +146,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
                   {
                     ...finding,
                     detector: { _id: detector.id as string, _index: '', _source: detector },
-                    // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+                    // Wazuh: Remove duplicated fields in metadata and root: title.
                     ruleName: rule.metadata?.title ?? '',
                     ruleSeverity:
                       rule.level === 'critical'

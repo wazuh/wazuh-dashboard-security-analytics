@@ -9,7 +9,7 @@ import { CatalogResourceMetadata } from './ResourceMetadata';
 
 export interface RuleMetadata extends CatalogResourceMetadata {}
 
-// Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+// Wazuh: Remove duplicated fields in metadata and root: title, description, author, references.
 export interface Rule {
   id: string;
   category: string;
@@ -24,7 +24,7 @@ export interface Rule {
   false_positives: Array<{ value: string }>;
   level: string;
   status: string;
-  references: Array<{ value: string }>;
+  // references: Array<{ value: string }>;
   // author: string;
   detection: string;
   mitre: string;
@@ -36,7 +36,7 @@ export interface Rule {
 
 export type RuleSource = Rule & {
   rule: string;
-  // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+  // Wazuh: Remove duplicated fields in metadata and root: last_update_time.
   // last_update_time: string;
   queries: { value: string }[];
   query_field_names: { value: string }[];

@@ -103,7 +103,7 @@ export default class UpdateAlertConditions extends Component<
       const allRules: { [id: string]: RuleSource } = {};
       const rulesOptions = new Set<RuleOptions>();
 
-      // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+      // Wazuh: Remove duplicated fields in metadata and root: title.
       const processRules = (rules: RuleItemInfoBase[]) => {
         rules.forEach((hit) => {
           allRules[hit._id] = hit._source;

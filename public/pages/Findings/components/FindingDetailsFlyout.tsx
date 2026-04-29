@@ -42,7 +42,7 @@ import {
 } from '../../../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { Query } from '../models/interfaces';
-import { RuleViewerFlyout } from '../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
+import { RuleViewerFlyout } from '../../WazuhRules/components/RuleViewerFlyout/RuleViewerFlyout';
 import { RuleSource } from '../../../../server/models/interfaces';
 import { RuleTableItem } from '../../Rules/utils/helpers';
 import { CreateIndexPatternForm } from './CreateIndexPatternForm';
@@ -221,7 +221,7 @@ export default class FindingDetailsFlyout extends Component<
     );
   };
 
-  // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+  // Wazuh: Remove duplicated fields in metadata and root: title, description.
   showRuleDetails = (fullRule: any, ruleId: string) => {
     this.setState({
       ...this.state,
@@ -267,7 +267,7 @@ export default class FindingDetailsFlyout extends Component<
             buttonClassName="euiAccordionForm__button"
             buttonContent={
               <div data-test-subj={'finding-details-flyout-rule-accordion-button'}>
-                {/* Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time. */}
+                {/* Wazuh: Remove duplicated fields in metadata and root: title. */}
                 <EuiText size={'s'}>{fullRule.metadata?.title ?? DEFAULT_EMPTY_DATA}</EuiText>
                 <EuiText size={'s'} color={'subdued'}>
                   Severity: {severity}
@@ -281,7 +281,7 @@ export default class FindingDetailsFlyout extends Component<
               <EuiFlexGroup>
                 <EuiFlexItem>
                   <EuiCompressedFormRow label={'Rule name'}>
-                    {/* Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time. */}
+                    {/* Wazuh: Remove duplicated fields in metadata and root: title. */}
                     <EuiLink
                       onClick={() => this.showRuleDetails(fullRule, rule.id)}
                       data-test-subj={`finding-details-flyout-${
@@ -316,7 +316,7 @@ export default class FindingDetailsFlyout extends Component<
                 label={'Description'}
                 data-test-subj={'finding-details-flyout-rule-description'}
               >
-                {/* Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time. */}
+                {/* Wazuh: Remove duplicated fields in metadata and root: description */}
                 <EuiText>{fullRule.metadata?.description || DEFAULT_EMPTY_DATA}</EuiText>
               </EuiCompressedFormRow>
 

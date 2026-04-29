@@ -269,7 +269,6 @@ export class RulesStore implements IWazuhRulesStore {
         category: logsource.category ?? logsource.product ?? logsource.service ?? '',
         status: doc.status ?? '',
         detection: doc.detection ? dump(doc.detection) : '',
-        references: (meta.references ?? doc.references ?? []).map((r: string) => ({ value: r })),
         tags: (doc.tags ?? meta.tags ?? []).map((t: string) => ({ value: t })),
         false_positives: (doc.falsepositives ?? meta.false_positives ?? []).map((fp: string) => ({
           value: fp,

@@ -48,11 +48,7 @@ export const mapRuleToYamlObject = (rule: Rule): any => {
     title: rule.metadata?.title || '',
     author: rule.metadata?.author || '',
     description: rule.metadata?.description || '',
-    references: rule.metadata?.references?.length
-      ? rule.metadata.references
-      : rule.references?.length
-      ? rule.references.map((ref) => ref.value)
-      : [''],
+    references: rule.metadata?.references?.length ? rule.metadata.references : [''],
     documentation: rule.metadata?.documentation ?? '',
     supports: rule.metadata?.supports?.length ? rule.metadata.supports : [''],
   };
@@ -95,7 +91,6 @@ export const mapYamlObjectToRule = (obj: any): Rule => {
     false_positives: falsepositives.map((fp: string) => ({ value: fp })),
     level: obj.level,
     status: obj.status,
-    references: references.map((ref: string) => ({ value: ref })),
     enabled: obj.enabled ?? true,
     detection,
     metadata: {

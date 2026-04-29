@@ -17,7 +17,7 @@ import {
 import React, { useMemo, useState } from 'react';
 import { DetectionRulesTable } from './DetectionRulesTable';
 import { RuleItem, RuleItemInfo } from './types/interfaces';
-import { RuleViewerFlyout } from '../../../../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
+import { RuleViewerFlyout } from '../../../../../WazuhRules/components/RuleViewerFlyout/RuleViewerFlyout';
 import { RuleTableItem } from '../../../../../Rules/utils/helpers';
 import { RuleItemInfoBase } from '../../../../../../../types';
 import { ROUTES } from '../../../../../../utils/constants';
@@ -68,11 +68,11 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
       rulesState.allRules.map((rule) => ({
         id: rule._id,
         active: rule.enabled,
-        // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+        // Wazuh: Remove duplicated fields in metadata and root: description.
         description: rule._source.metadata?.description ?? '',
         library: rule.prePackaged ? 'Standard' : 'Custom',
         logType: rule._source.category,
-        // Wazuh: Remove duplicated fields in metadata and root: title, description, author, last_update_time.
+        // Wazuh: Remove duplicated fields in metadata and root: title.
         name: rule._source.metadata?.title ?? '',
         severity: rule._source.level,
         ruleInfo: rule,

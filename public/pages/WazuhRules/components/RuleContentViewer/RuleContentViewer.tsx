@@ -81,7 +81,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
       label: 'Supports',
       value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={ruleData.metadata?.supports} />,
     },
-    { label: 'References', value: ruleData.references?.map((r: any) => r.value), type: 'url' },
+    { label: 'References', value: ruleData.metadata?.references?.map((r: any) => r), type: 'url' },
   ];
 
   return (
