@@ -22,7 +22,7 @@ import {
   DEFAULT_EMPTY_DATA,
   logTypesWithDashboards,
 } from "../../../../utils/constants";
-import { isSigmaSource } from "../../../../utils/detectorSource";
+import { isStandardSource } from "../../../../utils/detectorSource";
 import { Detector } from "../../../../../types";
 import { getLogTypeLabel } from "../../../LogTypes/utils/helpers";
 
@@ -52,7 +52,7 @@ export const DetectorBasicDetailsView: React.FC<
 }) => {
   const { name, detector_type, inputs, schedule } = detector;
   const detectorSchedule = parseSchedule(schedule);
-  const isSigmaDetector = isSigmaSource(detector.source);
+  const isStandardDetector = isStandardSource(detector.source);
   const createdAt = enabled_time
     ? moment(enabled_time).format("YYYY-MM-DDTHH:mm")
     : undefined;
@@ -74,14 +74,14 @@ export const DetectorBasicDetailsView: React.FC<
           ? [
               <EuiToolTip
                 content={
-                  isSigmaDetector
+                  isStandardDetector
                     ? "Only Custom detectors can be edited."
                     : undefined
                 }
               >
                 <EuiSmallButton
                   onClick={onEditClicked}
-                  isDisabled={isSigmaDetector}
+                  isDisabled={isStandardDetector}
                   data-test-subj={"edit-detector-basic-details"}
                 >
                   Edit

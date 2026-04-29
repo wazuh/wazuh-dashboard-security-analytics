@@ -45,7 +45,7 @@ import { Direction } from "@opensearch-project/oui/src/services/sort/sort_direct
 import { DataSourceOption } from "src/plugins/data_source_management/public/components/data_source_menu/types";
 import { PageHeader } from "../../../../components/PageHeader/PageHeader";
 import { DataStore } from "../../../../store/DataStore"; // Wazuh
-import { isSigmaSource } from "../../../../utils/detectorSource";
+import { isStandardSource } from "../../../../utils/detectorSource";
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -365,14 +365,14 @@ export default class Detectors extends Component<
       loading: boolean,
       selectedItems: DetectorHit[]
     ) => {
-      const hasSigmaSelected = selectedItems.some((item) =>
-        isSigmaSource(item._source.source)
+      const hasStandardSelected = selectedItems.some((item) =>
+        isStandardSource(item._source.source)
       );
       return [
         <EuiToolTip
           key={"Delete"}
           content={
-            hasSigmaSelected
+            hasStandardSelected
               ? "Only Custom detectors can be deleted."
               : undefined
           }
@@ -380,7 +380,7 @@ export default class Detectors extends Component<
           <EuiSmallButton
             color={"danger"}
             iconType={"trash"}
-            disabled={selectedItems.length === 0 || loading || hasSigmaSelected}
+            disabled={selectedItems.length === 0 || loading || hasStandardSelected}
             onClick={() => {
               this.closeActionsPopover();
               this.openDeleteModal();

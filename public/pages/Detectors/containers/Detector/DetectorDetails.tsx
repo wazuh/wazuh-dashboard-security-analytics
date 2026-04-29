@@ -53,7 +53,7 @@ import { DataStore } from "../../../../store/DataStore";
 import { PageHeader } from "../../../../components/PageHeader/PageHeader";
 import {
   getDetectorSourceLabel,
-  isSigmaSource,
+  isStandardSource,
 } from "../../../../utils/detectorSource";
 
 export interface DetectorDetailsProps
@@ -424,8 +424,8 @@ export class DetectorDetails extends React.Component<
   createHeaderActions(): React.JSX.Element[] {
     const { loading } = this.state;
     const { isActionsMenuOpen } = this.state;
-    // Wazuh: Sigma detectors are read-only — disable destructive actions.
-    const isSigmaDetector = isSigmaSource(this.detectorHit._source.source);
+    // Wazuh: Standard detectors are read-only — disable destructive actions.
+    const isStandardDetector = isStandardSource(this.detectorHit._source.source);
     return [
       <EuiPopover
         id={"detectorsActionsPopover"}
@@ -504,13 +504,13 @@ export class DetectorDetails extends React.Component<
             <EuiToolTip
               key={"Delete"}
               content={
-                isSigmaDetector
+                isStandardDetector
                   ? "Only Custom detectors can be deleted."
                   : undefined
               }
             >
               <EuiContextMenuItem
-                disabled={loading || isSigmaDetector}
+                disabled={loading || isStandardDetector}
                 icon={"empty"}
                 onClick={() => {
                   this.closeActionsPopover();
