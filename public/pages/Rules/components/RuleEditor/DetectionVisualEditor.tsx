@@ -87,6 +87,14 @@ const detectionModifierOptions = [
   { value: 'endswith', label: 'endswith' },
   { value: 'startswith', label: 'startswith' },
   { value: 'cidr', label: 'cidr' },
+  { value: 'base64offset', label: 'base64offset' },
+  { value: 'wide', label: 'wide' },
+  { value: 'windash', label: 'windash' },
+  { value: 're', label: 're' },
+  { value: 'lt', label: 'lt' },
+  { value: 'lte', label: 'lte' },
+  { value: 'gt', label: 'gt' },
+  { value: 'gte', label: 'gte' },
 ];
 
 const defaultDetectionObj: DetectionObject = {
