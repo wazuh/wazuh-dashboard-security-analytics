@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { Component } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 import {
   EuiBasicTableColumn,
   EuiSmallButton,
@@ -21,14 +21,10 @@ import {
   EuiText,
   EuiButtonIcon,
   EuiToolTip,
-} from "@elastic/eui";
-import {
-  BREADCRUMBS,
-  DEFAULT_EMPTY_DATA,
-  ROUTES,
-} from "../../../../utils/constants";
-import DeleteModal from "../../../../components/DeleteModal";
-import { getDetectorNames } from "../../utils/helpers";
+} from '@elastic/eui';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
+import DeleteModal from '../../../../components/DeleteModal';
+import { getDetectorNames } from '../../utils/helpers';
 import {
   capitalizeFirstLetter,
   errorNotificationToast,
@@ -36,16 +32,16 @@ import {
   getLogTypeFilterOptions,
   renderTime,
   setBreadcrumbs,
-} from "../../../../utils/helpers";
-import { FieldValueSelectionFilterConfigType } from "@elastic/eui/src/components/search_bar/filters/field_value_selection_filter";
-import { DetectorsService } from "../../../../services";
-import { DetectorHit } from "../../../../../server/models/interfaces";
-import { NotificationsStart } from "opensearch-dashboards/public";
-import { Direction } from "@opensearch-project/oui/src/services/sort/sort_direction";
-import { DataSourceOption } from "src/plugins/data_source_management/public/components/data_source_menu/types";
-import { PageHeader } from "../../../../components/PageHeader/PageHeader";
-import { DataStore } from "../../../../store/DataStore"; // Wazuh
-import { isStandardSource } from "../../../../utils/detectorSource";
+} from '../../../../utils/helpers';
+import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
+import { DetectorsService } from '../../../../services';
+import { DetectorHit } from '../../../../../server/models/interfaces';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
+import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
+import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { DataStore } from '../../../../store/DataStore'; // Wazuh
+import { isStandardSource } from '../../../../utils/detectorSource';
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -61,10 +57,7 @@ interface DetectorsState {
   isPopoverOpen: boolean;
 }
 
-export default class Detectors extends Component<
-  DetectorsProps,
-  DetectorsState
-> {
+export default class Detectors extends Component<DetectorsProps, DetectorsState> {
   constructor(props: DetectorsProps) {
     super(props);
 
@@ -87,10 +80,7 @@ export default class Detectors extends Component<
     prevState: Readonly<DetectorsState>,
     snapshot?: any
   ): void {
-    if (
-      this.props.dataSource &&
-      prevProps.dataSource !== this.props.dataSource
-    ) {
+    if (this.props.dataSource && prevProps.dataSource !== this.props.dataSource) {
       this.getDetectors();
     }
   }
@@ -104,27 +94,22 @@ export default class Detectors extends Component<
         // Wazuh: get the space using the rule as sample to corelate the space
         const detectorRuleForSpaceMapping = res.response.hits.hits
           .map((detector, index) => {
-            const { custom_rules, pre_packaged_rules } =
-              detector._source.inputs[0].detector_input;
+            const { custom_rules, pre_packaged_rules } = detector._source.inputs[0].detector_input;
 
             // Take the first one rule to extrapolate the space
-            const ruleForMapping = [
-              ...custom_rules,
-              ...pre_packaged_rules,
-            ].find(({ id }) => typeof id !== "undefined")?.id;
+            const ruleForMapping = [...custom_rules, ...pre_packaged_rules].find(
+              ({ id }) => typeof id !== 'undefined'
+            )?.id;
 
             return ruleForMapping;
           })
           .filter(Boolean);
 
         const uniqueRuleIds = Array.from(new Set(detectorRuleForSpaceMapping));
-        const rules = await DataStore.rules.getAllRules({
-          "document.id": uniqueRuleIds,
-        });
+        const rules = await DataStore.rules.getAllRules({ 'document.id': uniqueRuleIds });
 
         const detectors = res.response.hits.hits.map((detector, index) => {
-          const { custom_rules, pre_packaged_rules } =
-            detector._source.inputs[0].detector_input;
+          const { custom_rules, pre_packaged_rules } = detector._source.inputs[0].detector_input;
           const rulesCount = custom_rules.length + pre_packaged_rules.length;
 
           // Wazuh
@@ -133,14 +118,13 @@ export default class Detectors extends Component<
           );
 
           const mapper = {
-            standard: "Standard",
-            custom: "Custom",
+            standard: 'Standard',
+            custom: 'Custom',
           };
 
           // Fallback: if the rule is not found, infer space from the detector structure itself.
           const space =
-            mapper[spaceRule?.space] ??
-            (custom_rules.length > 0 ? mapper.custom : mapper.standard);
+            mapper[spaceRule?.space] ?? (custom_rules.length > 0 ? mapper.custom : mapper.standard);
 
           return {
             ...detector,
@@ -148,21 +132,16 @@ export default class Detectors extends Component<
             lastUpdatedTime: detector._source.last_update_time,
             logType: detector._source.detector_type,
             rulesCount: rulesCount,
-            status: detector._source.enabled ? "Active" : "Inactive",
+            status: detector._source.enabled ? 'Active' : 'Inactive',
             space: space,
           };
         });
         this.setState({ detectorHits: detectors });
-      } else if (!res.error.includes("no such index")) {
-        errorNotificationToast(
-          notifications,
-          "retrieve",
-          "detectors",
-          res.error
-        );
+      } else if (!res.error.includes('no such index')) {
+        errorNotificationToast(notifications, 'retrieve', 'detectors', res.error);
       }
     } catch (e: any) {
-      errorNotificationToast(notifications, "retrieve", "detectors", e);
+      errorNotificationToast(notifications, 'retrieve', 'detectors', e);
     }
     this.setState({ loadingDetectors: false });
   };
@@ -185,27 +164,17 @@ export default class Detectors extends Component<
       });
 
       if (!updateRes.ok) {
-        errorNotificationToast(
-          notifications,
-          "update",
-          "detector",
-          updateRes.error
-        );
+        errorNotificationToast(notifications, 'update', 'detector', updateRes.error);
       }
     } catch (e: any) {
-      errorNotificationToast(notifications, "update", "detector", e);
+      errorNotificationToast(notifications, 'update', 'detector', e);
     }
     await this.getDetectors();
-    const selectedItemIds = new Set(
-      this.state.selectedItems.map(({ _id }) => _id)
+    const selectedItemIds = new Set(this.state.selectedItems.map(({ _id }) => _id));
+    const updatedSelectedItems: DetectorHit[] = this.state.detectorHits.filter((hit) =>
+      selectedItemIds.has(hit._id)
     );
-    const updatedSelectedItems: DetectorHit[] = this.state.detectorHits.filter(
-      (hit) => selectedItemIds.has(hit._id)
-    );
-    this.setState({
-      loadingDetectors: false,
-      selectedItems: updatedSelectedItems,
-    });
+    this.setState({ loadingDetectors: false, selectedItems: updatedSelectedItems });
   };
 
   onClickDelete = async () => {
@@ -225,15 +194,10 @@ export default class Detectors extends Component<
     try {
       const deleteRes = await detectorService.deleteDetector(id);
       if (!deleteRes.ok) {
-        errorNotificationToast(
-          notifications,
-          "delete",
-          "detector",
-          deleteRes.error
-        );
+        errorNotificationToast(notifications, 'delete', 'detector', deleteRes.error);
       }
     } catch (e: any) {
-      errorNotificationToast(notifications, "delete", "detector", e);
+      errorNotificationToast(notifications, 'delete', 'detector', e);
     }
   };
 
@@ -262,19 +226,16 @@ export default class Detectors extends Component<
     if (selectedItems.length === 1) {
       actionItems.push(
         <EuiContextMenuItem
-          key={"ToggleDetector"}
-          icon={"empty"}
+          key={'ToggleDetector'}
+          icon={'empty'}
           disabled={selectedItems.length !== 1 || loading}
           onClick={() => {
             this.closeActionsPopover();
-            this.toggleDetector(
-              selectedItems[0],
-              !selectedItems[0]._source.enabled
-            );
+            this.toggleDetector(selectedItems[0], !selectedItems[0]._source.enabled);
           }}
-          data-test-subj={"toggleDetectorButton"}
+          data-test-subj={'toggleDetectorButton'}
         >
-          {`${selectedItems[0]?._source.enabled ? "Stop" : "Start"} detector`}
+          {`${selectedItems[0]?._source.enabled ? 'Stop' : 'Start'} detector`}
         </EuiContextMenuItem>
       );
     }
@@ -295,7 +256,7 @@ export default class Detectors extends Component<
       <EuiSmallButton
         href={`#${ROUTES.DETECTORS_CREATE}`}
         fill={true}
-        data-test-subj={"detectorsCreateButton"}
+        data-test-subj={'detectorsCreateButton'}
         iconType="plus"
         iconSide="left"
         iconGap="s"
@@ -306,90 +267,78 @@ export default class Detectors extends Component<
 
     const columns: EuiBasicTableColumn<DetectorHit>[] = [
       {
-        field: "detectorName",
-        name: "Detector name",
+        field: 'detectorName',
+        name: 'Detector name',
         sortable: true,
-        dataType: "string",
+        dataType: 'string',
         render: (name: string, item: DetectorHit) => (
-          <EuiLink onClick={() => this.showDetectorDetails(item)}>
-            {name}
-          </EuiLink>
+          <EuiLink onClick={() => this.showDetectorDetails(item)}>{name}</EuiLink>
         ),
       },
       {
-        field: "status",
-        name: "Status",
+        field: 'status',
+        name: 'Status',
         sortable: true,
-        dataType: "string",
+        dataType: 'string',
       },
       {
-        field: "logType",
-        name: "Integration", // replace log type to integration by Wazuh
+        field: 'logType',
+        name: 'Integration', // replace log type to integration by Wazuh
         sortable: true,
-        dataType: "string",
+        dataType: 'string',
         render: (logType: string) => formatRuleType(logType),
       },
       {
-        field: "space",
-        name: "Space",
+        field: 'space',
+        name: 'Space',
         sortable: true,
-        dataType: "string",
+        dataType: 'string',
       },
       {
-        field: "rulesCount",
-        name: "Active rules",
+        field: 'rulesCount',
+        name: 'Active rules',
         sortable: true,
-        dataType: "number",
-        align: "left",
+        dataType: 'number',
+        align: 'left',
         render: (count: number) => count || DEFAULT_EMPTY_DATA,
       },
       {
-        field: "lastUpdatedTime",
-        name: "Last updated time",
+        field: 'lastUpdatedTime',
+        name: 'Last updated time',
         sortable: true,
-        dataType: "date",
-        render: (last_update_time: number) =>
-          renderTime(last_update_time) || DEFAULT_EMPTY_DATA,
+        dataType: 'date',
+        render: (last_update_time: number) => renderTime(last_update_time) || DEFAULT_EMPTY_DATA,
       },
     ];
 
     const statuses = [
       ...new Set(
-        detectorHits.map((detector) =>
-          detector._source.enabled ? "Active" : "Inactive"
-        )
+        detectorHits.map((detector) => (detector._source.enabled ? 'Active' : 'Inactive'))
       ),
     ];
 
-    const renderActionsLeft = (
-      loading: boolean,
-      selectedItems: DetectorHit[]
-    ) => {
+    const renderActionsLeft = (loading: boolean, selectedItems: DetectorHit[]) => {
       const hasStandardSelected = selectedItems.some((item) =>
         isStandardSource(item._source.source)
       );
       return [
         <EuiToolTip
-          key={"Delete"}
-          content={
-            hasStandardSelected
-              ? "Only Custom detectors can be deleted."
-              : undefined
-          }
+          key={'Delete'}
+          content={hasStandardSelected ? 'Only Custom detectors can be deleted.' : undefined}
         >
           <EuiSmallButton
-            color={"danger"}
-            iconType={"trash"}
+            color={'danger'}
+            iconType={'trash'}
             disabled={selectedItems.length === 0 || loading || hasStandardSelected}
             onClick={() => {
               this.closeActionsPopover();
               this.openDeleteModal();
             }}
-            data-test-subj={"deleteButton"}
+            data-test-subj={'deleteButton'}
           >
             {selectedItems.length > 0
               ? `Delete ${selectedItems.length} detectors`
-              : "Delete detectors"}
+              : 'Delete detectors'}
           </EuiSmallButton>
         </EuiToolTip>,
       ];
@@ -398,31 +347,31 @@ export default class Detectors extends Component<
     const renderActionsRight = () => {
       return [
         <EuiSmallButton
-          iconType={"refresh"}
+          iconType={'refresh'}
           onClick={this.getDetectors}
-          data-test-subj={"detectorsRefreshButton"}
+          data-test-subj={'detectorsRefreshButton'}
         >
           Refresh
         </EuiSmallButton>,
         <EuiPopover
-          id={"detectorsActionsPopover"}
+          id={'detectorsActionsPopover'}
           button={
             <EuiSmallButton
               isLoading={loadingDetectors}
-              iconType={"arrowDown"}
-              iconSide={"right"}
+              iconType={'arrowDown'}
+              iconSide={'right'}
               disabled={selectedItems.length !== 1}
               onClick={this.openActionsButton}
-              data-test-subj={"detectorsActionsButton"}
+              data-test-subj={'detectorsActionsButton'}
             >
               Actions
             </EuiSmallButton>
           }
           isOpen={isPopoverOpen}
           closePopover={this.closeActionsPopover}
-          panelPaddingSize={"none"}
-          anchorPosition={"downLeft"}
-          data-test-subj={"detectorsActionsPopover"}
+          panelPaddingSize={'none'}
+          anchorPosition={'downLeft'}
+          data-test-subj={'detectorsActionsPopover'}
         >
           <EuiContextMenuPanel
             items={this.getActionItems(loadingDetectors, selectedItems)}
@@ -436,42 +385,42 @@ export default class Detectors extends Component<
       toolsLeft: renderActionsLeft(loadingDetectors, selectedItems),
       toolsRight: renderActionsRight(),
       box: {
-        placeholder: "Search threat detectors",
+        placeholder: 'Search threat detectors',
         schema: true,
         incremental: true,
         compressed: true,
       },
       filters: [
         {
-          type: "field_value_selection",
-          field: "status",
-          name: "Status",
+          type: 'field_value_selection',
+          field: 'status',
+          name: 'Status',
           compressed: true,
           options: statuses.map((status) => ({
             value: status,
             name: capitalizeFirstLetter(status),
           })),
-          multiSelect: "or",
+          multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
         {
-          type: "field_value_selection",
-          field: "logType",
-          name: "Integration", // replace log type to integration by Wazuh
+          type: 'field_value_selection',
+          field: 'logType',
+          name: 'Integration', // replace log type to integration by Wazuh
           compressed: true,
           options: getLogTypeFilterOptions(),
-          multiSelect: "or",
+          multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
       ],
     };
 
     const sorting: { sort: { field: string; direction: Direction } } = {
       sort: {
-        field: "name",
-        direction: "asc",
+        field: 'name',
+        direction: 'asc',
       },
     };
     return (
-      <EuiFlexGroup direction="column" gutterSize={"m"}>
+      <EuiFlexGroup direction="column" gutterSize={'m'}>
         <PageHeader
           appRightControls={actions.map((action) => ({
             renderComponent: action,
@@ -514,7 +463,7 @@ export default class Detectors extends Component<
               loading={loadingDetectors}
               message={
                 <EuiEmptyPrompt
-                  style={{ maxWidth: "45em" }}
+                  style={{ maxWidth: '45em' }}
                   body={
                     <EuiText size="s">
                       <p>There are no existing detectors.</p>
@@ -532,7 +481,7 @@ export default class Detectors extends Component<
             closeDeleteModal={this.closeDeleteModal}
             ids={getDetectorNames(selectedItems)}
             onClickDelete={this.onClickDelete}
-            type={selectedItems.length > 1 ? "detectors" : "detector"}
+            type={selectedItems.length > 1 ? 'detectors' : 'detector'}
           />
         )}
       </EuiFlexGroup>

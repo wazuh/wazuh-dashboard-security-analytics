@@ -3,28 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {
-  EuiSmallButton,
-  EuiSpacer,
-  EuiLink,
-  EuiIcon,
-  EuiText,
-  EuiToolTip,
-} from "@elastic/eui";
-import React from "react";
-import { ContentPanel } from "../../../../components/ContentPanel";
-import {
-  createTextDetailsGroup,
-  parseSchedule,
-} from "../../../../utils/helpers";
-import moment from "moment";
-import {
-  DEFAULT_EMPTY_DATA,
-  logTypesWithDashboards,
-} from "../../../../utils/constants";
-import { isStandardSource } from "../../../../utils/detectorSource";
-import { Detector } from "../../../../../types";
-import { getLogTypeLabel } from "../../../LogTypes/utils/helpers";
+import { EuiSmallButton, EuiSpacer, EuiLink, EuiIcon, EuiText, EuiToolTip } from '@elastic/eui';
+import React from 'react';
+import { ContentPanel } from '../../../../components/ContentPanel';
+import { createTextDetailsGroup, parseSchedule } from '../../../../utils/helpers';
+import moment from 'moment';
+import { DEFAULT_EMPTY_DATA, logTypesWithDashboards } from '../../../../utils/constants';
+import { isStandardSource } from '../../../../utils/detectorSource';
+import { Detector } from '../../../../../types';
+import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
 
 export interface DetectorBasicDetailsViewProps {
   detector: Detector;
@@ -37,9 +24,7 @@ export interface DetectorBasicDetailsViewProps {
   space?: string; // Wazuh
 }
 
-export const DetectorBasicDetailsView: React.FC<
-  DetectorBasicDetailsViewProps
-> = ({
+export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> = ({
   detector,
   enabled_time,
   last_update_time,
@@ -53,11 +38,9 @@ export const DetectorBasicDetailsView: React.FC<
   const { name, detector_type, inputs, schedule } = detector;
   const detectorSchedule = parseSchedule(schedule);
   const isStandardDetector = isStandardSource(detector.source);
-  const createdAt = enabled_time
-    ? moment(enabled_time).format("YYYY-MM-DDTHH:mm")
-    : undefined;
+  const createdAt = enabled_time ? moment(enabled_time).format('YYYY-MM-DDTHH:mm') : undefined;
   const lastUpdated = last_update_time
-    ? moment(last_update_time).format("YYYY-MM-DDTHH:mm")
+    ? moment(last_update_time).format('YYYY-MM-DDTHH:mm')
     : undefined;
   const totalSelected = detector.inputs.reduce((sum, inputObj) => {
     return (
@@ -68,21 +51,17 @@ export const DetectorBasicDetailsView: React.FC<
   }, 0);
   return (
     <ContentPanel
-      title={"Detector details"}
+      title={'Detector details'}
       actions={
         isEditable
           ? [
               <EuiToolTip
-                content={
-                  isStandardDetector
-                    ? "Only Custom detectors can be edited."
-                    : undefined
-                }
+                content={isStandardDetector ? 'Only Custom detectors can be edited.' : undefined}
               >
                 <EuiSmallButton
                   onClick={onEditClicked}
                   isDisabled={isStandardDetector}
-                  data-test-subj={"edit-detector-basic-details"}
+                  data-test-subj={'edit-detector-basic-details'}
                 >
                   Edit
                 </EuiSmallButton>
@@ -91,22 +70,22 @@ export const DetectorBasicDetailsView: React.FC<
           : null
       }
     >
-      <EuiSpacer size={"l"} />
+      <EuiSpacer size={'l'} />
       {createTextDetailsGroup([
-        { label: "Detector name", content: name },
+        { label: 'Detector name', content: name },
         {
-          label: "Integration", // Wazuh: reorganize props
+          label: 'Integration', // Wazuh: reorganize props
           content: getLogTypeLabel(detector_type.toLowerCase()),
         }, // Changed Log Type to Integration by Wazuh
         {
           // Wazuh: add space
-          label: "Space",
+          label: 'Space',
           content: space,
         },
       ])}
       {createTextDetailsGroup([
         {
-          label: "Data source",
+          label: 'Data source',
           content: (
             <>
               {inputs[0].detector_input.indices.map((ind: string) => (
@@ -115,37 +94,33 @@ export const DetectorBasicDetailsView: React.FC<
             </>
           ),
         },
-        { label: "Detector schedule", content: detectorSchedule }, // Wazuh: reorganize props
+        { label: 'Detector schedule', content: detectorSchedule }, // Wazuh: reorganize props
         {
-          label: "Detector dashboard",
+          label: 'Detector dashboard',
           content: dashboardId ? (
-            <EuiLink
-              onClick={() =>
-                window.open(`dashboards#/view/${dashboardId}`, "_blank")
-              }
-            >
+            <EuiLink onClick={() => window.open(`dashboards#/view/${dashboardId}`, '_blank')}>
               {`${name} summary`}
-              <EuiIcon type={"popout"} />
+              <EuiIcon type={'popout'} />
             </EuiLink>
           ) : !logTypesWithDashboards.has(detector_type) ? (
-            "Not available for this integration" // Changed Log Type to Integration by Wazuh
+            'Not available for this integration' // Changed Log Type to Integration by Wazuh
           ) : (
-            "-"
+            '-'
           ),
         },
       ])}
       {createTextDetailsGroup([
-        { label: "Rules", content: totalSelected }, // Wazuh: rename 'Detection rules' to 'Rules'
-        { label: "Created at", content: createdAt || DEFAULT_EMPTY_DATA },
+        { label: 'Rules', content: totalSelected }, // Wazuh: rename 'Detection rules' to 'Rules'
+        { label: 'Created at', content: createdAt || DEFAULT_EMPTY_DATA },
         {
-          label: "Last updated time",
+          label: 'Last updated time',
           content: lastUpdated || DEFAULT_EMPTY_DATA,
         },
       ])}
       {createTextDetailsGroup([
         {
           // Wazuh: reorganize props
-          label: "Description",
+          label: 'Description',
           content: inputs[0].detector_input.description || DEFAULT_EMPTY_DATA,
         },
       ])}

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AlertCondition } from "./Alert";
-import { DetectorRuleInfo } from "./Rule";
+import { AlertCondition } from './Alert';
+import { DetectorRuleInfo } from './Rule';
 
 export interface DetectorInput {
   detector_input: {
