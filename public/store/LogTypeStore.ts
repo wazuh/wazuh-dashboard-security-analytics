@@ -25,7 +25,7 @@ import {
 } from "../utils/detectorSource";
 import { getLogTypeLabel } from "../pages/LogTypes/utils/helpers";
 
-/** Indexer stores lifecycle as `space`; UI model keeps `source` (Sigma → Standard). */
+/** Indexer stores lifecycle as `space`; UI model keeps `source` mapped to its label. */
 function mapLogTypeFromHit(hit: {
   _id: string;
   _source: LogTypeBase & { space?: string };

@@ -5,12 +5,10 @@
 
 // Wazuh: centralised vocabulary for the detector / logtype `source` (a.k.a. "space") field.
 
-/** Raw values stored in the indexer (legacy `Sigma` kept for pre-normalization data). */
+/** Raw values stored in the indexer (normalized to lowercase). */
 export enum DetectorSourceRaw {
-  /** Legacy value for the read-only/standard space. */
-  Sigma = "Sigma",
   Standard = "standard",
-  Custom = "Custom",
+  Custom = "custom",
 }
 
 /** Labels rendered in the UI  */
@@ -23,9 +21,8 @@ export enum DetectorSourceLabel {
 export const DETECTOR_SOURCE_LABEL_BY_RAW: Readonly<
   Record<string, DetectorSourceLabel>
 > = {
-  [DetectorSourceRaw.Sigma.toLowerCase()]: DetectorSourceLabel.Standard,
-  [DetectorSourceRaw.Standard.toLowerCase()]: DetectorSourceLabel.Standard,
-  [DetectorSourceRaw.Custom.toLowerCase()]: DetectorSourceLabel.Custom,
+  [DetectorSourceRaw.Standard]: DetectorSourceLabel.Standard,
+  [DetectorSourceRaw.Custom]: DetectorSourceLabel.Custom,
 };
 
 /** Returns the UI label for a raw `source` value, or `undefined` if not provided. */
@@ -36,11 +33,6 @@ export const getDetectorSourceLabel = (
   return DETECTOR_SOURCE_LABEL_BY_RAW[raw.toLowerCase()] ?? raw;
 };
 
-/** True for read-only/standard detectors (accepts legacy `Sigma` and normalized `standard`). */
-export const isStandardSource = (raw: string | undefined): boolean => {
-  const v = raw?.toLowerCase();
-  return (
-    v === DetectorSourceRaw.Sigma.toLowerCase() ||
-    v === DetectorSourceRaw.Standard.toLowerCase()
-  );
-};
+/** True for read-only/standard detectors. */
+export const isStandardSource = (raw: string | undefined): boolean =>
+  raw?.toLowerCase() === DetectorSourceRaw.Standard;
