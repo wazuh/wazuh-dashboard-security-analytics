@@ -101,7 +101,7 @@
     "yarn": "^1.21.1"
   },
   "dependencies": {
-    "ajv": "^6.12.6",
+    "ajv": "^8.18.0",
     "chart.js": "^4.4.8",
     "chartjs-adapter-moment": "^1.0.1",
     "formik": "^2.2.6",

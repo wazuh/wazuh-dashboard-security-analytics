@@ -1,16 +1,17 @@
 import Ajv, { ErrorObject } from 'ajv';
 import { FormikErrors } from 'formik';
 
-const ajv = new Ajv({ allErrors: true });
+const ajv = new Ajv({ allErrors: true, strict: false });
 
 // Showing these top-level errors adds noise without helping the user fix anything.
 const SKIP_KEYWORDS = new Set(['oneOf', 'anyOf', 'allOf', 'if', 'then', 'else']);
 
-// NOTE: Uses Ajv 6 error shape where the field path is in `dataPath` (dot separated,
-// leading dot, e.g. ".metadata.name"). Ajv 8 renamed this to `instancePath` with
-// slash separators ("/metadata/name"). Update this function if upgrading Ajv.
+function normalizePath(error: ErrorObject): string {
+  return error.instancePath.replace(/^\//, '').replace(/\//g, '.');
+}
+
 function fieldPath(error: ErrorObject): string {
-  const raw = (error.dataPath ?? '').replace(/^\./, '');
+  const raw = normalizePath(error);
 
   // These keywords report at the *parent* object level. The specific field is in params.
   switch (error.keyword) {
@@ -56,7 +57,7 @@ function buildMessage(error: ErrorObject): string | null {
       return `${label} is not a valid property name`;
     case 'dependencies':
     case 'dependentRequired': {
-      const raw = (error.dataPath ?? '').replace(/^\./, '');
+      const raw = normalizePath(error);
       const triggerLabel = humanLabel(join(raw, error.params?.property as string));
       return `${label} is required when ${triggerLabel} is present`;
     }
