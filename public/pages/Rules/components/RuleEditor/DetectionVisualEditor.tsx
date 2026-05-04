@@ -310,8 +310,7 @@ export class DetectionVisualEditor extends React.Component<
           } else if (NUMERIC_MODIFIERS.has(data.modifier ?? '')) {
             const raw = String(data.values[0]).trim();
             const isValidNumber = !isNaN(Number(raw)) && raw !== '';
-            const isValidDate = !isNaN(Date.parse(raw));
-            if (!isValidNumber && !isValidDate) {
+            if (!isValidNumber) {
               errors.fields[valueId] =
                 'This modifier requires a numeric value (e.g. 42, 3.14)';
             }
