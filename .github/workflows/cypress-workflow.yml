@@ -83,6 +83,8 @@ jobs:
       - run: yarn -v
 
       - name: Bootstrap plugin/OpenSearch-Dashboards
+        env:
+          GIT_REF: 'main'
         run: |
           cd OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
           yarn osd bootstrap --single-version=loose
