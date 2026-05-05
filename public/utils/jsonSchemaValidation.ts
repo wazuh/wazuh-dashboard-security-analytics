@@ -7,7 +7,12 @@ const ajv = new Ajv({ allErrors: true, strict: false });
 const SKIP_KEYWORDS = new Set(['oneOf', 'anyOf', 'allOf', 'if', 'then', 'else']);
 
 function normalizePath(error: ErrorObject): string {
-  return error.instancePath.replace(/^\//, '').replace(/\//g, '.');
+  return error.instancePath
+    .replace(/^\//, '')
+    .split('/')
+    .map(seg => (/^\d+$/.test(seg) ? `[${seg}]` : seg))
+    .join('.')
+    .replace(/\.\[/g, '[');
 }
 
 function fieldPath(error: ErrorObject): string {
@@ -34,8 +39,12 @@ function join(parent: string, field: string): string {
   return parent ? `${parent}.${field}` : field;
 }
 
+const MAX_LABEL_LENGTH = 60;
+
 function humanLabel(path: string): string {
-  return path === 'root' ? 'value' : `'${path}'`;
+  if (path === 'root') return 'value';
+  const display = path.length > MAX_LABEL_LENGTH ? path.slice(0, MAX_LABEL_LENGTH - 3) + '...' : path;
+  return `'${display}'`;
 }
 
 function buildMessage(error: ErrorObject): string | null {
@@ -82,21 +91,61 @@ export function validateWithJsonSchema<T extends object>(
 
   const skipRequired = new Set(options?.skipRequired ?? []);
   const result: Record<string, string> = {};
+  const resultKeywords: Record<string, string> = {};
 
   for (const error of validate.errors ?? []) {
-    if (
-      error.keyword === 'required' &&
-      skipRequired.has(error.params?.missingProperty as string)
-    ) {
-      continue;
-    }
+    if (error.keyword === 'required' && skipRequired.has(error.params?.missingProperty as string)) continue;
 
     const message = buildMessage(error);
     if (!message) continue;
 
     const key = fieldPath(error);
-    if (!result[key]) result[key] = message;
+    if (!result[key]) {
+      result[key] = message;
+      resultKeywords[key] = error.keyword;
+    }
   }
 
-  return result as FormikErrors<T>;
+  return suppressErrors(result, resultKeywords) as FormikErrors<T>;
+}
+
+function parentPath(key: string): string {
+  const lastSep = Math.max(key.lastIndexOf('.'), key.lastIndexOf('['));
+  return lastSep > 0 ? key.slice(0, lastSep) : '';
+}
+
+function pathDepth(key: string): number {
+  return (key.match(/\.|\[/g) ?? []).length;
+}
+
+function suppressErrors(
+  result: Record<string, string>,
+  keywords: Record<string, string>
+): Record<string, string> {
+  const keys = Object.keys(result);
+  return Object.fromEntries(
+    Object.entries(result).filter(([key]) => {
+      // Drop parent level errors when more specific child errors exist to avoid noise.
+      if (keys.some(other => other !== key && (other.startsWith(key + '.') || other.startsWith(key + '[')))) {
+        return false;
+      }
+      if (keywords[key] === 'additionalProperties') {
+        const parent = parentPath(key);
+        const depth = pathDepth(key);
+        // A same-level sibling with a substantive error means this branch lost the oneOf race.
+        const hasSiblingSubstantiveError = keys.some(
+          other => other !== key && parentPath(other) === parent && keywords[other] !== 'additionalProperties'
+        );
+        // A deeper error under the same parent item means validation reached further into the
+        // intended branch before failing, shallow additionalProperties are from losing branches.
+        const hasDeeperError = keys.some(
+          other => other !== key &&
+            (other.startsWith(parent + '.') || other.startsWith(parent + '[')) &&
+            pathDepth(other) > depth
+        );
+        if (hasSiblingSubstantiveError || hasDeeperError) return false;
+      }
+      return true;
+    })
+  );
 }

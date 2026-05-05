@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Form, Formik } from 'formik';
+import YAML from 'yaml';
 import { decoderFormDefaultValue, mapYamlToLosslessDecoder } from '../components/mappers';
 import { YamlForm } from '../components/YamlForm';
 import {
@@ -212,7 +213,13 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
 
   const validateForm = useCallback((values: { rawDecoder: string }) => {
     // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
-    const decoder = mapYamlToLosslessDecoder(values.rawDecoder);
+    let decoder: object;
+    try {
+      decoder = YAML.parse(values.rawDecoder);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message.split('\n')[0] : 'Invalid YAML syntax';
+      return { rawDecoder: msg };
+    }
     const skippedFields = action === 'create' ? ['id'] : [];
     return validateWithJsonSchema(decoderSchema, decoder, {
       skipRequired: skippedFields,
