@@ -40,7 +40,6 @@ const SCHEMA_SOURCES = [
     name: 'wazuh-decoders',
     urls: [
       wazuhUrl('src/engine/ruleset/schemas/wazuh-decoders.json'),
-      'https://raw.githubusercontent.com/wazuh/wazuh/main/src/engine/ruleset/schemas/wazuh-decoders.json',
     ],
   },
 ];
@@ -132,7 +131,7 @@ async function main(config) {
 
 if (require.main === module) {
   const config = parseInput(process.argv.slice(2));
-  config.branch = config.branch || packageJson.wazuh?.version || 'main';
+  config.branch = config.branch || packageJson.wazuh?.version;
   config.destination = path.resolve(
     config.destination || path.resolve(__dirname, '..', 'common', 'schemas'),
   );

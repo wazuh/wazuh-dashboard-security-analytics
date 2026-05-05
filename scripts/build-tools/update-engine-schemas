@@ -45,9 +45,6 @@ get_candidate_ref() {
     CANDIDATE_GIT_REFS+=("$version" "v$version")
   fi
 
-  # Always include main as the final fallback
-  CANDIDATE_GIT_REFS+=("main")
-
   echo "Candidate git references: ${CANDIDATE_GIT_REFS[*]}"
   for ref in "${CANDIDATE_GIT_REFS[@]}"; do
     if git ls-remote --exit-code --heads "$RESOURCE_REPO_URL" "$ref" >/dev/null 2>&1 || \
