@@ -55,11 +55,11 @@ interface RulesProps {
 }
 
 const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
-  title: rule._source.title,
+  title: rule._source.metadata?.title ?? '',
   level: rule._source.level,
   category: rule._source.category,
   source: rule.prePackaged ? 'Standard' : 'Custom',
-  description: rule._source.description,
+  description: rule._source.metadata?.description ?? '',
   ruleInfo: rule,
   ruleId: rule._id,
   integration: rule.integration,
@@ -77,6 +77,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const [sortField, setSortField] = useState<string>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+    isLoading: loading,
     onSpaceChange: () => setPageIndex(0),
   });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
