@@ -4,7 +4,7 @@
  */
 
 import YAML from 'yaml';
-import { LosslessNumber } from 'lossless-json';
+import { LosslessNumber, stringify as LosslessStringify } from 'lossless-json';
 import { KVDBDocument, KVDBMetadata, KVDBResource } from '../../../../types/KVDBs';
 import { ContentEntry } from '../components/KVDBContentEditor';
 import { mapYamlToLosslessObject } from '../../../components/YamlForm';
@@ -40,7 +40,7 @@ const normalizeStringArray = (value: string | string[] | undefined): string[] =>
 const contentValueToString = (value: unknown): string => {
   if (value instanceof LosslessNumber) return value.toString();
   if (typeof value === 'string') return value;
-  return JSON.stringify(value, null, 2);
+  return LosslessStringify(value, null, 2) ?? JSON.stringify(value, null, 2);
 };
 
 /** Extracts shared metadata fields from a KVDBMetadata object into form fields. */
@@ -57,15 +57,23 @@ const metadataToFormFields = (metadata: KVDBMetadata | undefined) => ({
 const contentToEntries = (content: Record<string, unknown> | undefined): ContentEntry[] =>
   Object.entries(content ?? {}).map(([key, value]) => ({ key, value: contentValueToString(value) }));
 
-/** Parses a single content entry value: JSON objects/arrays are parsed, strings are kept as-is. */
+/** Parses a single content entry value into its natural type for YAML serialization. */
 const parseContentValue = (value: string): unknown => {
   const trimmed = value.trim();
+  if (!trimmed) return value;
   if (trimmed[0] === '{' || trimmed[0] === '[') {
     try {
       return JSON.parse(trimmed);
     } catch {
-      // not valid JSON — fall through to string
+      // not valid JSON — fall through
     }
+  }
+  try {
+    const parsed = YAML.parse(trimmed);
+    if (typeof parsed === 'number' || typeof parsed === 'boolean') return parsed;
+    if (parsed === null && (trimmed === 'null' || trimmed === '~')) return null;
+  } catch {
+    // not a scalar YAML value — keep as string
   }
   return value;
 };

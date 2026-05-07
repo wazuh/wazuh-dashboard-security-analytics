@@ -43,7 +43,6 @@ import { YamlForm, YAML_TYPE } from '../../../components/YamlForm';
 import {
   kvdbFormDefaultValue,
   KVDBFormModel,
-  mapFormToKVDBResource,
   mapFormToYaml,
   mapKVDBToForm,
   mapYamlToForm,
@@ -97,7 +96,10 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       setIsLoading(true);
       try {
         const item = await DataStore.kvdbs.getKVDB(kvdbId!);
-        if (item?.document) {
+        if (item?.yaml) {
+          setRawKvdb(item.yaml);
+          setInitialValue(mapYamlToForm(item.yaml));
+        } else if (item?.document) {
           setInitialValue(mapKVDBToForm(item.document));
         }
         setBreadcrumbs([
@@ -140,9 +142,10 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
 
   const createKVDB = useCallback(
     async (values: KVDBFormModel) => {
-      const resource = mapFormToKVDBResource(values);
+      const resourceYaml =
+        selectedEditorType === 'yaml' && rawKvdb ? rawKvdb : mapFormToYaml(values);
       const result = await DataStore.kvdbs.createKVDB({
-        resource,
+        resourceYaml,
         integrationId: integrationType,
       });
 
@@ -156,15 +159,16 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
         history.push(ROUTES.KVDBS);
       }
     },
-    [integrationType, notifications, history]
+    [integrationType, notifications, history, selectedEditorType, rawKvdb]
   );
 
   const updateKVDB = useCallback(
     async (values: KVDBFormModel) => {
       if (!kvdbId) return;
 
-      const resource = mapFormToKVDBResource(values);
-      const result = await DataStore.kvdbs.updateKVDB(kvdbId, { resource });
+      const resourceYaml =
+        selectedEditorType === 'yaml' && rawKvdb ? rawKvdb : mapFormToYaml(values);
+      const result = await DataStore.kvdbs.updateKVDB(kvdbId, { resourceYaml });
 
       if (result) {
         successNotificationToast(
@@ -176,7 +180,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
         history.push(ROUTES.KVDBS);
       }
     },
-    [kvdbId, notifications, history]
+    [kvdbId, notifications, history, selectedEditorType, rawKvdb]
   );
 
   const handleSubmit = useCallback(
@@ -293,7 +297,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   </EuiText>
                   <EuiText size="s" color="subdued">
                     {action === KVDB_ACTION.CREATE
-                      ? 'Create a afjweiofjaiow.'
+                      ? 'Create a new KVDB.'
                       : 'Edit the KVDB to update its configuration.'}
                   </EuiText>
                   <EuiSpacer />
@@ -303,7 +307,9 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   options={editorTypes}
                   idSelected={selectedEditorType}
                   onChange={(id) => {
-                    if (id === 'yaml') setRawKvdb(mapFormToYaml(formikProps.values));
+                    if (id === 'yaml' && (formikProps.dirty || !rawKvdb)) {
+                      setRawKvdb(mapFormToYaml(formikProps.values));
+                    }
                     setSelectedEditorType(id as EditorType);
                   }}
                 />

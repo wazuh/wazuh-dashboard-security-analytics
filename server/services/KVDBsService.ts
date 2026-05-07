@@ -14,13 +14,24 @@ import { ServerResponse } from '../models/types';
 import {
   CreateKVDBPayload,
   KVDBIntegrationsSearchResponse,
-  KVDBResource,
   KVDBSearchRequest,
   KVDBSearchResponse,
   UpdateKVDBPayload,
 } from '../../types';
 import { CLIENT_KVDB_METHODS, CONTENT_INDICES } from '../utils/constants';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
+
+/**
+ * Wraps a resource YAML block under `resource:` and optionally prepends `integration:`.
+ */
+const buildKvdbYamlBody = (resourceYaml: string, integrationId?: string): string => {
+  const stripped = resourceYaml.replace(/^---\n?/, '').trimEnd();
+  const indented = stripped.split('\n').map((line) => (line ? `  ${line}` : '')).join('\n');
+  const parts: string[] = [];
+  if (integrationId) parts.push(`integration: ${JSON.stringify(integrationId)}`);
+  parts.push(`resource:\n${indented}`);
+  return parts.join('\n') + '\n';
+};
 
 export class KVDBsService extends MDSEnabledClientService {
   searchKVDBs = async (
@@ -112,44 +123,26 @@ export class KVDBsService extends MDSEnabledClientService {
     response: OpenSearchDashboardsResponseFactory
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<{ id: string }> | ResponseError>> => {
     try {
-      const body = request.body as CreateKVDBPayload;
-      const client = this.getClient(request, context);
-
-      const { resource, integrationId } = body;
-      if (!resource) {
+      const { resourceYaml, integrationId } = request.body as CreateKVDBPayload;
+      if (!resourceYaml) {
         return response.custom({
           statusCode: 200,
-          body: {
-            ok: false,
-            error: 'KVDB resource is required',
-          },
+          body: { ok: false, error: 'KVDB resource is required' },
         });
       }
 
-      const createBody = {
-        body: {
-          resource,
-          integration: integrationId,
-        },
-      };
-
-      const createResponse = await client(CLIENT_KVDB_METHODS.CREATE_KVDB, createBody);
-
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: true,
-          response: createResponse,
-        },
+      const client = this.getClient(request, context);
+      const createResponse = await client(CLIENT_KVDB_METHODS.CREATE_KVDB, {
+        body: buildKvdbYamlBody(resourceYaml, integrationId),
+        headers: { 'Content-Type': 'application/yaml' },
       });
+
+      return response.custom({ statusCode: 200, body: { ok: true, response: createResponse } });
     } catch (error) {
       console.error('Security Analytics - KVDBsService - createKVDB:', error);
       return response.custom({
         statusCode: 200,
-        body: {
-          ok: false,
-          error: error.body?.message || error.message,
-        },
+        body: { ok: false, error: error.body?.message || error.message },
       });
     }
   };
@@ -161,44 +154,27 @@ export class KVDBsService extends MDSEnabledClientService {
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
     try {
       const { kvdbId } = request.params;
-      const body = request.body as UpdateKVDBPayload;
-      const client = this.getClient(request, context);
-
-      const { resource } = body;
-      if (!resource) {
+      const { resourceYaml } = request.body as UpdateKVDBPayload;
+      if (!resourceYaml) {
         return response.custom({
           statusCode: 200,
-          body: {
-            ok: false,
-            error: 'KVDB resource is required',
-          },
+          body: { ok: false, error: 'KVDB resource is required' },
         });
       }
 
-      const updateBody = {
-        body: {
-          resource,
-        },
-        kvdbId: kvdbId,
-      };
-
-      const updateResponse = await client(CLIENT_KVDB_METHODS.UPDATE_KVDB, updateBody);
-
-      return response.custom({
-        statusCode: 200,
-        body: {
-          ok: true,
-          response: updateResponse,
-        },
+      const client = this.getClient(request, context);
+      const updateResponse = await client(CLIENT_KVDB_METHODS.UPDATE_KVDB, {
+        body: buildKvdbYamlBody(resourceYaml),
+        kvdbId,
+        headers: { 'Content-Type': 'application/yaml' },
       });
+
+      return response.custom({ statusCode: 200, body: { ok: true, response: updateResponse } });
     } catch (error) {
       console.error('Security Analytics - KVDBsService - updateKVDB:', error);
       return response.custom({
         statusCode: 200,
-        body: {
-          ok: false,
-          error: error.body?.message || error.message,
-        },
+        body: { ok: false, error: error.body?.message || error.message },
       });
     }
   };
