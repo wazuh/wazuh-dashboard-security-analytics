@@ -4,6 +4,9 @@
  */
 
 import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiButtonGroup,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
@@ -13,7 +16,6 @@ import {
   EuiFlexItem,
   EuiLoadingSpinner,
   EuiPanel,
-  EuiSmallButton,
   EuiSpacer,
   EuiText,
   EuiToolTip,
@@ -82,10 +84,11 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const [integrationType, setIntegrationType] = useState<string>('');
   const [initialValue, setInitialValue] = useState<KVDBFormModel>(kvdbFormDefaultValue);
 
-  const { loading: loadingIntegrations, options: integrationTypeOptions } = useIntegrationSelector({
-    notifications,
-    enabled: action === KVDB_ACTION.CREATE,
-  });
+  const {
+    loading: loadingIntegrations,
+    options: integrationTypeOptions,
+    refresh: refreshIntegrations,
+  } = useIntegrationSelector({ notifications, enabled: action === KVDB_ACTION.CREATE });
 
   useEffect(() => {
     if (action !== KVDB_ACTION.EDIT) return;
@@ -126,6 +129,14 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const onIntegrationChange = useCallback((options: Array<{ id?: string }>) => {
     setIntegrationType(options[0]?.id || '');
   }, []);
+
+  const onIntegrationCreateSuccess = useCallback(
+    (newOption: { id: string }) => {
+      refreshIntegrations();
+      setIntegrationType(newOption.id);
+    },
+    [refreshIntegrations]
+  );
 
   const createKVDB = useCallback(
     async (values: KVDBFormModel) => {
@@ -275,7 +286,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
         >
           {(formikProps) => (
             <Form>
-              <EuiPanel>
+              <EuiPanel style={{ paddingBottom: '60px' }}>
                 <PageHeader appDescriptionControls={false}>
                   <EuiText size="s">
                     <h1>{actionLabels[action]} KVDB</h1>
@@ -305,6 +316,8 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                       isLoading={loadingIntegrations}
                       onChange={onIntegrationChange}
                       resourceName="KVDBs"
+                      notifications={notifications}
+                      onCreateSuccess={onIntegrationCreateSuccess}
                     />
                     <EuiSpacer size="m" />
                   </>
@@ -414,24 +427,36 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   />
                 )}
               </EuiPanel>
-              <EuiSpacer size="xl" />
-              <EuiFlexGroup justifyContent="flexEnd">
-                <EuiFlexItem grow={false}>
-                  <EuiSmallButton href={`#${ROUTES.KVDBS}`}>Cancel</EuiSmallButton>
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiToolTip content={getSubmitTooltip(formikProps.errors)} position="top">
-                    <EuiSmallButton
-                      disabled={isSubmitDisabled(formikProps.errors)}
-                      isLoading={formikProps.isSubmitting}
-                      onClick={() => formikProps.handleSubmit()}
-                      fill
+
+              <EuiBottomBar>
+                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
+                  <EuiFlexItem grow={false}>
+                    <EuiButtonEmpty
+                      color="ghost"
+                      size="s"
+                      iconType="cross"
+                      href={`#${ROUTES.KVDBS}`}
                     >
-                      {actionLabels[action]} KVDB
-                    </EuiSmallButton>
-                  </EuiToolTip>
-                </EuiFlexItem>
-              </EuiFlexGroup>
+                      Cancel
+                    </EuiButtonEmpty>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiToolTip content={getSubmitTooltip(formikProps.errors)} position="top">
+                      <EuiButton
+                        color="primary"
+                        fill
+                        iconType="check"
+                        size="s"
+                        disabled={isSubmitDisabled(formikProps.errors)}
+                        isLoading={formikProps.isSubmitting}
+                        onClick={() => formikProps.handleSubmit()}
+                      >
+                        {actionLabels[action]} KVDB
+                      </EuiButton>
+                    </EuiToolTip>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiBottomBar>
             </Form>
           )}
         </Formik>
