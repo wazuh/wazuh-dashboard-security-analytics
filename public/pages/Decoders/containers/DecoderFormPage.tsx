@@ -78,8 +78,8 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         setIsLoading(true);
         try {
           const response = await DataStore.decoders.getDecoder(idDecoder, spaceDecoder);
-          setRawDecoder(response?.decoder ?? decoderFormDefaultValue);
-          setDecoder(mapYamlToLosslessDecoder(response?.decoder ?? ''));
+          setRawDecoder(response?.yaml ?? decoderFormDefaultValue);
+          setDecoder(mapYamlToLosslessDecoder(response?.yaml ?? ''));
           setIntegrationType(response?.integrations?.[0] || '');
           setBreadcrumbs([
             BREADCRUMBS.NORMALIZATION,
