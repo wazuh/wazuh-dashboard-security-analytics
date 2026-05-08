@@ -86,7 +86,7 @@ export const mapFormToYaml = (values: KVDBFormModel): string => {
     contentMap.add(new Pair(new Scalar(trimmedKey), stringToYamlNode(value)));
   }
 
-  if (contentMap.items.length > 0) doc.set('content', contentMap);
+  doc.set('content', contentMap);
 
   return doc.toString({ lineWidth: 0 });
 };

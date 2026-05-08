@@ -48,14 +48,20 @@ const detailsMapLabels: { [key: string]: string } = {
   space: 'Space',
 };
 
+const VISUAL_VIEW = {
+  VISUAL: 'visual',
+  YAML: 'yaml',
+  JSON: 'json',
+};
+
 const viewOptions = [
-  { id: 'visual', label: 'Visual' },
-  { id: 'yaml', label: 'YAML' },
-  { id: 'json', label: 'JSON' },
+  { id: VISUAL_VIEW.VISUAL, label: 'Visual' },
+  { id: VISUAL_VIEW.YAML, label: 'YAML' },
+  { id: VISUAL_VIEW.JSON, label: 'JSON' },
 ];
 
 export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onClose }) => {
-  const [selectedView, setSelectedView] = useState('visual');
+  const [selectedView, setSelectedView] = useState(VISUAL_VIEW.VISUAL);
 
   const document = kvdb.document ?? { id: '' };
   const metadata = document.metadata;
@@ -165,9 +171,9 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="xl" />
-          {selectedView === 'visual' && visualTab}
-          {selectedView === 'yaml' && yamlTab}
-          {selectedView === 'json' && jsonTab}
+          {selectedView === VISUAL_VIEW.VISUAL && visualTab}
+          {selectedView === VISUAL_VIEW.YAML && yamlTab}
+          {selectedView === VISUAL_VIEW.JSON && jsonTab}
         </EuiModalBody>
       </EuiFlyoutBody>
     </EuiFlyout>
