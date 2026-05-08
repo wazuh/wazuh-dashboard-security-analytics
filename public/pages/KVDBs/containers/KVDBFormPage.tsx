@@ -44,7 +44,6 @@ import {
   kvdbFormDefaultValue,
   KVDBFormModel,
   mapFormToYaml,
-  mapKVDBToForm,
   mapYamlToForm,
 } from '../utils/mappers';
 
@@ -60,11 +59,16 @@ const actionLabels: Record<KVDBAction, string> = {
   edit: 'Edit',
 };
 
-type EditorType = 'visual' | 'yaml';
+const EDITOR_TYPE = {
+  VISUAL: 'visual',
+  YAML: 'yaml',
+} as const;
+
+type EditorType = typeof EDITOR_TYPE[keyof typeof EDITOR_TYPE];
 
 const editorTypes: Array<{ id: EditorType; label: string }> = [
-  { id: 'visual', label: 'Visual Editor' },
-  { id: 'yaml', label: 'YAML Editor' },
+  { id: EDITOR_TYPE.VISUAL, label: 'Visual Editor' },
+  { id: EDITOR_TYPE.YAML, label: 'YAML Editor' },
 ];
 
 type KVDBFormPageProps = {
@@ -96,12 +100,8 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       setIsLoading(true);
       try {
         const item = await DataStore.kvdbs.getKVDB(kvdbId!);
-        if (item?.yaml) {
-          setRawKvdb(item.yaml);
-          setInitialValue(mapYamlToForm(item.yaml));
-        } else if (item?.document) {
-          setInitialValue(mapKVDBToForm(item.document));
-        }
+        setRawKvdb(item.yaml);
+        setInitialValue(mapYamlToForm(item.yaml));
         setBreadcrumbs([
           BREADCRUMBS.NORMALIZATION,
           BREADCRUMBS.KVDBS,
@@ -143,7 +143,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const createKVDB = useCallback(
     async (values: KVDBFormModel) => {
       const resourceYaml =
-        selectedEditorType === 'yaml' && rawKvdb ? rawKvdb : mapFormToYaml(values);
+        selectedEditorType === EDITOR_TYPE.YAML && rawKvdb ? rawKvdb : mapFormToYaml(values);
       const result = await DataStore.kvdbs.createKVDB({
         resourceYaml,
         integrationId: integrationType,
@@ -167,7 +167,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       if (!kvdbId) return;
 
       const resourceYaml =
-        selectedEditorType === 'yaml' && rawKvdb ? rawKvdb : mapFormToYaml(values);
+        selectedEditorType === EDITOR_TYPE.YAML && rawKvdb ? rawKvdb : mapFormToYaml(values);
       const result = await DataStore.kvdbs.updateKVDB(kvdbId, { resourceYaml });
 
       if (result) {
@@ -306,11 +306,11 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   legend="Editor type"
                   options={editorTypes}
                   idSelected={selectedEditorType}
-                  onChange={(id) => {
-                    if (id === 'yaml' && (formikProps.dirty || !rawKvdb)) {
+                  onChange={(newSelectedType: EditorType) => {
+                    if (newSelectedType === EDITOR_TYPE.YAML && (formikProps.dirty || !rawKvdb)) {
                       setRawKvdb(mapFormToYaml(formikProps.values));
                     }
-                    setSelectedEditorType(id as EditorType);
+                    setSelectedEditorType(newSelectedType);
                   }}
                 />
                 <EuiSpacer size="xl" />
@@ -328,7 +328,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                     <EuiSpacer size="m" />
                   </>
                 )}
-                {selectedEditorType === 'visual' && (
+                {selectedEditorType === EDITOR_TYPE.VISUAL && (
                   <>
                     <EuiCompressedFormRow
                       label={<FormFieldHeader headerTitle={'Title'} />}
@@ -418,7 +418,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                     </EuiCompressedFormRow>
                   </>
                 )}
-                {selectedEditorType === 'yaml' && (
+                {selectedEditorType === EDITOR_TYPE.YAML && (
                   <YamlForm
                     type={YAML_TYPE.KVDB}
                     value={rawKvdb}

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import YAML from 'yaml';
 import {
   IOpenSearchDashboardsResponse,
   OpenSearchDashboardsRequest,
@@ -21,16 +22,11 @@ import {
 import { CLIENT_KVDB_METHODS, CONTENT_INDICES } from '../utils/constants';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 
-/**
- * Wraps a resource YAML block under `resource:` and optionally prepends `integration:`.
- */
 const buildKvdbYamlBody = (resourceYaml: string, integrationId?: string): string => {
-  const stripped = resourceYaml.replace(/^---\n?/, '').trimEnd();
-  const indented = stripped.split('\n').map((line) => (line ? `  ${line}` : '')).join('\n');
-  const parts: string[] = [];
-  if (integrationId) parts.push(`integration: ${JSON.stringify(integrationId)}`);
-  parts.push(`resource:\n${indented}`);
-  return parts.join('\n') + '\n';
+  const doc = new YAML.Document();
+  if (integrationId) doc.set('integration', integrationId);
+  doc.set('resource', YAML.parseDocument(resourceYaml).contents);
+  return doc.toString({ lineWidth: 0 });
 };
 
 export class KVDBsService extends MDSEnabledClientService {
