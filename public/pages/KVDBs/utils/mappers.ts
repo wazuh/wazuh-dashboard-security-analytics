@@ -54,22 +54,30 @@ const contentValueToString = (value: unknown): string => {
 /** Converts a content object into form entries. */
 const contentToEntries = (content: Record<string, unknown> | undefined): ContentEntry[] => {
   if (!content || typeof content !== 'object' || Array.isArray(content)) return [];
-  return Object.entries(content).map(([key, value]) => ({ key, value: contentValueToString(value) }));
+  return Object.entries(content).map(([key, value]) => ({
+    key,
+    value: contentValueToString(value),
+  }));
 };
 
 /** Form model to YAML string (to persist). */
 export const mapFormToYaml = (values: KVDBFormModel): string => {
-  const doc = YAML.parseDocument(YAML.stringify({
-    metadata: {
-      title: values.title,
-      author: values.author,
-      description: values.description,
-      documentation: values.documentation,
-      references: values.references,
-      supports: values.supports,
-    },
-    enabled: values.enabled,
-  }, { lineWidth: 0 }));
+  const doc = YAML.parseDocument(
+    YAML.stringify(
+      {
+        metadata: {
+          title: values.title,
+          author: values.author,
+          description: values.description,
+          documentation: values.documentation,
+          references: values.references,
+          supports: values.supports,
+        },
+        enabled: values.enabled,
+      },
+      { lineWidth: 0 }
+    )
+  );
 
   const contentMap = new YAMLMap();
   for (const { key, value } of values.contentEntries) {

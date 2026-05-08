@@ -389,9 +389,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                       <EuiCompressedFieldText
                         placeholder="Enter documentation URL"
                         value={formikProps.values.documentation}
-                        onChange={(e) =>
-                          formikProps.setFieldValue('documentation', e.target.value)
-                        }
+                        onChange={(e) => formikProps.setFieldValue('documentation', e.target.value)}
                       />
                     </EuiCompressedFormRow>
                     <EuiSpacer size="m" />
@@ -400,9 +398,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                       values={formikProps.values.references}
                       placeholder="https://example.com/reference"
                       addButtonLabel="Add reference"
-                      onChange={(references) =>
-                        formikProps.setFieldValue('references', references)
-                      }
+                      onChange={(references) => formikProps.setFieldValue('references', references)}
                     />
                     <FormFieldArray
                       label={<FormFieldHeader headerTitle={'Supports'} optionalField={true} />}
@@ -435,7 +431,12 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
               </EuiPanel>
 
               <EuiBottomBar>
-                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
+                <EuiFlexGroup
+                  gutterSize="s"
+                  justifyContent="flexEnd"
+                  alignItems="center"
+                  responsive={false}
+                >
                   <EuiFlexItem grow={false}>
                     <EuiButtonEmpty
                       color="ghost"
