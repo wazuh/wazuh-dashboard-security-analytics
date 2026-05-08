@@ -52,8 +52,10 @@ const contentValueToString = (value: unknown): string => {
 };
 
 /** Converts a content object into form entries. */
-const contentToEntries = (content: Record<string, unknown> | undefined): ContentEntry[] =>
-  Object.entries(content ?? {}).map(([key, value]) => ({ key, value: contentValueToString(value) }));
+const contentToEntries = (content: Record<string, unknown> | undefined): ContentEntry[] => {
+  if (!content || typeof content !== 'object' || Array.isArray(content)) return [];
+  return Object.entries(content).map(([key, value]) => ({ key, value: contentValueToString(value) }));
+};
 
 /** Form model to YAML string (to persist). */
 export const mapFormToYaml = (values: KVDBFormModel): string => {
@@ -76,9 +78,8 @@ export const mapFormToYaml = (values: KVDBFormModel): string => {
     contentMap.add(new Pair(new Scalar(trimmedKey), stringToYamlNode(value)));
   }
 
-  doc.set('content', contentMap);
+  if (contentMap.items.length > 0) doc.set('content', contentMap);
 
-  console.log('Generated YAML document:', doc.toString({ lineWidth: 0 }));
   return doc.toString({ lineWidth: 0 });
 };
 
