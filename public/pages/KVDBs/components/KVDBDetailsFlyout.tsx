@@ -79,21 +79,19 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
   const visualTab = (
     <>
       <EuiFlexGrid columns={2}>
-        {(
-          [
-            'space',
-            'integration.title',
-            'document.metadata.title',
-            'document.id',
-            'document.metadata.author',
-            'document.metadata.description',
-            ['document.metadata.date', 'date'],
-            ['document.metadata.modified', 'date'],
-            ['document.metadata.documentation', 'url'],
-            ['document.metadata.references', 'url'],
-            ['document.metadata.supports', 'raw'],
-          ] as Array<string | [string, MetadataFieldType]>
-        ).map((item) => {
+        {([
+          'space',
+          'integration.title',
+          'document.metadata.title',
+          'document.id',
+          'document.metadata.author',
+          'document.metadata.description',
+          ['document.metadata.date', 'date'],
+          ['document.metadata.modified', 'date'],
+          ['document.metadata.documentation', 'url'],
+          ['document.metadata.references', 'url'],
+          ['document.metadata.supports', 'raw'],
+        ] as Array<string | [string, MetadataFieldType]>).map((item) => {
           const [field, type] = typeof item === 'string' ? ([item, 'text'] as const) : item;
           return (
             <EuiFlexItem key={field}>
