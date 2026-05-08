@@ -83,6 +83,8 @@ jobs:
       - run: yarn -v
 
       - name: Bootstrap plugin/OpenSearch-Dashboards
+        env:
+          GIT_REF: 'main'
         run: |
           cd OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
           yarn osd bootstrap --single-version=loose
@@ -142,6 +144,7 @@ jobs:
           browser: electron
         env:
           CYPRESS_CACHE_FOLDER: ${{ matrix.cypress_cache_folder }}
+          SKIP_DOWNLOAD_ENGINE_SCHEMAS: 'true'
 
       # Screenshots are only captured on failure, will change this once we do visual regression tests
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
