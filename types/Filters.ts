@@ -63,15 +63,13 @@ export interface FilterResource {
   };
 }
 
-export interface CreateFilterPayload {
-  space: string;
-  resource: FilterResource;
-}
+export type CreateFilterPayload =
+  | { space: string; resource: FilterResource }
+  | { space: string; rawYaml: string };
 
-export interface UpdateFilterPayload {
-  space: string;
-  resource: FilterResource;
-}
+export type UpdateFilterPayload =
+  | { space: string; resource: FilterResource }
+  | { space: string; rawYaml: string };
 
 export interface CUDFilterResponse {
   message: string;

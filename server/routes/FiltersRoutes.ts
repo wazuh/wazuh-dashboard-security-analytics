@@ -28,6 +28,11 @@ const filterResourceSchema = schema.object({
   ),
 });
 
+const filterBodySchema = schema.oneOf([
+  schema.object({ space: schema.string(), resource: filterResourceSchema }),
+  schema.object({ space: schema.string(), rawYaml: schema.string() }),
+]);
+
 export function setupFiltersRoutes(services: NodeServices, router: IRouter) {
   const { filtersService } = services;
 
@@ -46,10 +51,7 @@ export function setupFiltersRoutes(services: NodeServices, router: IRouter) {
     {
       path: `${API.FILTERS_BASE}`,
       validate: {
-        body: schema.object({
-          space: schema.string(),
-          resource: filterResourceSchema,
-        }),
+        body: filterBodySchema,
         query: createQueryValidationSchema(),
       },
     },
@@ -61,10 +63,7 @@ export function setupFiltersRoutes(services: NodeServices, router: IRouter) {
       path: `${API.FILTERS_BASE}/{filterId}`,
       validate: {
         params: schema.object({ filterId: schema.string() }),
-        body: schema.object({
-          space: schema.string(),
-          resource: filterResourceSchema,
-        }),
+        body: filterBodySchema,
         query: createQueryValidationSchema(),
       },
     },
