@@ -2,10 +2,10 @@ import YAML, { Pair, Scalar, YAMLMap, YAMLSeq } from 'yaml';
 import { LosslessNumber } from 'lossless-json';
 
 /**
- * Converts a raw user-input string into a YAML AST node with proper type metadata.
+ * Converts a raw user input string into a YAML AST node with proper type metadata.
  * Preserves float/int/bool/null representations that would otherwise be lost when
  * passing through JS native types (e.g. "5.0" to !!float 5.0, not int 5).
- * JSON objects/arrays are parsed via JSON.parse then re-serialized as YAML.
+ * JSON objects/arrays are parsed as YAML (JSON is valid YAML) and forced to block style.
  */
 export const stringToYamlNode = (rawValue: string): Scalar | YAMLMap | YAMLSeq => {
   const trimmed = rawValue.trim();
@@ -13,7 +13,18 @@ export const stringToYamlNode = (rawValue: string): Scalar | YAMLMap | YAMLSeq =
     try {
       const parsed = YAML.parseDocument(trimmed);
       if (!parsed.errors.length && parsed.contents) {
-        return parsed.contents as YAMLMap | YAMLSeq;
+        const node = parsed.contents as YAMLMap | YAMLSeq;
+        YAML.visit(node, {
+          Map(_, n) { n.flow = false; },
+          Seq(_, n) { n.flow = false; },
+          Pair(_, n) {
+            if (n.key instanceof Scalar &&
+                (n.key.type === 'QUOTE_DOUBLE' || n.key.type === 'QUOTE_SINGLE')) {
+              n.key.type = null;
+            }
+          },
+        });
+        return node;
       }
     } catch {
       // not valid YAML
