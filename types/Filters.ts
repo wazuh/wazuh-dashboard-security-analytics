@@ -23,6 +23,7 @@ export interface FilterDocument {
 
 export interface FilterSource {
   document: FilterDocument;
+  yaml: string;
   space: { name: string };
   hash?: { sha256: string };
 }
@@ -63,14 +64,14 @@ export interface FilterResource {
   };
 }
 
-export type CreateFilterPayload =
-  | { space: string; resource: FilterResource }
-  | { space: string; rawYaml: string };
-
-export type UpdateFilterPayload =
-  | { space: string; resource: FilterResource }
-  | { space: string; rawYaml: string };
-
+export interface CreateFilterPayload {
+  space: string;
+  resourceYaml: string;
+}
+export interface UpdateFilterPayload {
+  space: string;
+  resourceYaml: string;
+}
 export interface CUDFilterResponse {
   message: string;
   status: number;

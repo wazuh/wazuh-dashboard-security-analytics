@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { EuiCompressedFormRow, EuiCodeEditor, EuiSpacer, EuiText, EuiCallOut } from '@elastic/eui';
-import FormFieldHeader from '../../../components/FormFieldHeader';
+import FormFieldHeader from '../../FormFieldHeader';
 import { YamlEditorState, YAML_TYPE } from '../utils/constants';
 
 interface YamlFormProps {

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   EuiButtonGroup,
   EuiCodeBlock,
@@ -19,20 +19,19 @@ import {
   EuiSpacer,
   EuiText,
 } from '@elastic/eui';
-import { FilterItem } from '../../../../types';
+import { FilterDocument, FilterItem } from '../../../../types';
 import { Metadata } from '../../../components/Utility/Metadata';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
-import { mapFormToFilterResource, mapFilterToForm } from '../utils/mappers';
-import { dump } from 'js-yaml';
-
+import { mapYamlToLosslessObject } from '../../../components/YamlForm';
+import { stringify as LosslessStringify } from 'lossless-json';
 interface FilterDetailsFlyoutProps {
   filter: FilterItem;
   onClose: () => void;
 }
 
-const editorType = [
+const viewOptions = [
   {
     id: 'visual',
     label: 'Visual',
@@ -55,7 +54,7 @@ const getAuthorDisplay = (author: string | { name?: string } | undefined): strin
 };
 
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
-  const [selectedView, setSelectedView] = useState(editorType[0].id);
+  const [selectedView, setSelectedView] = useState(viewOptions[0].id);
 
   const document = filter.document ?? {
     id: '',
@@ -68,6 +67,20 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
   const metadata = document.metadata ?? {};
   const references = metadata.references ?? [];
   const supports = metadata.supports ?? [];
+
+  const filterJson = useMemo(() => {
+    if (!filter) return '';
+    try {
+      const rawYaml = typeof filter.yaml === 'string' ? filter.yaml : null;
+      if (rawYaml) {
+        const losslessDoc = mapYamlToLosslessObject<FilterDocument>(rawYaml);
+        return LosslessStringify(losslessDoc, null, 2) ?? '';
+      }
+      return JSON.stringify(filter?.document, null, 2);
+    } catch (err) {
+      return JSON.stringify(filter?.document, null, 2) ?? '';
+    }
+  }, [filter]);
 
   const fields: Array<{
     label: string;
@@ -101,13 +114,13 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
 
   const jsonContent = (
     <EuiCodeBlock language="json" isCopyable={true} paddingSize="m">
-      {JSON.stringify(document, null, 2)}
+      {filterJson}
     </EuiCodeBlock>
   );
 
   const yamlContent = (
     <EuiCodeBlock language="yaml" isCopyable={true}>
-      {dump(mapFormToFilterResource(mapFilterToForm(document)))}
+      {filter.yaml}
     </EuiCodeBlock>
   );
 
@@ -152,7 +165,7 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
               <EuiButtonGroup
                 data-test-subj="change-editor-type"
                 legend="This is editor type selector"
-                options={editorType}
+                options={viewOptions}
                 idSelected={selectedView}
                 onChange={(id) => setSelectedView(id)}
               />

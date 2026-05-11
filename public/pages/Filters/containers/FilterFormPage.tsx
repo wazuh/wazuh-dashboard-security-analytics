@@ -27,7 +27,6 @@ import { FormFieldArray } from '../../../components/FormFieldArray';
 import { Form, Formik, FormikErrors } from 'formik';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
-import FormFieldHeader from '../../../components/FormFieldHeader';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -41,14 +40,16 @@ import { FILTER_NAME_REGEX } from '../../../utils/validation';
 import {
   FilterFormModel,
   filterFormDefaultValue,
+  filterYamlFormDefaultValue,
   mapFilterToForm,
-  mapFormToFilterResource,
+  mapYamlToFilterForm,
+  mapYamlToForm,
+  mapFormToYaml,
 } from '../utils/mappers';
 import { FILTER_TYPE_OPTIONS } from '../utils/constants';
-import { dump } from 'js-yaml';
 import { EuiButtonGroup } from '@elastic/eui';
-import { YamlForm, YAML_TYPE, mapYamlToLosslessObject } from '../../../components/YamlForm';
-import { mapYamlToFilterForm } from '../utils/mappers';
+import { YamlForm, YAML_TYPE } from '../../../components/YamlForm';
+import YAML from 'yaml';
 
 const FILTER_ACTION = {
   CREATE: 'create',
@@ -61,9 +62,16 @@ const actionLabels: Record<FilterAction, string> = {
   edit: 'Edit',
 };
 
-const editorTypes = [
-  { id: 'visual', label: 'Visual Editor' },
-  { id: 'yaml', label: 'YAML Editor' },
+const EDITOR_TYPE = {
+  VISUAL: 'visual',
+  YAML: 'yaml',
+} as const;
+
+type EditorType = typeof EDITOR_TYPE[keyof typeof EDITOR_TYPE];
+
+const editorTypes: Array<{ id: EditorType; label: string }> = [
+  { id: EDITOR_TYPE.VISUAL, label: 'Visual Editor' },
+  { id: EDITOR_TYPE.YAML, label: 'YAML Editor' },
 ];
 
 type FilterFormPageProps = {
@@ -81,11 +89,12 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
 }) => {
   const filterId = match.params.id;
   const [isLoading, setIsLoading] = useState(false);
-  const [initialValue, setInitialValue] = useState<FilterFormModel>(filterFormDefaultValue);
   const [typePopoverOpen, setTypePopoverOpen] = useState(false);
   const { spaceFilter } = useSpaceSelector();
   const [selectedEditorType, setSelectedEditorType] = useState('visual');
-  const [rawFilter, setRawFilter] = useState<string>();
+  const [rawFilter, setRawFilter] = useState<string>(filterYamlFormDefaultValue);
+  const [yamlErrors, setYamlErrors] = useState<string[] | null>(null);
+  const [initialValue, setInitialValue] = useState<FilterFormModel>(filterFormDefaultValue);
 
   useEffect(() => {
     if (action === FILTER_ACTION.CREATE) {
@@ -98,7 +107,8 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
       try {
         const item = await DataStore.filters.getFilter(filterId);
         if (item?.document) {
-          setInitialValue(mapFilterToForm(item.document));
+          setInitialValue(mapYamlToForm(item.yaml) ?? mapFilterToForm(item.document));
+          setRawFilter(item.yaml);
         }
         setBreadcrumbs([
           BREADCRUMBS.FILTERS,
@@ -135,23 +145,18 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
 
   const handleSubmitForm = useCallback(
     async (values: FilterFormModel, { setSubmitting }: { setSubmitting: (v: boolean) => void }) => {
-      const resource = mapFormToFilterResource(values);
+      const resourceYaml =
+        selectedEditorType === EDITOR_TYPE.YAML && rawFilter ? rawFilter : mapFormToYaml(values);
       const space = spaceFilter || 'draft';
       try {
         if (action === FILTER_ACTION.CREATE) {
-          const result = await DataStore.filters.createFilter({
-            space,
-            resource,
-          });
+          const result = await DataStore.filters.createFilter({ resourceYaml, space });
           if (result) {
             successNotificationToast(notifications, 'created', 'filter', result.message);
             history.push(ROUTES.FILTERS);
           }
         } else if (filterId) {
-          const result = await DataStore.filters.updateFilter(filterId, {
-            space,
-            resource,
-          });
+          const result = await DataStore.filters.updateFilter(filterId, { resourceYaml, space });
           if (result) {
             successNotificationToast(notifications, 'updated', 'filter', result.message);
             history.push(ROUTES.FILTERS);
@@ -161,11 +166,29 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
         setSubmitting(false);
       }
     },
-    [action, filterId, spaceFilter, notifications, history]
+    [action, filterId, spaceFilter, notifications, history, selectedEditorType, rawFilter]
   );
 
   const isSubmitDisabled = (errors: FormikErrors<FilterFormModel>) =>
     !!(errors.name || errors.type || errors.check || errors.author);
+
+  const handleYamlChange = (yamlString: string) => {
+    setRawFilter(yamlString);
+
+    let parsedFilter;
+    try {
+      parsedFilter = YAML.parse(yamlString);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message.split('\n')[0] : 'Invalid YAML syntax';
+      setYamlErrors([msg]);
+      return;
+    }
+    const formValues = mapYamlToFilterForm(parsedFilter);
+    const errors = validateForm(formValues);
+    const errorMessages = Object.values(errors) as string[];
+    if (!parsedFilter.metadata.title) errorMessages.push('Title is required');
+    setYamlErrors(errorMessages.length > 0 ? errorMessages : null);
+  };
 
   return (
     <>
@@ -191,7 +214,6 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
             errors,
             touched,
             isSubmitting,
-            setValues,
             setFieldValue,
             setFieldTouched,
             handleSubmit: formikSubmit,
@@ -224,7 +246,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   idSelected={selectedEditorType}
                   onChange={(id) => {
                     if (id === 'yaml') {
-                      setRawFilter(dump(mapFormToFilterResource(values)));
+                      handleYamlChange(rawFilter);
                     }
                     setSelectedEditorType(id);
                   }}
@@ -422,22 +444,20 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   <YamlForm
                     type={YAML_TYPE.FILTER}
                     value={rawFilter}
-                    isInvalid={Object.keys(errors).length > 0}
-                    errors={Object.keys(errors).map(
-                      (key) => (errors as Record<string, string>)[key]
-                    )}
-                    change={(yamlString) => {
-                      setRawFilter(yamlString);
-                      const parsed = mapYamlToLosslessObject<FilterFormModel>(yamlString);
-                      const formValues = mapYamlToFilterForm(parsed);
-                      setValues(formValues);
-                    }}
+                    isInvalid={yamlErrors !== null && yamlErrors.length > 0}
+                    errors={yamlErrors ?? []}
+                    change={handleYamlChange}
                   />
                 )}
               </EuiPanel>
 
               <EuiBottomBar>
-                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
+                <EuiFlexGroup
+                  gutterSize="s"
+                  justifyContent="flexEnd"
+                  alignItems="center"
+                  responsive={false}
+                >
                   <EuiFlexItem grow={false}>
                     <EuiButtonEmpty
                       color="ghost"
@@ -451,7 +471,9 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                   <EuiFlexItem grow={false}>
                     <EuiToolTip
                       content={
-                        isSubmitDisabled(errors) ? 'Please fill in all required fields' : undefined
+                        selectedEditorType === 'visual' && isSubmitDisabled(errors)
+                          ? 'Please fill in all required fields'
+                          : undefined
                       }
                       position="top"
                     >
@@ -460,9 +482,19 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                         fill
                         iconType="check"
                         size="s"
-                        disabled={isSubmitDisabled(errors)}
+                        disabled={
+                          selectedEditorType === 'visual'
+                            ? isSubmitDisabled(errors)
+                            : yamlErrors !== null && yamlErrors.length > 0
+                        }
                         isLoading={isSubmitting}
-                        onClick={() => formikSubmit()}
+                        onClick={() => {
+                          if (selectedEditorType === EDITOR_TYPE.YAML) {
+                            handleSubmitForm(values, { setSubmitting: () => {} });
+                          } else {
+                            formikSubmit();
+                          }
+                        }}
                       >
                         {actionLabels[action]} filter
                       </EuiButton>

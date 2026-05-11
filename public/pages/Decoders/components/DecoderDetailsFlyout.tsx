@@ -35,7 +35,7 @@ interface DecoderDetailsFlyoutProps {
   onClose: () => void;
 }
 
-const decoderViewOptions = [
+const viewOptions = [
   {
     id: 'visual',
     label: 'Visual',
@@ -58,7 +58,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   const [decoder, setDecoder] = useState<DecoderItem | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
-  const [selectedView, setSelectedView] = useState(decoderViewOptions[0].id);
+  const [selectedView, setSelectedView] = useState(viewOptions[0].id);
 
   useEffect(() => {
     let isMounted = true;
@@ -213,7 +213,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
               <EuiButtonGroup
                 data-test-subj="decoder-details-view-selector"
                 legend="Decoder view selector"
-                options={decoderViewOptions}
+                options={viewOptions}
                 idSelected={selectedView}
                 onChange={(id) => setSelectedView(id)}
                 isDisabled={loading || !!error || !decoder}

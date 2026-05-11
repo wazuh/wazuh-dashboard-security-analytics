@@ -4,6 +4,7 @@
  */
 
 import { FilterDocument, FilterResource } from '../../../../types/Filters';
+import YAML from 'yaml';
 
 export interface FilterFormModel {
   name: string;
@@ -29,6 +30,18 @@ export const filterFormDefaultValue: FilterFormModel = {
   supports: [],
 };
 
+export const filterYamlFormDefaultValue: string = `name: filter/<name>/<version>
+type: pre-filter
+check: ''
+enabled: true
+metadata:
+  title: ''
+  author: ''
+  description: ''
+  documentation: ''
+  references: []
+  supports: []`;
+
 export const mapYamlToFilterForm = (yamlObj: any): FilterFormModel => {
   const author = yamlObj?.metadata?.author;
   return {
@@ -43,7 +56,6 @@ export const mapYamlToFilterForm = (yamlObj: any): FilterFormModel => {
     supports: yamlObj?.metadata?.supports ?? [],
   };
 };
-
 
 export const mapFilterToForm = (document: FilterDocument): FilterFormModel => {
   const author = document.metadata?.author;
@@ -78,4 +90,36 @@ export const mapFormToFilterResource = (values: FilterFormModel): FilterResource
       supports: values.supports,
     },
   };
+};
+
+// Recieves a yaml string instead of an object
+export const mapYamlToForm = (yamlString: string): FilterFormModel => {
+  const parsedFilter = YAML.parse(yamlString);
+  if (!parsedFilter) return filterFormDefaultValue;
+
+  return mapYamlToFilterForm(parsedFilter);
+};
+
+export const mapFormToYaml = (values: FilterFormModel): string => {
+  const doc = YAML.parseDocument(
+    YAML.stringify(
+      {
+        name: values.name,
+        type: values.type,
+        check: values.check,
+        enabled: values.enabled,
+        metadata: {
+          title: values.name,
+          author: values.author?.trim() ?? '',
+          description: values.description || '',
+          documentation: values.documentation || '',
+          references: values.references,
+          supports: values.supports,
+        },
+      },
+      { lineWidth: 0 }
+    )
+  );
+
+  return doc.toString({ lineWidth: 0 });
 };
