@@ -18,12 +18,15 @@ import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '..
 import { getNextSpace } from '../../../../common/helpers';
 import { PromoteChangeDiff } from './PromoteChangeDiff';
 import { PROMOTE_ENTITIES_LABELS, PROMOTE_ENTITIES_ORDER } from '../../../utils/constants';
+import { InconsistenciesCallout } from './InconsistenciesCallout';
+import { PromoteInconsistency } from '../../../hooks/usePromoteInconsistencies';
 
 export interface PromoteBySpaceModalProps {
   promote: GetPromoteBySpaceResponse['response'];
   closeModal: () => void;
   onConfirm: () => boolean;
   space: PromoteSpaces;
+  inconsistencies?: PromoteInconsistency[];
 }
 
 const PromoteEntity: React.FC<{
@@ -60,11 +63,11 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
   onConfirm,
   promote,
   space,
+  inconsistencies,
 }) => {
   const [confirmActionText, setconfirmActionText] = useState('');
 
   const onConfirmClick = async () => {
-    // Generate promote payload
     (await onConfirm()) && closeModal();
   };
 
@@ -96,6 +99,8 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
               The entities will be promoted to <b>{nextSpace}</b>. This action is irreversible.
             </EuiText>
           </p>
+
+          <InconsistenciesCallout inconsistencies={inconsistencies ?? []} />
 
           {PROMOTE_ENTITIES_ORDER.map((entity) => {
             const label = PROMOTE_ENTITIES_LABELS[entity];

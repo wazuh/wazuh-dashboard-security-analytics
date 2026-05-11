@@ -12,10 +12,11 @@ import {
   ROUTES,
 } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import { setBreadcrumbs } from '../../../utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   EuiButton,
+  EuiCheckbox,
   EuiFlexGroup,
   EuiFlexItem,
   EuiLoadingSpinner,
@@ -26,6 +27,7 @@ import {
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { withGuardAsync } from '../utils/helpers';
 import { PromoteBySpaceModal } from '../components/PromoteModal';
+import { InconsistenciesCallout } from '../components/InconsistenciesCallout';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { compose } from 'redux';
@@ -35,6 +37,15 @@ import {
 } from '../components/RootDecoderRequirement';
 import { actionIsAllowedOnSpace, getNextSpace } from '../../../../common/helpers';
 import { PromoteChangeDiff } from '../components/PromoteChangeDiff';
+import {
+  MANDATORY_PROMOTE_ENTITIES,
+  usePromoteSelection,
+} from '../../../hooks/usePromoteSelection';
+import {
+  IntegrationChildrenMap,
+  usePromoteInconsistencies,
+} from '../../../hooks/usePromoteInconsistencies';
+import { usePromoteSubmit } from '../../../hooks/usePromoteSubmit';
 
 export interface PromoteIntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -44,26 +55,65 @@ const PromoteEntity: React.FC<{
   label: string;
   entity: PromoteChangeGroup;
   data: GetPromoteBySpaceResponse['response'];
-}> = ({ label, entity, data }) => {
+  selectedIds: Set<string>;
+  onToggleItem: (entity: PromoteChangeGroup, id: string) => void;
+  onToggleAll: (entity: PromoteChangeGroup) => void;
+  mandatory?: boolean;
+}> = ({ label, entity, data, selectedIds, onToggleItem, onToggleAll, mandatory }) => {
   const memoizedData = useMemo(
     () =>
       (data.promote?.changes?.[entity] ?? []).map(({ id, ...rest }) => {
         const strippedId = id.replace(/^\w_/, '');
         const available = data.available_promotions?.[entity];
-        const name = available?.[id] ?? available?.[strippedId] ?? id; // Prefer metadata.title from available_promotions; fallback to id
+        const name = available?.[id] ?? available?.[strippedId] ?? id;
         return { ...rest, id, name };
       }),
     [data.promote?.changes?.[entity], entity, data.available_promotions]
   );
+
+  if (mandatory) {
+    return (
+      <div>
+        <EuiText size="s">
+          <h3>{label}</h3>
+        </EuiText>
+        <EuiSpacer size="s" />
+        <div>
+          {memoizedData.map(({ id, name, operation }, i) => (
+            <PromoteChangeDiff key={`${id}-${i}`} name={name || id} operation={operation} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const allSelected =
+    memoizedData.length > 0 && memoizedData.every(({ id }) => selectedIds.has(id));
+  const someSelected = memoizedData.some(({ id }) => selectedIds.has(id));
+
   return (
     <div>
-      <EuiText size="s">
-        <h3>{label}</h3>
-      </EuiText>
-      <EuiSpacer size="s"></EuiSpacer>
-      <div>
+      <EuiCheckbox
+        id={`promote-toggle-all-${entity}`}
+        checked={allSelected}
+        indeterminate={!allSelected && someSelected}
+        onChange={() => onToggleAll(entity)}
+        label={
+          <EuiText size="s">
+            <h3>{label}</h3>
+          </EuiText>
+        }
+      />
+      <EuiSpacer size="s" />
+      <div style={{ marginLeft: '1.5rem' }}>
         {memoizedData.map(({ id, name, operation }, i) => (
-          <PromoteChangeDiff key={`${id}-${i}`} name={name || id} operation={operation} />
+          <EuiCheckbox
+            key={`${entity}-${id}-${i}`}
+            id={`promote-item-${entity}-${id}-${i}`}
+            checked={selectedIds.has(id)}
+            onChange={() => onToggleItem(entity, id)}
+            label={<PromoteChangeDiff name={name || id} operation={operation} />}
+          />
         ))}
       </div>
     </div>
@@ -73,11 +123,10 @@ const PromoteEntity: React.FC<{
 const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
   withConditionalHOC((props) => {
     return actionIsAllowedOnSpace(props.space, SPACE_ACTIONS.DEFINE_ROOT_DECODER);
-  }, withRootDecoderRequirementGuard), // This guard is added to make sure that the user has a root decoder defined before promoting, as it is a requirement for the promotion. If the user doesn't have a root decoder defined, it will show a message to the user to define a root decoder before promoting.
+  }, withRootDecoderRequirementGuard),
   withGuardAsync(
     async ({ space }) => {
       try {
-        // Get promotions by space
         const [ok, data] = await DataStore.integrations.getPromote({ space });
 
         if (!ok) {
@@ -87,9 +136,15 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           };
         }
 
+        const integrationIds = (data.promote?.changes?.integrations ?? []).map((item) => item.id);
+        const integrationChildren = await DataStore.integrations.getIntegrationChildrenMap(
+          space,
+          integrationIds
+        );
+
         return {
           ok: true,
-          data: { promoteData: data },
+          data: { promoteData: data, integrationChildren },
         };
       } catch (error) {
         return {
@@ -102,33 +157,37 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
     },
     ({
       promoteData,
+      integrationChildren,
       space,
       notifications,
       history,
     }: {
       promoteData: GetPromoteBySpaceResponse['response'];
+      integrationChildren: IntegrationChildrenMap;
       space: PromoteSpaces;
       notifications: PromoteIntegrationProps['notifications'];
     }) => {
       const [modalIsOpen, setModalIsOpen] = useState(false);
 
-      // TODO: add ability to select which entities to promote
-      const hasPromotions = Object.values(promoteData.promote.changes).some(
-        (items) => items.length > 0
-      );
+      const {
+        selected,
+        toggleItem,
+        toggleAll,
+        selectAllGlobal,
+        deselectAllGlobal,
+        selectedChanges,
+        selectedPromoteData,
+        hasPromotions,
+        hasSelected,
+      } = usePromoteSelection(promoteData);
 
-      const onConfirmPromote = async () => {
-        // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
-        const success = await DataStore.integrations.promoteIntegration({
-          space,
-          changes: promoteData.promote.changes,
-        });
-        if (success) {
-          successNotificationToast(notifications, 'promoted', `[${space}] space`);
-          history.push(ROUTES.INTEGRATIONS);
-        }
-        return success;
-      };
+      const inconsistencies = usePromoteInconsistencies(promoteData, selected, integrationChildren);
+
+      const submitPromote = usePromoteSubmit({
+        space,
+        notifications,
+        onSuccess: () => history.push(ROUTES.INTEGRATIONS),
+      });
 
       if (!hasPromotions) {
         return <EuiText>There is nothing to promote.</EuiText>;
@@ -139,18 +198,42 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           {modalIsOpen && (
             <PromoteBySpaceModal
               closeModal={() => setModalIsOpen(false)}
-              promote={promoteData}
-              onConfirm={onConfirmPromote}
+              promote={selectedPromoteData}
+              onConfirm={() => submitPromote(selectedChanges)}
               space={space}
-            ></PromoteBySpaceModal>
+              inconsistencies={inconsistencies}
+            />
           )}
+          <InconsistenciesCallout inconsistencies={inconsistencies} />
+          <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
+            <EuiFlexItem grow={false}>
+              <EuiButton size="s" onClick={selectAllGlobal}>
+                Select all
+              </EuiButton>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButton size="s" onClick={deselectAllGlobal}>
+                Deselect all
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+          <EuiSpacer size="m" />
           <div>
-            {PROMOTE_ENTITIES_ORDER.map((entity) => {
+            {PROMOTE_ENTITIES_ORDER.map((entityKey) => {
+              const entity = entityKey as PromoteChangeGroup;
               if ((promoteData?.promote?.changes?.[entity]?.length ?? 0) > 0) {
                 const label = PROMOTE_ENTITIES_LABELS[entity];
                 return (
                   <React.Fragment key={entity}>
-                    <PromoteEntity label={label} entity={entity} data={promoteData} />
+                    <PromoteEntity
+                      label={label}
+                      entity={entity}
+                      data={promoteData}
+                      selectedIds={selected[entity] ?? new Set<string>()}
+                      onToggleItem={toggleItem}
+                      onToggleAll={toggleAll}
+                      mandatory={MANDATORY_PROMOTE_ENTITIES.has(entity)}
+                    />
                     <EuiSpacer size="m" />
                   </React.Fragment>
                 );
@@ -161,7 +244,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
           <EuiSpacer size="m" />
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem grow={false}>
-              <EuiButton disabled={!hasPromotions} onClick={() => setModalIsOpen(true)} fill={true}>
+              <EuiButton disabled={!hasSelected} onClick={() => setModalIsOpen(true)} fill={true}>
                 Promote
               </EuiButton>
             </EuiFlexItem>
@@ -169,7 +252,8 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
         </>
       );
     },
-    EuiLoadingSpinner
+    EuiLoadingSpinner,
+    {}
   )
 )(({ errorPromote }) => {
   return <EuiText color="danger">{errorPromote}</EuiText>;
@@ -191,7 +275,6 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
     <EuiPanel>
       <PageHeader appDescriptionControls={[{ description }]}>
         <EuiText size="s">
-          {/* Log Type is replaced with Integration by Wazuh */}
           <h1>Promote</h1>
         </EuiText>
         <EuiText size="s" color="subdued">
