@@ -5,6 +5,9 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiButtonIcon,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
@@ -16,7 +19,6 @@ import {
   EuiLoadingSpinner,
   EuiPanel,
   EuiPopover,
-  EuiSmallButton,
   EuiSpacer,
   EuiText,
   EuiToolTip,
@@ -25,6 +27,7 @@ import { FormFieldArray } from '../../../components/FormFieldArray';
 import { Form, Formik, FormikErrors } from 'formik';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
+import FormFieldHeader from '../../../components/FormFieldHeader';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -84,7 +87,6 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
   const [selectedEditorType, setSelectedEditorType] = useState('visual');
   const [rawFilter, setRawFilter] = useState<string>();
 
-  // load existing filter when editing
   useEffect(() => {
     if (action === FILTER_ACTION.CREATE) {
       setBreadcrumbs([BREADCRUMBS.FILTERS, BREADCRUMBS.FILTERS_CREATE]);
@@ -195,7 +197,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
             handleSubmit: formikSubmit,
           }) => (
             <Form>
-              <EuiPanel>
+              <EuiPanel style={{ paddingBottom: '60px' }}>
                 <PageHeader appDescriptionControls={false as any}>
                   <EuiText size="s">
                     <h1>{actionLabels[action]} filter</h1>
@@ -434,29 +436,40 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
                 )}
               </EuiPanel>
 
-              <EuiSpacer size="xl" />
-              <EuiFlexGroup justifyContent="flexEnd">
-                <EuiFlexItem grow={false}>
-                  <EuiSmallButton href={`#${ROUTES.FILTERS}`}>Cancel</EuiSmallButton>
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiToolTip
-                    content={
-                      isSubmitDisabled(errors) ? 'Please fill in all required fields' : undefined
-                    }
-                    position="top"
-                  >
-                    <EuiSmallButton
-                      fill
-                      disabled={isSubmitDisabled(errors)}
-                      isLoading={isSubmitting}
-                      onClick={() => formikSubmit()}
+              <EuiBottomBar>
+                <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
+                  <EuiFlexItem grow={false}>
+                    <EuiButtonEmpty
+                      color="ghost"
+                      size="s"
+                      iconType="cross"
+                      href={`#${ROUTES.FILTERS}`}
                     >
-                      {actionLabels[action]} filter
-                    </EuiSmallButton>
-                  </EuiToolTip>
-                </EuiFlexItem>
-              </EuiFlexGroup>
+                      Cancel
+                    </EuiButtonEmpty>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiToolTip
+                      content={
+                        isSubmitDisabled(errors) ? 'Please fill in all required fields' : undefined
+                      }
+                      position="top"
+                    >
+                      <EuiButton
+                        color="primary"
+                        fill
+                        iconType="check"
+                        size="s"
+                        disabled={isSubmitDisabled(errors)}
+                        isLoading={isSubmitting}
+                        onClick={() => formikSubmit()}
+                      >
+                        {actionLabels[action]} filter
+                      </EuiButton>
+                    </EuiToolTip>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiBottomBar>
             </Form>
           )}
         </Formik>
