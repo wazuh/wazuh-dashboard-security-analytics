@@ -40,6 +40,7 @@ import {
 } from '../../../utils/helpers';
 import { ContentEntry, KVDBContentEditor } from '../components/KVDBContentEditor';
 import { YamlForm, YAML_TYPE } from '../../../components/YamlForm';
+import YAML from 'yaml';
 import {
   kvdbFormDefaultValue,
   KVDBFormModel,
@@ -84,6 +85,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState<EditorType>('visual');
   const [rawKvdb, setRawKvdb] = useState<string | undefined>(undefined);
+  const [yamlError, setYamlError] = useState<string | null>(null);
   const [integrationType, setIntegrationType] = useState<string>('');
   const [initialValue, setInitialValue] = useState<KVDBFormModel>(kvdbFormDefaultValue);
 
@@ -194,52 +196,64 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
     [action, createKVDB, updateKVDB]
   );
 
-  const validateForm = useCallback((values: KVDBFormModel) => {
-    const errors: FormikErrors<KVDBFormModel> = {};
-
-    if (!values.title.trim()) {
-      errors.title = 'Title is required';
-    } else if (/\s/.test(values.title)) {
-      errors.title = 'Title must not contain spaces';
+  const validateYamlFormat = (yaml: string): string | null => {
+    try {
+      YAML.parse(yaml);
+      return null;
+    } catch (e) {
+      return e instanceof Error ? e.message.split('\n')[0] : 'Invalid YAML syntax';
     }
+  };
 
-    if (!values.author.trim()) {
-      errors.author = 'Author is required';
-    }
+  const validateForm = useCallback(
+    (values: KVDBFormModel) => {
+      const errors: FormikErrors<KVDBFormModel> = {};
 
-    const keyCounts: Record<string, number> = {};
-    values.contentEntries.forEach(({ key }) => {
-      const k = key.trim();
-      if (k) keyCounts[k] = (keyCounts[k] ?? 0) + 1;
-    });
-
-    const contentErrors = values.contentEntries.map(
-      (entry): FormikErrors<ContentEntry> => {
-        const entryErrors: FormikErrors<ContentEntry> = {};
-
-        if (entry.key.trim() && keyCounts[entry.key.trim()] > 1) {
-          entryErrors.key = 'Duplicate key';
-        }
-
-        const trimmed = entry.value.trim();
-        if (trimmed[0] === '{' || trimmed[0] === '[') {
-          try {
-            JSON.parse(trimmed);
-          } catch {
-            entryErrors.value = 'Invalid JSON';
-          }
-        }
-
-        return entryErrors;
+      if (!values.title.trim()) {
+        errors.title = 'Title is required';
+      } else if (/\s/.test(values.title)) {
+        errors.title = 'Title must not contain spaces';
       }
-    );
 
-    if (contentErrors.some((e) => Object.keys(e).length > 0)) {
-      errors.contentEntries = contentErrors as any;
-    }
+      if (!values.author.trim()) {
+        errors.author = 'Author is required';
+      }
 
-    return errors;
-  }, []);
+      const keyCounts: Record<string, number> = {};
+      values.contentEntries.forEach(({ key }) => {
+        const k = key.trim();
+        if (k) keyCounts[k] = (keyCounts[k] ?? 0) + 1;
+      });
+
+      const contentErrors = values.contentEntries.map(
+        (entry): FormikErrors<ContentEntry> => {
+          const entryErrors: FormikErrors<ContentEntry> = {};
+
+          if (entry.key.trim() && keyCounts[entry.key.trim()] > 1) {
+            entryErrors.key = 'Duplicate key';
+          }
+
+          const trimmed = entry.value.trim();
+          if (trimmed[0] === '{' || trimmed[0] === '[') {
+            try {
+              JSON.parse(trimmed);
+            } catch {
+              entryErrors.value = 'Invalid JSON';
+            }
+          }
+
+          return entryErrors;
+        }
+      );
+
+      if (contentErrors.some((e) => Object.keys(e).length > 0)) {
+        errors.contentEntries = contentErrors as any;
+      }
+
+      return errors;
+    },
+    [selectedEditorType]
+  );
 
   const handleSubmitForm = async (
     values: KVDBFormModel,
@@ -253,9 +267,10 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   };
 
   const isSubmitDisabled = (errors: FormikErrors<KVDBFormModel>) => {
-    if (errors.title || errors.author) return true;
+    const fieldErrorsExist = Object.keys(errors).length > 0;
     if (action === KVDB_ACTION.CREATE && !integrationType) return true;
-    return false;
+    if (selectedEditorType === EDITOR_TYPE.YAML) return yamlError !== null || fieldErrorsExist;
+    return fieldErrorsExist;
   };
 
   const getSubmitTooltip = (errors: FormikErrors<KVDBFormModel>) => {
@@ -263,7 +278,9 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
     if (action === KVDB_ACTION.CREATE && !integrationType) {
       messages.push('Select an integration to proceed');
     }
-    if (errors.title || errors.author) {
+    if (selectedEditorType === EDITOR_TYPE.YAML && yamlError) {
+      messages.push('Please fix the errors in the YAML editor to proceed');
+    } else if (errors.title || errors.author) {
       messages.push('Please fix the errors in the form to proceed');
     }
     return messages.length > 0 ? messages.join('. ') : undefined;
@@ -307,8 +324,13 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   options={editorTypes}
                   idSelected={selectedEditorType}
                   onChange={(newSelectedType: EditorType) => {
-                    if (newSelectedType === EDITOR_TYPE.YAML && (formikProps.dirty || !rawKvdb)) {
-                      setRawKvdb(mapFormToYaml(formikProps.values));
+                    if (newSelectedType === EDITOR_TYPE.YAML) {
+                      const yaml =
+                        formikProps.dirty || !rawKvdb ? mapFormToYaml(formikProps.values) : rawKvdb;
+                      setRawKvdb(yaml);
+                      setYamlError(validateYamlFormat(yaml));
+                    } else {
+                      setYamlError(null);
                     }
                     setSelectedEditorType(newSelectedType);
                   }}
@@ -417,14 +439,22 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                 {selectedEditorType === EDITOR_TYPE.YAML && (
                   <YamlForm
                     type={YAML_TYPE.KVDB}
-                    value={rawKvdb}
-                    isInvalid={Object.keys(formikProps.errors).length > 0}
-                    errors={Object.values(formikProps.errors).filter(
-                      (e): e is string => typeof e === 'string'
-                    )}
+                    value={rawKvdb ?? ''}
+                    isInvalid={yamlError !== null || Object.keys(formikProps.errors).length > 0}
+                    errors={
+                      yamlError
+                        ? [yamlError]
+                        : Object.values(formikProps.errors).filter(
+                            (e): e is string => typeof e === 'string'
+                          )
+                    }
                     change={(yamlStr) => {
+                      const err = validateYamlFormat(yamlStr);
+                      setYamlError(err);
                       setRawKvdb(yamlStr);
-                      formikProps.setValues(mapYamlToForm(yamlStr));
+                      if (!err) {
+                        formikProps.setValues(mapYamlToForm(yamlStr));
+                      }
                     }}
                   />
                 )}
