@@ -15,12 +15,13 @@ import {
 } from '@elastic/eui';
 import React, { useState, useMemo } from 'react';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
-import { getNextSpace } from '../../../../common/helpers';
+import { actionIsAllowedOnSpace, getNextSpace } from '../../../../common/helpers';
 import { PromoteChangeDiff } from './PromoteChangeDiff';
 import { PROMOTE_ENTITIES_LABELS, PROMOTE_ENTITIES_ORDER, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { successNotificationToast } from '../../../utils/helpers';
 import { isRootDecoderRequiementError, RootDecoderRequirement } from './RootDecoderRequirement';
+import { SPACE_ACTIONS } from '../../../../common/constants';
 
 export interface PromoteBySpaceModalProps {
   promote: GetPromoteBySpaceResponse['response'];
@@ -135,7 +136,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
           })}
 
           {
-            requireRootDecoderError && (
+            /*actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && */ requireRootDecoderError && (
               <>
                 <RootDecoderRequirement space={space} onSucess={() => setRequireRootDecoderError(false)}/>
                 <EuiSpacer size="m" />
