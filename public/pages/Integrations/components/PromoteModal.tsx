@@ -85,7 +85,6 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
         setRequireRootDecoderError(true)
       }
     }
-    setRequireRootDecoderError(true)
     return success;
   };
 
