@@ -8,6 +8,7 @@ import {
   EuiBottomBar,
   EuiButton,
   EuiButtonEmpty,
+  EuiButtonGroup,
   EuiButtonIcon,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
@@ -42,14 +43,11 @@ import {
   filterFormDefaultValue,
   filterYamlFormDefaultValue,
   mapFilterToForm,
-  mapYamlToFilterForm,
   mapYamlToForm,
   mapFormToYaml,
 } from '../utils/mappers';
 import { FILTER_TYPE_OPTIONS } from '../utils/constants';
-import { EuiButtonGroup } from '@elastic/eui';
-import { YamlForm, YAML_TYPE } from '../../../components/YamlForm';
-import YAML from 'yaml';
+import { YamlForm, YAML_TYPE, validateYamlSyntax } from '../../../components/YamlForm';
 
 const FILTER_ACTION = {
   CREATE: 'create',
@@ -74,6 +72,9 @@ const editorTypes: Array<{ id: EditorType; label: string }> = [
   { id: EDITOR_TYPE.YAML, label: 'YAML Editor' },
 ];
 
+const isSubmitDisabled = (errors: FormikErrors<FilterFormModel>) =>
+  !!(errors.name || errors.type || errors.check || errors.author);
+
 type FilterFormPageProps = {
   notifications: NotificationsStart;
   history: RouteComponentProps['history'];
@@ -91,7 +92,7 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [typePopoverOpen, setTypePopoverOpen] = useState(false);
   const { spaceFilter } = useSpaceSelector();
-  const [selectedEditorType, setSelectedEditorType] = useState('visual');
+  const [selectedEditorType, setSelectedEditorType] = useState<EditorType>(EDITOR_TYPE.VISUAL);
   const [rawFilter, setRawFilter] = useState<string>(filterYamlFormDefaultValue);
   const [yamlErrors, setYamlErrors] = useState<string[] | null>(null);
   const [initialValue, setInitialValue] = useState<FilterFormModel>(filterFormDefaultValue);
@@ -169,27 +170,6 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
     [action, filterId, spaceFilter, notifications, history, selectedEditorType, rawFilter]
   );
 
-  const isSubmitDisabled = (errors: FormikErrors<FilterFormModel>) =>
-    !!(errors.name || errors.type || errors.check || errors.author);
-
-  const handleYamlChange = (yamlString: string) => {
-    setRawFilter(yamlString);
-
-    let parsedFilter;
-    try {
-      parsedFilter = YAML.parse(yamlString);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message.split('\n')[0] : 'Invalid YAML syntax';
-      setYamlErrors([msg]);
-      return;
-    }
-    const formValues = mapYamlToFilterForm(parsedFilter);
-    const errors = validateForm(formValues);
-    const errorMessages = Object.values(errors) as string[];
-    if (!parsedFilter.metadata.title) errorMessages.push('Title is required');
-    setYamlErrors(errorMessages.length > 0 ? errorMessages : null);
-  };
-
   return (
     <>
       {isLoading ? (
@@ -213,297 +193,328 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
             values,
             errors,
             touched,
+            dirty,
             isSubmitting,
             setFieldValue,
             setFieldTouched,
+            setValues,
             handleSubmit: formikSubmit,
-          }) => (
-            <Form>
-              <EuiPanel style={{ paddingBottom: '60px' }}>
-                <PageHeader appDescriptionControls={false as any}>
-                  <EuiText size="s">
-                    <h1>{actionLabels[action]} filter</h1>
-                  </EuiText>
-                  <EuiText size="s" color="subdued">
-                    {action === FILTER_ACTION.CREATE ? (
-                      <>
-                        Create a new event filter in the <strong>{spaceFilter || 'draft'}</strong>{' '}
-                        space.
-                      </>
-                    ) : (
-                      <>
-                        Edit the filter configuration in the{' '}
-                        <strong>{spaceFilter || 'draft'}</strong> space.
-                      </>
-                    )}
-                  </EuiText>
-                  <EuiSpacer />
-                </PageHeader>
+          }) => {
+            const onEditorTypeChange = (id: EditorType) => {
+              if (id === EDITOR_TYPE.YAML) {
+                const yaml = dirty || !rawFilter ? mapFormToYaml(values) : rawFilter;
+                setRawFilter(yaml);
+                const syntaxError = validateYamlSyntax(yaml);
+                setYamlErrors(syntaxError ? [syntaxError] : null);
+              } else {
+                if (!validateYamlSyntax(rawFilter)) {
+                  setValues(mapYamlToForm(rawFilter));
+                }
+                setYamlErrors(null);
+              }
+              setSelectedEditorType(id);
+            };
 
-                <EuiButtonGroup
-                  legend="Editor type selector"
-                  options={editorTypes}
-                  idSelected={selectedEditorType}
-                  onChange={(id) => {
-                    if (id === 'yaml') {
-                      handleYamlChange(rawFilter);
-                    }
-                    setSelectedEditorType(id);
-                  }}
-                />
-                <EuiSpacer size="xl" />
+            const onYamlChange = (yamlString: string) => {
+              setRawFilter(yamlString);
+              const syntaxError = validateYamlSyntax(yamlString);
+              if (syntaxError) {
+                setYamlErrors([syntaxError]);
+                return;
+              }
+              const formValues = mapYamlToForm(yamlString);
+              setValues(formValues);
+              const fieldErrors = validateForm(formValues);
+              const fieldErrorMessages = Object.values(fieldErrors).filter(Boolean) as string[];
+              setYamlErrors(fieldErrorMessages.length > 0 ? fieldErrorMessages : null);
+            };
 
-                {selectedEditorType === 'visual' && (
-                  <>
-                    <EuiCompressedFormRow
-                      label={'Name'}
-                      fullWidth
-                      isInvalid={!!errors.name && touched.name}
-                      error={errors.name}
-                      helpText={
-                        !(errors.name && touched.name)
-                          ? 'Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0)'
-                          : undefined
-                      }
-                    >
-                      <EuiCompressedFieldText
-                        placeholder="filter/prefilter/0"
-                        value={values.name}
-                        onChange={(e) => setFieldValue('name', e.target.value)}
-                        onBlur={() => setFieldTouched('name')}
+            const yamlModeHasErrors =
+              (yamlErrors !== null && yamlErrors.length > 0) || Object.keys(errors).length > 0;
+
+            const yamlFormErrors =
+              yamlErrors && yamlErrors.length > 0
+                ? yamlErrors
+                : Object.values(errors).filter((e): e is string => typeof e === 'string');
+
+            return (
+              <Form>
+                <EuiPanel style={{ paddingBottom: '60px' }}>
+                  <PageHeader appDescriptionControls={false as any}>
+                    <EuiText size="s">
+                      <h1>{actionLabels[action]} filter</h1>
+                    </EuiText>
+                    <EuiText size="s" color="subdued">
+                      {action === FILTER_ACTION.CREATE ? (
+                        <>
+                          Create a new event filter in the <strong>{spaceFilter || 'draft'}</strong>{' '}
+                          space.
+                        </>
+                      ) : (
+                        <>
+                          Edit the filter configuration in the{' '}
+                          <strong>{spaceFilter || 'draft'}</strong> space.
+                        </>
+                      )}
+                    </EuiText>
+                    <EuiSpacer />
+                  </PageHeader>
+
+                  <EuiButtonGroup
+                    legend="Editor type selector"
+                    options={editorTypes}
+                    idSelected={selectedEditorType}
+                    onChange={(id) => onEditorTypeChange(id as EditorType)}
+                  />
+                  <EuiSpacer size="xl" />
+
+                  {selectedEditorType === EDITOR_TYPE.VISUAL && (
+                    <>
+                      <EuiCompressedFormRow
+                        label={'Name'}
+                        fullWidth
                         isInvalid={!!errors.name && touched.name}
-                      />
-                    </EuiCompressedFormRow>
-                    <EuiSpacer size="m" />
+                        error={errors.name}
+                        helpText={
+                          !(errors.name && touched.name)
+                            ? 'Must follow the pattern filter/<name>/<version> (e.g. filter/prefilter/0)'
+                            : undefined
+                        }
+                      >
+                        <EuiCompressedFieldText
+                          placeholder="filter/prefilter/0"
+                          value={values.name}
+                          onChange={(e) => setFieldValue('name', e.target.value)}
+                          onBlur={() => setFieldTouched('name')}
+                          isInvalid={!!errors.name && touched.name}
+                        />
+                      </EuiCompressedFormRow>
+                      <EuiSpacer size="m" />
 
-                    <EuiCompressedFormRow
-                      label={
-                        <EuiFlexGroup gutterSize="xs" alignItems="center" responsive={false}>
-                          <EuiFlexItem grow={false}>Type</EuiFlexItem>
-                          <EuiFlexItem grow={false}>
-                            <EuiPopover
-                              button={
-                                <EuiButtonIcon
-                                  iconType="iInCircle"
-                                  aria-label="Filter type information"
-                                  onClick={() => setTypePopoverOpen(!typePopoverOpen)}
-                                  color="primary"
-                                  size="xs"
-                                />
-                              }
-                              isOpen={typePopoverOpen}
-                              closePopover={() => setTypePopoverOpen(false)}
-                              anchorPosition="downRight"
-                            >
-                              <div style={{ width: '300px' }}>
-                                <EuiText size="s">
-                                  <strong>Filter types</strong>
-                                </EuiText>
-                                <EuiSpacer size="s" />
-                                <div style={{ paddingLeft: '16px' }}>
-                                  <EuiText size="xs">
-                                    <p>
-                                      <strong>Pre-filter:</strong> Processed before input is passed
-                                      to the space decoder tree.
-                                    </p>
+                      <EuiCompressedFormRow
+                        label={
+                          <EuiFlexGroup gutterSize="xs" alignItems="center" responsive={false}>
+                            <EuiFlexItem grow={false}>Type</EuiFlexItem>
+                            <EuiFlexItem grow={false}>
+                              <EuiPopover
+                                button={
+                                  <EuiButtonIcon
+                                    iconType="iInCircle"
+                                    aria-label="Filter type information"
+                                    onClick={() => setTypePopoverOpen(!typePopoverOpen)}
+                                    color="primary"
+                                    size="xs"
+                                  />
+                                }
+                                isOpen={typePopoverOpen}
+                                closePopover={() => setTypePopoverOpen(false)}
+                                anchorPosition="downRight"
+                              >
+                                <div style={{ width: '300px' }}>
+                                  <EuiText size="s">
+                                    <strong>Filter types</strong>
                                   </EuiText>
                                   <EuiSpacer size="s" />
-                                  <EuiText size="xs">
-                                    <p>
-                                      <strong>Post-filter:</strong> Processed after event is
-                                      normalized by the space decoder tree, and enriched.
-                                    </p>
-                                  </EuiText>
+                                  <div style={{ paddingLeft: '16px' }}>
+                                    <EuiText size="xs">
+                                      <p>
+                                        <strong>Pre-filter:</strong> Processed before input is
+                                        passed to the space decoder tree.
+                                      </p>
+                                    </EuiText>
+                                    <EuiSpacer size="s" />
+                                    <EuiText size="xs">
+                                      <p>
+                                        <strong>Post-filter:</strong> Processed after event is
+                                        normalized by the space decoder tree, and enriched.
+                                      </p>
+                                    </EuiText>
+                                  </div>
                                 </div>
-                              </div>
-                            </EuiPopover>
-                          </EuiFlexItem>
-                        </EuiFlexGroup>
-                      }
-                      fullWidth
-                      isInvalid={!!errors.type && touched.type}
-                      error={errors.type}
-                    >
-                      <EuiCompressedSelect
-                        options={FILTER_TYPE_OPTIONS}
-                        value={values.type}
-                        onChange={(e) => setFieldValue('type', e.target.value)}
-                        onBlur={() => setFieldTouched('type')}
-                        isInvalid={!!errors.type && touched.type}
-                      />
-                    </EuiCompressedFormRow>
-                    <EuiSpacer size="m" />
-
-                    <EuiCompressedFormRow
-                      label={'Check expression'}
-                      fullWidth
-                      isInvalid={!!errors.check && touched.check}
-                      error={errors.check}
-                      helpText="Expression evaluated to determine if the filter applies (e.g. $host.os.platform == 'ubuntu')"
-                    >
-                      <EuiCompressedTextArea
-                        placeholder="$host.os.platform == 'ubuntu'"
-                        value={values.check}
-                        onChange={(e) => setFieldValue('check', e.target.value)}
-                        onBlur={() => setFieldTouched('check')}
-                        isInvalid={!!errors.check && touched.check}
-                        rows={3}
-                      />
-                    </EuiCompressedFormRow>
-                    <EuiSpacer size="m" />
-
-                    <EuiCompressedFormRow label={'Enabled'} fullWidth>
-                      <EuiCompressedSwitch
-                        label={values.enabled ? 'Enabled' : 'Disabled'}
-                        checked={values.enabled}
-                        onChange={(e) => setFieldValue('enabled', e.target.checked)}
-                      />
-                    </EuiCompressedFormRow>
-
-                    <EuiSpacer size="l" />
-
-                    <EuiCompressedFormRow
-                      label={'Author'}
-                      fullWidth
-                      isInvalid={!!errors.author && touched.author}
-                      error={errors.author}
-                    >
-                      <EuiCompressedFieldText
-                        placeholder="Enter author name"
-                        value={values.author}
-                        onChange={(e) => setFieldValue('author', e.target.value)}
-                        onBlur={() => setFieldTouched('author')}
-                        isInvalid={!!errors.author && touched.author}
-                      />
-                    </EuiCompressedFormRow>
-
-                    <EuiSpacer size="m" />
-
-                    <EuiCompressedFormRow
-                      label={
-                        <>
-                          {'Description - '}
-                          <em>optional</em>
-                        </>
-                      }
-                      fullWidth
-                    >
-                      <EuiCompressedTextArea
-                        placeholder="Brief description of what this filter does"
-                        value={values.description}
-                        onChange={(e) => setFieldValue('description', e.target.value)}
-                        rows={2}
-                      />
-                    </EuiCompressedFormRow>
-                    <EuiSpacer size="m" />
-
-                    <EuiCompressedFormRow
-                      label={
-                        <>
-                          {'Documentation - '}
-                          <em>optional</em>
-                        </>
-                      }
-                      fullWidth
-                    >
-                      <EuiCompressedFieldText
-                        placeholder="Enter documentation URL"
-                        value={values.documentation}
-                        onChange={(e) => setFieldValue('documentation', e.target.value)}
-                      />
-                    </EuiCompressedFormRow>
-                    <EuiSpacer size="m" />
-
-                    <FormFieldArray
-                      label={
-                        <>
-                          {'References - '}
-                          <em>optional</em>
-                        </>
-                      }
-                      values={values.references}
-                      placeholder="https://example.com/reference"
-                      addButtonLabel="Add reference"
-                      onChange={(references) => setFieldValue('references', references)}
-                    />
-
-                    <FormFieldArray
-                      label={
-                        <>
-                          {'Supports - '}
-                          <em>optional</em>
-                        </>
-                      }
-                      values={values.supports}
-                      addButtonLabel="Add support"
-                      onChange={(supports) => setFieldValue('supports', supports)}
-                    />
-                  </>
-                )}
-                {selectedEditorType === 'yaml' && (
-                  <YamlForm
-                    type={YAML_TYPE.FILTER}
-                    value={rawFilter}
-                    isInvalid={yamlErrors !== null && yamlErrors.length > 0}
-                    errors={yamlErrors ?? []}
-                    change={handleYamlChange}
-                  />
-                )}
-              </EuiPanel>
-
-              <EuiBottomBar>
-                <EuiFlexGroup
-                  gutterSize="s"
-                  justifyContent="flexEnd"
-                  alignItems="center"
-                  responsive={false}
-                >
-                  <EuiFlexItem grow={false}>
-                    <EuiButtonEmpty
-                      color="ghost"
-                      size="s"
-                      iconType="cross"
-                      href={`#${ROUTES.FILTERS}`}
-                    >
-                      Cancel
-                    </EuiButtonEmpty>
-                  </EuiFlexItem>
-                  <EuiFlexItem grow={false}>
-                    <EuiToolTip
-                      content={
-                        selectedEditorType === 'visual' && isSubmitDisabled(errors)
-                          ? 'Please fill in all required fields'
-                          : undefined
-                      }
-                      position="top"
-                    >
-                      <EuiButton
-                        color="primary"
-                        fill
-                        iconType="check"
-                        size="s"
-                        disabled={
-                          selectedEditorType === 'visual'
-                            ? isSubmitDisabled(errors)
-                            : yamlErrors !== null && yamlErrors.length > 0
+                              </EuiPopover>
+                            </EuiFlexItem>
+                          </EuiFlexGroup>
                         }
-                        isLoading={isSubmitting}
-                        onClick={() => {
-                          if (selectedEditorType === EDITOR_TYPE.YAML) {
-                            handleSubmitForm(values, { setSubmitting: () => {} });
-                          } else {
-                            formikSubmit();
-                          }
-                        }}
+                        fullWidth
+                        isInvalid={!!errors.type && touched.type}
+                        error={errors.type}
                       >
-                        {actionLabels[action]} filter
-                      </EuiButton>
-                    </EuiToolTip>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              </EuiBottomBar>
-            </Form>
-          )}
+                        <EuiCompressedSelect
+                          options={FILTER_TYPE_OPTIONS}
+                          value={values.type}
+                          onChange={(e) => setFieldValue('type', e.target.value)}
+                          onBlur={() => setFieldTouched('type')}
+                          isInvalid={!!errors.type && touched.type}
+                        />
+                      </EuiCompressedFormRow>
+                      <EuiSpacer size="m" />
+
+                      <EuiCompressedFormRow
+                        label={'Check expression'}
+                        fullWidth
+                        isInvalid={!!errors.check && touched.check}
+                        error={errors.check}
+                        helpText="Expression evaluated to determine if the filter applies (e.g. $host.os.platform == 'ubuntu')"
+                      >
+                        <EuiCompressedTextArea
+                          placeholder="$host.os.platform == 'ubuntu'"
+                          value={values.check}
+                          onChange={(e) => setFieldValue('check', e.target.value)}
+                          onBlur={() => setFieldTouched('check')}
+                          isInvalid={!!errors.check && touched.check}
+                          rows={3}
+                        />
+                      </EuiCompressedFormRow>
+                      <EuiSpacer size="m" />
+
+                      <EuiCompressedFormRow label={'Enabled'} fullWidth>
+                        <EuiCompressedSwitch
+                          label={values.enabled ? 'Enabled' : 'Disabled'}
+                          checked={values.enabled}
+                          onChange={(e) => setFieldValue('enabled', e.target.checked)}
+                        />
+                      </EuiCompressedFormRow>
+
+                      <EuiSpacer size="l" />
+
+                      <EuiCompressedFormRow
+                        label={'Author'}
+                        fullWidth
+                        isInvalid={!!errors.author && touched.author}
+                        error={errors.author}
+                      >
+                        <EuiCompressedFieldText
+                          placeholder="Enter author name"
+                          value={values.author}
+                          onChange={(e) => setFieldValue('author', e.target.value)}
+                          onBlur={() => setFieldTouched('author')}
+                          isInvalid={!!errors.author && touched.author}
+                        />
+                      </EuiCompressedFormRow>
+
+                      <EuiSpacer size="m" />
+
+                      <EuiCompressedFormRow
+                        label={
+                          <>
+                            {'Description - '}
+                            <em>optional</em>
+                          </>
+                        }
+                        fullWidth
+                      >
+                        <EuiCompressedTextArea
+                          placeholder="Brief description of what this filter does"
+                          value={values.description}
+                          onChange={(e) => setFieldValue('description', e.target.value)}
+                          rows={2}
+                        />
+                      </EuiCompressedFormRow>
+                      <EuiSpacer size="m" />
+
+                      <EuiCompressedFormRow
+                        label={
+                          <>
+                            {'Documentation - '}
+                            <em>optional</em>
+                          </>
+                        }
+                        fullWidth
+                      >
+                        <EuiCompressedFieldText
+                          placeholder="Enter documentation URL"
+                          value={values.documentation}
+                          onChange={(e) => setFieldValue('documentation', e.target.value)}
+                        />
+                      </EuiCompressedFormRow>
+                      <EuiSpacer size="m" />
+
+                      <FormFieldArray
+                        label={
+                          <>
+                            {'References - '}
+                            <em>optional</em>
+                          </>
+                        }
+                        values={values.references}
+                        placeholder="https://example.com/reference"
+                        addButtonLabel="Add reference"
+                        onChange={(references) => setFieldValue('references', references)}
+                      />
+
+                      <FormFieldArray
+                        label={
+                          <>
+                            {'Supports - '}
+                            <em>optional</em>
+                          </>
+                        }
+                        values={values.supports}
+                        addButtonLabel="Add support"
+                        onChange={(supports) => setFieldValue('supports', supports)}
+                      />
+                    </>
+                  )}
+                  {selectedEditorType === EDITOR_TYPE.YAML && (
+                    <YamlForm
+                      type={YAML_TYPE.FILTER}
+                      value={rawFilter}
+                      isInvalid={yamlModeHasErrors}
+                      errors={yamlFormErrors}
+                      change={onYamlChange}
+                    />
+                  )}
+                </EuiPanel>
+
+                <EuiBottomBar>
+                  <EuiFlexGroup
+                    gutterSize="s"
+                    justifyContent="flexEnd"
+                    alignItems="center"
+                    responsive={false}
+                  >
+                    <EuiFlexItem grow={false}>
+                      <EuiButtonEmpty
+                        color="ghost"
+                        size="s"
+                        iconType="cross"
+                        href={`#${ROUTES.FILTERS}`}
+                      >
+                        Cancel
+                      </EuiButtonEmpty>
+                    </EuiFlexItem>
+                    <EuiFlexItem grow={false}>
+                      <EuiToolTip
+                        content={
+                          (selectedEditorType === EDITOR_TYPE.VISUAL && isSubmitDisabled(errors)) ||
+                          (selectedEditorType === EDITOR_TYPE.YAML && yamlModeHasErrors)
+                            ? 'Please fill in all required fields'
+                            : undefined
+                        }
+                        position="top"
+                      >
+                        <EuiButton
+                          color="primary"
+                          fill
+                          iconType="check"
+                          size="s"
+                          disabled={
+                            selectedEditorType === EDITOR_TYPE.VISUAL
+                              ? isSubmitDisabled(errors)
+                              : yamlModeHasErrors
+                          }
+                          isLoading={isSubmitting}
+                          onClick={() => formikSubmit()}
+                        >
+                          {actionLabels[action]} filter
+                        </EuiButton>
+                      </EuiToolTip>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
+                </EuiBottomBar>
+              </Form>
+            );
+          }}
         </Formik>
       )}
     </>
