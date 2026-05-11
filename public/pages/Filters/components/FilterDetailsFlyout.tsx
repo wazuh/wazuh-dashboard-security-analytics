@@ -24,16 +24,28 @@ import { Metadata } from '../../../components/Utility/Metadata';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { mapFormToFilterResource, mapFilterToForm } from '../utils/mappers';
+import { dump } from 'js-yaml';
 
 interface FilterDetailsFlyoutProps {
   filter: FilterItem;
   onClose: () => void;
 }
 
-const editorType = {
-  visual: 'visual',
-  json: 'json',
-};
+const editorType = [
+  {
+    id: 'visual',
+    label: 'Visual',
+  },
+  {
+    id: 'yaml',
+    label: 'YAML',
+  },
+  {
+    id: 'json',
+    label: 'JSON',
+  },
+];
 
 /** Resolve author display: indexer sends string; legacy may send { name } */
 const getAuthorDisplay = (author: string | { name?: string } | undefined): string => {
@@ -43,7 +55,7 @@ const getAuthorDisplay = (author: string | { name?: string } | undefined): strin
 };
 
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
-  const [selectedEditorType, setSelectedEditorType] = useState(editorType.visual);
+  const [selectedView, setSelectedView] = useState(editorType[0].id);
 
   const document = filter.document ?? {
     id: '',
@@ -77,7 +89,7 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     { label: 'References', value: references, type: 'url' },
   ];
 
-  const visualTab = (
+  const visualContent = (
     <EuiFlexGrid columns={2}>
       {fields.map(({ label, value, type = 'text' }) => (
         <EuiFlexItem key={label}>
@@ -87,11 +99,30 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     </EuiFlexGrid>
   );
 
-  const jsonTab = (
-    <EuiCodeBlock language={editorType.json} isCopyable={true} paddingSize="m">
+  const jsonContent = (
+    <EuiCodeBlock language="json" isCopyable={true} paddingSize="m">
       {JSON.stringify(document, null, 2)}
     </EuiCodeBlock>
   );
+
+  const yamlContent = (
+    <EuiCodeBlock language="yaml" isCopyable={true}>
+      {dump(mapFormToFilterResource(mapFilterToForm(document)))}
+    </EuiCodeBlock>
+  );
+
+  const renderContent = () => {
+    if (!document) {
+      return null;
+    }
+    if (selectedView === 'yaml') {
+      return yamlContent;
+    }
+    if (selectedView === 'json') {
+      return jsonContent;
+    }
+    return visualContent;
+  };
 
   return (
     <EuiFlyout onClose={onClose} hideCloseButton ownFocus size="m">
@@ -121,12 +152,9 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
               <EuiButtonGroup
                 data-test-subj="change-editor-type"
                 legend="This is editor type selector"
-                options={[
-                  { id: editorType.visual, label: 'Visual' },
-                  { id: editorType.json, label: 'JSON' },
-                ]}
-                idSelected={selectedEditorType}
-                onChange={(id) => setSelectedEditorType(id)}
+                options={editorType}
+                idSelected={selectedView}
+                onChange={(id) => setSelectedView(id)}
               />
             </EuiFlexItem>
             <EuiFlexItem>
@@ -134,7 +162,7 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="xl" />
-          {selectedEditorType === editorType.visual ? visualTab : jsonTab}
+          {renderContent()}
         </EuiModalBody>
       </EuiFlyoutBody>
     </EuiFlyout>
