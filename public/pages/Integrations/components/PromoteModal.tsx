@@ -15,19 +15,21 @@ import {
 } from '@elastic/eui';
 import React, { useState, useMemo } from 'react';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
-import { actionIsAllowedOnSpace, getNextSpace } from '../../../../common/helpers';
+import { getNextSpace } from '../../../../common/helpers';
 import { PromoteChangeDiff } from './PromoteChangeDiff';
 import { PROMOTE_ENTITIES_LABELS, PROMOTE_ENTITIES_ORDER, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { successNotificationToast } from '../../../utils/helpers';
 import { isRootDecoderRequiementError, RootDecoderRequirement } from './RootDecoderRequirement';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { RouteComponentProps } from 'react-router-dom';
 
 export interface PromoteBySpaceModalProps {
   promote: GetPromoteBySpaceResponse['response'];
   closeModal: () => void;
-  onConfirm: () => boolean;
   space: PromoteSpaces;
+  notifications: NotificationsStart
+  history: RouteComponentProps['history']
 }
 
 const PromoteEntity: React.FC<{
@@ -62,7 +64,6 @@ const PromoteEntity: React.FC<{
 const expectedConfirmActionText = 'promote';
 export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
   closeModal,
-  onConfirm,
   promote,
   space,
   notifications,
@@ -80,10 +81,8 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
     if (success) {
       successNotificationToast(notifications, 'promoted', `[${space}] space`);
       history.push(ROUTES.INTEGRATIONS);
-    }else{
-      if(isRootDecoderRequiementError(error)){
-        setRequireRootDecoderError(true)
-      }
+    }else if(isRootDecoderRequiementError(error)){
+      setRequireRootDecoderError(true)
     }
     return success;
   };
@@ -135,7 +134,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
           })}
 
           {
-            /*actionIsAllowedOnSpace(space, SPACE_ACTIONS.DEFINE_ROOT_DECODER) && */ requireRootDecoderError && (
+            requireRootDecoderError && (
               <>
                 <RootDecoderRequirement space={space} onSucess={() => setRequireRootDecoderError(false)}/>
                 <EuiSpacer size="m" />
