@@ -85,7 +85,7 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
   const fields: Array<{
     label: string;
     value: any;
-    type?: 'text' | 'date' | 'url';
+    type?: 'text' | 'date' | 'url' | 'raw';
   }> = [
     { label: 'Name', value: document.name },
     { label: 'Space', value: filter.space?.name },
@@ -95,7 +95,7 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     { label: 'Description', value: metadata.description },
     { label: 'Created', value: metadata.date, type: 'date' },
     { label: 'Modified', value: metadata.modified, type: 'date' },
-    { label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={supports} /> },
+    { label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={supports} />, type: 'raw' },
     { label: 'Check', value: document.check },
     { label: 'Documentation', value: metadata.documentation, type: 'url' },
     { label: 'SHA256', value: filter.hash?.sha256 },
