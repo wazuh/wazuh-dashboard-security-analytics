@@ -53,6 +53,25 @@ const getAuthorDisplay = (author: string | { name?: string } | undefined): strin
   return author.name ?? '';
 };
 
+const renderCheckValue = (check: string | Array<Record<string, string>> | undefined): React.ReactNode => {
+  if (!check) return undefined;
+  if (typeof check === 'string') return check;
+  if (Array.isArray(check)) {
+    return (
+      <>
+        {check.map((entry, i) =>
+          Object.entries(entry).map(([key, val]) => (
+            <div key={`${key}-${i}`}>
+              - <strong>{key}</strong>: {String(val)}
+            </div>
+          ))
+        )}
+      </>
+    );
+  }
+  return String(check);
+};
+
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
   const [selectedView, setSelectedView] = useState(viewOptions[0].id);
 
@@ -96,7 +115,7 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     { label: 'Created', value: metadata.date, type: 'date' },
     { label: 'Modified', value: metadata.modified, type: 'date' },
     { label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={supports} />, type: 'raw' },
-    { label: 'Check', value: document.check },
+    { label: 'Check', value: renderCheckValue(document.check as any), type: 'raw' },
     { label: 'Documentation', value: metadata.documentation, type: 'url' },
     { label: 'SHA256', value: filter.hash?.sha256 },
     { label: 'References', value: references, type: 'url' },
