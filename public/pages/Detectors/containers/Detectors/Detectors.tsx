@@ -40,7 +40,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
-import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource';
+import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource'; // Wazuh: import functions to handle detector source and space
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
