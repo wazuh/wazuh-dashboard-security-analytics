@@ -101,7 +101,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             logType: detector._source.detector_type,
             rulesCount: rulesCount,
             status: detector._source.enabled ? 'Active' : 'Inactive',
-            space: getDetectorSourceLabel(detector._source.source),
+            space: getDetectorSourceLabel(detector._source.source), // Wazuh: retrieve space from source
           };
         });
         this.setState({ detectorHits: detectors });
