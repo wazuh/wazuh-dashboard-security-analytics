@@ -354,6 +354,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       ...new Set(detectorHits.map((detector) => getDetectorSourceLabel(detector._source.source)))
     ]
       .filter((v) => v)
+      .sort()
       .map((space) => ({ value: space, name: space }));
     // End Wazuh
     
