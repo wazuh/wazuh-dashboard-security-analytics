@@ -67,6 +67,7 @@ const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
 
 export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const isMountedRef = useRef(true);
+  const handledRuleIdRef = useRef<string | null>(null);
   const [allRules, setAllRules] = useState<RuleTableItem[]>([]);
   const [totalRules, setTotalRules] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -123,6 +124,18 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   useEffect(() => {
     loadRules();
   }, [loadRules]);
+
+  useEffect(() => {
+    if (loading || allRules.length === 0) return;
+    const hash = window.location.hash;
+    const queryString = hash.includes('?') ? hash.substring(hash.indexOf('?')) : '';
+    const params = new URLSearchParams(queryString);
+    const ruleId = params.get('ruleId');
+    if (!ruleId || handledRuleIdRef.current === ruleId) return;
+    handledRuleIdRef.current = ruleId;
+    const rule = allRules.find((r) => r.ruleId === ruleId);
+    if (rule) setSelectedRule(rule);
+  }, [allRules, loading]);
 
   const {
     itemForAction,

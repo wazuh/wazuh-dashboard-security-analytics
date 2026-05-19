@@ -19,7 +19,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
-import { BREADCRUMBS } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
@@ -67,7 +67,7 @@ interface LogTestProps extends RouteComponentProps {
   notifications?: NotificationsStart;
 }
 
-export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
+export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
   const [formData, setFormData] = useState<LogTestFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
   const [isLoading, setIsLoading] = useState(false);
@@ -273,7 +273,10 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications }) => {
           {testResult && (
             <>
               <EuiHorizontalRule margin="l" />
-              <LogTestResult result={testResult} />
+              <LogTestResult
+                result={testResult}
+                onRuleClick={(ruleId) => history.push(`${ROUTES.RULES}?ruleId=${ruleId}`)}
+              />
             </>
           )}
         </EuiPanel>
