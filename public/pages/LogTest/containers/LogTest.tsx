@@ -31,6 +31,8 @@ import {
 } from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
 import { MetadataEntry, buildMetadataObject } from '../utils';
+import { getApplication } from '../../services/utils/constants';
+import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
 
 const LOG_TEST_SPACE_OPTIONS = [
   SpaceTypes.TEST.value,
@@ -275,7 +277,11 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               <EuiHorizontalRule margin="l" />
               <LogTestResult
                 result={testResult}
-                onRuleClick={(ruleId) => history.push(`${ROUTES.RULES}?ruleId=${ruleId}`)}
+                onRuleClick={(ruleId) =>
+                  window.location.assign(
+                    `/app/${DETECTION_RULE_NAV_ID}#${ROUTES.RULES}?ruleId=${ruleId}`
+                  )
+                }
               />
             </>
           )}
