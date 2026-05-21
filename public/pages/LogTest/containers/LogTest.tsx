@@ -31,7 +31,7 @@ import {
 } from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
 import { MetadataEntry, buildMetadataObject } from '../utils';
-import { getApplication } from '../../services/utils/constants';
+import { getApplication } from '../../../services/utils/constants';
 import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
 
 const LOG_TEST_SPACE_OPTIONS = [
@@ -278,9 +278,9 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               <LogTestResult
                 result={testResult}
                 onRuleClick={(ruleId) =>
-                  window.location.assign(
-                    `/app/${DETECTION_RULE_NAV_ID}#${ROUTES.RULES}?ruleId=${ruleId}`
-                  )
+                  getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {
+                    path: `#${ROUTES.RULES}?ruleId=${ruleId}`,
+                  })
                 }
               />
             </>

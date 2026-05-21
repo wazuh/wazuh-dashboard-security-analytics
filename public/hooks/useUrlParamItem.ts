@@ -38,7 +38,7 @@ export const useUrlParamItem = <T>({
 
     handledRef.current = id;
     callbacksRef.current.fetchById(id).then((item) => {
-      if (item) callbacksRef.current.onFound(item);
+      if (item && handledRef.current === id) callbacksRef.current.onFound(item);
     });
   }, []);
 
