@@ -279,7 +279,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
                 result={testResult}
                 onRuleClick={(ruleId) =>
                   getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {
-                    path: `#${ROUTES.RULES}?ruleId=${ruleId}`,
+                    path:  `#${ROUTES.RULES}?ruleId=${ruleId}&space=${formData.space}`,
                   })
                 }
               />
