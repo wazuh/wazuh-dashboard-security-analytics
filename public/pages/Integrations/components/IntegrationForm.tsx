@@ -42,21 +42,24 @@ interface ReadOnlyFieldProps {
   value: string | undefined;
   placeholder?: string;
   isTextArea?: boolean;
+  noTruncate?: boolean;
 }
 
 const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({
   value,
   placeholder = '-',
   isTextArea = false,
+  noTruncate = false,
 }) => (
   <EuiText
     size="s"
     style={{
       padding: '6px 0',
-      lineHeight: isTextArea ? '1.5' : '20px',
-      whiteSpace: isTextArea ? 'pre-wrap' : 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
+      lineHeight: isTextArea || noTruncate ? '1.5' : '20px',
+      whiteSpace: isTextArea || noTruncate ? 'pre-wrap' : 'nowrap',
+      overflow: noTruncate ? 'visible' : 'hidden',
+      textOverflow: noTruncate ? 'clip' : 'ellipsis',
+      wordBreak: noTruncate ? 'break-word' : undefined,
     }}
   >
     {value || placeholder}
@@ -331,6 +334,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
             )
           }
           helpText={isEditMode && 'Must contain 2-100 characters.'}
+          fullWidth={!isEditMode}
         >
           {isEditMode ? (
             <EuiCompressedFieldText
@@ -352,7 +356,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
               disabled={!!integrationDetails.detectionRulesCount}
             />
           ) : (
-            <ReadOnlyField value={integrationDetails?.document.metadata?.documentation} />
+            <ReadOnlyField value={integrationDetails?.document.metadata?.documentation} noTruncate />
           )}
         </EuiCompressedFormRow>
         <EuiSpacer />
