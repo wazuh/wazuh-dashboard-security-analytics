@@ -537,7 +537,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                 <EuiAccordion
                   id="mitre-attack"
                   initialIsOpen={MITRE_SECTIONS.some(
-                    (s) => props.values.mitre[s.field].length > 0
+                    (s) => props.values.mitre[s.field]?.length > 0
                   )}
                   buttonContent={
                     <>
