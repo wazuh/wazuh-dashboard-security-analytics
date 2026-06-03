@@ -37,8 +37,7 @@ const fullValueStyle: React.CSSProperties = {
   WebkitLineClamp: 'unset',
   WebkitBoxOrient: 'vertical',
   overflow: 'visible',
-  textOverflow: 'ellipsis',
-  wordBreak: 'break-all',
+  textAlign: 'justify',
 };
 
 const renderValue = (
@@ -387,7 +386,7 @@ const renderDetailsPanel = (
         <EuiDescriptionList>
           <EuiDescriptionListTitle>Description</EuiDescriptionListTitle>
           <EuiDescriptionListDescription>
-            {renderValue(typeof description === 'string' ? description : undefined)}
+            {renderValue(typeof description === 'string' ? description : undefined, true)}
           </EuiDescriptionListDescription>
         </EuiDescriptionList>
       </EuiFlexItem>

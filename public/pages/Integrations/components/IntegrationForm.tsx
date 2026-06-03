@@ -57,9 +57,9 @@ const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({
       padding: '6px 0',
       lineHeight: isTextArea || noTruncate ? '1.5' : '20px',
       whiteSpace: isTextArea || noTruncate ? 'pre-wrap' : 'nowrap',
-      overflow: noTruncate ? 'visible' : 'hidden',
-      textOverflow: noTruncate ? 'clip' : 'ellipsis',
-      wordBreak: noTruncate ? 'break-word' : undefined,
+      overflow: isTextArea || noTruncate ? 'visible' : 'hidden',
+      textOverflow: isTextArea || noTruncate ? undefined : 'ellipsis',
+      textAlign: isTextArea || noTruncate ? 'justify' : undefined,
     }}
   >
     {value || placeholder}
@@ -297,6 +297,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
               'Description'
             )
           }
+          fullWidth={!isEditMode}
         >
           {isEditMode ? (
             <EuiCompressedTextArea
@@ -337,7 +338,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
           fullWidth={!isEditMode}
         >
           {isEditMode ? (
-            <EuiCompressedFieldText
+            <EuiCompressedTextArea
               value={editingIntegration?.document.metadata?.documentation}
               onChange={(e) => {
                 const newIntegration = {
@@ -354,6 +355,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                 updateErrors(newIntegration);
               }}
               disabled={!!integrationDetails.detectionRulesCount}
+              placeholder="Documentation of the integration"
             />
           ) : (
             <ReadOnlyField value={integrationDetails?.document.metadata?.documentation} noTruncate />
