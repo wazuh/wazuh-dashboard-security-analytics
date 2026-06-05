@@ -396,6 +396,7 @@ export default class CreateDetector extends Component<
             changeDetector={this.changeDetector}
             replaceFieldMappings={this.replaceFieldMappings}
             updateDataValidState={this.updateDataValidState}
+            selectedSpace={this.state.selectedSpace}
             onSpaceChange={(space) =>
               this.setState({ selectedSpace: space }, () =>
                 this.setupRulesState(),
