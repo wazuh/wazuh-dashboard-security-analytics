@@ -100,11 +100,15 @@ export default class CreateDetector extends Component<
         // Wazuh: hide Configure Alerts step in detector creation wizard.
         // [DetectorCreationStep.CONFIGURE_ALERTS]: false,
       },
-      creatingDetector: false,
       rulesState: { page: { index: 0 }, allRules: [] },
       loadingRules: false,
       selectedSpace: "standard",
       ...detectorInput,
+      // Wazuh: the history snapshot is taken before the async setState resolves,
+      // so creatingDetector may be true when the user returns after a failed
+      // post-creation validation, leaving the button stuck in loading state.
+      creatingDetector: false,
+      // Wazuh END
     };
   }
 
