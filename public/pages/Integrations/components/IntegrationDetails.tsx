@@ -51,7 +51,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
 
   return (
     <ContentPanel title={
-      <EuiText size={'s'} style={{ paddingTop: '6px' }}>
+      <EuiText size={'s'} style={{ paddingTop: '5px' }}>
         <h3>Details</h3>
       </EuiText>
     } hideHeaderBorder>
