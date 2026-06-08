@@ -50,7 +50,7 @@ export const IntegrationDetails: React.FC<IntegrationDetailsProps> = ({
   };
 
   return (
-    <ContentPanel title="Details">
+    <ContentPanel title="Details" hideHeaderBorder>
       <EuiDescriptionList
         listItems={[
           {
