@@ -42,7 +42,7 @@ module.exports = {
     // ignore all node_modules except those which require babel transforms to
     // handle newer syntax like `??=` which is not already transformed by the
     // package and not yet supported in the node version we use.
-    '[/\\\\]node_modules(?![\\/\\\\](vega-lite))[/\\\\].+\\.js$',
+    '[/\\\\]node_modules(?![\\/\\\\](vega-lite|yaml))[/\\\\].+\\.js$',
   ],
   modulePathIgnorePatterns: ['securityAnalyticsDashboards'],
   testEnvironment: 'jsdom',
