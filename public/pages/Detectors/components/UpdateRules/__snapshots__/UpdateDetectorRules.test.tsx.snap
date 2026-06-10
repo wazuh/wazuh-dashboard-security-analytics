@@ -668,9 +668,9 @@ Object {
                           >
                             <span
                               class="euiTableCellContent__text"
-                              title="Integration"
+                              title="Log type"
                             >
-                              Integration
+                              Log type
                             </span>
                           </span>
                         </th>
