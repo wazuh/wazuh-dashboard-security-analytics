@@ -446,14 +446,18 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         />
         <EuiSpacer size={'l'} />
 
-        <EuiCallOut title="Warning" color="warning" iconType="alert">
-          <p>
-            Custom detectors using standard rules may have issues if the threat intel content is
-            updated with a different plan.
-          </p>
-        </EuiCallOut>
+        {selectedSpace === SpaceTypes.STANDARD.value && (
+          <>
+            <EuiCallOut title="Warning" color="warning" iconType="alert">
+              <p>
+                Custom detectors using standard rules may have issues if the threat intel content is
+                updated with a different plan.
+              </p>
+            </EuiCallOut>
 
-        <EuiSpacer size="m" />
+            <EuiSpacer size="m" />
+          </>
+        )}
 
         <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>

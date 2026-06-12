@@ -121,14 +121,18 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
         </EuiText>
         <EuiSpacer />
 
-        <EuiCallOut title="Warning" color="warning" iconType="alert">
-          <p>
-            Custom detectors using standard rules may have issues if the threat intel content is
-            updated with a different plan.
-          </p>
-        </EuiCallOut>
+        {selectedSpace === SpaceTypes.STANDARD.value && (
+          <>
+            <EuiCallOut title="Warning" color="warning" iconType="alert">
+              <p>
+                Custom detectors using standard rules may have issues if the threat intel content is
+                updated with a different plan.
+              </p>
+            </EuiCallOut>
 
-        <EuiSpacer />
+            <EuiSpacer />
+          </>
+        )}
 
         <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>
