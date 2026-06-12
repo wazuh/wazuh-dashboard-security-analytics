@@ -5,6 +5,7 @@
 
 import React, { Component } from 'react';
 import {
+  EuiCallOut,
   EuiCompressedFormRow,
   EuiSpacer,
   EuiCompressedComboBox,
@@ -118,6 +119,15 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
             intelligence based detection can be enabled for standard integrations.{' '}
           </p>
         </EuiText>
+        <EuiSpacer />
+
+        <EuiCallOut title="Warning" color="warning" iconType="alert">
+          <p>
+            Custom detectors using standard rules may have issues if the threat intel content is
+            updated with a different plan.
+          </p>
+        </EuiCallOut>
+
         <EuiSpacer />
 
         <EuiFlexGroup alignItems="center" gutterSize="s">

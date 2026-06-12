@@ -7,6 +7,7 @@ import {
   EuiBottomBar,
   EuiButton,
   EuiButtonEmpty,
+  EuiCallOut,
   EuiComboBoxOptionOption,
   EuiFlexGroup,
   EuiFlexItem,
@@ -444,6 +445,15 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
           onDetectorInputIndicesChange={onDetectorInputIndicesChange}
         />
         <EuiSpacer size={'l'} />
+
+        <EuiCallOut title="Warning" color="warning" iconType="alert">
+          <p>
+            Custom detectors using standard rules may have issues if the threat intel content is
+            updated with a different plan.
+          </p>
+        </EuiCallOut>
+
+        <EuiSpacer size="m" />
 
         <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>
