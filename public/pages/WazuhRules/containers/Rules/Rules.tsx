@@ -82,22 +82,9 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     onSpaceChange: () => setPageIndex(0),
   });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [selectedRule, setSelectedRule] = useState<RuleTableItem | null>(null);
   const [selectedItems, setSelectedItems] = useState<RuleTableItem[]>([]);
 
-  const { setParam, clearParam } = useUrlParamItem<RuleTableItem>({
-    paramName: 'ruleId',
-    fetchById: async (id) => {
-      const response = await DataStore.rules.searchRules(
-        { query: { term: { 'document.id': id } }, size: 1 },
-        spaceFilter
-      );
-      const item = response.items[0];
-      return item ? toRuleTableItem(item) : undefined;
-    },
-    onFound: setSelectedRule,
-    onClear: () => setSelectedRule(null),
-  });
+  const { paramId: selectedRuleId, setParam, clearParam } = useUrlParamItem('ruleId');
 
   useEffect(() => {
     return () => {
@@ -123,7 +110,23 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     const osField = SORT_FIELD_TO_OS[sortField];
     const sort = osField ? [{ [osField]: { order: sortDirection } }] : undefined;
     const response = await DataStore.rules.searchRules(
-      { query, from: pageIndex * pageSize, size: pageSize, sort },
+      {
+        query,
+        from: pageIndex * pageSize,
+        size: pageSize,
+        sort,
+        _source: {
+          includes: [
+            'document.id',
+            'document.metadata.title',
+            'document.level',
+            'document.logsource.category',
+            'document.logsource.product',
+            'document.metadata.description',
+            'space',
+          ],
+        },
+      },
       spaceFilter
     );
 
@@ -170,11 +173,8 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   };
 
   const hideFlyout = (refreshRules?: boolean) => {
-    setSelectedRule(null);
     clearParam();
-    if (refreshRules) {
-      loadRules();
-    }
+    if (refreshRules) loadRules();
   };
 
   const columns: Array<EuiBasicTableColumn<RuleTableItem>> = useMemo(
@@ -220,10 +220,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             description: 'View rule details',
             type: 'icon',
             icon: 'inspect',
-            onClick: (item: RuleTableItem) => {
-              setParam(item.ruleId);
-              setSelectedRule(item);
-            },
+            onClick: (item: RuleTableItem) => setParam(item.ruleId),
           },
           {
             name: 'Edit',
@@ -307,8 +304,8 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
 
   return (
     <EuiFlexGroup direction="column" gutterSize="m">
-      {selectedRule && (
-        <RuleViewerFlyout ruleTableItem={selectedRule} hideFlyout={hideFlyout} />
+      {selectedRuleId && (
+        <RuleViewerFlyout ruleId={selectedRuleId} space={spaceFilter} hideFlyout={hideFlyout} />
       )}
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
