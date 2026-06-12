@@ -15,7 +15,6 @@ import {
 import React, { useState } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
-import { getLogTypeLabel } from '../../pages/LogTypes/utils/helpers';
 import { IntegrationOption } from './useIntegrationSelector';
 import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
 
@@ -90,7 +89,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                     ? [
                         {
                           value: selectedOption.value,
-                          label: getLogTypeLabel(selectedOption.value),
+                          label: selectedOption.value,
                         },
                       ]
                     : []
@@ -123,7 +122,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                 ? [
                     {
                       value: selectedOption.value,
-                      label: getLogTypeLabel(selectedOption.value),
+                      label: selectedOption.value,
                     },
                   ]
                 : []
