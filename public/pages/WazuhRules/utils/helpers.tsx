@@ -29,6 +29,9 @@ export interface RuleTableItem {
   integration?: IntegrationBase;
 }
 
+export const getRuleIntegrationTitle = (rule: { integration?: any }): string =>
+  rule.integration?.document?.metadata?.title || '';
+
 export function validateRule(
   rule: Rule,
   notifications: NotificationsStart,
