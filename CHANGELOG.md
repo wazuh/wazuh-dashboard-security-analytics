@@ -28,6 +28,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Rules table and details now display the real integration title. [#164](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/164)
 - Updated nav menu group label to "Security analytics" to match Wazuh Dashboard capitalization style. [#178](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/178)
 - Made Sigma detectors read-only in the UI and centralized the detector source vocabulary [#243](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/243)
+- Removed getLogTypeLabel usage across Security analytics [#353](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/353)
 
 ### Removed
 
