@@ -31,6 +31,7 @@ interface IntegrationComboBoxProps {
   'data-test-subj'?: string;
   isInvalid?: boolean;
   error?: string;
+  space?: string;
 }
 
 export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
@@ -44,6 +45,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   'data-test-subj': dataTestSubj,
   isInvalid,
   error,
+  space = 'draft',
 }) => {
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
@@ -136,8 +138,8 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
           <EuiSpacer size="m" />
           <EuiCallOut title="No integrations available" color="warning" iconType="alert">
             <p>
-              There are no integrations in draft status available to add {resourceName}. Please
-              create or draft an integration first before adding {resourceName}.
+              There are no integrations in {space} status available to add {resourceName}. Please
+              create an integration first before adding {resourceName}.
             </p>
           </EuiCallOut>
         </>
