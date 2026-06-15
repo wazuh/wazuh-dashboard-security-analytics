@@ -138,7 +138,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
           <EuiSpacer size="m" />
           <EuiCallOut title="No integrations available" color="warning" iconType="alert">
             <p>
-              There are no integrations in {space} status available to add {resourceName}. Please
+              There are no integrations in {space} space available to add {resourceName}. Please
               create an integration first before adding {resourceName}.
             </p>
           </EuiCallOut>
