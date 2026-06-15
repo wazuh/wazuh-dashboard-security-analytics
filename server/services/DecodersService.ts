@@ -206,7 +206,18 @@ export class DecodersService {
           size,
           sort,
           track_total_hits: true,
-          _source: _source === undefined ? { includes: ['document', 'space'] } : _source,
+          _source:
+            _source === undefined
+              ? {
+                  includes: [
+                    'document.id',
+                    'document.name',
+                    'document.metadata.title',
+                    'document.metadata.author',
+                    'space',
+                  ],
+                }
+              : _source,
           query: this.applySpaceFilter(query, space, searchFields),
         },
       });

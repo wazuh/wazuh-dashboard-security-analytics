@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   EuiAccordion,
+  EuiCallOut,
   EuiCodeBlock,
   EuiFlexGrid,
   EuiFlexItem,
@@ -17,6 +18,7 @@ import {
   EuiModalBody,
   EuiFormLabel,
   EuiFlexGroup,
+  EuiLoadingContent,
   EuiText,
   EuiSmallButtonIcon,
 } from '@elastic/eui';
@@ -26,9 +28,11 @@ import { Metadata, MetadataFieldType } from '../../../components/Utility/Metadat
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { DataStore } from '../../../store/DataStore';
+import { useLazyFetch } from '../../../hooks/useLazyFetch';
 
 interface KVDBDetailsFlyoutProps {
-  kvdb: KVDBItem;
+  kvdbId: string;
   onClose: () => void;
 }
 
@@ -44,10 +48,12 @@ const viewOptions = [
   { id: VISUAL_VIEW.JSON, label: 'JSON' },
 ];
 
-export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onClose }) => {
+export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdbId, onClose }) => {
   const [selectedView, setSelectedView] = useState(VISUAL_VIEW.VISUAL);
+  const fetchKvdb = useCallback(() => DataStore.kvdbs.getKVDB(kvdbId), [kvdbId]);
+  const { data: kvdb, loading, error } = useLazyFetch(fetchKvdb, 'KVDB not found.');
 
-  const document = kvdb.document ?? { id: '' };
+  const document = kvdb?.document ?? { id: '' };
   const metadata = document.metadata;
 
   const fields: Array<{
@@ -57,9 +63,9 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
     type?: MetadataFieldType;
   }> = [
     { key: 'space', label: 'Space', value: kvdb?.space?.name },
-    { key: 'integration.title', label: 'Integration', value: kvdb.integration?.title },
+    { key: 'integration.title', label: 'Integration', value: kvdb?.integration?.title },
     { key: 'document.metadata.title', label: 'Title', value: metadata?.title },
-    { key: 'document.id', label: 'ID', value: document.id || kvdb.id },
+    { key: 'document.id', label: 'ID', value: document.id || kvdb?.id },
     { key: 'document.metadata.author', label: 'Author', value: metadata?.author },
     { key: 'document.metadata.description', label: 'Description', value: metadata?.description },
     { key: 'document.metadata.date', label: 'Date', value: metadata?.date, type: 'date' },
@@ -69,41 +75,47 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
     { key: 'document.metadata.supports', label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={metadata?.supports} />, type: 'raw' },
   ];
 
-  const visualTab = (
-    <>
-      <EuiFlexGrid columns={2}>
-        {fields.map(({ key, label, value, type = 'text' }) => (
-          <EuiFlexItem key={key}>
-            <Metadata
-              label={<EuiFormLabel>{label}</EuiFormLabel>}
-              value={value}
-              type={type}
-            />
-          </EuiFlexItem>
-        ))}
-      </EuiFlexGrid>
-      {document.content && (
-        <>
-          <EuiSpacer />
-          <EuiAccordion id="content" buttonContent="Content" paddingSize="s" initialIsOpen={true}>
-            <AssetViewer content={document.content} />
-          </EuiAccordion>
-        </>
-      )}
-    </>
-  );
+  const renderBody = () => {
+    if (loading) return <EuiLoadingContent lines={4} />;
+    if (error) return <EuiCallOut color="danger" iconType="alert" title={error} />;
+    if (!kvdb) return null;
 
-  const yamlTab = (
-    <EuiCodeBlock language="yaml" isCopyable={true} paddingSize="m">
-      {kvdb.yaml ?? ''}
-    </EuiCodeBlock>
-  );
+    const visualTab = (
+      <>
+        <EuiFlexGrid columns={2}>
+          {fields.map(({ key, label, value, type = 'text' }) => (
+            <EuiFlexItem key={key}>
+              <Metadata label={<EuiFormLabel>{label}</EuiFormLabel>} value={value} type={type} />
+            </EuiFlexItem>
+          ))}
+        </EuiFlexGrid>
+        {document.content && (
+          <>
+            <EuiSpacer />
+            <EuiAccordion id="content" buttonContent="Content" paddingSize="s" initialIsOpen={true}>
+              <AssetViewer content={document.content} />
+            </EuiAccordion>
+          </>
+        )}
+      </>
+    );
 
-  const jsonTab = (
-    <EuiCodeBlock language="json" isCopyable={true} paddingSize="m">
-      {JSON.stringify(document, null, 2)}
-    </EuiCodeBlock>
-  );
+    const yamlTab = (
+      <EuiCodeBlock language="yaml" isCopyable={true} paddingSize="m">
+        {kvdb.yaml ?? ''}
+      </EuiCodeBlock>
+    );
+
+    const jsonTab = (
+      <EuiCodeBlock language="json" isCopyable={true} paddingSize="m">
+        {JSON.stringify(document, null, 2)}
+      </EuiCodeBlock>
+    );
+
+    if (selectedView === VISUAL_VIEW.YAML) return yamlTab;
+    if (selectedView === VISUAL_VIEW.JSON) return jsonTab;
+    return visualTab;
+  };
 
   return (
     <EuiFlyout onClose={onClose} hideCloseButton ownFocus size="m">
@@ -136,16 +148,17 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdb, onCl
                 options={viewOptions}
                 idSelected={selectedView}
                 onChange={(id) => setSelectedView(id)}
+                isDisabled={loading || !!error || !kvdb}
               />
             </EuiFlexItem>
-            <EuiFlexItem>
-              <EnabledHealth enabled={document.enabled} data-test-subj="kvdb_flyout_enabled" />
-            </EuiFlexItem>
+            {kvdb && (
+              <EuiFlexItem>
+                <EnabledHealth enabled={document.enabled} data-test-subj="kvdb_flyout_enabled" />
+              </EuiFlexItem>
+            )}
           </EuiFlexGroup>
           <EuiSpacer size="xl" />
-          {selectedView === VISUAL_VIEW.VISUAL && visualTab}
-          {selectedView === VISUAL_VIEW.YAML && yamlTab}
-          {selectedView === VISUAL_VIEW.JSON && jsonTab}
+          {renderBody()}
         </EuiModalBody>
       </EuiFlyoutBody>
     </EuiFlyout>

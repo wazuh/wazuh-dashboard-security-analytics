@@ -36,7 +36,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   space,
   onRefresh,
 }) => {
-  const [flyoutKvdb, setFlyoutKvdb] = useState<KVDBTableItem | undefined>(undefined);
+  const [flyoutKvdbId, setFlyoutKvdbId] = useState<string | undefined>(undefined);
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
 
@@ -47,7 +47,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
         name: 'Title',
         sortable: true,
         render: (_: string, kvdb: KVDBItem) => (
-          <EuiLink onClick={() => setFlyoutKvdb(kvdb)}>
+          <EuiLink onClick={() => setFlyoutKvdbId(kvdb.id)}>
             {formatCellValue(kvdb.document?.metadata?.title)}
           </EuiLink>
         ),
@@ -63,7 +63,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   );
 
   const closeFlyout = useCallback(() => {
-    setFlyoutKvdb(undefined);
+    setFlyoutKvdbId(undefined);
   }, []);
 
   const search = {
@@ -75,7 +75,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
 
   return (
     <>
-      {flyoutKvdb && <KVDBDetailsFlyout kvdb={flyoutKvdb} onClose={closeFlyout} />}
+      {flyoutKvdbId && <KVDBDetailsFlyout kvdbId={flyoutKvdbId} onClose={closeFlyout} />}
 
       <ContentPanel
         title="KVDBs"

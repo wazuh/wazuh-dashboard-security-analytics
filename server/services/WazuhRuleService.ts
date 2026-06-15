@@ -153,7 +153,7 @@ export default class WazuhRulesService {
         space?: string;
       };
 
-      const { from = 0, size = 5000, query, sort } = (request.body as any) ?? {};
+      const { from = 0, size = 5000, query, sort, _source } = (request.body as any) ?? {};
       const client = this.getClient(request);
       const searchBody: any = {
         from,
@@ -162,6 +162,7 @@ export default class WazuhRulesService {
         query: this.buildQuery(prePackaged, query, space),
       };
       if (sort) searchBody.sort = sort;
+      if (_source !== undefined) searchBody._source = _source;
       const searchResponse = await client('search', {
         index: CONTENT_INDICES.RULES,
         body: searchBody,

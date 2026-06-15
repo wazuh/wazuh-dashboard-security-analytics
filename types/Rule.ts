@@ -148,9 +148,13 @@ export interface IRulesStore {
       from?: number;
       size?: number;
       sort?: Array<Record<string, any>>;
+      _source?: any;
     },
     space: string
   ) => Promise<{ total: number; items: RuleItemInfoBase[] }>;
+
+  // Wazuh: fetch a single rule with full data by id
+  getRule: (id: string, space: string) => Promise<RuleItemInfoBase | undefined>;
 }
 
 export type RulesTableColumnFields = 'title' | 'level' | 'category' | 'source' | 'description';
