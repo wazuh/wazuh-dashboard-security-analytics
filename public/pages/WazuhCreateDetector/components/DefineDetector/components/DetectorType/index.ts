@@ -4,5 +4,6 @@
  */
 
 import DetectorType from "./DetectorType";
+export { RulesContentUpdateWarning } from "./RulesContentUpdateWarning";
 
 export default DetectorType;

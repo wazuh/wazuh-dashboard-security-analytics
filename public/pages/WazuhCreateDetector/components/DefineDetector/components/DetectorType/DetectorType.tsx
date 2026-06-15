@@ -14,6 +14,7 @@ import { ConfigureFieldMappingProps } from '../../../../../CreateDetector/compon
 import { getIntegrationOptionsBySpace } from '../../../../../../utils/helpers';
 import { SpaceSelector } from '../../../../../../components/SpaceSelector/SpaceSelector';
 import { SpaceTypes } from '../../../../../../../common/constants';
+import { RulesContentUpdateWarning } from '.';
 import { IntegrationComboBox } from '../../../../../../components/IntegrationComboBox';
 
 interface DetectorTypeProps {
@@ -110,6 +111,13 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
           </p>
         </EuiText>
         <EuiSpacer />
+
+        {selectedSpace === SpaceTypes.STANDARD.value && (
+          <>
+            <RulesContentUpdateWarning />
+            <EuiSpacer />
+          </>
+        )}
 
         <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>
