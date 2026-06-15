@@ -25,6 +25,7 @@ import { getIntegrationOptionsBySpace } from '../../../../../../utils/helpers';
 import { getLogTypeLabel } from '../../../../../LogTypes/utils/helpers';
 import { SpaceSelector } from '../../../../../../components/SpaceSelector/SpaceSelector';
 import { SpaceTypes } from '../../../../../../../common/constants';
+import { RulesContentUpdateWarning } from '.';
 
 interface DetectorTypeProps {
   detectorType: string;
@@ -123,13 +124,7 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
 
         {selectedSpace === SpaceTypes.STANDARD.value && (
           <>
-            <EuiCallOut title="Warning" color="warning" iconType="alert">
-              <p>
-                Custom detectors using standard rules may have issues if the threat intel content is
-                updated with a different plan.
-              </p>
-            </EuiCallOut>
-
+            <RulesContentUpdateWarning />
             <EuiSpacer />
           </>
         )}
