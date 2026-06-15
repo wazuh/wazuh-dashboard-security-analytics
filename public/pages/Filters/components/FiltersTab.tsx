@@ -15,7 +15,6 @@ import {
 } from '@elastic/eui';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
-import { FilterItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { ROUTES } from '../../../utils/constants';
 import { pluralize } from '../../../utils/helpers';
@@ -45,7 +44,7 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
   const [items, setItems] = useState<FilterTableItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedItems, setSelectedItems] = useState<FilterTableItem[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<FilterItem | null>(null);
+  const [selectedFilterId, setSelectedFilterId] = useState<string | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   useEffect(() => {
@@ -73,6 +72,15 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
         size: 10000,
         sort: [{ 'document.name': { order: 'asc' } }],
         query: buildQuery(),
+        _source: {
+          includes: [
+            'document.name',
+            'document.metadata.title',
+            'document.type',
+            'document.enabled',
+            'space',
+          ],
+        },
       });
       if (isMountedRef.current) {
         setItems(fetchedItems.map(toFilterTableItem));
@@ -114,20 +122,20 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
     isMountedRef,
   });
 
-  const onViewDetails = useCallback((item: FilterItem) => {
-    setSelectedFilter(item);
+  const onViewDetails = useCallback((id: string) => {
+    setSelectedFilterId(id);
   }, []);
 
   const onEdit = useCallback(
-    (item: FilterItem) => {
-      history.push(`${ROUTES.FILTERS_EDIT}/${item.id}`);
+    (id: string) => {
+      history.push(`${ROUTES.FILTERS_EDIT}/${id}`);
     },
     [history]
   );
 
   const onDelete = useCallback(
-    (item: FilterItem) => {
-      setItemForAction({ action: DELETE_ACTION, id: item.id });
+    (id: string) => {
+      setItemForAction({ action: DELETE_ACTION, id });
     },
     [setItemForAction]
   );
@@ -214,8 +222,11 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
         sorting={true}
       />
 
-      {selectedFilter && (
-        <FilterDetailsFlyout filter={selectedFilter} onClose={() => setSelectedFilter(null)} />
+      {selectedFilterId && (
+        <FilterDetailsFlyout
+          filterId={selectedFilterId}
+          onClose={() => setSelectedFilterId(null)}
+        />
       )}
 
       {itemForAction?.action === DELETE_ACTION && (

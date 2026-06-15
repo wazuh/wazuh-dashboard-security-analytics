@@ -213,7 +213,13 @@ export class RulesStore implements IWazuhRulesStore {
   }
 
   public async searchRules(
-    params: { query?: any; from?: number; size?: number; sort?: Array<Record<string, any>> },
+    params: {
+      query?: any;
+      from?: number;
+      size?: number;
+      sort?: Array<Record<string, any>>;
+      _source?: any;
+    },
     space: string
   ): Promise<{ total: number; items: RuleItemInfoBase[] }> {
     const body: any = {
@@ -223,6 +229,7 @@ export class RulesStore implements IWazuhRulesStore {
       query: params.query ?? { match_all: {} },
     };
     if (params.sort) body.sort = params.sort;
+    if (params._source !== undefined) body._source = params._source;
 
     const isStandard = space === 'standard';
     const response = await this.service.getRules(isStandard, body, space);
@@ -239,6 +246,18 @@ export class RulesStore implements IWazuhRulesStore {
     );
     const total = response.response.hits.total?.value ?? items.length;
     return { total, items };
+  }
+
+  public async getRule(id: string, space: string): Promise<RuleItemInfoBase | undefined> {
+    const isStandard = space === 'standard';
+    const response = await this.service.getRules(
+      isStandard,
+      { query: { term: { 'document.id': id } }, size: 1 },
+      space
+    );
+    if (!response?.ok) return undefined;
+    const hit = response.response.hits.hits?.[0];
+    return hit ? this.mapToRuleItem(hit, isStandard) : undefined;
   }
 
   private toYamlString(value: unknown): string {

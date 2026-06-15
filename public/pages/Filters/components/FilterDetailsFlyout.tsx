@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   EuiButtonGroup,
+  EuiCallOut,
   EuiCodeBlock,
   EuiFlexGrid,
   EuiFlexGroup,
@@ -14,6 +15,7 @@ import {
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiFormLabel,
+  EuiLoadingContent,
   EuiModalBody,
   EuiSmallButtonIcon,
   EuiSpacer,
@@ -27,8 +29,11 @@ import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { mapYamlToLosslessObject } from '../../../components/YamlForm';
 import { stringify as LosslessStringify } from 'lossless-json';
 import { checkToFormString } from '../utils/mappers';
+import { DataStore } from '../../../store/DataStore';
+import { useLazyFetch } from '../../../hooks/useLazyFetch';
+
 interface FilterDetailsFlyoutProps {
-  filter: FilterItem;
+  filterId: string;
   onClose: () => void;
 }
 
@@ -54,10 +59,12 @@ const getAuthorDisplay = (author: string | { name?: string } | undefined): strin
   return author.name ?? '';
 };
 
-export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter, onClose }) => {
+export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filterId, onClose }) => {
   const [selectedView, setSelectedView] = useState(viewOptions[0].id);
+  const fetchFilter = useCallback(() => DataStore.filters.getFilter(filterId), [filterId]);
+  const { data: filter, loading, error } = useLazyFetch(fetchFilter, 'Filter not found.');
 
-  const document = filter.document ?? {
+  const document = filter?.document ?? {
     id: '',
     name: '',
     type: '',
@@ -99,10 +106,10 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     type?: 'text' | 'date' | 'url' | 'raw';
   }> = [
     { label: 'Name', value: document.name },
-    { label: 'Space', value: filter.space?.name },
+    { label: 'Space', value: filter?.space?.name },
     { label: 'Type', value: document.type },
     { label: 'Author', value: getAuthorDisplay(metadata.author) },
-    { label: 'ID', value: document.id || filter.id },
+    { label: 'ID', value: document.id || filter?.id },
     { label: 'Description', value: metadata.description },
     { label: 'Created', value: metadata.date, type: 'date' },
     { label: 'Modified', value: metadata.modified, type: 'date' },
@@ -113,43 +120,38 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
       </EuiCodeBlock>
     ), type: 'raw' },
     { label: 'Documentation', value: metadata.documentation },
-    { label: 'SHA256', value: filter.hash?.sha256 },
+    { label: 'SHA256', value: filter?.hash?.sha256 },
     { label: 'References', value: references, type: 'url' },
   ];
 
-  const visualContent = (
-    <EuiFlexGrid columns={2}>
-      {fields.map(({ label, value, type = 'text' }) => (
-        <EuiFlexItem key={label}>
-          <Metadata label={<EuiFormLabel>{label}</EuiFormLabel>} value={value} type={type} />
-        </EuiFlexItem>
-      ))}
-    </EuiFlexGrid>
-  );
-
-  const jsonContent = (
-    <EuiCodeBlock language="json" isCopyable={true} paddingSize="m">
-      {filterJson}
-    </EuiCodeBlock>
-  );
-
-  const yamlContent = (
-    <EuiCodeBlock language="yaml" isCopyable={true}>
-      {filter.yaml}
-    </EuiCodeBlock>
-  );
-
   const renderContent = () => {
-    if (!document) {
-      return null;
-    }
+    if (loading) return <EuiLoadingContent lines={4} />;
+    if (error) return <EuiCallOut color="danger" iconType="alert" title={error} />;
+    if (!filter) return null;
+
     if (selectedView === 'yaml') {
-      return yamlContent;
+      return (
+        <EuiCodeBlock language="yaml" isCopyable={true}>
+          {filter.yaml}
+        </EuiCodeBlock>
+      );
     }
     if (selectedView === 'json') {
-      return jsonContent;
+      return (
+        <EuiCodeBlock language="json" isCopyable={true} paddingSize="m">
+          {filterJson}
+        </EuiCodeBlock>
+      );
     }
-    return visualContent;
+    return (
+      <EuiFlexGrid columns={2}>
+        {fields.map(({ label, value, type = 'text' }) => (
+          <EuiFlexItem key={label}>
+            <Metadata label={<EuiFormLabel>{label}</EuiFormLabel>} value={value} type={type} />
+          </EuiFlexItem>
+        ))}
+      </EuiFlexGrid>
+    );
   };
 
   return (
@@ -183,11 +185,14 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
                 options={viewOptions}
                 idSelected={selectedView}
                 onChange={(id: string) => setSelectedView(id)}
+                isDisabled={loading || !!error || !filter}
               />
             </EuiFlexItem>
-            <EuiFlexItem>
-              <EnabledHealth enabled={document.enabled} data-test-subj="filter_flyout_enabled" />
-            </EuiFlexItem>
+            {filter && (
+              <EuiFlexItem>
+                <EnabledHealth enabled={document.enabled} data-test-subj="filter_flyout_enabled" />
+              </EuiFlexItem>
+            )}
           </EuiFlexGroup>
           <EuiSpacer size="xl" />
           {renderContent()}

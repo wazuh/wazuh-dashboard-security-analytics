@@ -41,6 +41,7 @@ export interface FilterSearchRequest {
   sort?: Array<Record<string, { order: 'asc' | 'desc' }>>;
   query?: Record<string, unknown>;
   track_total_hits?: boolean;
+  _source?: any;
 }
 
 export interface FilterSearchResponse {
