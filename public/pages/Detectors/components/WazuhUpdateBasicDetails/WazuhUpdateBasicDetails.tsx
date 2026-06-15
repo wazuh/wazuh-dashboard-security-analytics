@@ -7,6 +7,7 @@ import {
   EuiBottomBar,
   EuiButton,
   EuiButtonEmpty,
+  EuiCallOut,
   EuiComboBoxOptionOption,
   EuiFlexGroup,
   EuiFlexItem,
@@ -49,6 +50,7 @@ import {
 } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
 import { DataStore } from '../../../../store/DataStore';
 import ConfigureFieldMapping from '../../../CreateDetector/components/ConfigureFieldMapping';
+import { RulesContentUpdateWarning } from '../../../WazuhCreateDetector/components/DefineDetector/components/DetectorType';
 
 export interface WazuhUpdateDetectorBasicDetailsProps
   extends RouteComponentProps<any, any, { detectorHit: DetectorHit }> {
@@ -441,6 +443,13 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
           onDetectorInputIndicesChange={onDetectorInputIndicesChange}
         />
         <EuiSpacer size={'l'} />
+
+        {selectedSpace === SpaceTypes.STANDARD.value && (
+          <>
+            <RulesContentUpdateWarning />
+            <EuiSpacer size="m" />
+          </>
+        )}
 
         <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>
