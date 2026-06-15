@@ -17,7 +17,6 @@ export interface FilterTableItem {
   type: string;
   enabled: boolean;
   spaceName: string;
-  _source: FilterItem;
 }
 
 export const toFilterTableItem = (item: FilterItem): FilterTableItem => ({
@@ -26,21 +25,20 @@ export const toFilterTableItem = (item: FilterItem): FilterTableItem => ({
   type: item.document?.type ?? '',
   enabled: item.document?.enabled ?? false,
   spaceName: item.space?.name ?? '',
-  _source: item,
 });
 
 export const getFiltersTableColumns = (
   spaceFilter: string,
-  onViewDetails: (item: FilterItem) => void,
-  onEdit: (item: FilterItem) => void,
-  onDelete: (item: FilterItem) => void
+  onViewDetails: (id: string) => void,
+  onEdit: (id: string) => void,
+  onDelete: (id: string) => void
 ) => [
   {
     field: 'name',
     name: 'Name',
     sortable: true,
     render: (name: string, row: FilterTableItem) => (
-      <EuiLink onClick={() => onViewDetails(row._source)}>{name}</EuiLink>
+      <EuiLink onClick={() => onViewDetails(row.id)}>{name}</EuiLink>
     ),
   },
   {
@@ -62,14 +60,14 @@ export const getFiltersTableColumns = (
         description: 'View filter details',
         type: 'icon',
         icon: 'inspect',
-        onClick: (row: FilterTableItem) => onViewDetails(row._source),
+        onClick: (row: FilterTableItem) => onViewDetails(row.id),
       },
       {
         name: 'Edit',
         description: 'Edit filter',
         type: 'icon',
         icon: 'pencil',
-        onClick: (row: FilterTableItem) => onEdit(row._source),
+        onClick: (row: FilterTableItem) => onEdit(row.id),
         available: () =>
           actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT, FiltersAllowedActionsBySpace),
       },
@@ -79,7 +77,7 @@ export const getFiltersTableColumns = (
         type: 'icon',
         icon: 'trash',
         color: 'danger',
-        onClick: (row: FilterTableItem) => onDelete(row._source),
+        onClick: (row: FilterTableItem) => onDelete(row.id),
         available: () =>
           actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE, FiltersAllowedActionsBySpace),
       },

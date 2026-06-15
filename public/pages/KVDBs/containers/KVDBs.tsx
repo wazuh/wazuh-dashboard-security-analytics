@@ -51,7 +51,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [searchQuery, setSearchQuery] = useState<any>(null);
-  const [selectedKVDB, setSelectedKVDB] = useState<KVDBItem | null>(null);
+  const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
     onSpaceChange: () => setPageIndex(0),
@@ -100,6 +100,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         sort,
         query: buildQuery(),
         track_total_hits: true,
+        _source: {
+          includes: ['document.id', 'document.metadata.title', 'document.metadata.author', 'space'],
+        },
       });
 
       setItems(response.items);
@@ -189,8 +192,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         !isDeleteActionAllowed
           ? `Cannot delete KVDBs in the ${spaceFilter} space.`
           : selectedItems.length === 0
-            ? 'Select KVDBs to delete'
-            : undefined
+          ? 'Select KVDBs to delete'
+          : undefined
       }
     >
       Delete selected ({selectedItems.length})
@@ -227,7 +230,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             description: 'View KVDB details',
             type: 'icon',
             icon: 'inspect',
-            onClick: (item: KVDBItem) => setSelectedKVDB(item),
+            onClick: (item: KVDBItem) => setSelectedKVDBId(item.id),
           },
           {
             name: 'Edit',
@@ -254,8 +257,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
 
   return (
     <EuiFlexGroup direction="column" gutterSize="m">
-      {selectedKVDB && (
-        <KVDBDetailsFlyout kvdb={selectedKVDB} onClose={() => setSelectedKVDB(null)} />
+      {selectedKVDBId && (
+        <KVDBDetailsFlyout kvdbId={selectedKVDBId} onClose={() => setSelectedKVDBId(null)} />
       )}
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
