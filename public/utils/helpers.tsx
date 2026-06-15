@@ -348,15 +348,17 @@ export async function getLogTypeOptions() {
 /**
  * Returns Integration ComboBox options filtered by space and ordered alphabetically.
  * [Wazuh custom] Uses document.metadata?.title for normalized metadata structure (issue #117)
+ * [Wazuh custom] Adds id with the same value to give support to other components.
  */
 
 export async function getIntegrationOptionsBySpace(
   space: string
-): Promise<{ value: string; label: string }[]> {
+): Promise<{ id: string; value: string; label: string }[]> {
   const integrations = await DataStore.integrations.getIntegrations(space);
   // [Wazuh custom] Use metadata object instead of document.title
   return integrations
     .map(({ document: { metadata } }) => ({
+      id: metadata?.title ?? '',
       value: metadata?.title ?? '',
       label: metadata?.title ?? '',
     }))

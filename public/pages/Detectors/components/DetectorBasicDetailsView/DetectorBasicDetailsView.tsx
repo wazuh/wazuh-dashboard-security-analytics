@@ -11,7 +11,8 @@ import moment from 'moment';
 import { DEFAULT_EMPTY_DATA, logTypesWithDashboards } from '../../../../utils/constants';
 import { isStandardSource } from '../../../../utils/detectorSource';
 import { Detector } from '../../../../../types';
-import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
+// Wazuh: remove integration title formatting
+// import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
 
 export interface DetectorBasicDetailsViewProps {
   detector: Detector;
@@ -75,7 +76,7 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
         { label: 'Detector name', content: name },
         {
           label: 'Integration', // Wazuh: reorganize props
-          content: getLogTypeLabel(detector_type.toLowerCase()),
+          content: detector_type, // Wazuh: remove integration title formatting
         }, // Changed Log Type to Integration by Wazuh
         {
           // Wazuh: add space

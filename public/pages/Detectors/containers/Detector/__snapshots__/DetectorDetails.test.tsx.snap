@@ -1478,7 +1478,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                 onBlur={[Function]}
                                 onFocus={[Function]}
                               >
-                                Network
+                                network
                               </div>
                             </EuiText>
                           </div>

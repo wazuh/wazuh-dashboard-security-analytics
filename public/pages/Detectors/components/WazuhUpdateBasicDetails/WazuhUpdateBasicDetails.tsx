@@ -13,8 +13,6 @@ import {
   EuiPanel,
   EuiSpacer,
   EuiTitle,
-  EuiCompressedComboBox,
-  EuiCompressedFormRow,
 } from '@elastic/eui';
 import { PeriodSchedule } from '../../../../../models/interfaces';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -40,8 +38,7 @@ import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { dataSourceInfo } from '../../../../services/utils/constants';
 import { SpaceSelector } from '../../../../components/SpaceSelector/SpaceSelector';
 import { SpaceTypes } from '../../../../../common/constants';
-import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
-import { FormFieldHeader } from '../../../../components/FormFieldHeader/FormFieldHeader';
+import { IntegrationComboBox } from '../../../../components/IntegrationComboBox';
 import {
   CreateDetectorRulesState,
   DetectionRules,
@@ -75,9 +72,9 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
   const [threatIntelEnabledInitially, setThreatIntelEnabledInitially] = useState(false);
 
   const [selectedSpace, setSelectedSpace] = useState<string>(SpaceTypes.STANDARD.value);
-  const [integrationOptions, setIntegrationOptions] = useState<{ value: string; label: string }[]>(
-    []
-  );
+  const [integrationOptions, setIntegrationOptions] = useState<
+    { id: string; value: string; label: string }[]
+  >([]);
   const [loadingIntegrations, setLoadingIntegrations] = useState(false);
   const [integrationTouched, setIntegrationTouched] = useState(false);
 
@@ -457,36 +454,16 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
         <EuiSpacer size="m" />
 
-        <EuiCompressedFormRow
-          label={
-            <div>
-              <FormFieldHeader headerTitle="Integration" />
-              <EuiSpacer size="s" />
-            </div>
-          }
-          fullWidth
+        <IntegrationComboBox
+          selectedId={detector.detector_type}
+          options={integrationOptions}
+          isLoading={loadingIntegrations}
           isInvalid={integrationIsInvalid}
           error={integrationIsInvalid ? 'Select an integration.' : undefined}
-        >
-          <EuiCompressedComboBox
-            isInvalid={integrationIsInvalid}
-            placeholder="Select integration"
-            options={integrationOptions}
-            singleSelection={{ asPlainText: true }}
-            isLoading={loadingIntegrations}
-            selectedOptions={
-              detector.detector_type
-                ? [
-                    {
-                      value: detector.detector_type,
-                      label: getLogTypeLabel(detector.detector_type),
-                    },
-                  ]
-                : []
-            }
-            onChange={(e) => onIntegrationChange(e[0]?.value || '')}
-          />
-        </EuiCompressedFormRow>
+          onChange={(e) => onIntegrationChange(e[0]?.value || '')}
+          resourceName="detectors"
+          space={selectedSpace}
+        />
 
         <EuiSpacer size="m" />
 
