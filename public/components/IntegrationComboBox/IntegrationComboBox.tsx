@@ -15,7 +15,6 @@ import {
 import React, { useState } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
-import { getLogTypeLabel } from '../../pages/LogTypes/utils/helpers';
 import { IntegrationOption } from './useIntegrationSelector';
 import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
 
@@ -32,6 +31,7 @@ interface IntegrationComboBoxProps {
   'data-test-subj'?: string;
   isInvalid?: boolean;
   error?: string;
+  space?: string;
 }
 
 export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
@@ -45,6 +45,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   'data-test-subj': dataTestSubj,
   isInvalid,
   error,
+  space = 'draft',
 }) => {
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
@@ -90,7 +91,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                     ? [
                         {
                           value: selectedOption.value,
-                          label: getLogTypeLabel(selectedOption.value),
+                          label: selectedOption.value,
                         },
                       ]
                     : []
@@ -123,7 +124,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                 ? [
                     {
                       value: selectedOption.value,
-                      label: getLogTypeLabel(selectedOption.value),
+                      label: selectedOption.value,
                     },
                   ]
                 : []
@@ -137,8 +138,8 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
           <EuiSpacer size="m" />
           <EuiCallOut title="No integrations available" color="warning" iconType="alert">
             <p>
-              There are no integrations in draft status available to add {resourceName}. Please
-              create or draft an integration first before adding {resourceName}.
+              There are no integrations in {space} space available to add {resourceName}. Please
+              create an integration first before adding {resourceName}.
             </p>
           </EuiCallOut>
         </>

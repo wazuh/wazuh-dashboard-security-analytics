@@ -1,31 +1,21 @@
 /*
- * Copyright OpenSearch Contributors
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import React, { Component } from 'react';
-import {
-  EuiCallOut,
-  EuiCompressedFormRow,
-  EuiSpacer,
-  EuiCompressedComboBox,
-  EuiText,
-  EuiFlexGroup,
-  EuiFlexItem,
-} from '@elastic/eui';
-import { FormFieldHeader } from '../../../../../../components/FormFieldHeader/FormFieldHeader';
+import { EuiCompressedFormRow, EuiSpacer, EuiText, EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
 import {
   CreateDetectorRulesState,
   DetectionRules,
 } from '../../../../../CreateDetector/components/DefineDetector/components/DetectionRules/DetectionRules';
 import { RuleItem } from '../../../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
-import ConfigureFieldMapping from '../../../../../CreateDetector/components/ConfigureFieldMapping';
 import { ConfigureFieldMappingProps } from '../../../../../CreateDetector/components/ConfigureFieldMapping/containers/ConfigureFieldMapping';
 import { getIntegrationOptionsBySpace } from '../../../../../../utils/helpers';
-import { getLogTypeLabel } from '../../../../../LogTypes/utils/helpers';
 import { SpaceSelector } from '../../../../../../components/SpaceSelector/SpaceSelector';
 import { SpaceTypes } from '../../../../../../../common/constants';
 import { RulesContentUpdateWarning } from '.';
+import { IntegrationComboBox } from '../../../../../../components/IntegrationComboBox';
 
 interface DetectorTypeProps {
   detectorType: string;
@@ -45,7 +35,7 @@ interface DetectorTypeProps {
 interface DetectorTypeState {
   fieldTouched: boolean;
   selectedSpace: string;
-  detectorTypeOptions: { value: string; label: string }[];
+  detectorTypeOptions: { id: string; value: string; label: string }[];
 }
 
 export default class DetectorType extends Component<DetectorTypeProps, DetectorTypeState> {
@@ -142,36 +132,20 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
         <EuiSpacer size="m" />
 
         <EuiCompressedFormRow
-          label={
-            <div>
-              {/* Replace log type with integration by Wazuh */}
-              <FormFieldHeader headerTitle={'Integration'} />
-              <EuiSpacer size={'s'} />
-            </div>
-          }
           fullWidth={true}
           isInvalid={this.isInvalid()}
           error={this.getErrorMessage()}
         >
-          <EuiCompressedComboBox
-            isInvalid={this.isInvalid()}
-            placeholder="Select integration" // Changed Log Type to Integration by Wazuh
-            data-test-subj={'log_type_dropdown'}
+          <IntegrationComboBox
+            selectedId={detectorType}
             options={detectorTypeOptions}
-            singleSelection={{ asPlainText: true }}
+            isInvalid={this.isInvalid()}
             onChange={(e) => {
               this.onChange(e[0]?.value || '');
             }}
-            selectedOptions={
-              detectorType
-                ? [
-                    {
-                      value: detectorType,
-                      label: getLogTypeLabel(detectorType),
-                    },
-                  ]
-                : []
-            }
+            resourceName="detectors"
+            data-test-subj="integration_dropdown"
+            space={selectedSpace}
           />
         </EuiCompressedFormRow>
 
