@@ -123,7 +123,7 @@ Object {
                     data-test-subj="text-details-group-content-integration"
                     id="some_html_id"
                   >
-                    Detector Type
+                    detector_type
                   </div>
                 </div>
               </div>
@@ -512,7 +512,7 @@ Object {
                   data-test-subj="text-details-group-content-integration"
                   id="some_html_id"
                 >
-                  Detector Type
+                  detector_type
                 </div>
               </div>
             </div>
