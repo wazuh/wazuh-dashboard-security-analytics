@@ -106,7 +106,15 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         size: pageSize,
         sort,
         query,
-        _source: { includes: ['document', 'space'] },
+        _source: {
+          includes: [
+            'document.id',
+            'document.name',
+            'document.metadata.title',
+            'document.metadata.author',
+            'space',
+          ],
+        },
       },
       spaceFilter
     );

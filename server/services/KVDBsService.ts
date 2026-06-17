@@ -84,6 +84,7 @@ export class KVDBsService extends MDSEnabledClientService {
               'document.kvdbs': kvdbIds,
             },
           },
+          _source: ['document.id', 'document.metadata.title', 'document.kvdbs'],
         }),
       });
 

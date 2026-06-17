@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   EuiButtonGroup,
   EuiCallOut,
@@ -29,6 +29,7 @@ import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
 import { stringify as LosslessStringify } from 'lossless-json';
 import { mapYamlToLosslessObject } from '../../../components/YamlForm';
+import { useLazyFetch } from '../../../hooks/useLazyFetch';
 interface DecoderDetailsFlyoutProps {
   decoderId: string;
   space: string;
@@ -55,43 +56,12 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   space,
   onClose,
 }) => {
-  const [decoder, setDecoder] = useState<DecoderItem | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
   const [selectedView, setSelectedView] = useState(viewOptions[0].id);
-
-  useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    setError(undefined);
-    setDecoder(undefined);
-    DataStore.decoders
-      .getDecoder(decoderId, space)
-      .then((response) => {
-        if (!isMounted) {
-          return;
-        }
-        if (!response) {
-          setError('Decoder not found.');
-        } else {
-          setDecoder(response);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err?.message ?? 'Failed to load decoder.');
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [decoderId, space]);
+  const fetchDecoder = useCallback(() => DataStore.decoders.getDecoder(decoderId, space), [
+    decoderId,
+    space,
+  ]);
+  const { data: decoder, loading, error } = useLazyFetch(fetchDecoder, 'Decoder not found.');
 
   const decoderJson = useMemo(() => {
     if (!decoder) return '';
