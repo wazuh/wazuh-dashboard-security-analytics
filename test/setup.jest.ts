@@ -65,9 +65,11 @@ jest.mock('moment', () => {
   // Set moment tz mock
   if (!moment.tz) moment.tz = {};
   moment.tz.names = () => ['Pacific/Tahiti'];
+  moment.tz.guess = () => 'Pacific/Tahiti';
   const momentInstance = moment();
 
   momentInstance.format = jest.fn().mockReturnValue('2023-01-25T10:05');
+  momentInstance.tz = jest.fn().mockReturnValue(momentInstance);
 
   function fakeMoment() {
     return momentInstance;

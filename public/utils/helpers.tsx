@@ -64,6 +64,7 @@ import { LogCategoryOptionView } from '../components/Utility/LogCategoryOption';
 import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
 import { euiThemeVars } from '@osd/ui-shared-deps/theme';
 import dateMath from '@elastic/datemath';
+import { formatUIDate } from './dateFormat';
 import {
   getBreadCrumbsSetter,
   getBrowserServices,
@@ -93,11 +94,7 @@ export const parseStringsToOptions = (strings: string[]) => {
   return strings.map((str) => ({ id: str, label: str }));
 };
 
-export const renderTime = (time: number | string) => {
-  const momentTime = moment(time);
-  if (time && momentTime.isValid()) return momentTime.format('MM/DD/YY h:mm a');
-  return DEFAULT_EMPTY_DATA;
-};
+export const renderTime = (time: number | string) => formatUIDate(time);
 
 export function createTextDetailsGroup(
   data: { label: string; content: any; url?: string; target?: string }[]
