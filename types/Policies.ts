@@ -45,6 +45,7 @@ export interface SearchPolicyOptions {
   query?: any;
   _source?: any;
   includeIntegrationFields?: string[]; // specify which fields of the integrations to include in the response
+  includeIntegrationsMap?: boolean; // when false, skip building integrationsMap (default true)
 }
 export interface SearchPoliciesResponse {
   total: number;
