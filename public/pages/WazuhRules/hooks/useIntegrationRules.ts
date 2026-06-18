@@ -7,6 +7,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../types';
 import { RuleTableItem } from '../utils/helpers';
+import { buildRulesSearchQuery } from '../utils/constants';
+
+const SORT_FIELD_TO_OS: Record<string, string> = {
+  title: 'document.metadata.title',
+  level: 'document.level',
+  category: 'document.logsource.category',
+};
 
 const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
   title: rule._source.metadata?.title ?? '',
@@ -18,33 +25,94 @@ const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
   ruleId: rule._id,
 });
 
-export function useIntegrationRules({ ruleIds, space }: { ruleIds: string[]; space: string }) {
+export interface UseIntegrationRulesParams {
+  ruleIds: string[];
+  space: string;
+  enabled?: boolean;
+  pageIndex: number;
+  pageSize: number;
+  sortField: string;
+  sortDirection: 'asc' | 'desc';
+  search: string;
+  severityLevels?: string[];
+}
+
+export function useIntegrationRules({
+  ruleIds,
+  space,
+  enabled = true,
+  pageIndex,
+  pageSize,
+  sortField,
+  sortDirection,
+  search,
+  severityLevels,
+}: UseIntegrationRulesParams) {
   const [items, setItems] = useState<RuleTableItem[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
   useEffect(() => {
-    if (!space || ruleIds.length === 0) {
+    if (!enabled) {
+      return;
+    }
+
+    if (ruleIds.length === 0) {
       setItems([]);
+      setTotal(0);
+      setLoading(false);
       return;
     }
 
     let cancelled = false;
     setLoading(true);
 
+    const from = pageIndex * pageSize;
+    const size = pageSize;
+
+    const textQuery = buildRulesSearchQuery(search);
+    const mustClauses: any[] = [textQuery];
+    const filterClauses: any[] = [{ terms: { 'document.id': ruleIds } }];
+    if (severityLevels && severityLevels.length > 0) {
+      filterClauses.push({ terms: { 'document.level': severityLevels } });
+    }
+    const query = { bool: { must: mustClauses, filter: filterClauses } };
+
+    const osSortField = SORT_FIELD_TO_OS[sortField] ?? sortField;
+    const sort: Array<Record<string, any>> = [{ [osSortField]: { order: sortDirection } }];
+
     DataStore.rules
       .searchRules(
-        { size: Math.min(ruleIds.length, 5000), query: { terms: { 'document.id': ruleIds } } },
+        {
+          from,
+          size,
+          query,
+          sort,
+          _source: {
+            includes: [
+              'document.id',
+              'document.metadata.title',
+              'document.level',
+              'document.logsource.category',
+              'document.logsource.product',
+              'document.metadata.description',
+              'space',
+            ],
+          },
+        },
         space
       )
       .then((response) => {
         if (!cancelled) {
           setItems(response.items.map(toRuleTableItem));
+          setTotal(response.total);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setItems([]);
+          setTotal(0);
         }
       })
       .finally(() => {
@@ -56,11 +124,22 @@ export function useIntegrationRules({ ruleIds, space }: { ruleIds: string[]; spa
     return () => {
       cancelled = true;
     };
-  }, [ruleIds, space, reloadTrigger]);
+  }, [
+    ruleIds,
+    space,
+    enabled,
+    pageIndex,
+    pageSize,
+    sortField,
+    sortDirection,
+    search,
+    severityLevels,
+    reloadTrigger,
+  ]);
 
   const refresh = useCallback(() => {
     setReloadTrigger((prev) => prev + 1);
   }, []);
 
-  return { items, loading, refresh };
+  return { items, total, loading, refresh };
 }

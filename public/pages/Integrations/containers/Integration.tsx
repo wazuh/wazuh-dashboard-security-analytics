@@ -28,7 +28,7 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { integrationDetailsTabs } from '../utils/constants';
+import { INTEGRATION_DETAILS_TAB, integrationDetailsTabs } from '../utils/constants';
 import { IntegrationDetails } from '../components/IntegrationDetails';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { IntegrationDetectionRules } from '../components/IntegrationDetectionRules';
@@ -41,9 +41,6 @@ import {
   successNotificationToast,
 } from '../../../utils/helpers';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
-import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
-import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
 import { formatIntegrationMetadataDate } from '../utils/helpers';
 
 export interface IntegrationProps extends RouteComponentProps {
@@ -53,7 +50,7 @@ export interface IntegrationProps extends RouteComponentProps {
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
   const isMountedRef = useRef(true);
   const { integrationId } = useParams<{ integrationId: string }>();
-  const [selectedTabId, setSelectedTabId] = useState('details');
+  const [selectedTabId, setSelectedTabId] = useState<string>(INTEGRATION_DETAILS_TAB.DETAILS);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [infoText, setInfoText] = useState<React.ReactNode | string>(
@@ -106,64 +103,38 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   }, [integrationId]);
 
   const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
-  const { items: rules, loading: loadingRules, refresh: refreshRules } = useIntegrationRules({
-    ruleIds,
-    space: integrationDetails?.space?.name ?? '',
-  });
-
-  const decoderIds = useMemo(
-    () => integrationDetails?.document.decoders ?? [],
-    [integrationDetails]
-  );
-  const {
-    items: decoderItems,
-    loading: loadingDecoders,
-    refresh: refreshDecoders,
-  } = useIntegrationDecoders({
-    decoderIds,
-    space: integrationDetails?.space?.name ?? '',
-  });
-
+  const decoderIds = useMemo(() => integrationDetails?.document.decoders ?? [], [
+    integrationDetails,
+  ]);
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
-  const {
-    items: kvdbItems,
-    loading: loadingKvdbs,
-    refresh: refreshKvdbs,
-  } = useIntegrationKVDBs({
-    kvdbIds,
-    space: integrationDetails?.space?.name ?? '',
-  });
 
   const renderTabContent = () => {
     switch (selectedTabId) {
-      case 'decoders':
+      case INTEGRATION_DETAILS_TAB.DECODERS:
         return (
           <IntegrationDecoders
-            decoders={decoderItems}
-            loading={loadingDecoders}
+            decoderIds={decoderIds}
             space={integrationDetails?.space?.name ?? ''}
-            onRefresh={refreshDecoders}
+            enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DECODERS}
           />
         );
-      case 'kvdbs':
+      case INTEGRATION_DETAILS_TAB.KVDBS:
         return (
           <IntegrationKVDBs
-            kvdbs={kvdbItems}
-            loading={loadingKvdbs}
+            kvdbIds={kvdbIds}
             space={integrationDetails?.space?.name ?? ''}
-            onRefresh={refreshKvdbs}
+            enabled={selectedTabId === INTEGRATION_DETAILS_TAB.KVDBS}
           />
         );
-      case 'detection_rules':
+      case INTEGRATION_DETAILS_TAB.DETECTION_RULES:
         return (
           <IntegrationDetectionRules
-            loadingRules={loadingRules}
-            rules={rules}
+            ruleIds={ruleIds}
             space={integrationDetails?.space?.name ?? ''}
-            refreshRules={refreshRules}
+            enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DETECTION_RULES}
           />
         );
-      case 'details':
+      case INTEGRATION_DETAILS_TAB.DETAILS:
       default:
         return (
           <IntegrationDetails
@@ -331,7 +302,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             onClick={() => {
               closeActionsPopover();
               setIsEditMode(true);
-              setSelectedTabId('details');
+              setSelectedTabId(INTEGRATION_DETAILS_TAB.DETAILS);
             }}
             disabled={isEditDisabled}
             data-test-subj={'editIntegrationButton'}
