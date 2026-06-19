@@ -3,14 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   EuiBadge,
+  EuiBasicTable,
   EuiBasicTableColumn,
+  EuiComboBox,
+  EuiFieldSearch,
   EuiFlexGroup,
   EuiFlexItem,
   EuiIcon,
-  EuiInMemoryTable,
   EuiLink,
   EuiSmallButton,
   EuiSpacer,
@@ -26,24 +28,50 @@ import { ROUTES } from '../../../utils/constants';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
+import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
 
 export interface IntegrationDetectionRulesProps {
-  rules: RuleTableItem[];
-  loadingRules: boolean;
+  ruleIds: string[];
   space: string;
-  refreshRules: () => void;
+  enabled: boolean;
 }
 
 export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps> = ({
-  rules,
-  loadingRules,
+  ruleIds,
   space,
-  refreshRules,
+  enabled,
 }) => {
-  const [selectedRule, setSelectedRule] = useState<RuleTableItem | undefined>(undefined);
+  const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>(undefined);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortField, setSortField] = useState('title');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [searchText, setSearchText] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const [severityLevels, setSeverityLevels] = useState<string[]>([]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setAppliedSearch(searchText);
+      setPageIndex(0);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [searchText]);
+
+  const { items: rules, total, loading: loadingRules, refresh } = useIntegrationRules({
+    ruleIds,
+    space,
+    enabled,
+    pageIndex,
+    pageSize,
+    sortField,
+    sortDirection,
+    search: appliedSearch,
+    severityLevels,
+  });
 
   const closeRuleDetails = useCallback(() => {
-    setSelectedRule(undefined);
+    setSelectedRuleId(undefined);
   }, []);
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
@@ -56,7 +84,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
         sortable: true,
         truncateText: true,
         render: (_: string, rule: RuleTableItem) => (
-          <EuiLink onClick={() => setSelectedRule(rule)}>{rule.title}</EuiLink>
+          <EuiLink onClick={() => setSelectedRuleId(rule.ruleId)}>{rule.title}</EuiLink>
         ),
       },
       {
@@ -83,35 +111,46 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     []
   );
 
-  const search = {
-    box: {
-      placeholder: 'Search rules',
-      schema: true,
-      compressed: true,
+  const onTableChange = useCallback(
+    ({
+      page,
+      sort,
+    }: {
+      page?: { index: number; size: number };
+      sort?: { field: string; direction: 'asc' | 'desc' };
+    }) => {
+      if (page) {
+        setPageIndex(page.index);
+        setPageSize(page.size);
+      }
+      if (sort) {
+        setSortField(sort.field);
+        setSortDirection(sort.direction);
+      }
     },
-    filters: [
-      {
-        type: 'field_value_selection' as const,
-        field: 'level',
-        name: 'Severity',
-        compressed: true,
-        multiSelect: 'or' as const,
-        options: ruleSeverity.map((s) => ({ value: s.value, name: s.name })),
-      },
-    ],
-  };
+    []
+  );
+
+  const severityOptions = ruleSeverity.map((s) => ({ label: s.name, value: s.value }));
+  const selectedSeverityOptions = severityLevels.map((v) => ({
+    label: ruleSeverity.find((s) => s.value === v)?.name ?? v,
+    value: v,
+  }));
+
+  const isEmptyState =
+    total === 0 && !loadingRules && !appliedSearch && severityLevels.length === 0;
 
   return (
     <>
-      {selectedRule && (
-        <RuleViewerFlyout hideFlyout={closeRuleDetails} ruleTableItem={selectedRule} />
+      {selectedRuleId && (
+        <RuleViewerFlyout hideFlyout={closeRuleDetails} ruleId={selectedRuleId} space={space} />
       )}
       <ContentPanel
         title="Rules"
         hideHeaderBorder={true}
-        actions={[<EuiSmallButton onClick={refreshRules}>Refresh</EuiSmallButton>]}
+        actions={[<EuiSmallButton onClick={refresh}>Refresh</EuiSmallButton>]}
       >
-        {rules.length === 0 && !loadingRules ? (
+        {isEmptyState ? (
           <EuiFlexGroup justifyContent="center" alignItems="center" direction="column">
             <EuiFlexItem grow={false}>
               <EuiText color="subdued" size="s">
@@ -145,20 +184,49 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
             )}
           </EuiFlexGroup>
         ) : (
-          <EuiInMemoryTable
-            items={rules}
-            columns={columns}
-            loading={loadingRules}
-            search={search}
-            pagination={{
-              initialPageSize: 10,
-              pageSizeOptions: [10, 25, 50],
-            }}
-            sorting={{
-              sort: { field: 'title', direction: 'asc' },
-            }}
-            message="No rules found."
-          />
+          <>
+            <EuiFlexGroup gutterSize="s" alignItems="center">
+              <EuiFlexItem>
+                <EuiFieldSearch
+                  placeholder="Search rules"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  compressed
+                  fullWidth
+                />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
+                <EuiComboBox
+                  placeholder="Severity"
+                  options={severityOptions}
+                  selectedOptions={selectedSeverityOptions}
+                  onChange={(opts) => {
+                    setSeverityLevels(opts.map((o) => o.value as string));
+                    setPageIndex(0);
+                  }}
+                  isClearable
+                  compressed
+                />
+              </EuiFlexItem>
+            </EuiFlexGroup>
+            <EuiSpacer size="s" />
+            <EuiBasicTable
+              items={rules}
+              columns={columns}
+              loading={loadingRules}
+              noItemsMessage={loadingRules ? 'Loading...' : 'No rules found.'}
+              pagination={{
+                pageIndex,
+                pageSize,
+                totalItemCount: total,
+                pageSizeOptions: [10, 25, 50],
+              }}
+              sorting={{
+                sort: { field: sortField as keyof RuleTableItem, direction: sortDirection },
+              }}
+              onChange={onTableChange}
+            />
+          </>
         )}
       </ContentPanel>
     </>

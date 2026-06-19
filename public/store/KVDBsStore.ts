@@ -25,7 +25,8 @@ export class KVDBsStore {
   ) {}
 
   public async searchKVDBs(
-    params: KVDBSearchRequest
+    params: KVDBSearchRequest,
+    options?: { skipIntegrationMap?: boolean }
   ): Promise<{ items: KVDBItem[]; total: number }> {
     try {
       const response: ServerResponse<KVDBSearchResponse> = await this.service.searchKVDBs(params);
@@ -43,6 +44,12 @@ export class KVDBsStore {
         id: hit._id,
         ...hit._source,
       }));
+
+      // Skip the integrations lookup when the caller already knows the integration
+      // context (e.g. the integration details tab), avoiding an extra request.
+      if (options?.skipIntegrationMap) {
+        return { items, total };
+      }
 
       const kvdbIds = Array.from(
         new Set(items.map((item) => item.document?.id).filter((id): id is string => Boolean(id)))

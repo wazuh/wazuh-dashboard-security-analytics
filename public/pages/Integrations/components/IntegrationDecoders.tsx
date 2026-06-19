@@ -3,14 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
-  EuiInMemoryTable,
+  EuiBasicTable,
   EuiBasicTableColumn,
+  EuiFieldSearch,
   EuiFlexGroup,
   EuiFlexItem,
   EuiLink,
   EuiSmallButton,
+  EuiSpacer,
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
@@ -22,12 +24,12 @@ import { ROUTES } from '../../../utils/constants';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
+import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
 
 export interface IntegrationDecodersProps {
-  decoders: DecoderTableItem[];
-  loading: boolean;
+  decoderIds: string[];
   space: string;
-  onRefresh: () => void;
+  enabled: boolean;
 }
 
 export interface DecoderTableItem {
@@ -38,12 +40,36 @@ export interface DecoderTableItem {
 }
 
 export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
-  decoders,
-  loading,
+  decoderIds,
   space,
-  onRefresh,
+  enabled,
 }) => {
   const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(undefined);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [searchText, setSearchText] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setAppliedSearch(searchText);
+      setPageIndex(0);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [searchText]);
+
+  const { items: decoders, total, loading, refresh } = useIntegrationDecoders({
+    decoderIds,
+    space,
+    enabled,
+    pageIndex,
+    pageSize,
+    sortField,
+    sortDirection,
+    search: appliedSearch,
+  });
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
 
@@ -79,13 +105,27 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     setFlyoutDecoderId(undefined);
   }, []);
 
-  const search = {
-    box: {
-      placeholder: 'Search decoders',
-      schema: true,
-      compressed: true,
+  const onTableChange = useCallback(
+    ({
+      page,
+      sort,
+    }: {
+      page?: { index: number; size: number };
+      sort?: { field: string; direction: 'asc' | 'desc' };
+    }) => {
+      if (page) {
+        setPageIndex(page.index);
+        setPageSize(page.size);
+      }
+      if (sort) {
+        setSortField(sort.field);
+        setSortDirection(sort.direction);
+      }
     },
-  };
+    []
+  );
+
+  const isEmptyState = total === 0 && !loading && !appliedSearch;
 
   return (
     <>
@@ -96,9 +136,9 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
       <ContentPanel
         title="Decoders"
         hideHeaderBorder={true}
-        actions={[<EuiSmallButton onClick={onRefresh}>Refresh</EuiSmallButton>]}
+        actions={[<EuiSmallButton onClick={refresh}>Refresh</EuiSmallButton>]}
       >
-        {decoders.length === 0 && !loading ? (
+        {isEmptyState ? (
           <EuiFlexGroup justifyContent="center" alignItems="center" direction="column">
             <EuiFlexItem grow={false}>
               <EuiText color="subdued" size="s">
@@ -131,20 +171,36 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
             )}
           </EuiFlexGroup>
         ) : (
-          <EuiInMemoryTable
-            items={decoders}
-            columns={columns}
-            loading={loading}
-            search={search}
-            pagination={{
-              initialPageSize: 10,
-              pageSizeOptions: [10, 25, 50],
-            }}
-            sorting={{
-              sort: { field: 'document.name', direction: 'asc' },
-            }}
-            message="No decoders found."
-          />
+          <>
+            <EuiFlexGroup gutterSize="s">
+              <EuiFlexItem>
+                <EuiFieldSearch
+                  placeholder="Search decoders"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  compressed
+                  fullWidth
+                />
+              </EuiFlexItem>
+            </EuiFlexGroup>
+            <EuiSpacer size="s" />
+            <EuiBasicTable
+              items={decoders}
+              columns={columns}
+              loading={loading}
+              noItemsMessage={loading ? 'Loading...' : 'No decoders found.'}
+              pagination={{
+                pageIndex,
+                pageSize,
+                totalItemCount: total,
+                pageSizeOptions: [10, 25, 50],
+              }}
+              sorting={{
+                sort: { field: sortField as keyof DecoderTableItem, direction: sortDirection },
+              }}
+              onChange={onTableChange}
+            />
+          </>
         )}
       </ContentPanel>
     </>
