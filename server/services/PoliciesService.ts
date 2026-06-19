@@ -192,7 +192,15 @@ export class PoliciesService extends MDSEnabledClientService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source, includeIntegrationFields } = body;
+      const {
+        from = 0,
+        size = 25,
+        sort,
+        query,
+        _source,
+        includeIntegrationFields,
+        includeIntegrationsMap = true,
+      } = body;
       const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
@@ -208,23 +216,25 @@ export class PoliciesService extends MDSEnabledClientService {
       });
 
       const hits = searchResponse?.hits?.hits ?? [];
-      const integrationsIds = [
-        ...hits.map((hit: any) => hit?._source?.document?.integrations),
-      ].flat();
-      const integrationMap = await this.fetchIntegrationMap(
-        client,
-        space,
-        integrationsIds,
-        includeIntegrationFields
-      );
+      // Skip the integrations search/enrichment when the caller doesn't need integrationsMap.
+      const integrationsIds = includeIntegrationsMap
+        ? [...hits.map((hit: any) => hit?._source?.document?.integrations)].flat()
+        : [];
+      const integrationMap = includeIntegrationsMap
+        ? await this.fetchIntegrationMap(client, space, integrationsIds, includeIntegrationFields)
+        : new Map<string, any>();
 
       const items: PolicyItem[] = hits.map((hit: any) => ({
         id: hit._id,
         ...hit._source,
-        integrationsMap: Object.fromEntries(
-          hit._source?.document?.integrations?.map?.((id) => [id, integrationMap.get(id) ?? {}]) ??
-            []
-        ),
+        integrationsMap: includeIntegrationsMap
+          ? Object.fromEntries(
+              hit._source?.document?.integrations?.map?.((id) => [
+                id,
+                integrationMap.get(id) ?? {},
+              ]) ?? []
+            )
+          : {},
       }));
       const total =
         typeof searchResponse?.hits?.total === 'number'

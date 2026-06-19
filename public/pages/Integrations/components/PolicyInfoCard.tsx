@@ -459,7 +459,8 @@ const PolicyInfoCardLoading: React.FC = () => <PolicyInfoCardSkeleton />;
 
 export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
   {
-    includeIntegrationFields: ['document'],
+    includeIntegrationsMap: false,
+    _source: { excludes: ['document.integrations', 'document.filters'] },
   },
   {
     rerunOn: ({ space, refresh }) => [space, refresh],
