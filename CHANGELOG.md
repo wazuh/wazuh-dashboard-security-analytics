@@ -16,6 +16,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Added clear space action to the Overview actions button [#186](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/186) 
 - Added modifiers in the dropdown inside the rule creation and edition form [#259](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/259)
 - Added URL-based rule navigation from Log Test detection results [#308](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/308)
+- Added date formatter that respects the dateFormat advanced setting [#362](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/362)
 
 ### Changed
 
