@@ -223,6 +223,7 @@ export class PoliciesService extends MDSEnabledClientService {
         query,
         _source,
         includeIntegrationFields,
+        includeIntegrationsMap = true,
         integrationFrom = 0,
         integrationSize,
         integrationSort,
@@ -243,45 +244,48 @@ export class PoliciesService extends MDSEnabledClientService {
       });
 
       const hits = searchResponse?.hits?.hits ?? [];
-      const integrationsIds = [
-        ...hits.map((hit: any) => hit?._source?.document?.integrations),
-      ].flat();
-      const { integrations: integrationMap, total: integrationsTotal } =
-        await this.fetchIntegrationMap(client, space, integrationsIds, {
-          _source: includeIntegrationFields,
-          from: integrationFrom,
-          size: integrationSize,
-          sort: integrationSort,
-          query: integrationQuery,
-        });
+      const integrationsIds = includeIntegrationsMap
+        ? [...hits.map((hit: any) => hit?._source?.document?.integrations)].flat()
+        : [];
+      const { integrations: integrationMap, total: integrationsTotal } = includeIntegrationsMap
+        ? await this.fetchIntegrationMap(client, space, integrationsIds, {
+            _source: includeIntegrationFields,
+            from: integrationFrom,
+            size: integrationSize,
+            sort: integrationSort,
+            query: integrationQuery,
+          })
+        : { integrations: new Map<string, any>(), total: 0 };
 
       const transformToCounts = !includeIntegrationFields;
       const items: PolicyItem[] = hits.map((hit: any) => ({
         id: hit._id,
         ...hit._source,
         integrationsTotal,
-        integrationsMap: Object.fromEntries(
-          Array.from(integrationMap.entries()).map(([documentId, integration]) => {
-            if (!transformToCounts) {
-              return [documentId, integration];
-            }
-            const doc = integration.document ?? {};
-            return [
-              documentId,
-              {
-                _id: integration._id,
-                document: {
-                  metadata: doc.metadata ?? {},
-                  category: doc.category ?? '',
-                  rulesCount: doc.rules?.length ?? 0,
-                  decodersCount: doc.decoders?.length ?? 0,
-                  kvdbsCount: doc.kvdbs?.length ?? 0,
-                },
-                space: integration.space ?? {},
-              },
-            ];
-          })
-        ),
+        integrationsMap: includeIntegrationsMap
+          ? Object.fromEntries(
+              Array.from(integrationMap.entries()).map(([documentId, integration]) => {
+                if (!transformToCounts) {
+                  return [documentId, integration];
+                }
+                const doc = integration.document ?? {};
+                return [
+                  documentId,
+                  {
+                    _id: integration._id,
+                    document: {
+                      metadata: doc.metadata ?? {},
+                      category: doc.category ?? '',
+                      rulesCount: doc.rules?.length ?? 0,
+                      decodersCount: doc.decoders?.length ?? 0,
+                      kvdbsCount: doc.kvdbs?.length ?? 0,
+                    },
+                    space: integration.space ?? {},
+                  },
+                ];
+              })
+            )
+          : {},
       }));
       const total =
         typeof searchResponse?.hits?.total === 'number'
