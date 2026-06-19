@@ -61,7 +61,6 @@ import { Network } from 'react-graph-vis';
 import { getLogTypeLabel } from '../../LogTypes/utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
-import { formatUIDate } from '../../../utils/dateFormat';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { debounce } from 'lodash';
 import { CorrelationsTableView } from './CorrelationsTableView';
@@ -182,7 +181,7 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
           ...state.finding,
           id: state.finding.id,
           logType: state.finding.detector._source.detector_type,
-          timestamp: formatUIDate(state.finding.timestamp),
+          timestamp: new Date(state.finding.timestamp).toLocaleString(),
           detectionRule: {
             name: (state.finding as any).ruleName,
             severity: (state.finding as any).ruleSeverity,

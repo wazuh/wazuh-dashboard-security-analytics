@@ -18,7 +18,6 @@ import { DetectorsService, FindingsService, CorrelationService } from '../servic
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { errorNotificationToast } from '../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../utils/constants';
-import { formatUIDate } from '../utils/dateFormat';
 import { DataStore } from './DataStore';
 import { RuleSource } from '../../server/models/interfaces';
 import { RuleSeverityPriority, RuleSeverityValue } from '../pages/Rules/utils/constants';
@@ -297,7 +296,7 @@ export class CorrelationsStore implements ICorrelationsStore {
           logType: detector._source.detector_type,
           detector: detector,
           detectorName: detector._source.name,
-          timestamp: formatUIDate(f.timestamp),
+          timestamp: new Date(f.timestamp).toLocaleString(),
           detectionRule: rule
             ? {
                 // Wazuh: Remove duplicated fields in metadata and root: title.

@@ -22,7 +22,6 @@ import {
 import { displayBadges } from '../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { capitalizeFirstLetter } from '../../../utils/helpers';
-import { formatUIDate } from '../../../utils/dateFormat';
 import { CorrelationGraph } from '../components/CorrelationGraph';
 import { getSeverityColor, graphRenderOptions } from '../utils/constants';
 import { CorrelationFinding, CorrelationGraphData } from '../../../../types';
@@ -60,7 +59,7 @@ export const CorrelationsTableFlyout: React.FC<CorrelationsTableFlyoutProps> = (
     {
       field: 'timestamp',
       name: 'Time',
-      render: (timestamp: string) => formatUIDate(timestamp),
+      render: (timestamp: string) => new Date(timestamp).toLocaleString(),
       sortable: true,
     },
     {
@@ -113,7 +112,7 @@ export const CorrelationsTableFlyout: React.FC<CorrelationsTableFlyoutProps> = (
               <p>
                 <EuiTextColor color="subdued">Time</EuiTextColor>
                 <br />
-                {formatUIDate(selectedTableRow.startTime)}
+                {new Date(selectedTableRow.startTime).toLocaleString()}
               </p>
             </EuiText>
           </EuiFlexItem>

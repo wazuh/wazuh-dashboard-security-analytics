@@ -12,7 +12,6 @@ import {
 import { CorrelationsTableData } from './CorrelationsContainer';
 import { displayBadges, displaySeveritiesBadges, displayResourcesBadges } from '../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
-import { formatUIDate } from '../../../utils/dateFormat';
 
 interface CorrelationsTableProps {
   correlationsTableData: CorrelationsTableData[];
@@ -37,7 +36,9 @@ export const CorrelationsTable: React.FC<CorrelationsTableProps> = ({
       name: 'Start Time',
       sortable: true,
       dataType: 'date',
-      render: (startTime: number) => formatUIDate(startTime),
+      render: (startTime: number) => {
+        return new Date(startTime).toLocaleString();
+      },
     },
     {
       field: 'correlationRule',

@@ -3,36 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { expect } from '@jest/globals';
+import moment from 'moment';
 import { uiSettingsServiceMock } from '../../../../src/core/public/ui_settings/ui_settings_service.mock';
 import { setUISettings } from '../services/utils/constants';
 import { DEFAULT_EMPTY_DATA } from './constants';
 import { formatUIDate } from './dateFormat';
 
-/**
- * Override the global moment mock (test/setup.jest.ts) for this file so we can
- * assert which format/timezone `formatUIDate` actually applies. `.format()`
- * echoes its argument and `.tz()` is chainable, exposing the calls for assertions.
- */
-jest.mock('moment', () => {
-  const formatMock = jest.fn((format: string) => `formatted:${format}`);
-  const tzMock = jest.fn(function (this: unknown) {
-    return this;
-  });
-  const guessMock = jest.fn(() => 'America/Bogota');
-
-  const moment: any = jest.fn((input?: unknown) => ({
-    isValid: () => input !== 'invalid',
-    tz: tzMock,
-    format: formatMock,
-  }));
-  moment.tz = { guess: guessMock };
-  moment.__mocks = { formatMock, tzMock, guessMock };
-
-  return moment;
-});
-
-const { formatMock, tzMock, guessMock } = (jest.requireMock('moment') as any).__mocks;
+const momentInstance = (moment() as unknown) as {
+  format: jest.Mock;
+  tz: jest.Mock;
+  isValid: jest.Mock;
+};
 
 const uiSettings = uiSettingsServiceMock.createStartContract();
 
@@ -54,8 +35,9 @@ describe('formatUIDate', () => {
   it('formats a valid date using the configured dateFormat setting', () => {
     setSettings({ dateFormat: 'YYYY-MM-DD', 'dateFormat:tz': 'America/New_York' });
 
-    expect(formatUIDate('2024-01-15T10:00:00Z')).toBe('formatted:YYYY-MM-DD');
-    expect(formatMock).toHaveBeenCalledWith('YYYY-MM-DD');
+    formatUIDate('2024-01-15T10:00:00Z');
+
+    expect(momentInstance.format).toHaveBeenCalledWith('YYYY-MM-DD');
   });
 
   it('applies the configured dateFormat:tz timezone', () => {
@@ -63,8 +45,7 @@ describe('formatUIDate', () => {
 
     formatUIDate('2024-01-15T10:00:00Z');
 
-    expect(tzMock).toHaveBeenCalledWith('America/New_York');
-    expect(guessMock).not.toHaveBeenCalled();
+    expect(momentInstance.tz).toHaveBeenCalledWith('America/New_York');
   });
 
   it('falls back to the detected timezone when dateFormat:tz is "Browser"', () => {
@@ -72,34 +53,39 @@ describe('formatUIDate', () => {
 
     formatUIDate('2024-01-15T10:00:00Z');
 
-    expect(guessMock).toHaveBeenCalled();
-    expect(tzMock).toHaveBeenCalledWith('America/Bogota');
+    // test/setup.jest.ts mocks moment.tz.guess() => 'Pacific/Tahiti'.
+    expect(momentInstance.tz).toHaveBeenCalledWith('Pacific/Tahiti');
   });
 
-  it('returns DEFAULT_EMPTY_DATA for empty input', () => {
+  it('returns DEFAULT_EMPTY_DATA for empty input without formatting', () => {
     setSettings({ dateFormat: 'YYYY-MM-DD' });
 
     expect(formatUIDate(undefined)).toBe(DEFAULT_EMPTY_DATA);
     expect(formatUIDate('')).toBe(DEFAULT_EMPTY_DATA);
     expect(formatUIDate(0)).toBe(DEFAULT_EMPTY_DATA);
-    expect(formatMock).not.toHaveBeenCalled();
+    expect(momentInstance.format).not.toHaveBeenCalled();
   });
 
   it('returns DEFAULT_EMPTY_DATA for an invalid date', () => {
     setSettings({ dateFormat: 'YYYY-MM-DD' });
+    // The shared mock instance is always valid, so force an invalid result once.
+    jest.spyOn(momentInstance, 'isValid').mockReturnValueOnce(false);
 
-    expect(formatUIDate('invalid')).toBe(DEFAULT_EMPTY_DATA);
+    expect(formatUIDate('not-a-date')).toBe(DEFAULT_EMPTY_DATA);
+    expect(momentInstance.format).not.toHaveBeenCalled();
   });
 
   it('falls back to the default format when uiSettings is unavailable', () => {
     jest.isolateModules(() => {
-      // Fresh constants module → getUISettings() not set → getter throws and is
-      // swallowed, so the util must not throw and uses the default format.
+      // Fresh module registry → constants' getUISettings() is unset and throws;
+      // formatUIDate must swallow it and use the default format (DEFAULT_DATE_FORMAT).
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { formatUIDate: isolatedFormat } = require('./dateFormat');
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const isolatedMoment = require('moment');
 
       expect(() => isolatedFormat('2024-01-15T10:00:00Z')).not.toThrow();
-      expect(isolatedFormat('2024-01-15T10:00:00Z')).toBe('formatted:MM/DD/YY h:mm a');
+      expect(isolatedMoment().format).toHaveBeenCalledWith('MM/DD/YY h:mm a');
     });
   });
 });

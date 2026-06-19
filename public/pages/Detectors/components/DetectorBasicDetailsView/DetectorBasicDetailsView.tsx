@@ -7,6 +7,8 @@ import { EuiSmallButton, EuiSpacer, EuiLink, EuiIcon, EuiText, EuiToolTip } from
 import React from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { createTextDetailsGroup, parseSchedule } from '../../../../utils/helpers';
+// Wazuh: replaced the `moment` import with formatUIDate to honor the
+// `dateFormat`/`dateFormat:tz` advanced settings (upstream imported `moment` here).
 import { formatUIDate } from '../../../../utils/dateFormat';
 import { DEFAULT_EMPTY_DATA, logTypesWithDashboards } from '../../../../utils/constants';
 import { isStandardSource } from '../../../../utils/detectorSource';
@@ -39,6 +41,9 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
   const { name, detector_type, inputs, schedule } = detector;
   const detectorSchedule = parseSchedule(schedule);
   const isStandardDetector = isStandardSource(detector.source);
+  // Wazuh: format Created at / Last updated time with formatUIDate so they honor the
+  // `dateFormat`/`dateFormat:tz` settings. Upstream used the hardcoded
+  // `moment(...).format('YYYY-MM-DDTHH:mm')`.
   const createdAt = enabled_time ? formatUIDate(enabled_time) : undefined;
   const lastUpdated = last_update_time ? formatUIDate(last_update_time) : undefined;
   const totalSelected = detector.inputs.reduce((sum, inputObj) => {
