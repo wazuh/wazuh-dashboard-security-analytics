@@ -29,7 +29,7 @@ const truncateStyle: React.CSSProperties = {
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  wordBreak: 'break-all',
+  wordBreak: 'break-word',
 };
 
 const fullValueStyle: React.CSSProperties = {

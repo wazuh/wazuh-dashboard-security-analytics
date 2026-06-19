@@ -15,12 +15,16 @@ import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { IntegrationBase, PolicyItem } from '../../../../types';
 
 import moment from 'moment';
+import { formatUIDate } from '../../../utils/dateFormat';
 
-/** Integration/policy metadata dates often arrive as ISO strings; show as MM/DD/YY. */
+/**
+ * Integration/policy metadata dates often arrive as ISO strings; format them
+ * using the configured `dateFormat`/`dateFormat:tz` advanced settings.
+ */
 export const formatIntegrationMetadataDate = (value?: string) => {
   if (!value?.trim()) return '';
   const m = moment(value);
-  return m.isValid() ? m.format('MM/DD/YY') : value;
+  return m.isValid() ? formatUIDate(value) : value;
 };
 
 const getIntegrationCategoryFilterDisplayName = (value: string): string => {

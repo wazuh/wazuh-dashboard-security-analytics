@@ -7,6 +7,7 @@ import React from 'react';
 import { EuiLink } from '@elastic/eui';
 import moment from 'moment';
 import { DEFAULT_EMPTY_DATA } from '../../utils/constants';
+import { formatUIDate } from '../../utils/dateFormat';
 
 export type MetadataFieldType = 'raw' | 'text' | 'number' | 'date' | 'url' | 'boolean' | 'boolean_yesno';
 
@@ -43,17 +44,7 @@ export const MetadataFieldDate: React.FC<{ value: string | number }> = ({ value 
   if (!value) {
     return <>{DEFAULT_EMPTY_DATA}</>;
   }
-  // FIXME: This should use the format specified in the settings
-  // Format date similar to formatUIDate: "MMM DD, YYYY @ HH:mm:ss.SSS"
-  try {
-    const date = moment(value);
-    if (date.isValid()) {
-      return <>{date.format('MMM DD, YYYY @ HH:mm:ss.SSS')}</>;
-    }
-    return <>{String(value)}</>;
-  } catch {
-    return <>{String(value)}</>;
-  }
+  return <>{moment(value).isValid() ? formatUIDate(value) : String(value)}</>;
 };
 
 const mapFieldRenderers: {
