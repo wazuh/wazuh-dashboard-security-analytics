@@ -50,7 +50,7 @@ export function useIntegrationRules({
 }: UseIntegrationRulesParams) {
   const [items, setItems] = useState<RuleTableItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
   useEffect(() => {

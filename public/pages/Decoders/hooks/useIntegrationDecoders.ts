@@ -37,7 +37,7 @@ export function useIntegrationDecoders({
 }: UseIntegrationDecodersParams) {
   const [items, setItems] = useState<DecoderTableItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
   useEffect(() => {

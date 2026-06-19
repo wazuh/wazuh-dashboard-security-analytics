@@ -31,7 +31,7 @@ export function useIntegrationKVDBs({
 }: UseIntegrationKVDBsParams) {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
   useEffect(() => {
