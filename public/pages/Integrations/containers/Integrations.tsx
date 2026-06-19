@@ -8,7 +8,10 @@ import {
   EuiSmallButton,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiInMemoryTable,
+  EuiBasicTable,
+  EuiBasicTableColumn,
+  EuiFieldSearch,
+  EuiComboBox,
   EuiSpacer,
   EuiText,
   EuiCard,
@@ -25,11 +28,11 @@ import { DataSourceProps } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import {
   getIntegrationsTableColumns,
-  getIntegrationsTableSearchConfig,
   IntegrationTableItem,
   mapPolicyToIntegrationTableItems,
   hasRelatedEntity,
 } from '../utils/helpers';
+import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
 import { RouteComponentProps } from 'react-router-dom';
 import { useCallback } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -50,6 +53,23 @@ export interface IntegrationsProps extends RouteComponentProps, DataSourceProps 
 
 const DELETE_SELECTED_ACTION = 'delete_selected' as const;
 const CLEAR_SPACE_ACTION = 'clear_space' as const;
+
+const DEFAULT_PAGE_SIZE = 25;
+
+const INTEGRATION_SORT_FIELD_TO_OS: Record<string, string | undefined> = {
+  title: 'document.metadata.title',
+};
+
+const buildIntegrationQuery = (searchText: string, categories: string[]) => {
+  const must: any[] = [];
+  if (searchText.trim()) {
+    must.push({ match: { 'document.metadata.title': { query: searchText, fuzziness: 'AUTO' } } });
+  }
+  if (categories.length > 0) {
+    must.push({ terms: { 'document.category': categories } });
+  }
+  return must.length > 0 ? { bool: { must } } : undefined;
+};
 
 type ItemForAction =
   | {
@@ -73,14 +93,23 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 }) => {
   const isMountedRef = useRef(true);
   const [integrations, setIntegrations] = useState<IntegrationTableItem[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<IntegrationTableItem[]>([]);
   const [itemForAction, setItemForAction] = useState<ItemForAction | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isOverviewActionsOpen, setIsOverviewActionsOpen] = useState<boolean>(false);
   const [isClearingSpace, setIsClearingSpace] = useState<boolean>(false);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [searchText, setSearchText] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<string>('title');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading || isClearingSpace,
+    onSpaceChange: () => setPageIndex(0),
   });
   const [policyRefresh, setPolicyRefresh] = useState(0);
   // This trusts the changes in the history location causes a rerender in the componnet
@@ -94,18 +123,26 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const loadIntegrations = useCallback(async () => {
     setLoading(true);
 
+    const integrationQuery = buildIntegrationQuery(appliedSearch, selectedCategories);
+    const osField = INTEGRATION_SORT_FIELD_TO_OS[sortField];
+    const integrationSort = osField ? [{ [osField]: { order: sortDirection } }] : undefined;
+
     const policiesResult = await DataStore.policies.searchPolicies(spaceFilter, {
-      includeIntegrationFields: ['document', 'space'],
+      integrationFrom: pageIndex * pageSize,
+      integrationSize: pageSize,
+      integrationSort,
+      integrationQuery,
     });
     const policy = policiesResult.items[0];
-    const integrations = mapPolicyToIntegrationTableItems(policy);
+    const items = mapPolicyToIntegrationTableItems(policy);
 
     if (!isMountedRef.current) {
       return;
     }
-    setIntegrations(integrations);
+    setIntegrations(items);
+    setTotal(policy?.integrationsTotal ?? items.length);
     setLoading(false);
-  }, [spaceFilter, dataSource]);
+  }, [spaceFilter, dataSource, pageIndex, pageSize, appliedSearch, selectedCategories, sortField, sortDirection]);
 
   const deleteIntegration = async (id: string) => {
     const { ok } = await DataStore.integrations.deleteIntegration(id);
@@ -126,15 +163,23 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     setBreadcrumbs([BREADCRUMBS.INTEGRATIONS]);
   }, []);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setAppliedSearch(searchText);
+      setPageIndex(0);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchText]);
+
   const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
   const isPromoteActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.PROMOTE);
   const isDeleteActionDisabledBySpace = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
 
   const selectedItemsWithoutRelatedEntities = selectedItems.filter(
-    (item) => !item.rules?.length && !item.decoders?.length && !item.kvdbs?.length
+    (item) => !item.rules && !item.decoders && !item.kvdbs
   );
   const selectedItemsWithRelatedEntities = selectedItems.filter(
-    (item) => item.rules?.length || item.decoders?.length || item.kvdbs?.length
+    (item) => item.rules || item.decoders || item.kvdbs
   );
   const selectedItemsWithRelatedEntitiesCount = selectedItemsWithRelatedEntities.length;
   const selectedItemsRelatedEntitiesMessage = DataStore.integrations.getRelatedEntitiesMessage({
@@ -248,6 +293,23 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     loadIntegrations,
     notifications,
   ]);
+
+  const onTableChange = ({ page, sort }: { page?: any; sort?: any }) => {
+    if (sort) {
+      setSortField(sort.field);
+      setSortDirection(sort.direction);
+      setPageIndex(0);
+    }
+    if (page) {
+      setPageIndex(page.index);
+      setPageSize(page.size);
+    }
+  };
+
+  const categoryOptions = getIntegrationCategoryFilterOptions(false).map((opt: any) => ({
+    label: opt.name ?? opt.label ?? opt.value,
+    value: opt.value,
+  }));
 
   const buildActionsPopOver = (
     id: string,
@@ -436,9 +498,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           {itemForAction.action === SPACE_ACTIONS.DELETE && (
             <DeleteIntegrationModal
               integrationName={itemForAction.item.title}
-              detectionRulesCount={itemForAction.item.rules?.length ?? 0}
-              decodersCount={itemForAction.item.decoders?.length ?? 0}
-              kvdbsCount={itemForAction.item.kvdbs?.length ?? 0}
+              detectionRulesCount={itemForAction.item.rules ?? 0}
+              decodersCount={itemForAction.item.decoders ?? 0}
+              kvdbsCount={itemForAction.item.kvdbs ?? 0}
               closeModal={() => setItemForAction(null)}
               onConfirm={() => deleteIntegration(itemForAction.item.id)}
             />
@@ -549,25 +611,63 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       >
         <EuiSpacer size={'l'} />
         {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
-          <EuiInMemoryTable
-            itemId={'id'}
-            items={integrations}
-            columns={getIntegrationsTableColumns({
-              showDetails: showIntegrationDetails,
-              setItemForAction,
-            })}
-            pagination={{
-              initialPageSize: 25,
-            }}
-            search={getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] })}
-            selection={{
-              onSelectionChange: onSelectionChange,
-              initialSelected: [],
-            }}
-            isSelectable={true}
-            sorting={true}
-            loading={loading}
-          />
+          <>
+            <EuiFlexGroup alignItems="center" gutterSize="m">
+              <EuiFlexItem>
+                <EuiFieldSearch
+                  fullWidth
+                  compressed
+                  placeholder="Search integrations"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  isClearable
+                  aria-label="Search integrations"
+                />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false} style={{ minWidth: 220 }}>
+                <EuiComboBox
+                  compressed
+                  placeholder="Category"
+                  options={categoryOptions}
+                  selectedOptions={categoryOptions.filter((o: any) =>
+                    selectedCategories.includes(o.value)
+                  )}
+                  onChange={(selected) => {
+                    setSelectedCategories(selected.map((o) => o.value as string));
+                    setPageIndex(0);
+                  }}
+                  isClearable
+                  aria-label="Filter by category"
+                />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
+            </EuiFlexGroup>
+            <EuiSpacer size="m" />
+            <EuiBasicTable
+              itemId={'id'}
+              items={integrations}
+              columns={
+                getIntegrationsTableColumns({
+                  showDetails: showIntegrationDetails,
+                  setItemForAction,
+                }) as Array<EuiBasicTableColumn<IntegrationTableItem>>
+              }
+              pagination={{
+                pageIndex,
+                pageSize,
+                totalItemCount: total,
+                pageSizeOptions: [10, 25, 50],
+              }}
+              sorting={{ sort: { field: sortField as keyof IntegrationTableItem, direction: sortDirection } }}
+              onChange={onTableChange}
+              selection={{
+                onSelectionChange: onSelectionChange,
+                initialSelected: [],
+              }}
+              isSelectable={true}
+              loading={loading}
+            />
+          </>
         ) : (
           <FiltersTab spaceFilter={spaceFilter} notifications={notifications} history={history} />
         )}

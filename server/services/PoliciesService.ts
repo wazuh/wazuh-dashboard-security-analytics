@@ -138,48 +138,72 @@ export class PoliciesService extends MDSEnabledClientService {
     };
   }
 
-  private async fetchIntegrationMap<T>(
+  private async fetchIntegrationMap(
     client: any,
     space: string,
     integrationsIds: string[],
-    _source?: string[]
-  ): Promise<Map<string, T>> {
-    let integrations = new Map<string, T>();
-
+    options?: {
+      _source?: string[];
+      from?: number;
+      size?: number;
+      sort?: any;
+      query?: any;
+    }
+  ): Promise<{ integrations: Map<string, any>; total: number }> {
     if (!integrationsIds.length) {
-      return integrations;
+      return { integrations: new Map(), total: 0 };
     }
 
-    const query = this.applySpaceFilter(
-      {
-        terms: {
-          'document.id': integrationsIds,
-        },
-      },
-      space,
-      (await this.getSpaceFieldCaps(client)).searchFields
-    );
+    const idsFilter = { terms: { 'document.id': integrationsIds } };
+    const baseQuery = options?.query
+      ? { bool: { must: [idsFilter, options.query] } }
+      : idsFilter;
+
+    const spaceSearchFields = (await this.getSpaceFieldCaps(client)).searchFields;
+    const query = this.applySpaceFilter(baseQuery, space, spaceSearchFields);
 
     try {
       const integrationResponse = await client('search', {
         index: CONTENT_INDICES.INTEGRATIONS,
         body: {
-          size: 10000,
-          query: query,
-          _source: _source,
+          from: options?.from ?? 0,
+          size: options?.size ?? integrationsIds.length,
+          sort: options?.sort,
+          track_total_hits: true,
+          query,
+          _source: options?._source ?? {
+            includes: [
+              'document.id',
+              'document.metadata.title',
+              'document.metadata.description',
+              'document.category',
+              'document.rules',
+              'document.decoders',
+              'document.kvdbs',
+              'space.name',
+            ],
+          },
         },
       });
 
       const hits = integrationResponse?.hits?.hits ?? [];
+      const total =
+        typeof integrationResponse?.hits?.total === 'number'
+          ? integrationResponse.hits.total
+          : integrationResponse?.hits?.total?.value ?? hits.length;
 
-      integrations = new Map(
-        hits.map((hit: any) => [hit?._source?.document?.id, { _id: hit._id, ...hit._source }])
+      const integrations = new Map(
+        hits.map((hit: any) => [
+          hit?._source?.document?.id,
+          { _id: hit._id, ...hit._source },
+        ])
       );
+
+      return { integrations, total };
     } catch (error: any) {
       console.warn('Security Analytics - PoliciesService - fetchIntegrationMap:', error?.message);
+      return { integrations: new Map(), total: 0 };
     }
-
-    return integrations;
   }
 
   searchPolicies = async (
@@ -192,7 +216,18 @@ export class PoliciesService extends MDSEnabledClientService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source, includeIntegrationFields } = body;
+      const {
+        from = 0,
+        size = 25,
+        sort,
+        query,
+        _source,
+        includeIntegrationFields,
+        integrationFrom = 0,
+        integrationSize,
+        integrationSort,
+        integrationQuery,
+      } = body;
       const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
@@ -211,19 +246,41 @@ export class PoliciesService extends MDSEnabledClientService {
       const integrationsIds = [
         ...hits.map((hit: any) => hit?._source?.document?.integrations),
       ].flat();
-      const integrationMap = await this.fetchIntegrationMap(
-        client,
-        space,
-        integrationsIds,
-        includeIntegrationFields
-      );
+      const { integrations: integrationMap, total: integrationsTotal } =
+        await this.fetchIntegrationMap(client, space, integrationsIds, {
+          _source: includeIntegrationFields,
+          from: integrationFrom,
+          size: integrationSize,
+          sort: integrationSort,
+          query: integrationQuery,
+        });
 
+      const transformToCounts = !includeIntegrationFields;
       const items: PolicyItem[] = hits.map((hit: any) => ({
         id: hit._id,
         ...hit._source,
+        integrationsTotal,
         integrationsMap: Object.fromEntries(
-          hit._source?.document?.integrations?.map?.((id) => [id, integrationMap.get(id) ?? {}]) ??
-            []
+          Array.from(integrationMap.entries()).map(([documentId, integration]) => {
+            if (!transformToCounts) {
+              return [documentId, integration];
+            }
+            const doc = integration.document ?? {};
+            return [
+              documentId,
+              {
+                _id: integration._id,
+                document: {
+                  metadata: doc.metadata ?? {},
+                  category: doc.category ?? '',
+                  rulesCount: doc.rules?.length ?? 0,
+                  decodersCount: doc.decoders?.length ?? 0,
+                  kvdbsCount: doc.kvdbs?.length ?? 0,
+                },
+                space: integration.space ?? {},
+              },
+            ];
+          })
         ),
       }));
       const total =
