@@ -45,13 +45,6 @@ export function useIntegrationDecoders({
       return;
     }
 
-    if (decoderIds.length === 0) {
-      setItems([]);
-      setTotal(0);
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
     setLoading(true);
 

@@ -39,13 +39,6 @@ export function useIntegrationKVDBs({
       return;
     }
 
-    if (kvdbIds.length === 0) {
-      setItems([]);
-      setTotal(0);
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
     setLoading(true);
 

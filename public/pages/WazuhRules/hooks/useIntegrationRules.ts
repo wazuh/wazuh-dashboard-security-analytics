@@ -58,13 +58,6 @@ export function useIntegrationRules({
       return;
     }
 
-    if (ruleIds.length === 0) {
-      setItems([]);
-      setTotal(0);
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
     setLoading(true);
 
