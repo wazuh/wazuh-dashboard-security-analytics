@@ -16,7 +16,6 @@ import {
   euiPaletteColorBlind,
   EuiEmptyPrompt,
 } from '@elastic/eui';
-import moment from 'moment';
 import { PeriodSchedule } from '../../models/interfaces';
 import React from 'react';
 import {
@@ -64,6 +63,8 @@ import { LogCategoryOptionView } from '../components/Utility/LogCategoryOption';
 import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
 import { euiThemeVars } from '@osd/ui-shared-deps/theme';
 import dateMath from '@elastic/datemath';
+// Wazuh: shared date formatter that honors the `dateFormat`/`dateFormat:tz` advanced settings.
+import { formatUIDate } from './dateFormat';
 import {
   getBreadCrumbsSetter,
   getBrowserServices,
@@ -93,11 +94,10 @@ export const parseStringsToOptions = (strings: string[]) => {
   return strings.map((str) => ({ id: str, label: str }));
 };
 
-export const renderTime = (time: number | string) => {
-  const momentTime = moment(time);
-  if (time && momentTime.isValid()) return momentTime.format('MM/DD/YY h:mm a');
-  return DEFAULT_EMPTY_DATA;
-};
+// Wazuh: delegate to formatUIDate so dates honor the `dateFormat`/`dateFormat:tz` advanced
+// settings. Upstream returned `moment(time).format('MM/DD/YY h:mm a')` with a
+// `DEFAULT_EMPTY_DATA` fallback (that fallback now lives inside formatUIDate).
+export const renderTime = (time: number | string) => formatUIDate(time);
 
 export function createTextDetailsGroup(
   data: { label: string; content: any; url?: string; target?: string }[]
