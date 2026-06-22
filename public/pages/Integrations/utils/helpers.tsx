@@ -11,6 +11,8 @@ import { startCase } from 'lodash';
 import { integrationCategories } from '../../../utils/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
+import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
+import { Search } from '@elastic/eui/src/components/basic_table';
 
 import moment from 'moment';
 import { formatUIDate } from '../../../utils/dateFormat';
@@ -134,6 +136,27 @@ export const getIntegrationsTableColumns = ({
     ],
   },
 ];
+
+export const getIntegrationsTableSearchConfig = (options?: {
+  toolsRight?: React.ReactNode[];
+}): Search => ({
+  box: {
+    placeholder: 'Search integrations',
+    schema: true,
+    compressed: true,
+  },
+  filters: [
+    {
+      type: 'field_value_selection',
+      field: 'category',
+      name: 'Category',
+      compressed: true,
+      multiSelect: 'or',
+      options: getIntegrationCategoryFilterOptions(false),
+    },
+  ],
+  toolsRight: options?.toolsRight,
+});
 
 
 export const withGuardAsync = (
