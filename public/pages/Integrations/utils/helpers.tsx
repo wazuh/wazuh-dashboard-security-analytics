@@ -33,7 +33,6 @@ const getIntegrationCategoryFilterDisplayName = (value: string): string => {
 export interface IntegrationTableItem {
   id: string;
   title: string;
-  description?: string;
   category: string;
   space: string;
   decoders: number;
@@ -55,7 +54,6 @@ export const mapPolicyToIntegrationTableItems = (
     .map((source) => ({
       id: source._id,
       title: source.document.metadata?.title ?? '',
-      description: source.document.metadata?.description,
       category: source.document.category,
       space: source.space.name,
       decoders: source.document.decodersCount,
