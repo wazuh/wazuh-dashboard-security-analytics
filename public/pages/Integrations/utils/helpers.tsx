@@ -46,7 +46,11 @@ export const mapPolicyToIntegrationTableItems = (
 ): IntegrationTableItem[] => {
   if (!policy) return [];
 
-  return Object.values(policy.integrationsMap ?? {})
+  const map = policy.integrationsMap ?? {};
+  const orderedIds: string[] = policy.document?.integrations ?? [];
+
+  return orderedIds
+    .map((id) => map[id])
     .filter((source): source is PolicyIntegrationTableEntry => Boolean(source && source._id))
     .map((source) => ({
       id: source._id,
@@ -77,7 +81,7 @@ export const getIntegrationsTableColumns = ({
   {
     field: 'title',
     name: 'Title',
-    sortable: true,
+    sortable: false,
     render: (name: string, item: Integration) => {
       return <EuiLink onClick={() => showDetails(item.id)}>{name}</EuiLink>;
     },

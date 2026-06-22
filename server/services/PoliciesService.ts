@@ -144,10 +144,6 @@ export class PoliciesService extends MDSEnabledClientService {
     integrationsIds: string[],
     options?: {
       _source?: string[];
-      from?: number;
-      size?: number;
-      sort?: any;
-      query?: any;
     }
   ): Promise<{ integrations: Map<string, any>; total: number }> {
     if (!integrationsIds.length) {
@@ -155,20 +151,14 @@ export class PoliciesService extends MDSEnabledClientService {
     }
 
     const idsFilter = { terms: { 'document.id': integrationsIds } };
-    const baseQuery = options?.query
-      ? { bool: { must: [idsFilter, options.query] } }
-      : idsFilter;
-
     const spaceSearchFields = (await this.getSpaceFieldCaps(client)).searchFields;
-    const query = this.applySpaceFilter(baseQuery, space, spaceSearchFields);
+    const query = this.applySpaceFilter(idsFilter, space, spaceSearchFields);
 
     try {
       const integrationResponse = await client('search', {
         index: CONTENT_INDICES.INTEGRATIONS,
         body: {
-          from: options?.from ?? 0,
-          size: options?.size ?? integrationsIds.length,
-          sort: options?.sort,
+          size: integrationsIds.length,
           track_total_hits: true,
           query,
           _source: options?._source ?? {
@@ -224,10 +214,6 @@ export class PoliciesService extends MDSEnabledClientService {
         _source,
         includeIntegrationFields,
         includeIntegrationsMap = true,
-        integrationFrom = 0,
-        integrationSize,
-        integrationSort,
-        integrationQuery,
       } = body;
       const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
@@ -244,45 +230,43 @@ export class PoliciesService extends MDSEnabledClientService {
       });
 
       const hits = searchResponse?.hits?.hits ?? [];
-      const integrationsIds = [
-        ...hits.map((hit: any) => hit?._source?.document?.integrations),
-      ].flat();
-      const { integrations: integrationMap, total: integrationsTotal } =
-        await this.fetchIntegrationMap(client, space, integrationsIds, {
-          _source: includeIntegrationFields,
-          from: integrationFrom,
-          size: integrationSize,
-          sort: integrationSort,
-          query: integrationQuery,
-        });
+      const integrationsIds = includeIntegrationsMap
+        ? [...hits.map((hit: any) => hit?._source?.document?.integrations)].flat()
+        : [];
+      const { integrations: integrationMap, total: integrationsTotal } = includeIntegrationsMap
+        ? await this.fetchIntegrationMap(client, space, integrationsIds, {
+            _source: includeIntegrationFields,
+          })
+        : { integrations: new Map<string, any>(), total: 0 };
 
-      const transformToCounts = !includeIntegrationFields;
       const items: PolicyItem[] = hits.map((hit: any) => ({
         id: hit._id,
         ...hit._source,
         integrationsTotal,
-        integrationsMap: Object.fromEntries(
-          Array.from(integrationMap.entries()).map(([documentId, integration]) => {
-            if (!transformToCounts) {
-              return [documentId, integration];
-            }
-            const doc = integration.document ?? {};
-            return [
-              documentId,
-              {
-                _id: integration._id,
-                document: {
-                  metadata: doc.metadata ?? {},
-                  category: doc.category ?? '',
-                  rulesCount: doc.rules?.length ?? 0,
-                  decodersCount: doc.decoders?.length ?? 0,
-                  kvdbsCount: doc.kvdbs?.length ?? 0,
-                },
-                space: integration.space ?? {},
-              },
-            ];
-          })
-        ),
+        integrationsMap: includeIntegrationsMap
+          ? Object.fromEntries(
+              (hit._source?.document?.integrations ?? [])
+                .filter((documentId: string) => integrationMap.has(documentId))
+                .map((documentId: string) => {
+                  const integration = integrationMap.get(documentId);
+                  const doc = integration.document ?? {};
+                  return [
+                    documentId,
+                    {
+                      _id: integration._id,
+                      document: {
+                        metadata: doc.metadata ?? {},
+                        category: doc.category ?? '',
+                        rulesCount: doc.rules?.length ?? 0,
+                        decodersCount: doc.decoders?.length ?? 0,
+                        kvdbsCount: doc.kvdbs?.length ?? 0,
+                      },
+                      space: integration.space ?? {},
+                    },
+                  ];
+                })
+            )
+          : {},
       }));
       const total =
         typeof searchResponse?.hits?.total === 'number'
