@@ -2,6 +2,12 @@
 
 All notable changes to the Wazuh ML Commons project will be documented in this file.
 
+## Wazuh dashboard v5.0.1 - OpenSearch Dashboards 3.6.0 - Revision 00
+
+### Added
+
+- Support for Wazuh 5.0.1
+
 ## Wazuh dashboard v5.0.0 - OpenSearch Dashboards 3.6.0 - Revision 03
 
 ### Added
@@ -16,6 +22,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Added clear space action to the Overview actions button [#186](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/186) 
 - Added modifiers in the dropdown inside the rule creation and edition form [#259](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/259)
 - Added URL-based rule navigation from Log Test detection results [#308](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/308)
+- Added date formatter that respects the dateFormat advanced setting [#362](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/362)
 
 ### Changed
 
@@ -24,7 +31,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Hide Alerts/Correlations and Correlation rules from the Security Analytics navigation, leaving Findings at the root level [#8004](https://github.com/wazuh/wazuh-dashboard-plugins/pull/8004)
 - Changed the management of rules [#96](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/96) [#125](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/125) [#165](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/165) [#204](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/204) [#205](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/205) [#206](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/206) [#221](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/221) [#252](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/252) [#292](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/292) [#318](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/318) [#326](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/326) [#338](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/338) [#351](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/351)
 - Renamed Dectection rules to rules [#96](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/96)
-- Updated Detectors management feature [#111](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/111) [#134](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/134) [#159](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/159) [#173](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/173) [#181](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/181) [#190](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/190) [#203](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/203) [#204](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/204) [#224](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/224) [#295](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/295) [#302](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/302) [#306](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/306) [#324](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/324) [#336](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/336) [#243](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/243) [#348](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/348) [#349](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/349)
+- Updated Detectors management feature [#111](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/111) [#134](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/134) [#159](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/159) [#173](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/173) [#181](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/181) [#190](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/190) [#203](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/203) [#204](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/204) [#224](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/224) [#295](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/295) [#302](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/302) [#306](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/306) [#324](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/324) [#336](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/336) [#243](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/243) [#348](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/348) [#349](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/349) [#364](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/364)
 - Rules table and details now display the real integration title. [#164](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/164) [#347](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/347)
 - Updated nav menu group label to "Security analytics" to match Wazuh Dashboard capitalization style. [#178](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/178)
 - Removed getLogTypeLabel usage across Security analytics [#353](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/353)
