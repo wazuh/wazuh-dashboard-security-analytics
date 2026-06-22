@@ -37,7 +37,6 @@ export interface PolicyIntegrationTableEntry {
   document: {
     metadata: {
       title: string;
-      description?: string;
     };
     category: string;
     rulesCount: number;

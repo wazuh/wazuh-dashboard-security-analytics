@@ -50,7 +50,6 @@ export interface IntegrationsProps extends RouteComponentProps, DataSourceProps 
 const DELETE_SELECTED_ACTION = 'delete_selected' as const;
 const CLEAR_SPACE_ACTION = 'clear_space' as const;
 
-
 type ItemForAction =
   | {
       item: IntegrationTableItem;
@@ -98,7 +97,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       includeIntegrationFields: [
         'document.id',
         'document.metadata.title',
-        'document.metadata.description',
         'document.category',
         'document.rules',
         'document.decoders',
