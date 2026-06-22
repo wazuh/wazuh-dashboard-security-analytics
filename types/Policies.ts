@@ -51,7 +51,7 @@ export interface PolicyIntegrationTableEntry {
 
 export interface PolicyItem extends PolicySource {
   id: string;
-  integrationsMap?: Record<string, any>;
+  integrationsMap?: Record<string, PolicyIntegrationTableEntry>;
   integrationsTotal?: number;
 }
 
@@ -61,12 +61,8 @@ export interface SearchPolicyOptions {
   sort?: any;
   query?: any;
   _source?: any;
-  integrationFrom?: number;
-  integrationSize?: number;
-  integrationSort?: any;
-  integrationQuery?: any;
-  includeIntegrationFields?: string[]; // specify which fields of the integrations to include in the response
-  includeIntegrationsMap?: boolean; // when false, skip building integrationsMap (default true)
+  includeIntegrationFields?: string[];
+  includeIntegrationsMap?: boolean;
 }
 export interface SearchPoliciesResponse {
   total: number;
