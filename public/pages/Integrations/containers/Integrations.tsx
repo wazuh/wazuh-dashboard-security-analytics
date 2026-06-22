@@ -25,6 +25,7 @@ import { DataSourceProps } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import {
   getIntegrationsTableColumns,
+  getIntegrationsTableSearchConfig,
   IntegrationTableItem,
   mapPolicyToIntegrationTableItems,
   hasRelatedEntity,
@@ -566,7 +567,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             pagination={{
               initialPageSize: 25,
             }}
-            search={{ toolsRight: [actionsButton] }}
+            search={getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] })}
             selection={{
               onSelectionChange: onSelectionChange,
               initialSelected: [],
