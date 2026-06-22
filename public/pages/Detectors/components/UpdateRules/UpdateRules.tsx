@@ -65,6 +65,7 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
         setDetector(newDetector);
 
         setBreadcrumbs([
+          BREADCRUMBS.DETECTION,
           BREADCRUMBS.DETECTORS,
           BREADCRUMBS.DETECTORS_DETAILS(detectorHit._source.name, detectorHit._id),
           {
@@ -291,7 +292,8 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
       <EuiSpacer size="xl" />
 
       <ContentPanel
-        title={`Detection rules (${
+        title={`Rules (${
+          // Wazuh: rename 'Detection rules' to 'Rules'
           prePackagedRuleItems.concat(customRuleItems).filter((item) => item.active).length
         })`}
       >

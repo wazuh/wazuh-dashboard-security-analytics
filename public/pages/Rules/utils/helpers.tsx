@@ -70,7 +70,7 @@ export const getRulesTableColumns = (
     },
     category: {
       field: 'category',
-      name: 'Log type',
+      name: 'Integration', // replace log type to integration by Wazuh
       sortable: true,
       width: '10%',
       truncateText: true,
@@ -78,7 +78,7 @@ export const getRulesTableColumns = (
     },
     source: {
       field: 'source',
-      name: 'Source',
+      name: 'Space', // Wazuh: replace to Space
       sortable: true,
       width: '10%',
       truncateText: true,
@@ -112,29 +112,11 @@ export const getRulesTableSearchConfig = (): Search => {
     filters: [
       {
         type: 'field_value_selection',
-        field: 'category',
-        name: 'Log type',
-        compressed: true,
-        multiSelect: 'or',
-        options: getLogTypeFilterOptions(),
-      },
-      {
-        type: 'field_value_selection',
         field: 'level',
         name: 'Rule severity',
         compressed: true,
         multiSelect: 'or',
         options: ruleSeverity,
-      },
-      {
-        type: 'field_value_selection',
-        field: 'source',
-        name: 'Source',
-        compressed: true,
-        multiSelect: 'or',
-        options: ruleSource.map((source: string) => ({
-          value: source,
-        })),
       },
     ],
   };

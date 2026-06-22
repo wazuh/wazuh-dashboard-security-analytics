@@ -39,6 +39,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { DataStore } from '../../../../store/DataStore'; // Wazuh
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -68,7 +69,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
   }
 
   async componentDidMount() {
-    setBreadcrumbs([BREADCRUMBS.DETECTORS]);
+    setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS]);
     await this.getDetectors();
   }
 
@@ -88,9 +89,41 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     try {
       const res = await detectorService.getDetectors();
       if (res.ok) {
-        const detectors = res.response.hits.hits.map((detector) => {
+        // Wazuh: get the space using the rule as sample to corelate the space
+        const detectorRuleForSpaceMapping = res.response.hits.hits
+          .map((detector, index) => {
+            const { custom_rules, pre_packaged_rules } = detector._source.inputs[0].detector_input;
+
+            // Take the first one rule to extrapolate the space
+            const ruleForMapping = [...custom_rules, ...pre_packaged_rules].find(
+              ({ id }) => typeof id !== 'undefined'
+            )?.id;
+
+            return ruleForMapping;
+          })
+          .filter(Boolean);
+
+        const uniqueRuleIds = Array.from(new Set(detectorRuleForSpaceMapping));
+        const rules = await DataStore.rules.getAllRules({ 'document.id': uniqueRuleIds });
+
+        const detectors = res.response.hits.hits.map((detector, index) => {
           const { custom_rules, pre_packaged_rules } = detector._source.inputs[0].detector_input;
           const rulesCount = custom_rules.length + pre_packaged_rules.length;
+
+          // Wazuh
+          const spaceRule = rules?.find?.(
+            (rule) => rule._id === detectorRuleForSpaceMapping[index]
+          );
+
+          const mapper = {
+            standard: 'Standard',
+            custom: 'Custom',
+          };
+
+          // Fallback: if the rule is not found, infer space from the detector structure itself.
+          const space =
+            mapper[spaceRule?.space] ?? (custom_rules.length > 0 ? mapper.custom : mapper.standard);
+
           return {
             ...detector,
             detectorName: detector._source.name,
@@ -98,6 +131,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             logType: detector._source.detector_type,
             rulesCount: rulesCount,
             status: detector._source.enabled ? 'Active' : 'Inactive',
+            space: space,
           };
         });
         this.setState({ detectorHits: detectors });
@@ -247,10 +281,16 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
       {
         field: 'logType',
-        name: 'Log type',
+        name: 'Integration', // replace log type to integration by Wazuh
         sortable: true,
         dataType: 'string',
         render: (logType: string) => formatRuleType(logType),
+      },
+      {
+        field: 'space',
+        name: 'Space',
+        sortable: true,
+        dataType: 'string',
       },
       {
         field: 'rulesCount',
@@ -356,7 +396,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         {
           type: 'field_value_selection',
           field: 'logType',
-          name: 'Log type',
+          name: 'Integration', // replace log type to integration by Wazuh
           compressed: true,
           options: getLogTypeFilterOptions(),
           multiSelect: 'or',
@@ -381,7 +421,8 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             <EuiFlexGroup>
               <EuiFlexItem>
                 <EuiText size="s">
-                  <h1>Threat detectors</h1>
+                  {/* Wazuh modification: Changed page title to "Detectors" */}
+                  <h1>Detectors</h1>
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem>

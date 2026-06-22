@@ -18,40 +18,42 @@ import {
   EuiTabbedContent,
 } from '@elastic/eui';
 import FindingsTable from '../../components/FindingsTable';
-import {
-  DetectorsService,
-  NotificationsService,
-  OpenSearchService,
-  IndexPatternsService,
-  CorrelationService,
-} from '../../../../services';
+import { DetectorsService, OpenSearchService, IndexPatternsService } from '../../../../services';
+// Wazuh: hide correlations service usage in findings page.
+// import { CorrelationService } from '../../../../services';
+// Wazuh: hide alert-related channels and props from findings page.
+// import { NotificationsService } from '../../../../services';
 import {
   BREADCRUMBS,
   DEFAULT_DATE_RANGE,
   DEFAULT_EMPTY_DATA,
   FindingTabId,
   MAX_RECENTLY_USED_TIME_RANGES,
+  THREAT_INTEL_ENABLED,
 } from '../../../../utils/constants';
 import { getChartTimeUnit, TimeUnit } from '../../../Overview/utils/helpers';
-import {
-  getNotificationChannels,
-  parseNotificationChannelsToOptions,
-} from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
+// Wazuh: hide alert-related channels and props from findings page.
+// import {
+//   getNotificationChannels,
+//   parseNotificationChannelsToOptions,
+// } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 import {
   createSelectComponent,
   errorNotificationToast,
   getDuration,
-  getIsNotificationPluginInstalled,
   setBreadcrumbs,
   isThreatIntelQuery,
 } from '../../../../utils/helpers';
+// Wazuh: hide alert-related channels and props from findings page.
+// import { getIsNotificationPluginInstalled } from '../../../../utils/helpers';
 import { RuleSource } from '../../../../../server/models/interfaces';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DataStore } from '../../../../store/DataStore';
 import { DurationRange } from '@elastic/eui/src/components/date_picker/types';
 import {
   DataSourceProps,
-  FeatureChannelList,
+  // Wazuh: hide alert-related channels and props from findings page.
+  // FeatureChannelList,
   DateTimeFilter,
   FindingItemType,
   DetectorHit,
@@ -65,8 +67,10 @@ import { RuleSeverityValue, RuleSeverityPriority } from '../../../Rules/utils/co
 
 interface FindingsProps extends RouteComponentProps, DataSourceProps {
   detectorService: DetectorsService;
-  correlationService: CorrelationService;
-  notificationsService: NotificationsService;
+  // Wazuh: hide correlations service usage in findings page.
+  // correlationService: CorrelationService;
+  // Wazuh: hide alert-related channels and props from findings page.
+  // notificationsService: NotificationsService;
   indexPatternsService: IndexPatternsService;
   opensearchService: OpenSearchService;
   notifications: NotificationsStart;
@@ -97,7 +101,8 @@ interface FindingsState {
     [FindingTabId.DetectionRules]: DetectionRulesFindingsState;
     [FindingTabId.ThreatIntel]: ThreatIntelFindingsState;
   };
-  notificationChannels: FeatureChannelList[];
+  // Wazuh: hide alert-related channels and props from findings page.
+  // notificationChannels: FeatureChannelList[];
   recentlyUsedRanges: DurationRange[];
   timeUnit: TimeUnit;
   dateFormat: string;
@@ -142,11 +147,16 @@ class Findings extends Component<FindingsProps, FindingsState> {
     } = props;
     const timeUnits = getChartTimeUnit(dateTimeFilter.startTime, dateTimeFilter.endTime);
     const searchParams = new URLSearchParams(props.location.search);
+    const selectedTabFromUrl = searchParams.get('detectionType') as FindingTabId | null;
+    const selectedTabId =
+      selectedTabFromUrl === FindingTabId.ThreatIntel && !THREAT_INTEL_ENABLED
+        ? FindingTabId.DetectionRules
+        : selectedTabFromUrl ?? FindingTabId.DetectionRules;
     this.state = {
       loading: true,
-      notificationChannels: [],
-      selectedTabId:
-        (searchParams.get('detectionType') as FindingTabId) ?? FindingTabId.DetectionRules,
+      // Wazuh: hide alert-related channels and props from findings page.
+      // notificationChannels: [],
+      selectedTabId,
       findingStateByTabId: {
         [FindingTabId.DetectionRules]: {
           findings: [],
@@ -222,6 +232,8 @@ class Findings extends Component<FindingsProps, FindingsState> {
 
   componentDidMount = async () => {
     setBreadcrumbs([BREADCRUMBS.FINDINGS]);
+    // Wazuh: remove Insights breadcrumb.
+    // setBreadcrumbs([BREADCRUMBS.INSIGHTS, BREADCRUMBS.FINDINGS]);
     this.onRefresh();
   };
 
@@ -230,10 +242,11 @@ class Findings extends Component<FindingsProps, FindingsState> {
   }
 
   onRefresh = async () => {
-    await this.getNotificationChannels();
+    // Wazuh: hide alert-related channels and props from findings page.
+    // await this.getNotificationChannels();
     if (this.state.selectedTabId === FindingTabId.DetectionRules) {
       await this.getDetectionRulesFindings();
-    } else if (this.state.selectedTabId === FindingTabId.ThreatIntel) {
+    } else if (this.state.selectedTabId === FindingTabId.ThreatIntel && THREAT_INTEL_ENABLED) {
       await this.getThreatIntelFindings();
     }
     // const data = this.generateVisualizationData();
@@ -390,10 +403,11 @@ class Findings extends Component<FindingsProps, FindingsState> {
     }
   };
 
-  getNotificationChannels = async () => {
-    const channels = await getNotificationChannels(this.props.notificationsService);
-    this.setState({ notificationChannels: channels });
-  };
+  // Wazuh: hide alert-related channels and props from findings page.
+  // getNotificationChannels = async () => {
+  //   const channels = await getNotificationChannels(this.props.notificationsService);
+  //   this.setState({ notificationChannels: channels });
+  // };
 
   onTimeChange = ({ start, end }: { start: string; end: string }) => {
     let { recentlyUsedRanges } = this.state;
@@ -508,7 +522,8 @@ class Findings extends Component<FindingsProps, FindingsState> {
   render() {
     const {
       loading,
-      notificationChannels,
+      // Wazuh: hide alert-related channels and props from findings page.
+      // notificationChannels,
       recentlyUsedRanges,
       selectedTabId,
       findingStateByTabId,
@@ -557,7 +572,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
         id: FindingTabId.DetectionRules,
         name: (
           <span>
-            Detection rules (
+            Rules ( {/* Wazuh: rename 'Detection rules' to 'Rules' */}
             {findingStateByTabId[FindingTabId.DetectionRules].filteredFindings.length})
           </span>
         ),
@@ -576,39 +591,41 @@ class Findings extends Component<FindingsProps, FindingsState> {
                 startTime={dateTimeFilter.startTime}
                 endTime={dateTimeFilter.endTime}
                 onRefresh={this.onRefresh}
-                notificationChannels={parseNotificationChannelsToOptions(notificationChannels)}
-                refreshNotificationChannels={this.getNotificationChannels}
+                // Wazuh: hide alert-related channels and props from findings page.
+                // notificationChannels={parseNotificationChannelsToOptions(notificationChannels)}
+                // refreshNotificationChannels={this.getNotificationChannels}
                 onFindingsFiltered={this.onFindingsFiltered}
-                hasNotificationsPlugin={getIsNotificationPluginInstalled()}
-                correlationService={this.props.correlationService}
+                // Wazuh: hide alert-related channels and props from findings page.
+                // hasNotificationsPlugin={getIsNotificationPluginInstalled()}
               />
             </ContentPanel>
           </>
         ),
       },
-      {
-        id: FindingTabId.ThreatIntel,
-        name: (
-          <span>
-            Threat intel{' '}
-            {this.state.selectedTabId === FindingTabId.ThreatIntel
-              ? `(${findingStateByTabId[FindingTabId.ThreatIntel].findings.length})`
-              : null}
-          </span>
-        ),
-        content: (
-          <>
-            <EuiSpacer size={'m'} />
-            {/*{this.getFindingsGraph(findings, loading)}*/}
-            {/*<EuiSpacer size={'m'} />*/}
-            <ContentPanel title={'Findings'}>
-              <ThreatIntelFindingsTable
-                findingItems={findingStateByTabId[FindingTabId.ThreatIntel].findings}
-              />
-            </ContentPanel>
-          </>
-        ),
-      },
+      // Threat intel tab is not used by Wazuh
+      // {
+      //   id: FindingTabId.ThreatIntel,
+      //   name: (
+      //     <span>
+      //       Threat intel{' '}
+      //       {this.state.selectedTabId === FindingTabId.ThreatIntel
+      //         ? `(${findingStateByTabId[FindingTabId.ThreatIntel].findings.length})`
+      //         : null}
+      //     </span>
+      //   ),
+      //   content: (
+      //     <>
+      //       <EuiSpacer size={'m'} />
+      //       {/*{this.getFindingsGraph(findings, loading)}*/}
+      //       {/*<EuiSpacer size={'m'} />*/}
+      //       <ContentPanel title={'Findings'}>
+      //         <ThreatIntelFindingsTable
+      //           findingItems={findingStateByTabId[FindingTabId.ThreatIntel].findings}
+      //         />
+      //       </ContentPanel>
+      //     </>
+      //   ),
+      // },
     ];
 
     const datePicker = (
@@ -624,7 +641,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
     );
 
     return (
-      <EuiFlexGroup direction="column" gutterSize={'m'}>
+      <EuiFlexGroup direction="column" gutterSize={'m'} grow={false}>
         <PageHeader
           appRightControls={[
             {
