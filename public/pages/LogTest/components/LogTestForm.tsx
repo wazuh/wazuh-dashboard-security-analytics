@@ -18,17 +18,13 @@ import {
 import { LogTestTraceLevel } from '../../../../types';
 import { MetadataEntry } from '../utils';
 import { MetadataFieldsEditor } from './MetadataFieldsEditor';
+import { IntegrationComboBox, IntegrationOption } from '../../../components/IntegrationComboBox';
 
 const TRACE_LEVEL_OPTIONS: Array<{ value: LogTestTraceLevel; text: string }> = [
   { value: 'NONE', text: 'None' },
   { value: 'ASSET_ONLY', text: 'Asset only' },
   { value: 'ALL', text: 'All' },
 ];
-
-export interface LogTestIntegrationOption {
-  id: string;
-  label: string;
-}
 
 export interface LogTestFormData {
   queue: number | undefined;
@@ -52,7 +48,7 @@ export interface LogTestFormProps {
   errors: LogTestFormErrors;
   onFormChange: (field: keyof LogTestFormData, value: any) => void;
   onMetadataFieldsChange: (fields: MetadataEntry[]) => void;
-  integrationOptions: LogTestIntegrationOption[];
+  integrationOptions: IntegrationOption[];
   disabled?: boolean;
 }
 
@@ -64,15 +60,6 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
   integrationOptions,
   disabled = false,
 }) => {
-
-  const integrationSelectOptions = [
-    { value: '', text: 'Select an integration' },
-    ...integrationOptions.map((option) => ({
-      value: option.id,
-      text: option.label,
-    })),
-  ];
-
   return (
     <>
       <EuiTitle size="xs">
@@ -142,12 +129,10 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
             }
             fullWidth
           >
-            <EuiSelect
-              options={integrationSelectOptions}
-              value={formData.integration}
+            <IntegrationComboBox
+              options={integrationOptions}
+              selectedId={formData.integration}
               onChange={(e) => onFormChange('integration', e.target.value)}
-              disabled={disabled || integrationSelectOptions.length <= 1}
-              fullWidth
             />
           </EuiFormRow>
         </EuiFlexItem>
