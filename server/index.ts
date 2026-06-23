@@ -16,7 +16,6 @@ export const config: PluginConfigDescriptor<SecurityAnalyticsPluginConfigType> =
     exposeToBrowser: {
       enabled: true,
       uxTelemetryInterval: true,
-      disabledSettings: true,
     },
     schema: configSchema,
   };

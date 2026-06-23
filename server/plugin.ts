@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart } from '.';
+import { SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart } from ".";
 import {
   Plugin,
   CoreSetup,
   CoreStart,
   ILegacyCustomClusterClient,
   PluginInitializerContext,
-} from '../../../src/core/server';
-import { createSecurityAnalyticsCluster } from './clusters/createSecurityAnalyticsCluster';
-import { NodeServices } from './models/interfaces';
+} from "../../../src/core/server";
+import { createSecurityAnalyticsCluster } from "./clusters/createSecurityAnalyticsCluster";
+import { NodeServices } from "./models/interfaces";
 import {
   setupDetectorRoutes,
   setupCorrelationRoutes,
@@ -29,8 +29,8 @@ import {
   setupDecodersRoutes,
   setupKVDBsRoutes,
   setupFiltersRoutes,
-} from './routes';
-import { setupMetricsRoutes } from './routes/MetricsRoutes';
+} from "./routes";
+import { setupMetricsRoutes } from "./routes/MetricsRoutes";
 import {
   IndexService,
   FindingsService,
@@ -42,37 +42,42 @@ import {
   NotificationsService,
   CorrelationService,
   WazuhRulesService,
-} from './services';
-import { IntegrationService } from './services/IntegrationService';
-import { PoliciesService } from './services/PoliciesService';
-import { LogTypeService } from './services/LogTypeService';
-import { KVDBsService } from './services/KVDBsService';
-import { FiltersService } from './services/FiltersService';
-import MetricsService from './services/MetricsService';
-import { SecurityAnalyticsPluginConfigType } from '../config';
-import { DataSourcePluginSetup } from 'src/plugins/data_source/server';
-import { securityAnalyticsPlugin } from './clusters/securityAnalyticsPlugin';
-import ThreatIntelService from './services/ThreatIntelService';
-import { setupThreatIntelRoutes } from './routes/ThreatIntel';
-import { DecodersService } from './services/DecodersService';
-import { setupLogTestRoutes } from './routes/LogTestRoutes';
-import { LogTestService } from './services/LogTestService';
+} from "./services";
+import { IntegrationService } from "./services/IntegrationService";
+import { PoliciesService } from "./services/PoliciesService";
+import { LogTypeService } from "./services/LogTypeService";
+import { KVDBsService } from "./services/KVDBsService";
+import { FiltersService } from "./services/FiltersService";
+import MetricsService from "./services/MetricsService";
+import { SecurityAnalyticsPluginConfigType } from "../config";
+import { DataSourcePluginSetup } from "src/plugins/data_source/server";
+import { securityAnalyticsPlugin } from "./clusters/securityAnalyticsPlugin";
+import ThreatIntelService from "./services/ThreatIntelService";
+import { setupThreatIntelRoutes } from "./routes/ThreatIntel";
+import { DecodersService } from "./services/DecodersService";
+import { setupLogTestRoutes } from "./routes/LogTestRoutes";
+import { LogTestService } from "./services/LogTestService";
+import { first } from "rxjs/operators";
 
 export interface SecurityAnalyticsPluginDependencies {
   dataSource?: DataSourcePluginSetup;
 }
 
-export class SecurityAnalyticsPlugin
-  implements Plugin<SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart> {
+export class SecurityAnalyticsPlugin implements Plugin<
+  SecurityAnalyticsPluginSetup,
+  SecurityAnalyticsPluginStart
+> {
   public constructor(
-    private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
+    private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>,
   ) {}
 
-  public async setup(core: CoreSetup, { dataSource }: SecurityAnalyticsPluginDependencies) {
+  public async setup(
+    core: CoreSetup,
+    { dataSource }: SecurityAnalyticsPluginDependencies,
+  ) {
     // Create OpenSearch client that aware of SA API endpoints
-    const securityAnalyticsClient: ILegacyCustomClusterClient = createSecurityAnalyticsCluster(
-      core
-    );
+    const securityAnalyticsClient: ILegacyCustomClusterClient =
+      createSecurityAnalyticsCluster(core);
     const dataSourceEnabled = !!dataSource;
 
     if (dataSourceEnabled) {
@@ -81,24 +86,63 @@ export class SecurityAnalyticsPlugin
 
     // Initialize services
     const services: NodeServices = {
-      detectorsService: new DetectorService(securityAnalyticsClient, dataSourceEnabled),
-      correlationService: new CorrelationService(securityAnalyticsClient, dataSourceEnabled),
-      indexService: new IndexService(securityAnalyticsClient, dataSourceEnabled),
-      findingsService: new FindingsService(securityAnalyticsClient, dataSourceEnabled),
-      opensearchService: new OpenSearchService(securityAnalyticsClient, dataSourceEnabled),
-      fieldMappingService: new FieldMappingService(securityAnalyticsClient, dataSourceEnabled),
-      alertService: new AlertService(securityAnalyticsClient, dataSourceEnabled),
-      rulesService: new RulesService(securityAnalyticsClient, dataSourceEnabled),
-      notificationsService: new NotificationsService(securityAnalyticsClient, dataSourceEnabled),
-      logTypeService: new LogTypeService(securityAnalyticsClient, dataSourceEnabled),
-      integrationService: new IntegrationService(securityAnalyticsClient, dataSourceEnabled),
+      detectorsService: new DetectorService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      correlationService: new CorrelationService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      indexService: new IndexService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      findingsService: new FindingsService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      opensearchService: new OpenSearchService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      fieldMappingService: new FieldMappingService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      alertService: new AlertService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      rulesService: new RulesService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      notificationsService: new NotificationsService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      logTypeService: new LogTypeService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
+      integrationService: new IntegrationService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
       wazuhRulesService: new WazuhRulesService(securityAnalyticsClient),
-      policiesService: new PoliciesService(securityAnalyticsClient, dataSourceEnabled),
+      policiesService: new PoliciesService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
       kvdbsService: new KVDBsService(securityAnalyticsClient, false),
       filtersService: new FiltersService(securityAnalyticsClient, false),
       logTestService: new LogTestService(securityAnalyticsClient, false),
       metricsService: new MetricsService(),
-      threatIntelService: new ThreatIntelService(securityAnalyticsClient, dataSourceEnabled),
+      threatIntelService: new ThreatIntelService(
+        securityAnalyticsClient,
+        dataSourceEnabled,
+      ),
       decodersService: new DecodersService(securityAnalyticsClient),
     };
 
@@ -127,6 +171,41 @@ export class SecurityAnalyticsPlugin
 
     // @ts-ignore
     const config$ = this.initializerContext.config.create();
+    const config = await config$.pipe(first()).toPromise();
+
+    console.log(
+      "[SA Plugin] config.disabledSettings:",
+      config.disabledSettings,
+    );
+    console.log("[SA Plugin] config:", config);
+
+    // Wazuh: register capabilities based on disabledSettings config
+    core.capabilities.registerProvider(() => ({
+      securityAnalytics: {
+        showIndexDiscardedEvents: true,
+        showIndexUnclassifiedEvents: true,
+        showIndexRawEvents: true,
+      },
+    }));
+
+    core.capabilities.registerSwitcher(() => {
+      console.log(
+        "[SA Plugin] registerSwitcher running, disabledSettings:",
+        config.disabledSettings,
+      );
+      return {
+        securityAnalytics: {
+          showIndexDiscardedEvents: !config.disabledSettings.includes(
+            "index-discarded-events",
+          ),
+          showIndexUnclassifiedEvents: !config.disabledSettings.includes(
+            "index-unclassified-events",
+          ),
+          showIndexRawEvents:
+            !config.disabledSettings.includes("index-raw-events"),
+        },
+      };
+    });
 
     return {
       config$,

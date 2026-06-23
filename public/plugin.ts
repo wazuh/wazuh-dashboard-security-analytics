@@ -12,7 +12,7 @@ import {
   Plugin,
   PluginInitializerContext,
   AppNavLinkStatus,
-} from '../../../src/core/public';
+} from "../../../src/core/public";
 import {
   // Wazuh: hide Correlations app in Security Analytics nav.
   // CORRELATIONS_NAV_ID,
@@ -37,15 +37,21 @@ import {
   DECODERS_NAV_ID,
   KVDBS_NAV_ID,
   LOG_TEST_NAV_ID,
-} from './utils/constants';
-import { SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart } from './index';
-import { DataPublicPluginStart, DataPublicPluginSetup } from '../../../src/plugins/data/public';
-import { SecurityAnalyticsPluginConfigType } from '../config';
-import { setSecurityAnalyticsPluginConfig } from '../common/helpers';
-import { DataSourceManagementPluginSetup } from '../../../src/plugins/data_source_management/public';
-import { DataSourcePluginStart } from '../../../src/plugins/data_source/public';
-import { NavigationPublicPluginStart } from 'src/plugins/navigation/public';
-import { ContentManagementPluginStart } from 'src/plugins/content_management/public';
+} from "./utils/constants";
+import {
+  SecurityAnalyticsPluginSetup,
+  SecurityAnalyticsPluginStart,
+} from "./index";
+import {
+  DataPublicPluginStart,
+  DataPublicPluginSetup,
+} from "../../../src/plugins/data/public";
+import { SecurityAnalyticsPluginConfigType } from "../config";
+import { setSecurityAnalyticsPluginConfig } from "../common/helpers";
+import { DataSourceManagementPluginSetup } from "../../../src/plugins/data_source_management/public";
+import { DataSourcePluginStart } from "../../../src/plugins/data_source/public";
+import { NavigationPublicPluginStart } from "src/plugins/navigation/public";
+import { ContentManagementPluginStart } from "src/plugins/content_management/public";
 import {
   setUISettings,
   setNavigationUI,
@@ -56,11 +62,12 @@ import {
   setDataSourceManagementPlugin,
   setNotifications,
   setSavedObjectsClient,
-} from './services/utils/constants';
-import { initializeServices } from './utils/helpers';
+  setCapabilities,
+} from "./services/utils/constants";
+import { initializeServices } from "./utils/helpers";
 // Wazuh: hide Threat Alerts overview card registration.
 // import { registerThreatAlertsCard } from './utils/helpers';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from "rxjs";
 
 export interface SecurityAnalyticsPluginSetupDeps {
   data: DataPublicPluginSetup;
@@ -73,16 +80,14 @@ export interface SecurityAnalyticsPluginStartDeps {
   contentManagement: ContentManagementPluginStart;
 }
 
-export class SecurityAnalyticsPlugin
-  implements
-    Plugin<
-      SecurityAnalyticsPluginSetup,
-      SecurityAnalyticsPluginStart,
-      SecurityAnalyticsPluginSetupDeps,
-      SecurityAnalyticsPluginStartDeps
-    > {
+export class SecurityAnalyticsPlugin implements Plugin<
+  SecurityAnalyticsPluginSetup,
+  SecurityAnalyticsPluginStart,
+  SecurityAnalyticsPluginSetupDeps,
+  SecurityAnalyticsPluginStartDeps
+> {
   public constructor(
-    private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
+    private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>,
   ) {}
 
   private updateDefaultRouteOfManagementApplications: AppUpdater = () => {
@@ -102,35 +107,50 @@ export class SecurityAnalyticsPlugin
   };
 
   private appStateUpdater = new BehaviorSubject<AppUpdater>(
-    this.updateDefaultRouteOfManagementApplications
+    this.updateDefaultRouteOfManagementApplications,
   );
 
   public setup(
     core: CoreSetup<SecurityAnalyticsPluginStartDeps>,
-    { dataSourceManagement }: SecurityAnalyticsPluginSetupDeps
+    { dataSourceManagement }: SecurityAnalyticsPluginSetupDeps,
   ): SecurityAnalyticsPluginSetup {
-    const mountWrapper = async (params: AppMountParameters, redirect: string) => {
-      const { renderApp } = await import('./security_analytics_app');
+    const mountWrapper = async (
+      params: AppMountParameters,
+      redirect: string,
+    ) => {
+      const { renderApp } = await import("./security_analytics_app");
       const [coreStart, depsStart] = await core.getStartServices();
-      return renderApp(coreStart, params, redirect, depsStart, dataSourceManagement);
+      return renderApp(
+        coreStart,
+        params,
+        redirect,
+        depsStart,
+        dataSourceManagement,
+      );
     };
 
     // <- Main menu Security Analytics created with sub-menus for each section
     core.application.register({
       id: PLUGIN_NAME,
-      title: 'Security Analytics',
+      title: "Security Analytics",
       order: 7000,
       category: {
-        id: 'security_analytics',
-        label: 'Security analytics',
+        id: "security_analytics",
+        label: "Security analytics",
         order: 550,
-        euiIconType: 'securityAnalyticsApp',
+        euiIconType: "securityAnalyticsApp",
       },
       navLinkStatus: AppNavLinkStatus.hidden,
       mount: async (params: AppMountParameters) => {
-        const { renderApp } = await import('./security_analytics_app');
+        const { renderApp } = await import("./security_analytics_app");
         const [coreStart, depsStart] = await core.getStartServices();
-        return renderApp(coreStart, params, ROUTES.LANDING_PAGE, depsStart, dataSourceManagement);
+        return renderApp(
+          coreStart,
+          params,
+          ROUTES.LANDING_PAGE,
+          depsStart,
+          dataSourceManagement,
+        );
       },
     });
 
@@ -155,13 +175,13 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: INTEGRATIONS_NAV_ID,
-      title: 'Overview',
+      title: "Overview",
       order: 7000,
       category: {
-        id: 'security_analytics',
-        label: 'Security analytics',
+        id: "security_analytics",
+        label: "Security analytics",
         order: 550,
-        euiIconType: 'securityAnalyticsApp',
+        euiIconType: "securityAnalyticsApp",
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -222,13 +242,13 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: DECODERS_NAV_ID,
-      title: 'Decoders',
+      title: "Decoders",
       order: 7006,
       category: {
-        id: 'security_analytics',
-        label: 'Security analytics',
+        id: "security_analytics",
+        label: "Security analytics",
         order: 550,
-        euiIconType: 'securityAnalyticsApp',
+        euiIconType: "securityAnalyticsApp",
       },
       mount: async (params: AppMountParameters) => {
         return mountWrapper(params, ROUTES.DECODERS);
@@ -237,13 +257,13 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: KVDBS_NAV_ID,
-      title: 'KVDBs',
+      title: "KVDBs",
       order: 7007,
       category: {
-        id: 'security_analytics',
-        label: 'Security analytics',
+        id: "security_analytics",
+        label: "Security analytics",
         order: 550,
-        euiIconType: 'securityAnalyticsApp',
+        euiIconType: "securityAnalyticsApp",
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -253,13 +273,13 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: LOG_TEST_NAV_ID,
-      title: 'Log test',
+      title: "Log test",
       order: 7011,
       category: {
-        id: 'security_analytics',
-        label: 'Security analytics',
+        id: "security_analytics",
+        label: "Security analytics",
         order: 550,
-        euiIconType: 'securityAnalyticsApp',
+        euiIconType: "securityAnalyticsApp",
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -269,13 +289,13 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: DETECTORS_NAV_ID,
-      title: 'Detectors',
+      title: "Detectors",
       order: 7009,
       category: {
-        id: 'security_analytics',
-        label: 'Security analytics',
+        id: "security_analytics",
+        label: "Security analytics",
         order: 550,
-        euiIconType: 'securityAnalyticsApp',
+        euiIconType: "securityAnalyticsApp",
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -285,13 +305,13 @@ export class SecurityAnalyticsPlugin
 
     core.application.register({
       id: DETECTION_RULE_NAV_ID,
-      title: 'Rules', // Wazuh: rename 'Detection rules' to 'Rules'.
+      title: "Rules", // Wazuh: rename 'Detection rules' to 'Rules'.
       order: 7010,
       category: {
-        id: 'security_analytics',
-        label: 'Security analytics',
+        id: "security_analytics",
+        label: "Security analytics",
         order: 550,
-        euiIconType: 'securityAnalyticsApp',
+        euiIconType: "securityAnalyticsApp",
       },
       updater$: this.appStateUpdater,
       mount: async (params: AppMountParameters) => {
@@ -320,7 +340,9 @@ export class SecurityAnalyticsPlugin
     if (core.chrome.navGroup.getNavGroupEnabled()) {
       dataSourceObservable.subscribe((dataSourceOption) => {
         if (dataSourceOption) {
-          this.appStateUpdater.next(this.updateDefaultRouteOfManagementApplications);
+          this.appStateUpdater.next(
+            this.updateDefaultRouteOfManagementApplications,
+          );
         }
       });
 
@@ -336,7 +358,7 @@ export class SecurityAnalyticsPlugin
       // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
         id: DETECTION_NAV_ID,
-        title: 'Detection',
+        title: "Detection",
         mount: async () => {
           return () => {};
         },
@@ -345,7 +367,7 @@ export class SecurityAnalyticsPlugin
       // Wazuh: register an empty app to allow the nested apps in the sidebar menu
       core.application.register({
         id: NORMALIZATION_NAV_ID,
-        title: 'Normalization',
+        title: "Normalization",
         mount: async () => {
           return () => {};
         },
@@ -369,7 +391,7 @@ export class SecurityAnalyticsPlugin
         { id: LOG_TYPES_NAV_ID, showInAllNavGroup: true, order: 7004 },
         {
           id: NORMALIZATION_NAV_ID,
-          title: 'Normalization',
+          title: "Normalization",
           showInAllNavGroup: true,
           order: 7003,
         },
@@ -387,12 +409,20 @@ export class SecurityAnalyticsPlugin
         },
         {
           id: DETECTION_NAV_ID,
-          title: 'Detection',
+          title: "Detection",
           showInAllNavGroup: true,
           order: 7009,
         },
-        { id: DETECTORS_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
-        { id: DETECTION_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
+        {
+          id: DETECTORS_NAV_ID,
+          parentNavLinkId: DETECTION_NAV_ID,
+          showInAllNavGroup: true,
+        },
+        {
+          id: DETECTION_RULE_NAV_ID,
+          parentNavLinkId: DETECTION_NAV_ID,
+          showInAllNavGroup: true,
+        },
         // Wazuh: hide Correlation rules from Detection category.
         // { id: CORRELATIONS_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
         // Wazuh does not use Threat Intelligence
@@ -400,10 +430,13 @@ export class SecurityAnalyticsPlugin
         { id: LOG_TEST_NAV_ID, showInAllNavGroup: true, order: 7011 },
       ];
 
-      core.chrome.navGroup.addNavLinksToGroup(DEFAULT_NAV_GROUPS['security-analytics'], navlinks);
+      core.chrome.navGroup.addNavLinksToGroup(
+        DEFAULT_NAV_GROUPS["security-analytics"],
+        navlinks,
+      );
     }
 
-    setDarkMode(core.uiSettings.get('theme:darkMode'));
+    setDarkMode(core.uiSettings.get("theme:darkMode"));
 
     const config = this.initializerContext.config.get();
     setSecurityAnalyticsPluginConfig(config);
@@ -416,8 +449,9 @@ export class SecurityAnalyticsPlugin
 
   public start(
     core: CoreStart,
-    { navigation, contentManagement, data }: SecurityAnalyticsPluginStartDeps
+    { navigation, contentManagement, data }: SecurityAnalyticsPluginStartDeps,
   ): SecurityAnalyticsPluginStart {
+    setCapabilities(core.application.capabilities);
     setUISettings(core.uiSettings);
     setNavigationUI(navigation.ui);
     setApplication(core.application);
