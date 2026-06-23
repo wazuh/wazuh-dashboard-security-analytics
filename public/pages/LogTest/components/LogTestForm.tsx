@@ -119,7 +119,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
       </EuiTitle>
       <EuiSpacer size="s" />
       <EuiFlexGroup gutterSize="m" wrap>
-        <EuiFlexItem style={{ minWidth: '200px' }}>
+        <EuiFlexItem style={{ minWidth: '300px' }}>
             <IntegrationComboBox
               label={<>{'Integration - '}<em>optional</em></>}
               options={integrationOptions}
