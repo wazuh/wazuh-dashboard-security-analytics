@@ -13,6 +13,14 @@ import { addNotificationsMethods } from './addNotificationsMethods';
 import { addCorrelationMethods } from './addCorrelationMethods';
 import { addLogTypeMethods } from './addLogTypeMethods';
 import { addThreatIntelMethods } from './addThreatIntelMethods';
+// Wazuh
+import { addIntegrationsMethods } from './addIntegrationsMethods';
+import { addPoliciesMethods } from './addPoliciesMethods';
+import { addDecoderMethods } from './addDecoderMethods';
+import { addKVDBsMethods } from './addKVDBsMethods';
+import { addFiltersMethods } from './addFiltersMethods';
+import { addLogTestMethods } from './addLogTestMethods';
+import { addWazuhRulesMethods } from './addWazuhRuleMethods';
 
 export function securityAnalyticsPlugin(Client: any, config: any, components: any) {
   const createAction = components.clientAction.factory;
@@ -29,4 +37,12 @@ export function securityAnalyticsPlugin(Client: any, config: any, components: an
   addNotificationsMethods(securityAnalytics, createAction);
   addLogTypeMethods(securityAnalytics, createAction);
   addThreatIntelMethods(securityAnalytics, createAction);
+  // Wazuh
+  addIntegrationsMethods(securityAnalytics, createAction);
+  addPoliciesMethods(securityAnalytics, createAction);
+  addDecoderMethods(securityAnalytics, createAction);
+  addKVDBsMethods(securityAnalytics, createAction);
+  addFiltersMethods(securityAnalytics, createAction);
+  addLogTestMethods(securityAnalytics, createAction);
+  addWazuhRulesMethods(securityAnalytics, createAction);
 }

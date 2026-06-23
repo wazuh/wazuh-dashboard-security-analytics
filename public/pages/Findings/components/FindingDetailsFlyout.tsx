@@ -29,7 +29,6 @@ import {
   EuiTabs,
   EuiTab,
   EuiLoadingContent,
-  EuiLoadingSpinner,
   EuiBasicTableColumn,
   EuiInMemoryTable,
   EuiToolTip,
@@ -43,21 +42,24 @@ import {
 } from '../../../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { Query } from '../models/interfaces';
-import { RuleViewerFlyout } from '../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
+import { RuleViewerFlyout } from '../../WazuhRules/components/RuleViewerFlyout/RuleViewerFlyout';
 import { RuleSource } from '../../../../server/models/interfaces';
 import { RuleTableItem } from '../../Rules/utils/helpers';
 import { CreateIndexPatternForm } from './CreateIndexPatternForm';
 import {
-  CorrelationFinding,
+  // Wazuh: hide correlations data in finding details flyout.
+  // CorrelationFinding,
   FindingDocumentItem,
   RuleItemInfoBase,
-  FindingItemType,
+  // Wazuh: hide correlations data in finding details flyout.
+  // FindingItemType,
   FindingDetailsFlyoutProps,
   FlyoutBaseProps,
 } from '../../../../types';
 import { FindingFlyoutTabId, FindingFlyoutTabs } from '../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { CorrelationsTable } from './CorrelationsTable/CorrelationsTable';
+// Wazuh: hide Correlations tab in finding details flyout.
+// import { CorrelationsTable } from './CorrelationsTable/CorrelationsTable';
 import { getSeverityColor } from '../../Correlations/utils/constants';
 import { getLogTypeLabel } from '../../LogTypes/utils/helpers';
 
@@ -67,10 +69,12 @@ interface FindingDetailsFlyoutState {
   indexPatternId?: string;
   isCreateIndexPatternModalVisible: boolean;
   selectedTab: { id: FindingFlyoutTabId; content: React.ReactNode | null };
-  correlatedFindings: CorrelationFinding[];
+  // Wazuh: hide correlations data in finding details flyout.
+  // correlatedFindings: CorrelationFinding[];
   allRules: { [id: string]: RuleSource };
   loadingIndexPatternId: boolean;
-  areCorrelationsLoading: boolean;
+  // Wazuh: hide correlations data in finding details flyout.
+  // areCorrelationsLoading: boolean;
   docIdToExpandedRowMap: { [id: string]: JSX.Element };
 }
 
@@ -105,9 +109,11 @@ export default class FindingDetailsFlyout extends Component<
           </>
         ),
       },
-      correlatedFindings: [],
+      // Wazuh: hide correlations data in finding details flyout.
+      // correlatedFindings: [],
       loadingIndexPatternId: true,
-      areCorrelationsLoading: true,
+      // Wazuh: hide correlations data in finding details flyout.
+      // areCorrelationsLoading: true,
       allRules: {},
       docIdToExpandedRowMap,
     };
@@ -120,44 +126,45 @@ export default class FindingDetailsFlyout extends Component<
     this.abortGetFindingsControllers = [];
   }
 
-  getCorrelations = async () => {
-    const { id, detector } = this.props.finding;
-    let allFindings = this.props.findings;
-    if (this.props.shouldLoadAllFindings) {
-      // if findings come from the alerts fly-out, we need to get all the findings to match those with the correlations
-      const abortController = new AbortController();
-      this.abortGetFindingsControllers.push(abortController);
-      allFindings = await DataStore.findings.getAllFindings(abortController.signal);
-    }
-
-    DataStore.correlations.getCorrelationRules().then((correlationRules) => {
-      DataStore.correlations
-        .getCorrelatedFindings(id, detector._source?.detector_type)
-        .then((findings) => {
-          if (findings?.correlatedFindings.length) {
-            let correlatedFindings: any[] = [];
-            findings.correlatedFindings.map((finding: CorrelationFinding) => {
-              allFindings.map((item: FindingItemType) => {
-                if (finding.id === item.id) {
-                  correlatedFindings.push({
-                    ...finding,
-                    correlationRule: correlationRules.find(
-                      (rule) => finding.rules?.indexOf(rule.id) !== -1
-                    ),
-                  });
-                }
-              });
-            });
-            this.setState({ correlatedFindings });
-          }
-        })
-        .finally(() => {
-          this.setState({
-            areCorrelationsLoading: false,
-          });
-        });
-    });
-  };
+  // Wazuh: hide correlations data in finding details flyout.
+  // getCorrelations = async () => {
+  //   const { id, detector } = this.props.finding;
+  //   let allFindings = this.props.findings;
+  //   if (this.props.shouldLoadAllFindings) {
+  //     // if findings come from the alerts fly-out, we need to get all the findings to match those with the correlations
+  //     const abortController = new AbortController();
+  //     this.abortGetFindingsControllers.push(abortController);
+  //     allFindings = await DataStore.findings.getAllFindings(abortController.signal);
+  //   }
+  //
+  //   DataStore.correlations.getCorrelationRules().then((correlationRules) => {
+  //     DataStore.correlations
+  //       .getCorrelatedFindings(id, detector._source?.detector_type)
+  //       .then((findings) => {
+  //         if (findings?.correlatedFindings.length) {
+  //           let correlatedFindings: any[] = [];
+  //           findings.correlatedFindings.map((finding: CorrelationFinding) => {
+  //             allFindings.map((item: FindingItemType) => {
+  //               if (finding.id === item.id) {
+  //                 correlatedFindings.push({
+  //                   ...finding,
+  //                   correlationRule: correlationRules.find(
+  //                     (rule) => finding.rules?.indexOf(rule.id) !== -1
+  //                   ),
+  //                 });
+  //               }
+  //             });
+  //           });
+  //           this.setState({ correlatedFindings });
+  //         }
+  //       })
+  //       .finally(() => {
+  //         this.setState({
+  //           areCorrelationsLoading: false,
+  //         });
+  //       });
+  //   });
+  // };
 
   componentDidMount(): void {
     this.getIndexPatternId()
@@ -170,7 +177,8 @@ export default class FindingDetailsFlyout extends Component<
         this.setState({ loadingIndexPatternId: false });
       });
 
-    this.getCorrelations();
+    // Wazuh: hide correlations data in finding details flyout.
+    // this.getCorrelations();
 
     DataStore.rules.getAllRules().then((rules) => {
       const allRules: { [id: string]: RuleSource } = {};
@@ -213,15 +221,16 @@ export default class FindingDetailsFlyout extends Component<
     );
   };
 
+  // Wazuh: Remove duplicated fields in metadata and root: title, description.
   showRuleDetails = (fullRule: any, ruleId: string) => {
     this.setState({
       ...this.state,
       ruleViewerFlyoutData: {
         ruleId: ruleId,
-        title: fullRule.title,
+        title: fullRule.metadata?.title,
         level: fullRule.level,
         category: fullRule.category,
-        description: fullRule.description,
+        description: fullRule.metadata?.description,
         source: fullRule.source,
         ruleInfo: {
           _source: fullRule,
@@ -258,7 +267,8 @@ export default class FindingDetailsFlyout extends Component<
             buttonClassName="euiAccordionForm__button"
             buttonContent={
               <div data-test-subj={'finding-details-flyout-rule-accordion-button'}>
-                <EuiText size={'s'}>{fullRule.title}</EuiText>
+                {/* Wazuh: Remove duplicated fields in metadata and root: title. */}
+                <EuiText size={'s'}>{fullRule.metadata?.title ?? DEFAULT_EMPTY_DATA}</EuiText>
                 <EuiText size={'s'} color={'subdued'}>
                   Severity: {severity}
                 </EuiText>
@@ -271,11 +281,14 @@ export default class FindingDetailsFlyout extends Component<
               <EuiFlexGroup>
                 <EuiFlexItem>
                   <EuiCompressedFormRow label={'Rule name'}>
+                    {/* Wazuh: Remove duplicated fields in metadata and root: title. */}
                     <EuiLink
                       onClick={() => this.showRuleDetails(fullRule, rule.id)}
-                      data-test-subj={`finding-details-flyout-${fullRule.title}-details`}
+                      data-test-subj={`finding-details-flyout-${
+                        fullRule.metadata?.title ?? ''
+                      }-details`}
                     >
-                      {fullRule.title || DEFAULT_EMPTY_DATA}
+                      {fullRule.metadata?.title || DEFAULT_EMPTY_DATA}
                     </EuiLink>
                   </EuiCompressedFormRow>
                 </EuiFlexItem>
@@ -291,7 +304,7 @@ export default class FindingDetailsFlyout extends Component<
 
                 <EuiFlexItem>
                   <EuiCompressedFormRow
-                    label={'Log type'}
+                    label={'Integration'} // Replace Log type with Integration by Wazuh
                     data-test-subj={'finding-details-flyout-rule-category'}
                   >
                     <EuiText>{getLogTypeLabel(fullRule.category) || DEFAULT_EMPTY_DATA}</EuiText>
@@ -303,12 +316,16 @@ export default class FindingDetailsFlyout extends Component<
                 label={'Description'}
                 data-test-subj={'finding-details-flyout-rule-description'}
               >
-                <EuiText>{fullRule.description || DEFAULT_EMPTY_DATA}</EuiText>
+                {/* Wazuh: Remove duplicated fields in metadata and root: description */}
+                <EuiText>{fullRule.metadata?.description || DEFAULT_EMPTY_DATA}</EuiText>
               </EuiCompressedFormRow>
 
               <EuiSpacer size={'m'} />
 
-              <EuiCompressedFormRow label={'Tags'} data-test-subj={'finding-details-flyout-rule-tags'}>
+              <EuiCompressedFormRow
+                label={'Tags'}
+                data-test-subj={'finding-details-flyout-rule-tags'}
+              >
                 <EuiText>{this.renderTags(rule.tags) || DEFAULT_EMPTY_DATA}</EuiText>
               </EuiCompressedFormRow>
             </EuiPanel>
@@ -459,7 +476,10 @@ export default class FindingDetailsFlyout extends Component<
           <h3>Documents ({relatedDocuments.length})</h3>
         </EuiTitle>
         <EuiSpacer />
-        <EuiCompressedFormRow label={'Index'} data-test-subj={`finding-details-flyout-rule-document-index`}>
+        <EuiCompressedFormRow
+          label={'Index'}
+          data-test-subj={`finding-details-flyout-rule-document-index`}
+        >
           <EuiText size="s">{index || DEFAULT_EMPTY_DATA}</EuiText>
         </EuiCompressedFormRow>
         <EuiSpacer />
@@ -532,26 +552,27 @@ export default class FindingDetailsFlyout extends Component<
 
   private getTabContent(tabId: FindingFlyoutTabId, loadingIndexPatternId = false) {
     switch (tabId) {
-      case FindingFlyoutTabId.CORRELATIONS:
-        const logTypes = new Set<string>();
-        const ruleSeverity = new Set<string>();
-        Object.values(this.state.allRules).forEach((rule) => {
-          logTypes.add(rule.category);
-          ruleSeverity.add(rule.level);
-        });
-
-        return (
-          <CorrelationsTable
-            finding={this.props.finding}
-            correlatedFindings={this.state.correlatedFindings}
-            history={this.props.history}
-            isLoading={this.state.areCorrelationsLoading}
-            filterOptions={{
-              logTypes,
-              ruleSeverity,
-            }}
-          />
-        );
+      // Wazuh: hide Correlations tab in finding details flyout.
+      // case FindingFlyoutTabId.CORRELATIONS:
+      //   const logTypes = new Set<string>();
+      //   const ruleSeverity = new Set<string>();
+      //   Object.values(this.state.allRules).forEach((rule) => {
+      //     logTypes.add(rule.category);
+      //     ruleSeverity.add(rule.level);
+      //   });
+      //
+      //   return (
+      //     <CorrelationsTable
+      //       finding={this.props.finding}
+      //       correlatedFindings={this.state.correlatedFindings}
+      //       history={this.props.history}
+      //       isLoading={this.state.areCorrelationsLoading}
+      //       filterOptions={{
+      //         logTypes,
+      //         ruleSeverity,
+      //       }}
+      //     />
+      //   );
       case FindingFlyoutTabId.DETAILS:
       default:
         return this.createFindingDetails(loadingIndexPatternId);
@@ -712,7 +733,9 @@ export default class FindingDetailsFlyout extends Component<
                     });
                   }}
                 >
-                  {tab.id === 'Correlations' ? (
+                  {tab.name}
+                  {/* Wazuh: hide Correlations tab count in finding details flyout. */}
+                  {/* {tab.id === 'Correlations' ? (
                     <>
                       {tab.name} (
                       {this.state.areCorrelationsLoading ? (
@@ -724,7 +747,7 @@ export default class FindingDetailsFlyout extends Component<
                     </>
                   ) : (
                     tab.name
-                  )}
+                  )} */}
                 </EuiTab>
               );
             })}

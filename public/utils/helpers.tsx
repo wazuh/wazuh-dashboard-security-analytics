@@ -16,7 +16,6 @@ import {
   euiPaletteColorBlind,
   EuiEmptyPrompt,
 } from '@elastic/eui';
-import moment from 'moment';
 import { PeriodSchedule } from '../../models/interfaces';
 import React from 'react';
 import {
@@ -25,6 +24,7 @@ import {
   BREADCRUMBS,
   DEFAULT_EMPTY_DATA,
   defaultColorForVisualizations,
+  integrationCategories,
   logTypeCategories,
   logTypeCategoryDescription,
   logTypesByCategories,
@@ -43,10 +43,15 @@ import {
 } from 'opensearch-dashboards/public';
 import {
   AlertsService,
+  DecodersService,
   FieldMappingService,
   IndexPatternsService,
   IndexService,
   LogTypeService,
+  IntegrationService,
+  PoliciesService,
+  KVDBsService,
+  FiltersService,
   NotificationsService,
   OpenSearchService,
 } from '../services';
@@ -58,6 +63,8 @@ import { LogCategoryOptionView } from '../components/Utility/LogCategoryOption';
 import { getLogTypeLabel } from '../pages/LogTypes/utils/helpers';
 import { euiThemeVars } from '@osd/ui-shared-deps/theme';
 import dateMath from '@elastic/datemath';
+// Wazuh: shared date formatter that honors the `dateFormat`/`dateFormat:tz` advanced settings.
+import { formatUIDate } from './dateFormat';
 import {
   getBreadCrumbsSetter,
   getBrowserServices,
@@ -81,16 +88,16 @@ import * as pluginManifest from '../../opensearch_dashboards.json';
 import { DataSourceThreatAlertsCard } from '../components/DataSourceThreatAlertsCard/DataSourceThreatAlertsCard';
 import { DataSourceAttributes } from '../../../../src/plugins/data_source/common/data_sources';
 import { ISearchStart } from '../../../../src/plugins/data/public';
+import LogTestService from '../services/LogTestService';
 
 export const parseStringsToOptions = (strings: string[]) => {
   return strings.map((str) => ({ id: str, label: str }));
 };
 
-export const renderTime = (time: number | string) => {
-  const momentTime = moment(time);
-  if (time && momentTime.isValid()) return momentTime.format('MM/DD/YY h:mm a');
-  return DEFAULT_EMPTY_DATA;
-};
+// Wazuh: delegate to formatUIDate so dates honor the `dateFormat`/`dateFormat:tz` advanced
+// settings. Upstream returned `moment(time).format('MM/DD/YY h:mm a')` with a
+// `DEFAULT_EMPTY_DATA` fallback (that fallback now lives inside formatUIDate).
+export const renderTime = (time: number | string) => formatUIDate(time);
 
 export function createTextDetailsGroup(
   data: { label: string; content: any; url?: string; target?: string }[]
@@ -182,10 +189,12 @@ export function ruleItemInfosToItems(
     return ruleItemsInfo.map((itemInfo) => ({
       id: itemInfo._id,
       active: itemInfo.enabled,
-      description: itemInfo._source.description,
+      // Wazuh: Remove duplicated fields in metadata and root: description.
+      description: itemInfo._source.metadata?.description ?? '',
       library: itemInfo.prePackaged ? 'Standard' : 'Custom',
       logType: detectorType.toLowerCase(),
-      name: itemInfo._source.title,
+      // Wazuh: Remove duplicated fields in metadata and root: title.
+      name: itemInfo._source.metadata?.title ?? '',
       severity: itemInfo._source.level,
       ruleInfo: itemInfo,
     }));
@@ -300,10 +309,10 @@ export const formatRuleType = (matchingRuleType: string) => {
   );
 
   if (logType) {
-    return `${logType.category}: ${getLogTypeLabel(logType.value)}`;
+    return logType.value; // Wazuh: remove category from label
   }
 
-  return DEFAULT_EMPTY_DATA;
+  return matchingRuleType || DEFAULT_EMPTY_DATA; // Wazuh: in case of not in logtype, return original value
 };
 
 export const getSeverityBadge = (severity: string) => {
@@ -336,25 +345,50 @@ export async function getLogTypeOptions() {
   return formatToLogTypeOptions(logTypesByCategories);
 }
 
+/**
+ * Returns Integration ComboBox options filtered by space and ordered alphabetically.
+ * [Wazuh custom] Uses document.metadata?.title for normalized metadata structure (issue #117)
+ * [Wazuh custom] Adds id with the same value to give support to other components.
+ */
+
+export async function getIntegrationOptionsBySpace(
+  space: string
+): Promise<{ id: string; value: string; label: string }[]> {
+  const integrations = await DataStore.integrations.getIntegrations(space);
+  // [Wazuh custom] Use metadata object instead of document.title
+  return integrations
+    .map(({ document: { metadata } }) => ({
+      id: metadata?.title ?? '',
+      value: metadata?.title ?? '',
+      label: metadata?.title ?? '',
+    }))
+    .filter((opt) => opt.label)
+    .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
+}
+
 export function getLogTypeFilterOptions() {
   const options: any[] = [];
+  // Wazuh: dedup by value — logTypesByCategories may contain the same log type more than once.
+  const seenValues = new Set<string>();
   formatToLogTypeOptions(logTypesByCategories).forEach((categoryData) => {
     const categoryName = categoryData.label;
     const logTypes = categoryData.options;
 
     for (let i = 0; i < logTypes.length; i++) {
-      if (i === 0) {
-        options.push({
-          value: logTypes.map((logType) => logType.value).join(' or '),
-          view: <LogCategoryOptionView categoryName={categoryName} />,
-        });
+      const entry = logTypes[i];
+      if (seenValues.has(entry.value)) {
+        continue;
       }
-
+      seenValues.add(entry.value);
+      // Wazuh: add the category name in front of log type label for better context in filter options, e.g. "Security: Audit logs"
       options.push({
-        value: logTypes[i].value,
+        value: entry.value,
         view: (
           <span className="euiFlexItem euiFilterSelectItem__content" style={{ paddingLeft: 20 }}>
-            {getLogTypeLabel(logTypes[i].label)}
+            <EuiText size="s" color="subdued" style={{ display: 'block' }}>
+              {categoryName}
+            </EuiText>
+            {getLogTypeLabel(entry.label)}
           </span>
         ),
       });
@@ -376,6 +410,32 @@ export function getLogTypeCategoryOptions(): any[] {
         </EuiText>
       </>
     ),
+  }));
+}
+
+export function getIntegrationCategoryOptions(displayDescription: boolean = true): any[] {
+  return integrationCategories.map(({ label, value, description }) => ({
+    value,
+    inputDisplay: label,
+    dropdownDisplay: (
+      <>
+        <strong>{label}</strong>
+        {displayDescription ? (
+          <EuiText size="s" color="subdued">
+            <p className="ouiTextColor--subdued">{description}</p>
+          </EuiText>
+        ) : null}
+      </>
+    ),
+  }));
+}
+
+/** Search bar filter options: same content as SuperSelect dropdown (`view` for EuiInMemoryTable filters). */
+export function getIntegrationCategoryFilterOptions(displayDescription: boolean = true): any[] {
+  return getIntegrationCategoryOptions(displayDescription).map((opt) => ({
+    value: opt.value,
+    name: opt.inputDisplay,
+    view: opt.dropdownDisplay,
   }));
 }
 
@@ -415,7 +475,10 @@ export async function getDataSources(
 ): Promise<
   | {
       ok: true;
-      dataSources: { label: string; options: { label: string; value: string; index?: string }[] }[];
+      dataSources: {
+        label: string;
+        options: { label: string; value: string; index?: string }[];
+      }[];
     }
   | { ok: false; error: string }
 > {
@@ -445,20 +508,52 @@ export async function getDataSources(
 
     if (indicesResponse.ok) {
       const indices = indicesResponse.response.indices;
-      const indexOptions = indices
-        .map(({ index }) => ({ label: index, value: index }))
-        .filter(({ label }) => !label.startsWith('.'));
+      // Wazuh -- start
+      const indexOptions: { label: string; value: string }[] = [];
+      const dataStreamOptions: { label: string; value: string }[] = [];
+      const dataStreamsSet = new Set<string>();
 
-      dataSourceOptions.push({
-        label: 'Indices',
-        options: indexOptions,
+      // Matches OpenSearch data stream backing indices (e.g., .ds-wazuh-alerts-000001)
+      const DATA_STREAM_BACKING_INDEX_PATTERN = /^\.ds-(.+)-\d+$/;
+      // Regex capture group containing the logical data stream name
+      const DATA_STREAM_NAME_GROUP = 1;
+
+      indices.forEach(({ index }) => {
+        const dsMatch = index.match(DATA_STREAM_BACKING_INDEX_PATTERN);
+
+        if (dsMatch) {
+          const dsName = dsMatch[DATA_STREAM_NAME_GROUP];
+          if (!dataStreamsSet.has(dsName)) {
+            dataStreamsSet.add(dsName);
+            dataStreamOptions.push({ label: dsName, value: dsName });
+          }
+        } else if (!index.startsWith('.')) {
+          indexOptions.push({ label: index, value: index });
+        }
       });
+
+      if (dataStreamOptions.length > 0) {
+        const aliasGroup = dataSourceOptions.find((group) => group.label === 'Aliases');
+        if (aliasGroup) {
+          aliasGroup.options.push(...dataStreamOptions);
+        } else {
+          dataSourceOptions.push({
+            label: 'Aliases',
+            options: dataStreamOptions,
+          });
+        }
+      }
+
+      if (indexOptions.length > 0) {
+        dataSourceOptions.push({
+          label: 'Indexes',
+          options: indexOptions,
+        });
+      }
     } else {
-      errorNotificationToast(notifications, 'retrieve', 'indices', indicesResponse.error);
-
-      return { ok: false, error: indicesResponse.error };
+      throw indicesResponse.error;
     }
-
+    // Wazuh -- end
     return {
       ok: true,
       dataSources: dataSourceOptions,
@@ -601,7 +696,12 @@ export function getBadgeText(severity: string) {
 }
 
 export function getAlertSeverityColor(severity: string) {
-  return ALERT_SEVERITY_PROPS[severity]?.color || { background: 'white', text: 'black' };
+  return (
+    ALERT_SEVERITY_PROPS[severity]?.color || {
+      background: 'white',
+      text: 'black',
+    }
+  );
 }
 
 export function getAlertSeverityBadge(severity: string) {
@@ -676,6 +776,12 @@ export function initializeServices(
   const savedObjectsService = new SavedObjectService(savedObjects.client, indexService);
   const indexPatternsService = new IndexPatternsService(indexPattern);
   const logTypeService = new LogTypeService(http);
+  const integrationService = new IntegrationService(http);
+  const policiesService = new PoliciesService(http);
+  const decodersService = new DecodersService(http);
+  const kvdbsService = new KVDBsService(http);
+  const filtersService = new FiltersService(http);
+  const logTestService = new LogTestService(http);
   const metricsService = new MetricsService(http);
   const threatIntelService = new ThreatIntelService(http, coreStart.notifications);
 
@@ -692,6 +798,12 @@ export function initializeServices(
     savedObjectsService,
     indexPatternsService,
     logTypeService,
+    integrationService,
+    policiesService,
+    decodersService,
+    kvdbsService,
+    filtersService,
+    logTestService,
     metricsService,
     threatIntelService,
   };
@@ -706,4 +818,42 @@ export const buildRouteUrl = (appId: string, route: string) => {
   } else {
     return `#${route}`;
   }
+};
+
+/** Wazuh custom plugin helper function to format various value types into a display friendly string. */
+export const formatCellValue = (value: unknown) => {
+  if (value === null || value === undefined || value === '') {
+    return DEFAULT_EMPTY_DATA;
+  }
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    const formatted = value
+      .map((entry) => {
+        if (entry === null || entry === undefined) {
+          return '';
+        }
+        if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
+          return String(entry);
+        }
+        if (typeof entry === 'object' && 'name' in entry && typeof entry.name === 'string') {
+          return entry.name;
+        }
+        return JSON.stringify(entry);
+      })
+      .filter(Boolean)
+      .join(', ');
+    return formatted || DEFAULT_EMPTY_DATA;
+  }
+  if (typeof value === 'object') {
+    if ('name' in value && typeof value.name === 'string') {
+      return value.name;
+    }
+    if ('value' in value && typeof value.value === 'string') {
+      return value.value;
+    }
+    return JSON.stringify(value);
+  }
+  return DEFAULT_EMPTY_DATA;
 };

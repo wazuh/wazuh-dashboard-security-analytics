@@ -1,0 +1,169 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import React, { Component } from 'react';
+import { EuiCompressedFormRow, EuiSpacer, EuiText, EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
+import {
+  CreateDetectorRulesState,
+  DetectionRules,
+} from '../../../../../CreateDetector/components/DefineDetector/components/DetectionRules/DetectionRules';
+import { RuleItem } from '../../../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
+import { ConfigureFieldMappingProps } from '../../../../../CreateDetector/components/ConfigureFieldMapping/containers/ConfigureFieldMapping';
+import { getIntegrationOptionsBySpace } from '../../../../../../utils/helpers';
+import { SpaceSelector } from '../../../../../../components/SpaceSelector/SpaceSelector';
+import { SpaceTypes } from '../../../../../../../common/constants';
+import { RulesContentUpdateWarning } from '.';
+import { IntegrationComboBox } from '../../../../../../components/IntegrationComboBox';
+
+interface DetectorTypeProps {
+  detectorType: string;
+  rulesState: CreateDetectorRulesState;
+  configureFieldMappingProps: ConfigureFieldMappingProps;
+  loadingRules?: boolean;
+  // Wazuh: add selectedSpace and to props to update the space in forms
+  selectedSpace?: string;
+  onDetectorTypeChange: (detectorType: string) => void;
+  onPageChange: (page: { index: number; size: number }) => void;
+  onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
+  onAllRulesToggle: (enabled: boolean) => void;
+  /** Notifies the parent when the selected space changes so it can re-filter rules */
+  onSpaceChange?: (space: string) => void;
+}
+
+interface DetectorTypeState {
+  fieldTouched: boolean;
+  selectedSpace: string;
+  detectorTypeOptions: { id: string; value: string; label: string }[];
+}
+
+export default class DetectorType extends Component<DetectorTypeProps, DetectorTypeState> {
+  constructor(props: DetectorTypeProps) {
+    super(props);
+
+    this.state = {
+      fieldTouched: false,
+      // Wazuh: initialize from prop so the space is restored correctly when the
+      // form is re-opened after a failed creation (e.g. via "Review detector
+      // configuration"). Without this, the selector always defaults to standard
+      // regardless of the integration that was originally selected.
+      selectedSpace: props.selectedSpace ?? SpaceTypes.STANDARD.value,
+      detectorTypeOptions: [],
+    };
+  }
+
+  async componentDidMount(): Promise<void> {
+    await this.loadOptionsForSpace(this.state.selectedSpace);
+  }
+
+  private async loadOptionsForSpace(space: string): Promise<void> {
+    const options = await getIntegrationOptionsBySpace(space);
+    this.setState({ detectorTypeOptions: options });
+  }
+
+  onSpaceChange = async (space: string): Promise<void> => {
+    this.setState({ selectedSpace: space });
+    // Clear the currently selected integration when switching spaces
+    this.props.onDetectorTypeChange('');
+    // Notify parent so it can re-fetch rules filtered by the new space
+    this.props.onSpaceChange?.(space);
+    await this.loadOptionsForSpace(space);
+  };
+
+  onChange = (detectorType: string) => {
+    this.setState({ fieldTouched: true });
+    this.props.onDetectorTypeChange(detectorType);
+  };
+
+  isInvalid = () => {
+    const { fieldTouched } = this.state;
+    return fieldTouched && !(this.getErrorMessage().length < 1);
+  };
+
+  getErrorMessage = () => {
+    const { detectorType } = this.props;
+    const { detectorTypeOptions } = this.state;
+    if (detectorType.length < 1) return 'Select a detector type.';
+    // Validate against the currently loaded options for the selected space
+    if (
+      detectorTypeOptions.length > 0 &&
+      !detectorTypeOptions.some((opt) => opt.value === detectorType)
+    ) {
+      return 'Unsupported detector type.';
+    }
+    return '';
+  };
+
+  render() {
+    const { detectorType } = this.props;
+    const { selectedSpace, detectorTypeOptions } = this.state;
+
+    return (
+      <>
+        <EuiText size="s">
+          <h3>Rules</h3>
+        </EuiText>
+        <EuiText size="s">
+          <p>
+            The rules are automatically populated based on your selected integration. Threat
+            intelligence based detection can be enabled for standard integrations.{' '}
+          </p>
+        </EuiText>
+        <EuiSpacer />
+
+        {selectedSpace === SpaceTypes.STANDARD.value && (
+          <>
+            <RulesContentUpdateWarning />
+            <EuiSpacer />
+          </>
+        )}
+
+        <EuiFlexGroup alignItems="center" gutterSize="s">
+          <EuiFlexItem grow={false}>
+            <SpaceSelector
+              selectedSpace={selectedSpace}
+              onSpaceChange={this.onSpaceChange}
+              allowedSpaces={[SpaceTypes.STANDARD.value, SpaceTypes.CUSTOM.value]}
+            />
+          </EuiFlexItem>
+        </EuiFlexGroup>
+
+        <EuiSpacer size="m" />
+
+        <EuiCompressedFormRow
+          fullWidth={true}
+          isInvalid={this.isInvalid()}
+          error={this.getErrorMessage()}
+        >
+          <IntegrationComboBox
+            selectedId={detectorType}
+            options={detectorTypeOptions}
+            isInvalid={this.isInvalid()}
+            onChange={(e) => {
+              this.onChange(e[0]?.value || '');
+            }}
+            resourceName="detectors"
+            data-test-subj="integration_dropdown"
+            space={selectedSpace}
+          />
+        </EuiCompressedFormRow>
+
+        <EuiCompressedFormRow fullWidth={true}>
+          <DetectionRules
+            detectorType={detectorType}
+            rulesState={this.props.rulesState}
+            loading={this.props.loadingRules}
+            onPageChange={this.props.onPageChange}
+            onRuleToggle={this.props.onRuleToggle}
+            onAllRulesToggle={this.props.onAllRulesToggle}
+          />
+        </EuiCompressedFormRow>
+
+        {/* <EuiCompressedFormRow fullWidth={true}>
+          <ConfigureFieldMapping {...this.props.configureFieldMappingProps} />
+        </EuiCompressedFormRow> */}
+      </>
+    );
+  }
+}

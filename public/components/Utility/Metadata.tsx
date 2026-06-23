@@ -1,0 +1,86 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import React from 'react';
+import { EuiLink } from '@elastic/eui';
+import moment from 'moment';
+import { DEFAULT_EMPTY_DATA } from '../../utils/constants';
+import { formatUIDate } from '../../utils/dateFormat';
+
+export type MetadataFieldType = 'raw' | 'text' | 'number' | 'date' | 'url' | 'boolean' | 'boolean_yesno';
+
+export const MetadataFieldRaw: React.FC<{ value: string | number }> = ({ value }) => {
+  return <>{value}</>;
+};
+
+export const MetadataFieldText: React.FC<{ value: string | number }> = ({ value }) => {
+  return <div style={{ textAlign: 'justify' }}>{String(value)}</div>;
+};
+
+export const MetadataFieldURL: React.FC<{ value: string | number }> = ({ value }) => {
+  const url = String(value);
+  return value ? (
+    <EuiLink target="_blank" rel="noopener noreferrer" href={url}>
+      {url}
+    </EuiLink>
+  ) : (
+    DEFAULT_EMPTY_DATA
+  );
+};
+
+export const MetadataFieldBoolean: React.FC<{ value: string | number }> = ({ value }) => {
+  return <>{String(value)}</>;
+};
+
+export const MetadataFieldBooleanAsYesNo: React.FC<{
+  value: string | number;
+}> = ({ value }) => {
+  return <>{value ? 'Yes' : 'No'}</>;
+};
+
+export const MetadataFieldDate: React.FC<{ value: string | number }> = ({ value }) => {
+  if (!value) {
+    return <>{DEFAULT_EMPTY_DATA}</>;
+  }
+  return <>{moment(value).isValid() ? formatUIDate(value) : String(value)}</>;
+};
+
+const mapFieldRenderers: {
+  [key in MetadataFieldType]: React.FC<{ value: any }>;
+} = {
+  text: MetadataFieldText,
+  boolean: MetadataFieldBoolean,
+  boolean_yesno: MetadataFieldBooleanAsYesNo,
+  number: MetadataFieldText,
+  date: MetadataFieldDate,
+  url: MetadataFieldURL,
+  raw: MetadataFieldRaw
+};
+
+export const Metadata: React.FC<{
+  type?: MetadataFieldType;
+  value: string | number;
+  label?: React.ReactNode;
+}> = ({ value, label, type = 'text' }) => {
+  return (
+    <div>
+      <div>
+        <strong>{label}</strong>
+      </div>
+      <div style={label ? { marginTop: '4px' } : {}}>
+        {typeof value === 'undefined' ||
+        value === null ||
+        value === '' ||
+        (Array.isArray(value) && value.length === 0)
+          ? DEFAULT_EMPTY_DATA
+          : Array.isArray(value)
+          ? value.map((v, i) => (
+              <div key={`${label}-${i}`}>{mapFieldRenderers[type]({ value: v })}</div>
+            ))
+          : mapFieldRenderers[type]({ value })}
+      </div>
+    </div>
+  );
+};

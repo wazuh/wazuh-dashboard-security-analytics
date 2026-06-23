@@ -33,21 +33,25 @@ Object {
               <div
                 class="euiFlexItem"
               >
-                <button
-                  class="euiButton euiButton--primary euiButton--small"
-                  data-test-subj="edit-detector-basic-details"
-                  type="button"
+                <span
+                  class="euiToolTipAnchor"
                 >
-                  <span
-                    class="euiButtonContent euiButton__content"
+                  <button
+                    class="euiButton euiButton--primary euiButton--small"
+                    data-test-subj="edit-detector-basic-details"
+                    type="button"
                   >
                     <span
-                      class="euiButton__text"
+                      class="euiButtonContent euiButton__content"
                     >
-                      Edit
+                      <span
+                        class="euiButton__text"
+                      >
+                        Edit
+                      </span>
                     </span>
-                  </span>
-                </button>
+                  </button>
+                </span>
               </div>
             </div>
           </div>
@@ -108,7 +112,7 @@ Object {
                     class="euiFormLabel euiFormRow__label"
                     for="some_html_id"
                   >
-                    Description
+                    Integration
                   </label>
                 </div>
                 <div
@@ -116,10 +120,10 @@ Object {
                 >
                   <div
                     class="euiText euiText--small"
-                    data-test-subj="text-details-group-content-description"
+                    data-test-subj="text-details-group-content-integration"
                     id="some_html_id"
                   >
-                    detectorDescription
+                    detector_type
                   </div>
                 </div>
               </div>
@@ -138,7 +142,7 @@ Object {
                     class="euiFormLabel euiFormRow__label"
                     for="some_html_id"
                   >
-                    Detector schedule
+                    Space
                   </label>
                 </div>
                 <div
@@ -146,10 +150,10 @@ Object {
                 >
                   <div
                     class="euiText euiText--small"
-                    data-test-subj="text-details-group-content-detector-schedule"
+                    data-test-subj="text-details-group-content-space"
                     id="some_html_id"
                   >
-                    Every 1 minute
+                    -
                   </div>
                 </div>
               </div>
@@ -209,7 +213,7 @@ Object {
                     class="euiFormLabel euiFormRow__label"
                     for="some_html_id"
                   >
-                    Log type
+                    Detector schedule
                   </label>
                 </div>
                 <div
@@ -217,10 +221,10 @@ Object {
                 >
                   <div
                     class="euiText euiText--small"
-                    data-test-subj="text-details-group-content-log-type"
+                    data-test-subj="text-details-group-content-detector-schedule"
                     id="some_html_id"
                   >
-                    Detector Type
+                    Every 1 minute
                   </div>
                 </div>
               </div>
@@ -250,7 +254,7 @@ Object {
                     data-test-subj="text-details-group-content-detector-dashboard"
                     id="some_html_id"
                   >
-                    Not available for this log type
+                    Not available for this integration
                   </div>
                 </div>
               </div>
@@ -276,7 +280,7 @@ Object {
                     class="euiFormLabel euiFormRow__label"
                     for="some_html_id"
                   >
-                    Detection rules
+                    Rules
                   </label>
                 </div>
                 <div
@@ -284,7 +288,7 @@ Object {
                 >
                   <div
                     class="euiText euiText--small"
-                    data-test-subj="text-details-group-content-detection-rules"
+                    data-test-subj="text-details-group-content-rules"
                     id="some_html_id"
                   >
                     2
@@ -367,7 +371,7 @@ Object {
                 class="euiFormLabel euiFormRow__label"
                 for="some_html_id"
               >
-                Threat intelligence
+                Description
               </label>
             </div>
             <div
@@ -375,10 +379,10 @@ Object {
             >
               <div
                 class="euiText euiText--small"
-                data-test-subj="text-details-group-content-threat-intelligence"
+                data-test-subj="text-details-group-content-description"
                 id="some_html_id"
               >
-                Disabled
+                detectorDescription
               </div>
             </div>
           </div>
@@ -418,21 +422,25 @@ Object {
             <div
               class="euiFlexItem"
             >
-              <button
-                class="euiButton euiButton--primary euiButton--small"
-                data-test-subj="edit-detector-basic-details"
-                type="button"
+              <span
+                class="euiToolTipAnchor"
               >
-                <span
-                  class="euiButtonContent euiButton__content"
+                <button
+                  class="euiButton euiButton--primary euiButton--small"
+                  data-test-subj="edit-detector-basic-details"
+                  type="button"
                 >
                   <span
-                    class="euiButton__text"
+                    class="euiButtonContent euiButton__content"
                   >
-                    Edit
+                    <span
+                      class="euiButton__text"
+                    >
+                      Edit
+                    </span>
                   </span>
-                </span>
-              </button>
+                </button>
+              </span>
             </div>
           </div>
         </div>
@@ -493,7 +501,7 @@ Object {
                   class="euiFormLabel euiFormRow__label"
                   for="some_html_id"
                 >
-                  Description
+                  Integration
                 </label>
               </div>
               <div
@@ -501,10 +509,10 @@ Object {
               >
                 <div
                   class="euiText euiText--small"
-                  data-test-subj="text-details-group-content-description"
+                  data-test-subj="text-details-group-content-integration"
                   id="some_html_id"
                 >
-                  detectorDescription
+                  detector_type
                 </div>
               </div>
             </div>
@@ -523,7 +531,7 @@ Object {
                   class="euiFormLabel euiFormRow__label"
                   for="some_html_id"
                 >
-                  Detector schedule
+                  Space
                 </label>
               </div>
               <div
@@ -531,10 +539,10 @@ Object {
               >
                 <div
                   class="euiText euiText--small"
-                  data-test-subj="text-details-group-content-detector-schedule"
+                  data-test-subj="text-details-group-content-space"
                   id="some_html_id"
                 >
-                  Every 1 minute
+                  -
                 </div>
               </div>
             </div>
@@ -594,7 +602,7 @@ Object {
                   class="euiFormLabel euiFormRow__label"
                   for="some_html_id"
                 >
-                  Log type
+                  Detector schedule
                 </label>
               </div>
               <div
@@ -602,10 +610,10 @@ Object {
               >
                 <div
                   class="euiText euiText--small"
-                  data-test-subj="text-details-group-content-log-type"
+                  data-test-subj="text-details-group-content-detector-schedule"
                   id="some_html_id"
                 >
-                  Detector Type
+                  Every 1 minute
                 </div>
               </div>
             </div>
@@ -635,7 +643,7 @@ Object {
                   data-test-subj="text-details-group-content-detector-dashboard"
                   id="some_html_id"
                 >
-                  Not available for this log type
+                  Not available for this integration
                 </div>
               </div>
             </div>
@@ -661,7 +669,7 @@ Object {
                   class="euiFormLabel euiFormRow__label"
                   for="some_html_id"
                 >
-                  Detection rules
+                  Rules
                 </label>
               </div>
               <div
@@ -669,7 +677,7 @@ Object {
               >
                 <div
                   class="euiText euiText--small"
-                  data-test-subj="text-details-group-content-detection-rules"
+                  data-test-subj="text-details-group-content-rules"
                   id="some_html_id"
                 >
                   2
@@ -752,7 +760,7 @@ Object {
               class="euiFormLabel euiFormRow__label"
               for="some_html_id"
             >
-              Threat intelligence
+              Description
             </label>
           </div>
           <div
@@ -760,10 +768,10 @@ Object {
           >
             <div
               class="euiText euiText--small"
-              data-test-subj="text-details-group-content-threat-intelligence"
+              data-test-subj="text-details-group-content-description"
               id="some_html_id"
             >
-              Disabled
+              detectorDescription
             </div>
           </div>
         </div>

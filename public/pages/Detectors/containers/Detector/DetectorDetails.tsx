@@ -16,22 +16,25 @@ import {
   EuiTabs,
   EuiText,
   EuiHealth,
+  EuiToolTip,
 } from '@elastic/eui';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { BREADCRUMBS, EMPTY_DEFAULT_DETECTOR_HIT, ROUTES } from '../../../../utils/constants';
-import { DetectorHit } from '../../../../../server/models/interfaces';
+import { DetectorHit, DetectorHitWithSpace } from '../../../../../server/models/interfaces';
 import { DetectorDetailsView } from '../DetectorDetailsView/DetectorDetailsView';
 import { FieldMappingsView } from '../../components/FieldMappingsView/FieldMappingsView';
-import { AlertTriggersView } from '../AlertTriggersView/AlertTriggersView';
+// Wazuh: hide Alert triggers tab in detector details.
+// import { AlertTriggersView } from '../AlertTriggersView/AlertTriggersView';
 import { RuleItem } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
 import { DetectorsService, IndexPatternsService } from '../../../../services';
 import { errorNotificationToast, setBreadcrumbs } from '../../../../utils/helpers';
 import { NotificationsStart, SimpleSavedObject } from 'opensearch-dashboards/public';
-import { ISavedObjectsService, ServerResponse } from '../../../../../types';
+import { Detector, ISavedObjectsService, ServerResponse } from '../../../../../types';
 import { PENDING_DETECTOR_ID } from '../../../CreateDetector/utils/constants';
 import { DataStore } from '../../../../store/DataStore';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource';
 
 export interface DetectorDetailsProps
   extends RouteComponentProps<
@@ -54,7 +57,7 @@ export interface DetectorDetailsState {
   isActionsMenuOpen: boolean;
   selectedTabId: TabId;
   selectedTabContent: React.ReactNode;
-  detectorHit: DetectorHit;
+  detectorHit: DetectorHitWithSpace; // Wazuh
   detectorId: string;
   tabs: any[];
   loading: boolean;
@@ -65,15 +68,16 @@ export interface DetectorDetailsState {
 enum TabId {
   DetectorDetails = 'detector-config-tab',
   FieldMappings = 'field-mappings-tab',
-  AlertTriggers = 'alert-triggers-tab',
+  // Wazuh: hide Alert triggers tab in detector details.
+  // AlertTriggers = 'alert-triggers-tab',
 }
 
 export class DetectorDetails extends React.Component<DetectorDetailsProps, DetectorDetailsState> {
-  private get detectorHit(): DetectorHit {
+  private get detectorHit(): DetectorHitWithSpace {
     return this.state.detectorHit;
   }
 
-  private set detectorHit(hit: DetectorHit) {
+  private set detectorHit(hit: DetectorHitWithSpace) {
     this.setState({ detectorHit: hit });
   }
 
@@ -98,12 +102,13 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     });
   };
 
-  editAlertTriggers = () => {
-    this.props.history.push({
-      pathname: `${ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS}/${this.state.detectorId}`,
-      state: { detectorHit: this.detectorHit },
-    });
-  };
+  // Wazuh: hide Alert triggers tab in detector details.
+  // editAlertTriggers = () => {
+  //   this.props.history.push({
+  //     pathname: `${ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS}/${this.state.detectorId}`,
+  //     state: { detectorHit: this.detectorHit },
+  //   });
+  // };
 
   private getTabs() {
     const { detectorId, createFailed } = this.state;
@@ -118,6 +123,7 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
             {...this.props}
             detector={this.detectorHit._source}
             enabled_time={this.detectorHit._source.enabled_time}
+            space={this.detectorHit.space} // Wazuh
             last_update_time={this.detectorHit._source.last_update_time}
             dashboardId={this.state.dashboardId}
             editBasicDetails={this.editDetectorBasicDetails}
@@ -126,30 +132,31 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
           />
         ),
       },
-      {
-        id: TabId.FieldMappings,
-        name: 'Field mappings',
-        content: (
-          <FieldMappingsView
-            {...this.props}
-            detector={this.detectorHit._source}
-            editFieldMappings={this.editFieldMappings}
-            isEditable={isEditable}
-          />
-        ),
-      },
-      {
-        id: TabId.AlertTriggers,
-        name: 'Alert triggers',
-        content: (
-          <AlertTriggersView
-            {...this.props}
-            detector={this.detectorHit._source}
-            editAlertTriggers={this.editAlertTriggers}
-            isEditable={isEditable}
-          />
-        ),
-      },
+      // Wazuh: hide Alert triggers and Field mappings tabs in detector details.
+      // {
+      //   id: TabId.FieldMappings,
+      //   name: 'Field mappings',
+      //   content: (
+      //     <FieldMappingsView
+      //       {...this.props}
+      //       detector={this.detectorHit._source}
+      //       editFieldMappings={this.editFieldMappings}
+      //       isEditable={isEditable}
+      //     />
+      //   ),
+      // },
+      // {
+      //   id: TabId.AlertTriggers,
+      //   name: 'Alert triggers',
+      //   content: (
+      //     <AlertTriggersView
+      //       {...this.props}
+      //       detector={this.detectorHit._source}
+      //       editAlertTriggers={this.editAlertTriggers}
+      //       isEditable={isEditable}
+      //     />
+      //   ),
+      // },
     ];
     this.setState({ tabs: tabs, selectedTabContent: tabs[0].content });
   }
@@ -191,14 +198,18 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     this.getTabs();
 
     if (pendingRequests && detector) {
+      // Wazuh: get space
+      const space = this.getDetectorSpace(detector);
       this.detectorHit = Object.assign({}, EMPTY_DEFAULT_DETECTOR_HIT, {
         ...detector,
         _source: {
           ...detector,
         },
+        space, // Wazuh: add space
       });
 
       setBreadcrumbs([
+        BREADCRUMBS.DETECTION,
         BREADCRUMBS.DETECTORS,
         BREADCRUMBS.DETECTORS_DETAILS(detector.name, PENDING_DETECTOR_ID),
       ]);
@@ -229,7 +240,16 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
 
   async componentDidMount() {
     const state = DataStore.detectors.getState();
+    if (!state && this.state.detectorId === PENDING_DETECTOR_ID) {
+      this.props.history.push(ROUTES.DETECTORS);
+      return;
+    }
     state ? this.getPendingDetector() : this.getDetector();
+  }
+
+  // Wazuh: get detector space
+  getDetectorSpace(detector: Detector | undefined): string | undefined {
+    return getDetectorSourceLabel(detector?.source);
   }
 
   getDetector = async () => {
@@ -237,11 +257,17 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     const { detectorService, notifications } = this.props;
     try {
       const { detectorId } = this.state;
-      const response = await detectorService.getDetectors();
+      // GET by id (read-your-own-writes consistent), avoids eventual-consistency
+      // miss right after creation that occurs with search.
+      const response = await detectorService.getDetectorWithId(detectorId);
       if (response.ok) {
-        const detector = response.response.hits.hits.find(
-          (detectorHit) => detectorHit._id === detectorId
-        ) as DetectorHit;
+        const detector = {
+          _id: response.response._id,
+          _index: '',
+          _source: response.response.detector,
+        } as DetectorHit;
+
+        const space = this.getDetectorSpace(detector._source);
 
         this.detectorHit = {
           ...detector,
@@ -249,6 +275,7 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
             ...detector._source,
             enabled: detector._source.enabled,
           },
+          space, // Wazuh: add space
         };
         setBreadcrumbs([
           BREADCRUMBS.DETECTORS,
@@ -345,6 +372,8 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
   createHeaderActions(): React.JSX.Element[] {
     const { loading } = this.state;
     const { isActionsMenuOpen } = this.state;
+    // Wazuh: Standard detectors are read-only — disable destructive actions.
+    const isStandardDetector = isStandardSource(this.detectorHit._source.source);
     return [
       <EuiPopover
         id={'detectorsActionsPopover'}
@@ -368,24 +397,25 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
         <EuiContextMenuPanel
           size="s"
           items={[
-            <EuiContextMenuItem
-              disabled={loading}
-              key={'ViewAlerts'}
-              icon={'empty'}
-              onClick={this.onViewAlertsClick}
-              data-test-subj={'viewAlertsButton'}
-            >
-              View Alerts
-            </EuiContextMenuItem>,
-            <EuiContextMenuItem
-              disabled={loading}
-              key={'ViewFindings'}
-              icon={'empty'}
-              onClick={this.onViewFindingsClick}
-              data-test-subj={'viewFindingsButton'}
-            >
-              View Findings
-            </EuiContextMenuItem>,
+            // Wazuh: hide "View alerts" action in detector details.
+            // <EuiContextMenuItem
+            //   disabled={loading}
+            //   key={'ViewAlerts'}
+            //   icon={'empty'}
+            //   onClick={this.onViewAlertsClick}
+            //   data-test-subj={'viewAlertsButton'}
+            // >
+            //   View Alerts
+            // </EuiContextMenuItem>,
+            // <EuiContextMenuItem
+            //   disabled={loading}
+            //   key={"ViewFindings"}
+            //   icon={"empty"}
+            //   onClick={this.onViewFindingsClick}
+            //   data-test-subj={"viewFindingsButton"}
+            // >
+            //   View Findings
+            // </EuiContextMenuItem>,
             <>
               {this.state.dashboardId ? (
                 <EuiContextMenuItem
@@ -401,7 +431,7 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
                 </EuiContextMenuItem>
               ) : null}
             </>,
-            <EuiHorizontalRule margin="xs" />,
+            // <EuiHorizontalRule margin="xs" />,
             <EuiContextMenuItem
               disabled={loading}
               key={'Toggle detector'}
@@ -414,27 +444,32 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
             >
               {`${this.detectorHit._source.enabled ? 'Stop' : 'Start'} detector`}
             </EuiContextMenuItem>,
-            <EuiContextMenuItem
-              disabled={loading}
+            <EuiToolTip
               key={'Delete'}
-              icon={'empty'}
-              onClick={() => {
-                this.closeActionsPopover();
-                this.onDelete();
-              }}
-              data-test-subj={'editButton'}
+              content={isStandardDetector ? 'Only Custom detectors can be deleted.' : undefined}
             >
-              Delete
-            </EuiContextMenuItem>,
+              <EuiContextMenuItem
+                disabled={loading || isStandardDetector}
+                icon={'empty'}
+                onClick={() => {
+                  this.closeActionsPopover();
+                  this.onDelete();
+                }}
+                data-test-subj={'editButton'}
+              >
+                Delete
+              </EuiContextMenuItem>
+            </EuiToolTip>,
           ]}
         />
       </EuiPopover>,
     ];
   }
 
-  onViewAlertsClick = () => {
-    this.props.history.push(`${ROUTES.ALERTS}/${this.state.detectorId}`);
-  };
+  // Wazuh: hide "View alerts" action in detector details.
+  // onViewAlertsClick = () => {
+  //   this.props.history.push(`${ROUTES.ALERTS}/${this.state.detectorId}`);
+  // };
 
   onViewFindingsClick = () => {
     this.props.history.push(`${ROUTES.FINDINGS}/${this.state.detectorId}`);
@@ -444,7 +479,12 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     return this.state.tabs.map((tab, index) => (
       <EuiTab
         key={index}
-        onClick={() => this.setState({ selectedTabId: tab.id, selectedTabContent: tab.content })}
+        onClick={() =>
+          this.setState({
+            selectedTabId: tab.id,
+            selectedTabContent: tab.content,
+          })
+        }
         isSelected={this.state.selectedTabId === tab.id}
       >
         {tab.name}
@@ -479,11 +519,15 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
       <>
         <PageHeader
           appBadgeControls={[
-            { renderComponent: <EuiHealth color={statusColor}>{statusText}</EuiHealth> },
+            {
+              renderComponent: <EuiHealth color={statusColor}>{statusText}</EuiHealth>,
+            },
           ]}
           appRightControls={
             !creatingDetector && !createFailed
-              ? this.createHeaderActions().map((action) => ({ renderComponent: action }))
+              ? this.createHeaderActions().map((action) => ({
+                  renderComponent: action,
+                }))
               : undefined
           }
         >

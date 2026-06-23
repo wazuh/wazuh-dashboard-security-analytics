@@ -5,7 +5,11 @@
 
 import { RuleService } from '../public/services';
 import { NotificationsStart } from 'opensearch-dashboards/public';
+import { CatalogResourceMetadata } from './ResourceMetadata';
 
+export interface RuleMetadata extends CatalogResourceMetadata {}
+
+// Wazuh: Remove duplicated fields in metadata and root: title, description, author, references.
 export interface Rule {
   id: string;
   category: string;
@@ -14,20 +18,26 @@ export interface Rule {
     category?: string;
     service?: string;
   };
-  title: string;
-  description: string;
+  // title: string;
+  // description: string;
   tags: Array<{ value: string }>;
   false_positives: Array<{ value: string }>;
   level: string;
   status: string;
-  references: Array<{ value: string }>;
-  author: string;
+  // references: Array<{ value: string }>;
+  // author: string;
   detection: string;
+  mitre: string;
+  compliance: string;
+  enabled: boolean;
+  /** Normalized metadata for API payload (document.metadata.*). When present, used by buildRuleResource. */
+  metadata?: RuleMetadata;
 }
 
 export type RuleSource = Rule & {
   rule: string;
-  last_update_time: string;
+  // Wazuh: Remove duplicated fields in metadata and root: last_update_time.
+  // last_update_time: string;
   queries: { value: string }[];
   query_field_names: { value: string }[];
 };
@@ -44,7 +54,11 @@ export interface DetectorRuleInfo {
   id: string;
 }
 
-export type RuleItemInfoBase = RuleInfo & { prePackaged: boolean };
+export type RuleItemInfoBase = RuleInfo & {
+  prePackaged: boolean;
+  space?: string;
+  integration?: any;
+}; // Wazuh: added space & integration fields
 
 /**
  * API Interfaces
@@ -111,9 +125,9 @@ export interface IRulesStore {
 
   getAllRules: (terms?: { [key: string]: string[] }, query?: any) => Promise<RuleItemInfoBase[]>;
 
-  createRule: (rule: Rule) => Promise<boolean>;
+  createRule: (rule: Rule, integrationId: string) => Promise<boolean>; // Wazuh: added integrationId param
 
-  updateRule: (id: string, category: string, rule: Rule) => Promise<boolean>;
+  updateRule: (id: string, rule: Rule) => Promise<boolean>; // Wazuh: added integrationId param
 
   deleteRule: (id: string) => Promise<boolean>;
 
@@ -126,6 +140,21 @@ export interface IRulesStore {
   getPrePackagedRules: (terms?: { [key: string]: string[] }) => Promise<RuleItemInfoBase[]>;
 
   getCustomRules: (terms?: { [key: string]: string[] }) => Promise<RuleItemInfoBase[]>;
+
+  // Wazuh: search rules with pagination and sorting
+  searchRules: (
+    params: {
+      query?: any;
+      from?: number;
+      size?: number;
+      sort?: Array<Record<string, any>>;
+      _source?: any;
+    },
+    space: string
+  ) => Promise<{ total: number; items: RuleItemInfoBase[] }>;
+
+  // Wazuh: fetch a single rule with full data by id
+  getRule: (id: string, space: string) => Promise<RuleItemInfoBase | undefined>;
 }
 
 export type RulesTableColumnFields = 'title' | 'level' | 'category' | 'source' | 'description';

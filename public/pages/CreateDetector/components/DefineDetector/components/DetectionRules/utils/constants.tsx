@@ -7,7 +7,7 @@ import { EuiBasicTableColumn, EuiLink, EuiCompressedSwitch } from '@elastic/eui'
 import { capitalizeFirstLetter } from '../../../../../../../utils/helpers';
 import React, { ReactNode } from 'react';
 import { RuleItem } from '../types/interfaces';
-import { getLogTypeLabel } from '../../../../../../LogTypes/utils/helpers';
+import { getRuleIntegrationTitle } from '../../../../../../WazuhRules/utils/helpers';
 
 export type ActiveToggleOnChangeEvent = React.BaseSyntheticEvent<
   React.MouseEvent<HTMLButtonElement>,
@@ -49,14 +49,14 @@ export const getRulesColumns = (
     },
     {
       field: 'logType',
-      name: 'Log type',
+      name: 'Integration',
       width: '10%',
       sortable: true,
-      render: (logType: string) => getLogTypeLabel(logType),
+      render: (_: string, item: RuleItem) => getRuleIntegrationTitle(item.ruleInfo as any),
     },
     {
       field: 'library',
-      name: 'Source',
+      name: 'Space',
       width: '10%',
       render: (library: string) => capitalizeFirstLetter(library),
     },

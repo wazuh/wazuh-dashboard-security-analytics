@@ -1,0 +1,48 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+const KEYWORD_SEARCH_FIELDS = ['document.name', 'document.metadata.author'];
+
+const TEXT_SEARCH_FIELDS = ['document.metadata.title', 'document.metadata.description'];
+
+const escapeWildcard = (str: string) => str.replace(/[*?]/g, '\\$&');
+
+export const decoderFormDefaultValue: string = `name: decoder/<name>/<version>
+enabled: true
+metadata:
+  title: Placeholder Decoder
+  description: This is a placeholder decoder. Please update the fields accordingly.
+  author: User
+  references: []
+  documentation: ''
+  supports: []`;
+
+export const buildDecodersSearchQuery = (searchText: string) => {
+  const trimmed = searchText.trim();
+  if (!trimmed) {
+    return { match_all: {} };
+  }
+
+  return {
+    bool: {
+      should: [
+        ...KEYWORD_SEARCH_FIELDS.map((field) => ({
+          wildcard: {
+            [field]: {
+              value: `*${escapeWildcard(trimmed)}*`,
+              case_insensitive: true,
+            },
+          },
+        })),
+        ...TEXT_SEARCH_FIELDS.map((field) => ({
+          match_phrase: {
+            [field]: trimmed,
+          },
+        })),
+      ],
+      minimum_should_match: 1,
+    },
+  };
+};

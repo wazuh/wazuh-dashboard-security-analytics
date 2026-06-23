@@ -41,7 +41,7 @@ export default class LogTypeService {
             must: {
               query_string: {
                 query:
-                  '(source: Sigma and !(name: others*) and !(name: test*)) or (source: Custom)',
+                  '(space: standard and !(name: others*) and !(name: test*)) or (space: custom)',
               },
             },
           },

@@ -20,6 +20,7 @@ import {
   EuiSpacer,
   EuiText,
   EuiButtonIcon,
+  EuiToolTip,
 } from '@elastic/eui';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
@@ -39,6 +40,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource'; // Wazuh: import functions to handle detector source and space
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -68,7 +70,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
   }
 
   async componentDidMount() {
-    setBreadcrumbs([BREADCRUMBS.DETECTORS]);
+    setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS]);
     await this.getDetectors();
   }
 
@@ -91,6 +93,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         const detectors = res.response.hits.hits.map((detector) => {
           const { custom_rules, pre_packaged_rules } = detector._source.inputs[0].detector_input;
           const rulesCount = custom_rules.length + pre_packaged_rules.length;
+
           return {
             ...detector,
             detectorName: detector._source.name,
@@ -98,6 +101,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             logType: detector._source.detector_type,
             rulesCount: rulesCount,
             status: detector._source.enabled ? 'Active' : 'Inactive',
+            space: getDetectorSourceLabel(detector._source.source), // Wazuh: retrieve space from source
           };
         });
         this.setState({ detectorHits: detectors });
@@ -247,10 +251,16 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
       {
         field: 'logType',
-        name: 'Log type',
+        name: 'Integration', // replace log type to integration by Wazuh
         sortable: true,
         dataType: 'string',
         render: (logType: string) => formatRuleType(logType),
+      },
+      {
+        field: 'space',
+        name: 'Space',
+        sortable: true,
+        dataType: 'string',
       },
       {
         field: 'rulesCount',
@@ -276,22 +286,29 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     ];
 
     const renderActionsLeft = (loading: boolean, selectedItems: DetectorHit[]) => {
+      const hasStandardSelected = selectedItems.some((item) =>
+        isStandardSource(item._source.source)
+      );
       return [
-        <EuiSmallButton
-          color={'danger'}
-          iconType={'trash'}
+        <EuiToolTip
           key={'Delete'}
-          disabled={selectedItems.length === 0 || loading}
-          onClick={() => {
-            this.closeActionsPopover();
-            this.openDeleteModal();
-          }}
-          data-test-subj={'deleteButton'}
+          content={hasStandardSelected ? 'Only Custom detectors can be deleted.' : undefined}
         >
-          {selectedItems.length > 0
-            ? `Delete ${selectedItems.length} detectors`
-            : 'Delete detectors'}
-        </EuiSmallButton>,
+          <EuiSmallButton
+            color={'danger'}
+            iconType={'trash'}
+            disabled={selectedItems.length === 0 || loading || hasStandardSelected}
+            onClick={() => {
+              this.closeActionsPopover();
+              this.openDeleteModal();
+            }}
+            data-test-subj={'deleteButton'}
+          >
+            {selectedItems.length > 0
+              ? `Delete ${selectedItems.length} detectors`
+              : 'Delete detectors'}
+          </EuiSmallButton>
+        </EuiToolTip>,
       ];
     };
 
@@ -332,6 +349,15 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       ];
     };
 
+    // Wazuh: Unique space labels from loaded detectors
+    const spaceOptions = [
+      ...new Set(detectorHits.map((detector) => getDetectorSourceLabel(detector._source.source)))
+    ]
+      .filter((v) => v)
+      .sort()
+      .map((space) => ({ value: space, name: space }));
+    // End Wazuh
+    
     const search = {
       toolsLeft: renderActionsLeft(loadingDetectors, selectedItems),
       toolsRight: renderActionsRight(),
@@ -356,11 +382,21 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         {
           type: 'field_value_selection',
           field: 'logType',
-          name: 'Log type',
+          name: 'Integration', // replace log type to integration by Wazuh
           compressed: true,
           options: getLogTypeFilterOptions(),
           multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
+        // Wazuh: Added new filter for space
+        {
+          type: 'field_value_selection',
+          field: 'space',
+          name: 'Space',
+          compressed: true,
+          options: spaceOptions,
+          multiSelect: 'or',
+        } as FieldValueSelectionFilterConfigType,
+        // End Wazuh
       ],
     };
 
@@ -381,7 +417,8 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             <EuiFlexGroup>
               <EuiFlexItem>
                 <EuiText size="s">
-                  <h1>Threat detectors</h1>
+                  {/* Wazuh modification: Changed page title to "Detectors" */}
+                  <h1>Detectors</h1>
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem>

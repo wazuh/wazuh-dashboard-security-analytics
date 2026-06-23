@@ -1,0 +1,292 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  EuiCallOut,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiPanel,
+  EuiSpacer,
+  EuiText,
+  EuiButton,
+  EuiHorizontalRule,
+} from '@elastic/eui';
+import { RouteComponentProps } from 'react-router-dom';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
+import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { DataStore } from '../../../store/DataStore';
+import { SpaceTypes } from '../../../../common/constants';
+import { LogTestResponse } from '../../../../types';
+import {
+  LogTestForm,
+  LogTestFormData,
+  LogTestFormErrors,
+  LogTestIntegrationOption,
+} from '../components/LogTestForm';
+import { LogTestResult } from '../components/LogTestResult';
+import { MetadataEntry, buildMetadataObject } from '../utils';
+import { getApplication } from '../../../services/utils/constants';
+import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
+
+const LOG_TEST_SPACE_OPTIONS = [
+  SpaceTypes.TEST.value,
+  SpaceTypes.CUSTOM.value,
+  SpaceTypes.STANDARD.value,
+];
+
+const INITIAL_FORM_DATA: LogTestFormData = {
+  queue: undefined,
+  location: '',
+  event: '',
+  traceLevel: 'NONE',
+  space: SpaceTypes.STANDARD.value,
+  metadataFields: [],
+  integration: '',
+};
+
+const INITIAL_ERRORS: LogTestFormErrors = {};
+
+const INITIAL_SPACE_OPTIONS = [
+  { id: SpaceTypes.TEST.value },
+  { id: SpaceTypes.CUSTOM.value },
+  { id: SpaceTypes.STANDARD.value },
+];
+
+interface SpaceCacheEntry {
+  enabled: boolean;
+  integrations: LogTestIntegrationOption[];
+}
+
+type SpaceCache = Record<string, SpaceCacheEntry>;
+
+interface LogTestProps extends RouteComponentProps {
+  notifications?: NotificationsStart;
+}
+
+export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
+  const [formData, setFormData] = useState<LogTestFormData>(INITIAL_FORM_DATA);
+  const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
+  const [spaceCache, setSpaceCache] = useState<SpaceCache>({});
+
+  useEffect(() => {
+    setBreadcrumbs([BREADCRUMBS.LOG_TEST]);
+  }, []);
+
+  const loadSpaceCache = useCallback(async (): Promise<SpaceCache> => {
+    const entries = await Promise.all(
+      INITIAL_SPACE_OPTIONS.map((option) =>
+        DataStore.policies
+          .searchPolicies(option.id, {
+            includeIntegrationFields: ['document.id', 'document.metadata', 'document.enabled'],
+          })
+          .then((response): [string, SpaceCacheEntry] => {
+            const policy = response.items[0];
+            const integrations: LogTestIntegrationOption[] = Object.values(
+              policy?.integrationsMap ?? {}
+            )
+              .filter((i) => i.document?.enabled)
+              .map((i) => ({
+                id: i.document?.id,
+                label: i.document?.metadata?.title ?? i.document?.id,
+              }));
+            return [
+              option.id,
+              {
+                enabled: !!policy && policy.document?.enabled !== false,
+                integrations,
+              },
+            ];
+          })
+          .catch((error): [string, SpaceCacheEntry] => {
+            console.error(`Security Analytics - LogTest - searchPolicies (${option.id}):`, error);
+            errorNotificationToast(notifications, 'retrieve', 'policies', error);
+            return [option.id, { enabled: false, integrations: [] }];
+          })
+      )
+    );
+
+    const cache: SpaceCache = Object.fromEntries(entries);
+    setSpaceCache(cache);
+    return cache;
+  }, [notifications]);
+
+  useEffect(() => {
+    loadSpaceCache();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setFormData((prev) => (prev.integration ? { ...prev, integration: '' } : prev));
+  }, [formData.space]);
+
+  const disabledSpaces = useMemo<string[]>(
+    () => INITIAL_SPACE_OPTIONS.filter((o) => spaceCache[o.id]?.enabled === false).map((o) => o.id),
+    [spaceCache]
+  );
+
+  const integrationOptions = useMemo<LogTestIntegrationOption[]>(
+    () => spaceCache[formData.space]?.integrations ?? [],
+    [spaceCache, formData.space]
+  );
+
+  const validateForm = useCallback((): boolean => {
+    const newErrors: LogTestFormErrors = {};
+
+    if (!formData.event.trim()) {
+      newErrors.event = 'Log event is required';
+    }
+
+    if (!formData.space) {
+      newErrors.space = 'Space is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData]);
+
+  const handleExecuteLogTest = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    const result = await DataStore.logTests.executeLogTest({
+      document: {
+        queue: 1, // temporary hardcoded queue value
+        location: String(formData.location ?? '').trim(),
+        event: formData.event.trim(),
+        trace_level: formData.traceLevel,
+        metadata: buildMetadataObject(formData.metadataFields),
+        space: formData.space,
+        integration: formData.integration || undefined,
+      },
+    });
+
+    setIsLoading(false);
+
+    if (result.success && result.data) {
+      setTestResult(result.data);
+    }
+  };
+
+  const handleFormChange = useCallback(
+    (field: keyof LogTestFormData, value: any) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+
+      // clears error when user starts typing
+      if (errors[field as keyof LogTestFormErrors]) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field as keyof LogTestFormErrors];
+          return newErrors;
+        });
+      }
+    },
+    [errors]
+  );
+
+  const handleMetadataFieldsChange = useCallback((fields: MetadataEntry[]) => {
+    setFormData((prev) => ({ ...prev, metadataFields: fields }));
+  }, []);
+
+  const handleClearSession = useCallback(() => {
+    setFormData(INITIAL_FORM_DATA);
+    setErrors(INITIAL_ERRORS);
+    setTestResult(null);
+  }, []);
+
+  return (
+    <EuiFlexGroup direction="column" gutterSize="m">
+      <EuiFlexItem grow={false}>
+        <PageHeader>
+          <EuiFlexGroup alignItems="center" justifyContent="spaceBetween" gutterSize="m">
+            <EuiFlexItem>
+              <EuiText size="s">
+                <h1>Log Test</h1>
+              </EuiText>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <SpaceSelector
+                selectedSpace={formData.space}
+                onSpaceChange={(id) => handleFormChange('space', id)}
+                isDisabled={isLoading}
+                allowedSpaces={LOG_TEST_SPACE_OPTIONS}
+              />
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </PageHeader>
+      </EuiFlexItem>
+
+      <EuiSpacer size="m" />
+
+      <EuiFlexItem>
+        <EuiPanel>
+          {disabledSpaces.includes(formData.space) && (
+            <>
+              <EuiCallOut
+                size="s"
+                color="warning"
+                iconType="alert"
+                title="This space is disabled. Log test execution will fail."
+              />
+              <EuiSpacer size="m" />
+            </>
+          )}
+          <LogTestForm
+            formData={formData}
+            errors={errors}
+            onFormChange={handleFormChange}
+            onMetadataFieldsChange={handleMetadataFieldsChange}
+            integrationOptions={integrationOptions}
+            disabled={isLoading}
+          />
+
+          <EuiSpacer size="l" />
+
+          <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
+            <EuiFlexItem grow={false}>
+              <EuiButton
+                fill
+                iconType="play"
+                onClick={handleExecuteLogTest}
+                isLoading={isLoading}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Testing...' : 'Test'}
+              </EuiButton>
+            </EuiFlexItem>
+
+            <EuiFlexItem grow={false}>
+              <EuiButton iconType="broom" onClick={handleClearSession} disabled={isLoading}>
+                Clear session
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+
+          {testResult && (
+            <>
+              <EuiHorizontalRule margin="l" />
+              <LogTestResult
+                result={testResult}
+                onRuleClick={(ruleId) =>
+                  getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {
+                    path:  `#${ROUTES.RULES}?ruleId=${ruleId}&space=${formData.space}`,
+                  })
+                }
+              />
+            </>
+          )}
+        </EuiPanel>
+      </EuiFlexItem>
+    </EuiFlexGroup>
+  );
+};

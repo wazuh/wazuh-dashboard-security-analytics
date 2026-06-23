@@ -65,9 +65,13 @@ jest.mock('moment', () => {
   // Set moment tz mock
   if (!moment.tz) moment.tz = {};
   moment.tz.names = () => ['Pacific/Tahiti'];
+  // Wazuh: mock moment.tz.guess; formatUIDate calls it when `dateFormat:tz` is 'Browser'/unset.
+  moment.tz.guess = () => 'Pacific/Tahiti';
   const momentInstance = moment();
 
   momentInstance.format = jest.fn().mockReturnValue('2023-01-25T10:05');
+  // Wazuh: make moment().tz() chainable so formatUIDate's `.tz(...).format(...)` works under the mock.
+  momentInstance.tz = jest.fn().mockReturnValue(momentInstance);
 
   function fakeMoment() {
     return momentInstance;
@@ -93,16 +97,14 @@ jest.mock('react', () => {
 /**
  * Mocks the vega view renderer
  */
-jest.mock('vega/build/vega.js', () => {
-  const vega = jest.requireActual('vega/build/vega.js');
-  return {
-    ...vega,
+jest.mock('vega/build/vega.js', () => ({
     View: jest.fn().mockReturnValue({
       tooltip: jest.fn(),
       runAsync: jest.fn().mockReturnValue(new Promise(jest.fn())),
     }),
-  };
-});
+  }),
+  { virtual: true }
+);
 
 DataStore.init(services, notificationsStartMock);
 
