@@ -95,7 +95,15 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     setLoading(true);
 
     const policiesResult = await DataStore.policies.searchPolicies(spaceFilter, {
-      includeIntegrationFields: ['document', 'space'],
+      includeIntegrationFields: [
+        'document.id',
+        'document.metadata.title',
+        'document.category',
+        'document.rules',
+        'document.decoders',
+        'document.kvdbs',
+        'space.name',
+      ],
     });
     const policy = policiesResult.items[0];
     const integrations = mapPolicyToIntegrationTableItems(policy);
@@ -131,10 +139,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const isDeleteActionDisabledBySpace = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
 
   const selectedItemsWithoutRelatedEntities = selectedItems.filter(
-    (item) => !item.rules?.length && !item.decoders?.length && !item.kvdbs?.length
+    (item) => !item.rules && !item.decoders && !item.kvdbs
   );
   const selectedItemsWithRelatedEntities = selectedItems.filter(
-    (item) => item.rules?.length || item.decoders?.length || item.kvdbs?.length
+    (item) => item.rules || item.decoders || item.kvdbs
   );
   const selectedItemsWithRelatedEntitiesCount = selectedItemsWithRelatedEntities.length;
   const selectedItemsRelatedEntitiesMessage = DataStore.integrations.getRelatedEntitiesMessage({
@@ -436,9 +444,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           {itemForAction.action === SPACE_ACTIONS.DELETE && (
             <DeleteIntegrationModal
               integrationName={itemForAction.item.title}
-              detectionRulesCount={itemForAction.item.rules?.length ?? 0}
-              decodersCount={itemForAction.item.decoders?.length ?? 0}
-              kvdbsCount={itemForAction.item.kvdbs?.length ?? 0}
+              detectionRulesCount={itemForAction.item.rules ?? 0}
+              decodersCount={itemForAction.item.decoders ?? 0}
+              kvdbsCount={itemForAction.item.kvdbs ?? 0}
               closeModal={() => setItemForAction(null)}
               onConfirm={() => deleteIntegration(itemForAction.item.id)}
             />
@@ -565,7 +573,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               initialSelected: [],
             }}
             isSelectable={true}
-            sorting={true}
             loading={loading}
           />
         ) : (
