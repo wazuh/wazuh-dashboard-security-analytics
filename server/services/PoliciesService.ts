@@ -165,7 +165,6 @@ export class PoliciesService extends MDSEnabledClientService {
             includes: [
               'document.id',
               'document.metadata.title',
-              'document.metadata.description',
               'document.category',
               'document.rules',
               'document.decoders',
