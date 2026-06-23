@@ -17,6 +17,14 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
 import { IntegrationOption } from './useIntegrationSelector';
 import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
+import React, { ReactNode, useState } from 'react';
+
+const DEFAULT_LABEL = (
+  <div>
+    <FormFieldHeader headerTitle={'Integration'} />
+    <EuiSpacer size={'s'} />
+  </div>
+);
 
 interface IntegrationComboBoxProps {
   options: IntegrationOption[];
@@ -29,12 +37,15 @@ interface IntegrationComboBoxProps {
   /** Called after a new integration is successfully created via the flyout */
   onCreateSuccess?: (newOption: IntegrationOption) => void;
   'data-test-subj'?: string;
+  label?: ReactNode;
   isInvalid?: boolean;
   error?: string;
   space?: string;
+  fullWidth?: boolean;
 }
 
 export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
+  label = DEFAULT_LABEL,
   options,
   selectedId,
   isLoading,
@@ -46,6 +57,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   isInvalid,
   error,
   space = 'draft',
+  fullWidth = false,
 }) => {
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
@@ -59,14 +71,10 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   return (
     <>
       <EuiCompressedFormRow
-        label={
-          <div>
-            <FormFieldHeader headerTitle={'Integration'} />
-            <EuiSpacer size={'s'} />
-          </div>
-        }
+        label={label}
         isInvalid={isInvalid}
         error={error}
+        fullWidth={fullWidth}
       >
         {notifications ? (
           <EuiFlexGroup
@@ -85,13 +93,13 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                 isLoading={isLoading}
                 isDisabled={isLoading || options.length === 0}
                 isInvalid={isInvalid}
-                fullWidth
+                fullWidth={fullWidth}
                 selectedOptions={
                   selectedOption
                     ? [
                         {
                           value: selectedOption.value,
-                          label: selectedOption.value,
+                          label: selectedOption.label,
                         },
                       ]
                     : []
@@ -119,12 +127,13 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
             isLoading={isLoading}
             isDisabled={isLoading || options.length === 0}
             isInvalid={isInvalid}
+            fullWidth={fullWidth}
             selectedOptions={
               selectedOption
                 ? [
                     {
                       value: selectedOption.value,
-                      label: selectedOption.value,
+                      label: selectedOption.label,
                     },
                   ]
                 : []
