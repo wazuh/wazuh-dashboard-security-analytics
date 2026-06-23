@@ -132,6 +132,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
             <IntegrationComboBox
               options={integrationOptions}
               selectedId={formData.integration}
+              resourceName="log test"
               onChange={(e) => onFormChange('integration', e[0]?.id || '')}
               fullWidth
             />
