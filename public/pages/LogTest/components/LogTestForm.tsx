@@ -132,7 +132,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
             <IntegrationComboBox
               options={integrationOptions}
               selectedId={formData.integration}
-              onChange={(e) => onFormChange('integration', e.target.value)}
+              onChange={(e) => onFormChange('integration', e[0]?.id || '')}
             />
           </EuiFormRow>
         </EuiFlexItem>

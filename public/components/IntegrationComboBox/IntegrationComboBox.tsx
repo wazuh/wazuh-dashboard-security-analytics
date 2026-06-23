@@ -91,7 +91,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                     ? [
                         {
                           value: selectedOption.value,
-                          label: selectedOption.value,
+                          label: selectedOption.label,
                         },
                       ]
                     : []
@@ -124,7 +124,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                 ? [
                     {
                       value: selectedOption.value,
-                      label: selectedOption.value,
+                      label: selectedOption.label,
                     },
                   ]
                 : []

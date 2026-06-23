@@ -23,13 +23,9 @@ import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
-import {
-  LogTestForm,
-  LogTestFormData,
-  LogTestFormErrors,
-  LogTestIntegrationOption,
-} from '../components/LogTestForm';
+import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
+import { IntegrationOption } from '../../../components/IntegrationComboBox';
 import { MetadataEntry, buildMetadataObject } from '../utils';
 import { getApplication } from '../../../services/utils/constants';
 import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
@@ -60,7 +56,7 @@ const INITIAL_SPACE_OPTIONS = [
 
 interface SpaceCacheEntry {
   enabled: boolean;
-  integrations: LogTestIntegrationOption[];
+  integrations: IntegrationOption[];
 }
 
 type SpaceCache = Record<string, SpaceCacheEntry>;
@@ -89,13 +85,12 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
           })
           .then((response): [string, SpaceCacheEntry] => {
             const policy = response.items[0];
-            const integrations: LogTestIntegrationOption[] = Object.values(
-              policy?.integrationsMap ?? {}
-            )
+            const integrations: IntegrationOption[] = Object.values(policy?.integrationsMap ?? {})
               .filter((i) => i.document?.enabled)
               .map((i) => ({
                 id: i.document?.id,
                 label: i.document?.metadata?.title ?? i.document?.id,
+                value: i.document?.metadata?.title ?? i.document?.id,
               }));
             return [
               option.id,
@@ -132,7 +127,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
     [spaceCache]
   );
 
-  const integrationOptions = useMemo<LogTestIntegrationOption[]>(
+  const integrationOptions = useMemo<IntegrationOption[]>(
     () => spaceCache[formData.space]?.integrations ?? [],
     [spaceCache, formData.space]
   );
@@ -279,7 +274,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
                 result={testResult}
                 onRuleClick={(ruleId) =>
                   getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {
-                    path:  `#${ROUTES.RULES}?ruleId=${ruleId}&space=${formData.space}`,
+                    path: `#${ROUTES.RULES}?ruleId=${ruleId}&space=${formData.space}`,
                   })
                 }
               />
