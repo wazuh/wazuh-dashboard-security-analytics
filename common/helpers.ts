@@ -16,6 +16,7 @@ import {
   Get,
   Set,
 } from "../../../src/plugins/opensearch_dashboards_utils/common";
+
 // Wazuh
 import {
   AllowedActionsBySpace,

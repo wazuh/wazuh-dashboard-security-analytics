@@ -30,6 +30,7 @@ import {
   setupKVDBsRoutes,
   setupFiltersRoutes,
 } from "./routes";
+
 import { setupMetricsRoutes } from "./routes/MetricsRoutes";
 import {
   IndexService,
