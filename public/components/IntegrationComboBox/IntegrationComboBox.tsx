@@ -32,6 +32,7 @@ interface IntegrationComboBoxProps {
   isInvalid?: boolean;
   error?: string;
   space?: string;
+  fullWidth?: boolean;
 }
 
 export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
@@ -46,6 +47,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   isInvalid,
   error,
   space = 'draft',
+  fullWidth = false,
 }) => {
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
@@ -67,6 +69,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
         }
         isInvalid={isInvalid}
         error={error}
+        fullWidth={fullWidth}
       >
         {notifications ? (
           <EuiFlexGroup
@@ -85,7 +88,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                 isLoading={isLoading}
                 isDisabled={isLoading || options.length === 0}
                 isInvalid={isInvalid}
-                fullWidth
+                fullWidth={fullWidth}
                 selectedOptions={
                   selectedOption
                     ? [
@@ -119,6 +122,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
             isLoading={isLoading}
             isDisabled={isLoading || options.length === 0}
             isInvalid={isInvalid}
+            fullWidth={fullWidth}
             selectedOptions={
               selectedOption
                 ? [

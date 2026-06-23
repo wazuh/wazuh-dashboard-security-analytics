@@ -118,8 +118,8 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
         <h3>Detection</h3>
       </EuiTitle>
       <EuiSpacer size="s" />
-      <EuiFlexGroup gutterSize="m">
-        <EuiFlexItem style={{ minWidth: '300px' }}>
+      <EuiFlexGroup gutterSize="m" wrap>
+        <EuiFlexItem style={{ minWidth: '200px' }}>
           <EuiFormRow
             label={
               <>
@@ -133,9 +133,11 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
               options={integrationOptions}
               selectedId={formData.integration}
               onChange={(e) => onFormChange('integration', e[0]?.id || '')}
+              fullWidth
             />
           </EuiFormRow>
         </EuiFlexItem>
+        <EuiFlexItem style={{ minWidth: '200px' }} />
       </EuiFlexGroup>
 
       <EuiSpacer size="l" />
