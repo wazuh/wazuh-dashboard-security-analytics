@@ -17,6 +17,14 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
 import { IntegrationOption } from './useIntegrationSelector';
 import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
+import React, { ReactNode, useState } from 'react';
+
+const DEFAULT_LABEL = (
+  <div>
+    <FormFieldHeader headerTitle={'Integration'} />
+    <EuiSpacer size={'s'} />
+  </div>
+);
 
 interface IntegrationComboBoxProps {
   options: IntegrationOption[];
@@ -29,6 +37,7 @@ interface IntegrationComboBoxProps {
   /** Called after a new integration is successfully created via the flyout */
   onCreateSuccess?: (newOption: IntegrationOption) => void;
   'data-test-subj'?: string;
+  label?: ReactNode;
   isInvalid?: boolean;
   error?: string;
   space?: string;
@@ -36,6 +45,7 @@ interface IntegrationComboBoxProps {
 }
 
 export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
+  label = DEFAULT_LABEL,
   options,
   selectedId,
   isLoading,
@@ -61,12 +71,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   return (
     <>
       <EuiCompressedFormRow
-        label={
-          <div>
-            <FormFieldHeader headerTitle={'Integration'} />
-            <EuiSpacer size={'s'} />
-          </div>
-        }
+        label={label}
         isInvalid={isInvalid}
         error={error}
         fullWidth={fullWidth}

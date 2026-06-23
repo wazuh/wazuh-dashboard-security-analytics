@@ -120,23 +120,14 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
       <EuiSpacer size="s" />
       <EuiFlexGroup gutterSize="m" wrap>
         <EuiFlexItem style={{ minWidth: '200px' }}>
-          <EuiFormRow
-            label={
-              <>
-                {'Integration - '}
-                <em>optional</em>
-              </>
-            }
-            fullWidth
-          >
             <IntegrationComboBox
+              label={<>{'Integration - '}<em>optional</em></>}
               options={integrationOptions}
               selectedId={formData.integration}
               resourceName="log test"
               onChange={(e) => onFormChange('integration', e[0]?.id || '')}
               fullWidth
             />
-          </EuiFormRow>
         </EuiFlexItem>
         <EuiFlexItem style={{ minWidth: '200px' }} />
       </EuiFlexGroup>
