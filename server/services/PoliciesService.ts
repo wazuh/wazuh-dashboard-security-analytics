@@ -138,48 +138,61 @@ export class PoliciesService extends MDSEnabledClientService {
     };
   }
 
-  private async fetchIntegrationMap<T>(
+  private async fetchIntegrationMap(
     client: any,
     space: string,
     integrationsIds: string[],
-    _source?: string[]
-  ): Promise<Map<string, T>> {
-    let integrations = new Map<string, T>();
-
+    options?: {
+      _source?: string[];
+    }
+  ): Promise<{ integrations: Map<string, any>; total: number }> {
     if (!integrationsIds.length) {
-      return integrations;
+      return { integrations: new Map(), total: 0 };
     }
 
-    const query = this.applySpaceFilter(
-      {
-        terms: {
-          'document.id': integrationsIds,
-        },
-      },
-      space,
-      (await this.getSpaceFieldCaps(client)).searchFields
-    );
+    const idsFilter = { terms: { 'document.id': integrationsIds } };
+    const spaceSearchFields = (await this.getSpaceFieldCaps(client)).searchFields;
+    const query = this.applySpaceFilter(idsFilter, space, spaceSearchFields);
 
     try {
       const integrationResponse = await client('search', {
         index: CONTENT_INDICES.INTEGRATIONS,
         body: {
-          size: 10000,
-          query: query,
-          _source: _source,
+          size: integrationsIds.length,
+          track_total_hits: true,
+          query,
+          _source: options?._source ?? {
+            includes: [
+              'document.id',
+              'document.metadata.title',
+              'document.category',
+              'document.rules',
+              'document.decoders',
+              'document.kvdbs',
+              'space.name',
+            ],
+          },
         },
       });
 
       const hits = integrationResponse?.hits?.hits ?? [];
+      const total =
+        typeof integrationResponse?.hits?.total === 'number'
+          ? integrationResponse.hits.total
+          : integrationResponse?.hits?.total?.value ?? hits.length;
 
-      integrations = new Map(
-        hits.map((hit: any) => [hit?._source?.document?.id, { _id: hit._id, ...hit._source }])
+      const integrations = new Map(
+        hits.map((hit: any) => [
+          hit?._source?.document?.id,
+          { _id: hit._id, ...hit._source },
+        ])
       );
+
+      return { integrations, total };
     } catch (error: any) {
       console.warn('Security Analytics - PoliciesService - fetchIntegrationMap:', error?.message);
+      return { integrations: new Map(), total: 0 };
     }
-
-    return integrations;
   }
 
   searchPolicies = async (
@@ -192,7 +205,15 @@ export class PoliciesService extends MDSEnabledClientService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source, includeIntegrationFields } = body;
+      const {
+        from = 0,
+        size = 25,
+        sort,
+        query,
+        _source,
+        includeIntegrationFields,
+        includeIntegrationsMap = true,
+      } = body;
       const client = this.getClient(request, context);
       const { searchFields } = await this.getSpaceFieldCaps(client);
       const searchResponse = await client('search', {
@@ -208,23 +229,43 @@ export class PoliciesService extends MDSEnabledClientService {
       });
 
       const hits = searchResponse?.hits?.hits ?? [];
-      const integrationsIds = [
-        ...hits.map((hit: any) => hit?._source?.document?.integrations),
-      ].flat();
-      const integrationMap = await this.fetchIntegrationMap(
-        client,
-        space,
-        integrationsIds,
-        includeIntegrationFields
-      );
+      const integrationsIds = includeIntegrationsMap
+        ? [...hits.map((hit: any) => hit?._source?.document?.integrations)].flat()
+        : [];
+      const { integrations: integrationMap, total: integrationsTotal } = includeIntegrationsMap
+        ? await this.fetchIntegrationMap(client, space, integrationsIds, {
+            _source: includeIntegrationFields,
+          })
+        : { integrations: new Map<string, any>(), total: 0 };
 
       const items: PolicyItem[] = hits.map((hit: any) => ({
         id: hit._id,
         ...hit._source,
-        integrationsMap: Object.fromEntries(
-          hit._source?.document?.integrations?.map?.((id) => [id, integrationMap.get(id) ?? {}]) ??
-            []
-        ),
+        integrationsTotal,
+        integrationsMap: includeIntegrationsMap
+          ? Object.fromEntries(
+              (hit._source?.document?.integrations ?? [])
+                .filter((documentId: string) => integrationMap.has(documentId))
+                .map((documentId: string) => {
+                  const integration = integrationMap.get(documentId);
+                  const doc = integration.document ?? {};
+                  return [
+                    documentId,
+                    {
+                      _id: integration._id,
+                      document: {
+                        metadata: doc.metadata ?? {},
+                        category: doc.category ?? '',
+                        rulesCount: doc.rules?.length ?? 0,
+                        decodersCount: doc.decoders?.length ?? 0,
+                        kvdbsCount: doc.kvdbs?.length ?? 0,
+                      },
+                      space: integration.space ?? {},
+                    },
+                  ];
+                })
+            )
+          : {},
       }));
       const total =
         typeof searchResponse?.hits?.total === 'number'

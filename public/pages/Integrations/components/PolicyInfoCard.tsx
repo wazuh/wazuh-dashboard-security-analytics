@@ -30,10 +30,10 @@ import {
 const truncateStyle: React.CSSProperties = {
   display: "-webkit-box",
   WebkitLineClamp: 4,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  wordBreak: "break-all",
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  wordBreak: 'break-word',
 };
 
 const fullValueStyle: React.CSSProperties = {
@@ -574,7 +574,8 @@ const PolicyInfoCardLoading: React.FC = () => <PolicyInfoCardSkeleton />;
 
 export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
   {
-    includeIntegrationFields: ["document"],
+    includeIntegrationsMap: false,
+    _source: { excludes: ['document.integrations', 'document.filters'] },
   },
   {
     rerunOn: ({ space, refresh }) => [space, refresh],

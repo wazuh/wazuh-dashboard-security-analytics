@@ -12,21 +12,30 @@ export const OVERVIEW_TAB = {
 
 export type OverviewTabId = typeof OVERVIEW_TAB[keyof typeof OVERVIEW_TAB];
 
+export const INTEGRATION_DETAILS_TAB = {
+  DETAILS: 'details',
+  DETECTION_RULES: 'detection_rules',
+  DECODERS: 'decoders',
+  KVDBS: 'kvdbs',
+} as const;
+
+export type IntegrationDetailsTabId = typeof INTEGRATION_DETAILS_TAB[keyof typeof INTEGRATION_DETAILS_TAB];
+
 export const integrationDetailsTabs = [
   {
-    id: 'details',
+    id: INTEGRATION_DETAILS_TAB.DETAILS,
     name: 'Details',
   },
   {
-    id: 'detection_rules',
+    id: INTEGRATION_DETAILS_TAB.DETECTION_RULES,
     name: 'Rules',
   },
   {
-    id: 'decoders',
+    id: INTEGRATION_DETAILS_TAB.DECODERS,
     name: 'Decoders',
   },
   {
-    id: 'kvdbs',
+    id: INTEGRATION_DETAILS_TAB.KVDBS,
     name: 'KVDBs',
   },
 ];

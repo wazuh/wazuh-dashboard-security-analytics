@@ -9,13 +9,10 @@ import {
   GetPromoteBySpaceResponse,
   Integration,
   IntegrationBase,
-  IntegrationWithRules,
   PromoteIntegrationRequestBody,
-  RuleItemInfoBase,
 } from '../../types';
 import IntegrationService from '../services/IntegrationService';
 import { errorNotificationToast } from '../utils/helpers';
-import { DataStore } from './DataStore';
 import { ruleTypes } from '../pages/Rules/utils/constants';
 import {
   DATA_SOURCE_NOT_SET_ERROR,
@@ -68,7 +65,7 @@ export class IntegrationStore {
   public async getIntegration(
     id: string,
     spaceFilter?: string | null
-  ): Promise<IntegrationWithRules | undefined> {
+  ): Promise<Integration | undefined> {
     const integrationsRes = await this.service.searchIntegrations({
       id,
       spaceFilter,
@@ -81,16 +78,7 @@ export class IntegrationStore {
         };
       });
 
-      let detectionRules: RuleItemInfoBase[] = [];
-
-      if (integrations[0]) {
-        const integrationName = integrations[0].document.metadata?.title?.toLowerCase() ?? '';
-        detectionRules = await DataStore.rules.getAllRules({
-          'rule.category': [integrationName],
-        });
-      }
-
-      return { ...integrations[0], detectionRules };
+      return integrations[0];
     }
 
     return undefined;

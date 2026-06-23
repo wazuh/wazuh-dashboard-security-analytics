@@ -8,19 +8,23 @@ import { EuiLink, EuiPanel } from '@elastic/eui';
 import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { startCase } from 'lodash';
-import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
-import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
+import { integrationCategories } from '../../../utils/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
-import { IntegrationBase, PolicyItem } from '../../../../types';
+import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
+import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
+import { Search } from '@elastic/eui/src/components/basic_table';
 
 import moment from 'moment';
+import { formatUIDate } from '../../../utils/dateFormat';
 
-/** Integration/policy metadata dates often arrive as ISO strings; show as MM/DD/YY. */
+/**
+ * Integration/policy metadata dates often arrive as ISO strings; format them
+ * using the configured `dateFormat`/`dateFormat:tz` advanced settings.
+ */
 export const formatIntegrationMetadataDate = (value?: string) => {
   if (!value?.trim()) return '';
   const m = moment(value);
-  return m.isValid() ? m.format('MM/DD/YY') : value;
+  return m.isValid() ? formatUIDate(value) : value;
 };
 
 const getIntegrationCategoryFilterDisplayName = (value: string): string => {
@@ -31,12 +35,11 @@ const getIntegrationCategoryFilterDisplayName = (value: string): string => {
 export interface IntegrationTableItem {
   id: string;
   title: string;
-  description?: string;
   category: string;
   space: string;
-  decoders?: string[];
-  kvdbs?: string[];
-  rules?: any[];
+  decoders: number;
+  kvdbs: number;
+  rules: number;
 }
 
 export const mapPolicyToIntegrationTableItems = (
@@ -44,17 +47,20 @@ export const mapPolicyToIntegrationTableItems = (
 ): IntegrationTableItem[] => {
   if (!policy) return [];
 
-  return Object.values(policy.integrationsMap ?? {})
-    .filter((source): source is IntegrationBase & { _id: string } => Boolean(source && source._id))
+  const map = policy.integrationsMap ?? {};
+  const orderedIds: string[] = policy.document?.integrations ?? [];
+
+  return orderedIds
+    .map((id) => map[id])
+    .filter((source): source is PolicyIntegrationTableEntry => Boolean(source && source._id))
     .map((source) => ({
       id: source._id,
       title: source.document.metadata?.title ?? '',
-      description: source.document.metadata?.description,
       category: source.document.category,
       space: source.space.name,
-      decoders: source.document.decoders,
-      kvdbs: source.document.kvdbs,
-      rules: source.document.rules,
+      decoders: source.document.decodersCount,
+      kvdbs: source.document.kvdbsCount,
+      rules: source.document.rulesCount,
     }));
 };
 
@@ -62,7 +68,7 @@ export const hasRelatedEntity = (
   item: IntegrationTableItem,
   entity: 'rules' | 'decoders' | 'kvdbs'
 ): boolean => {
-  return Array.isArray(item[entity]) && (item[entity] as any[]).length > 0;
+  return item[entity] > 0;
 };
 
 export const getIntegrationsTableColumns = ({
@@ -75,7 +81,7 @@ export const getIntegrationsTableColumns = ({
   {
     field: 'title',
     name: 'Title',
-    sortable: true,
+    sortable: false,
     render: (name: string, item: Integration) => {
       return <EuiLink onClick={() => showDetails(item.id)}>{name}</EuiLink>;
     },
@@ -89,20 +95,20 @@ export const getIntegrationsTableColumns = ({
   {
     field: 'rules',
     name: 'Rules',
-    sortable: true,
-    render: (rules: any[]) => rules?.length ?? 0,
+    sortable: false,
+    render: (rules: number) => rules ?? 0,
   },
   {
     field: 'decoders',
     name: 'Decoders',
-    sortable: true,
-    render: (decoders: string[]) => decoders?.length ?? 0,
+    sortable: false,
+    render: (decoders: number) => decoders ?? 0,
   },
   {
     field: 'kvdbs',
     name: 'KVDBs',
-    sortable: true,
-    render: (kvdbs: string[]) => kvdbs?.length ?? 0,
+    sortable: false,
+    render: (kvdbs: number) => kvdbs ?? 0,
   },
   {
     name: 'Actions',
@@ -133,26 +139,25 @@ export const getIntegrationsTableColumns = ({
 
 export const getIntegrationsTableSearchConfig = (options?: {
   toolsRight?: React.ReactNode[];
-}): Search => {
-  return {
-    box: {
-      placeholder: 'Search integrations',
-      schema: true,
+}): Search => ({
+  box: {
+    placeholder: 'Search integrations',
+    schema: true,
+    compressed: true,
+  },
+  filters: [
+    {
+      type: 'field_value_selection',
+      field: 'category',
+      name: 'Category',
       compressed: true,
+      multiSelect: 'or',
+      options: getIntegrationCategoryFilterOptions(false),
     },
-    filters: [
-      {
-        type: 'field_value_selection',
-        field: 'category',
-        name: 'Category',
-        compressed: true,
-        multiSelect: 'or',
-        options: getIntegrationCategoryFilterOptions(false),
-      },
-    ],
-    toolsRight: options?.toolsRight,
-  };
-};
+  ],
+  toolsRight: options?.toolsRight,
+});
+
 
 export const withGuardAsync = (
   condition: (props: any) => Promise<{ ok: boolean; data: any }>,

@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { IntegrationBase } from './Integrations';
 import { PolicyMetadata } from './ResourceMetadata';
 
 export interface PolicySpace {
@@ -33,9 +32,26 @@ export interface PolicySource {
   space?: PolicySpace;
 }
 
+export interface PolicyIntegrationTableEntry {
+  _id: string;
+  document: {
+    metadata: {
+      title: string;
+    };
+    category: string;
+    rulesCount: number;
+    decodersCount: number;
+    kvdbsCount: number;
+  };
+  space: {
+    name: string;
+  };
+}
+
 export interface PolicyItem extends PolicySource {
   id: string;
-  integrationsMap?: Record<string, IntegrationBase & { _id: string }>;
+  integrationsMap?: Record<string, PolicyIntegrationTableEntry>;
+  integrationsTotal?: number;
 }
 
 export interface SearchPolicyOptions {
@@ -44,7 +60,8 @@ export interface SearchPolicyOptions {
   sort?: any;
   query?: any;
   _source?: any;
-  includeIntegrationFields?: string[]; // specify which fields of the integrations to include in the response
+  includeIntegrationFields?: string[];
+  includeIntegrationsMap?: boolean;
 }
 export interface SearchPoliciesResponse {
   total: number;

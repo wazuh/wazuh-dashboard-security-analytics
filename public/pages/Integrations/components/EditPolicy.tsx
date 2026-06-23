@@ -52,7 +52,8 @@ const DECODER_SEARCH_SIZE = 25;
 const DELAY_ON_SEARCH = 300; // ms
 
 const EditForm: React.FC<{}> = withPolicyGuard({
-  includeIntegrationFields: ["document"],
+  // Needs the full document on save, but not the integrationsMap
+  includeIntegrationsMap: false,
 })(({
   policyDocumentData,
   rootDecoder,
