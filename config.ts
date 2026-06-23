@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { schema, TypeOf } from "@osd/config-schema";
+import { schema, TypeOf } from '@osd/config-schema';
 
 export const DISABLED_SETTING_IDS = [
-  "index-discarded-events",
-  "index-unclassified-events",
-  "index-raw-events",
+  'index-discarded-events',
+  'index-unclassified-events',
+  'index-raw-events',
 ] as const;
 
 export type DisabledSettingId = (typeof DISABLED_SETTING_IDS)[number];
@@ -20,7 +20,7 @@ const disabledSettingSchema = schema.string({
     if (disabledSettingIdsSet.has(value)) {
       return;
     }
-    return `invalid disabled setting '${value}', expected one of: ${DISABLED_SETTING_IDS.join(", ")}`;
+    return `invalid disabled setting '${value}', expected one of: ${DISABLED_SETTING_IDS.join(', ')}`;
   },
 });
 
