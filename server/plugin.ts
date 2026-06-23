@@ -30,7 +30,6 @@ import {
   setupKVDBsRoutes,
   setupFiltersRoutes,
 } from './routes';
-
 import { setupMetricsRoutes } from './routes/MetricsRoutes';
 import {
   IndexService,
@@ -132,9 +131,6 @@ export class SecurityAnalyticsPlugin implements Plugin<
     const config$ = this.initializerContext.config.create();
     const config = await config$.pipe(first()).toPromise();
 
-    console.log('[SA Plugin] config.disabledSettings:', config.disabledSettings);
-    console.log('[SA Plugin] config:', config);
-
     // Wazuh: register capabilities based on disabledSettings config
     core.capabilities.registerProvider(() => ({
       securityAnalytics: {
@@ -144,21 +140,13 @@ export class SecurityAnalyticsPlugin implements Plugin<
       },
     }));
 
-    core.capabilities.registerSwitcher(() => {
-      console.log(
-        '[SA Plugin] registerSwitcher running, disabledSettings:',
-        config.disabledSettings
-      );
-      return {
-        securityAnalytics: {
-          showIndexDiscardedEvents: !config.disabledSettings.includes('index-discarded-events'),
-          showIndexUnclassifiedEvents: !config.disabledSettings.includes(
-            'index-unclassified-events'
-          ),
-          showIndexRawEvents: !config.disabledSettings.includes('index-raw-events'),
-        },
-      };
-    });
+    core.capabilities.registerSwitcher(() => ({
+      securityAnalytics: {
+        showIndexDiscardedEvents: !config.disabledSettings.includes('index-discarded-events'),
+        showIndexUnclassifiedEvents: !config.disabledSettings.includes('index-unclassified-events'),
+        showIndexRawEvents: !config.disabledSettings.includes('index-raw-events'),
+      },
+    }));
 
     return {
       config$,

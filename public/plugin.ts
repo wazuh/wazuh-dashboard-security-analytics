@@ -407,11 +407,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
         { id: LOG_TEST_NAV_ID, showInAllNavGroup: true, order: 7011 },
       ];
 
-      core.chrome.navGroup.addNavLinksToGroup(
-        DEFAULT_NAV_GROUPS['security-analytics'],
-
-        navlinks
-      );
+      core.chrome.navGroup.addNavLinksToGroup(DEFAULT_NAV_GROUPS['security-analytics'], navlinks);
     }
 
     setDarkMode(core.uiSettings.get('theme:darkMode'));

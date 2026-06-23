@@ -12,18 +12,14 @@ import { BrowserServices } from '../../models/interfaces';
 import { DataSourceManagementPluginSetup } from '../../../../../src/plugins/data_source_management/public';
 import { createNullableGetterSetter } from '../../../common/helpers';
 
-let capabilities: CoreStart['application']['capabilities'];
-export const setCapabilities = (caps: CoreStart['application']['capabilities']) => {
-  capabilities = caps;
-};
-
-export const getCapabilities = () => capabilities;
-
 export const dataSourceInfo: { activeDataSource: DataSourceOption } = {
   activeDataSource: {
     id: '',
   },
 };
+
+export const [getCapabilities, setCapabilities] =
+  createGetterSetter<CoreStart['application']['capabilities']>('capabilities');
 
 export const [getUISettings, setUISettings] = createGetterSetter<IUiSettingsClient>('UISettings');
 
