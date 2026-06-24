@@ -57,22 +57,24 @@ import { setupThreatIntelRoutes } from './routes/ThreatIntel';
 import { DecodersService } from './services/DecodersService';
 import { setupLogTestRoutes } from './routes/LogTestRoutes';
 import { LogTestService } from './services/LogTestService';
+import { first } from 'rxjs/operators';
 
 export interface SecurityAnalyticsPluginDependencies {
   dataSource?: DataSourcePluginSetup;
 }
 
-export class SecurityAnalyticsPlugin
-  implements Plugin<SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart> {
+export class SecurityAnalyticsPlugin implements Plugin<
+  SecurityAnalyticsPluginSetup,
+  SecurityAnalyticsPluginStart
+> {
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
   ) {}
 
   public async setup(core: CoreSetup, { dataSource }: SecurityAnalyticsPluginDependencies) {
     // Create OpenSearch client that aware of SA API endpoints
-    const securityAnalyticsClient: ILegacyCustomClusterClient = createSecurityAnalyticsCluster(
-      core
-    );
+    const securityAnalyticsClient: ILegacyCustomClusterClient =
+      createSecurityAnalyticsCluster(core);
     const dataSourceEnabled = !!dataSource;
 
     if (dataSourceEnabled) {
@@ -127,6 +129,24 @@ export class SecurityAnalyticsPlugin
 
     // @ts-ignore
     const config$ = this.initializerContext.config.create();
+    const config = await config$.pipe(first()).toPromise();
+
+    // Wazuh: register capabilities based on disabledSettings config
+    core.capabilities.registerProvider(() => ({
+      securityAnalytics: {
+        showIndexDiscardedEvents: true,
+        showIndexUnclassifiedEvents: true,
+        showIndexRawEvents: true,
+      },
+    }));
+
+    core.capabilities.registerSwitcher(() => ({
+      securityAnalytics: {
+        showIndexDiscardedEvents: !config.disabledSettings.includes('index-discarded-events'),
+        showIndexUnclassifiedEvents: !config.disabledSettings.includes('index-unclassified-events'),
+        showIndexRawEvents: !config.disabledSettings.includes('index-raw-events'),
+      },
+    }));
 
     return {
       config$,

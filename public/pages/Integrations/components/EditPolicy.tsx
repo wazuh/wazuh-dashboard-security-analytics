@@ -21,7 +21,7 @@ import {
   EuiOverlayMask,
   EuiConfirmModal,
   EuiSpacer,
-  EuiHorizontalRule
+  EuiHorizontalRule,
 } from '@elastic/eui';
 
 import { withPolicyGuard } from './PolicyGuard';
@@ -33,7 +33,12 @@ import { FormFieldArray } from '../../../components/FormFieldArray';
 import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validation';
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
 import { SPACE_ACTIONS } from '../../../../common/constants';
-import { actionIsAllowedOnSpace, getSpaceTypeLabel } from '../../../../common/helpers';
+import {
+  actionIsAllowedOnSpace,
+  getSpaceTypeLabel,
+  isUiSettingDisabled,
+  UI_DISABLED_SETTINGS_IDS,
+} from '../../../../common/helpers';
 import { ALLOWED_ENRICHMENTS, ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 
 const DECODER_SEARCH_SIZE = 25;
@@ -110,6 +115,14 @@ const EditForm: React.FC<{}> = withPolicyGuard({
   const canEditToggles =
     canEditPolicy || actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS);
   const canEditEnrichments = actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS);
+  const showIndexUnclassifiedEventsSetting = !isUiSettingDisabled(
+    UI_DISABLED_SETTINGS_IDS.INDEX_UNCLASSIFIED_EVENTS
+  );
+  const showIndexDiscardedEventsSetting = !isUiSettingDisabled(
+    UI_DISABLED_SETTINGS_IDS.INDEX_DISCARDED_EVENTS
+  );
+  const showAnyIndexingSetting =
+    showIndexUnclassifiedEventsSetting || showIndexDiscardedEventsSetting;
 
   const handleEnrichmentToggle = useCallback((value: EnrichmentType) => {
     setSelectedEnrichments((prev) => {
@@ -379,50 +392,56 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             renderTextValue(rootDecoder?.document?.name)
           )}
         </EuiCompressedFormRow>
-        <EuiCompressedFormRow>
-          <EuiFlexGroup>
-            <EuiFlexItem>
-              <EuiCompressedFormRow label={'Index unclassified events'}>
-                {canEditToggles ? (
-                  <EuiSwitch
-                    compressed
-                    checked={policyDetails.index_unclassified_events || false}
-                    onChange={(e) => {
-                      const newPolicy = {
-                        ...policyDetails,
-                        index_unclassified_events: e.target.checked,
-                      };
-                      setPolicyDetails(newPolicy);
-                      updateErrors(newPolicy);
-                    }}
-                  />
-                ) : (
-                  renderBooleanValue(policyDetails.index_unclassified_events)
-                )}
-              </EuiCompressedFormRow>
-            </EuiFlexItem>
-            <EuiFlexItem>
-              <EuiCompressedFormRow label={'Index discarded events'}>
-                {canEditToggles ? (
-                  <EuiSwitch
-                    compressed
-                    checked={policyDetails.index_discarded_events || false}
-                    onChange={(e) => {
-                      const newPolicy = {
-                        ...policyDetails,
-                        index_discarded_events: e.target.checked,
-                      };
-                      setPolicyDetails(newPolicy);
-                      updateErrors(newPolicy);
-                    }}
-                  />
-                ) : (
-                  renderBooleanValue(policyDetails.index_discarded_events)
-                )}
-              </EuiCompressedFormRow>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        </EuiCompressedFormRow>
+        {showAnyIndexingSetting && (
+          <EuiCompressedFormRow>
+            <EuiFlexGroup>
+              {showIndexUnclassifiedEventsSetting && (
+                <EuiFlexItem>
+                  <EuiCompressedFormRow label={'Index unclassified events'}>
+                    {canEditToggles ? (
+                      <EuiSwitch
+                        compressed
+                        checked={policyDetails.index_unclassified_events || false}
+                        onChange={(e) => {
+                          const newPolicy = {
+                            ...policyDetails,
+                            index_unclassified_events: e.target.checked,
+                          };
+                          setPolicyDetails(newPolicy);
+                          updateErrors(newPolicy);
+                        }}
+                      />
+                    ) : (
+                      renderBooleanValue(policyDetails.index_unclassified_events)
+                    )}
+                  </EuiCompressedFormRow>
+                </EuiFlexItem>
+              )}
+              {showIndexDiscardedEventsSetting && (
+                <EuiFlexItem>
+                  <EuiCompressedFormRow label={'Index discarded events'}>
+                    {canEditToggles ? (
+                      <EuiSwitch
+                        compressed
+                        checked={policyDetails.index_discarded_events || false}
+                        onChange={(e) => {
+                          const newPolicy = {
+                            ...policyDetails,
+                            index_discarded_events: e.target.checked,
+                          };
+                          setPolicyDetails(newPolicy);
+                          updateErrors(newPolicy);
+                        }}
+                      />
+                    ) : (
+                      renderBooleanValue(policyDetails.index_discarded_events)
+                    )}
+                  </EuiCompressedFormRow>
+                </EuiFlexItem>
+              )}
+            </EuiFlexGroup>
+          </EuiCompressedFormRow>
+        )}
         <EuiCompressedFormRow
           label={
             <>
