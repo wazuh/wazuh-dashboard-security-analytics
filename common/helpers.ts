@@ -6,7 +6,7 @@
 import _ from 'lodash';
 import { DEFAULT_METRICS_COUNTER } from '../server/utils/constants';
 import { MetricsCounter, PartialMetricsCounter, PromoteSpaces, Space } from '../types';
-import { SecurityAnalyticsPluginConfigType } from '../public/models/types';
+import { SecurityAnalyticsPluginConfigType } from '../config';
 import { Get, Set } from '../../../src/plugins/opensearch_dashboards_utils/common';
 
 // Wazuh
