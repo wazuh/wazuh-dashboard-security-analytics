@@ -96,7 +96,6 @@ import { getCapabilities } from '../services/utils/constants';
 export const UI_DISABLED_SETTINGS_IDS = {
   INDEX_DISCARDED_EVENTS: 'index-discarded-events',
   INDEX_UNCLASSIFIED_EVENTS: 'index-unclassified-events',
-  INDEX_RAW_EVENTS: 'index-raw-events',
 } as const;
 
 export type UIDisabledSettingId =
@@ -110,7 +109,6 @@ export const isUiSettingDisabled = (settingId: UIDisabledSettingId): boolean => 
   const capabilityMap: Record<UIDisabledSettingId, string> = {
     [UI_DISABLED_SETTINGS_IDS.INDEX_DISCARDED_EVENTS]: 'showIndexDiscardedEvents',
     [UI_DISABLED_SETTINGS_IDS.INDEX_UNCLASSIFIED_EVENTS]: 'showIndexUnclassifiedEvents',
-    [UI_DISABLED_SETTINGS_IDS.INDEX_RAW_EVENTS]: 'showIndexRawEvents',
   };
 
   return caps[capabilityMap[settingId]] === false;
