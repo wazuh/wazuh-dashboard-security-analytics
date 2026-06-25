@@ -90,6 +90,33 @@ import { DataSourceAttributes } from '../../../../src/plugins/data_source/common
 import { ISearchStart } from '../../../../src/plugins/data/public';
 import LogTestService from '../services/LogTestService';
 
+// Wazuh: hide settings on the UI
+import { getCapabilities } from '../services/utils/constants';
+
+export const UI_DISABLED_SETTINGS_IDS = {
+  INDEX_DISCARDED_EVENTS: 'index-discarded-events',
+  INDEX_UNCLASSIFIED_EVENTS: 'index-unclassified-events',
+  INDEX_RAW_EVENTS: 'index-raw-events',
+} as const;
+
+export type UIDisabledSettingId =
+  (typeof UI_DISABLED_SETTINGS_IDS)[keyof typeof UI_DISABLED_SETTINGS_IDS];
+
+export const isUiSettingDisabled = (settingId: UIDisabledSettingId): boolean => {
+  const caps = getCapabilities()?.securityAnalytics;
+
+  if (!caps) return false;
+
+  const capabilityMap: Record<UIDisabledSettingId, string> = {
+    [UI_DISABLED_SETTINGS_IDS.INDEX_DISCARDED_EVENTS]: 'showIndexDiscardedEvents',
+    [UI_DISABLED_SETTINGS_IDS.INDEX_UNCLASSIFIED_EVENTS]: 'showIndexUnclassifiedEvents',
+    [UI_DISABLED_SETTINGS_IDS.INDEX_RAW_EVENTS]: 'showIndexRawEvents',
+  };
+
+  return caps[capabilityMap[settingId]] === false;
+};
+// Wazuh: end block
+
 export const parseStringsToOptions = (strings: string[]) => {
   return strings.map((str) => ({ id: str, label: str }));
 };

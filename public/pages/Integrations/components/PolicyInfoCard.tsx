@@ -22,7 +22,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 import { formatIntegrationMetadataDate } from '../utils/helpers';
 import { withPolicyGuard } from './PolicyGuard';
-import { isUiSettingDisabled, UI_DISABLED_SETTINGS_IDS } from '../../../../common/helpers';
+import { UI_DISABLED_SETTINGS_IDS, isUiSettingDisabled } from '../../../utils/helpers';
 
 const truncateStyle: React.CSSProperties = {
   display: '-webkit-box',
