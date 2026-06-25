@@ -6,35 +6,11 @@
 import _ from 'lodash';
 import { DEFAULT_METRICS_COUNTER } from '../server/utils/constants';
 import { MetricsCounter, PartialMetricsCounter, PromoteSpaces, Space } from '../types';
-import { SecurityAnalyticsPluginConfigType } from '../public/models/types';
+import { SecurityAnalyticsPluginConfigType } from '../config';
 import { Get, Set } from '../../../src/plugins/opensearch_dashboards_utils/common';
 
 // Wazuh
 import { AllowedActionsBySpace, SpaceTypes, UserSpacesOrder } from './constants';
-import { getCapabilities } from '../public/services/utils/constants';
-
-export const UI_DISABLED_SETTINGS_IDS = {
-  INDEX_DISCARDED_EVENTS: 'index-discarded-events',
-  INDEX_UNCLASSIFIED_EVENTS: 'index-unclassified-events',
-  INDEX_RAW_EVENTS: 'index-raw-events',
-} as const;
-
-export type UIDisabledSettingId =
-  (typeof UI_DISABLED_SETTINGS_IDS)[keyof typeof UI_DISABLED_SETTINGS_IDS];
-
-export const isUiSettingDisabled = (settingId: UIDisabledSettingId): boolean => {
-  const caps = getCapabilities()?.securityAnalytics;
-
-  if (!caps) return false;
-
-  const capabilityMap: Record<UIDisabledSettingId, string> = {
-    [UI_DISABLED_SETTINGS_IDS.INDEX_DISCARDED_EVENTS]: 'showIndexDiscardedEvents',
-    [UI_DISABLED_SETTINGS_IDS.INDEX_UNCLASSIFIED_EVENTS]: 'showIndexUnclassifiedEvents',
-    [UI_DISABLED_SETTINGS_IDS.INDEX_RAW_EVENTS]: 'showIndexRawEvents',
-  };
-
-  return caps[capabilityMap[settingId]] === false;
-};
 
 export function aggregateMetrics(
   metrics: PartialMetricsCounter,

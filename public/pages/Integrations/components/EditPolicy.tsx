@@ -33,12 +33,8 @@ import { FormFieldArray } from '../../../components/FormFieldArray';
 import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validation';
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
 import { SPACE_ACTIONS } from '../../../../common/constants';
-import {
-  actionIsAllowedOnSpace,
-  getSpaceTypeLabel,
-  isUiSettingDisabled,
-  UI_DISABLED_SETTINGS_IDS,
-} from '../../../../common/helpers';
+import { actionIsAllowedOnSpace, getSpaceTypeLabel } from '../../../../common/helpers';
+import { UI_DISABLED_SETTINGS_IDS, isUiSettingDisabled } from '../../../utils/helpers';
 import { ALLOWED_ENRICHMENTS, ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 
 const DECODER_SEARCH_SIZE = 25;
