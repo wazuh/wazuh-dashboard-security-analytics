@@ -6,10 +6,3 @@
 import { RulesSharedState } from './interfaces';
 
 export type CreateDetectorRulesOptions = Pick<RulesSharedState, 'rulesOptions'>['rulesOptions'];
-
-export interface SecurityAnalyticsPluginConfigType {
-  enabled: boolean;
-
-  uxTelemetryInterval: number;
-  disabledSettings: string[];
-}

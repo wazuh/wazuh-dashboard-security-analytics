@@ -144,7 +144,6 @@ export class SecurityAnalyticsPlugin implements Plugin<
       securityAnalytics: {
         showIndexDiscardedEvents: !config.disabledSettings.includes('index-discarded-events'),
         showIndexUnclassifiedEvents: !config.disabledSettings.includes('index-unclassified-events'),
-        showIndexRawEvents: !config.disabledSettings.includes('index-raw-events'),
       },
     }));
 

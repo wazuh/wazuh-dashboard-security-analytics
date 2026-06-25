@@ -8,7 +8,6 @@ import { schema, TypeOf } from '@osd/config-schema';
 export const DISABLED_SETTING_IDS = [
   'index-discarded-events',
   'index-unclassified-events',
-  'index-raw-events',
 ] as const;
 
 export type DisabledSettingId = (typeof DISABLED_SETTING_IDS)[number];
