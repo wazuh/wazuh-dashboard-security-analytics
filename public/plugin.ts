@@ -56,6 +56,7 @@ import {
   setDataSourceManagementPlugin,
   setNotifications,
   setSavedObjectsClient,
+  setCapabilities,
 } from './services/utils/constants';
 import { initializeServices } from './utils/helpers';
 // Wazuh: hide Threat Alerts overview card registration.
@@ -73,14 +74,12 @@ export interface SecurityAnalyticsPluginStartDeps {
   contentManagement: ContentManagementPluginStart;
 }
 
-export class SecurityAnalyticsPlugin
-  implements
-    Plugin<
-      SecurityAnalyticsPluginSetup,
-      SecurityAnalyticsPluginStart,
-      SecurityAnalyticsPluginSetupDeps,
-      SecurityAnalyticsPluginStartDeps
-    > {
+export class SecurityAnalyticsPlugin implements Plugin<
+  SecurityAnalyticsPluginSetup,
+  SecurityAnalyticsPluginStart,
+  SecurityAnalyticsPluginSetupDeps,
+  SecurityAnalyticsPluginStartDeps
+> {
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
   ) {}
@@ -391,8 +390,16 @@ export class SecurityAnalyticsPlugin
           showInAllNavGroup: true,
           order: 7009,
         },
-        { id: DETECTORS_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
-        { id: DETECTION_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
+        {
+          id: DETECTORS_NAV_ID,
+          parentNavLinkId: DETECTION_NAV_ID,
+          showInAllNavGroup: true,
+        },
+        {
+          id: DETECTION_RULE_NAV_ID,
+          parentNavLinkId: DETECTION_NAV_ID,
+          showInAllNavGroup: true,
+        },
         // Wazuh: hide Correlation rules from Detection category.
         // { id: CORRELATIONS_RULE_NAV_ID, parentNavLinkId: DETECTION_NAV_ID, showInAllNavGroup: true },
         // Wazuh does not use Threat Intelligence
@@ -418,6 +425,7 @@ export class SecurityAnalyticsPlugin
     core: CoreStart,
     { navigation, contentManagement, data }: SecurityAnalyticsPluginStartDeps
   ): SecurityAnalyticsPluginStart {
+    setCapabilities(core.application.capabilities);
     setUISettings(core.uiSettings);
     setNavigationUI(navigation.ui);
     setApplication(core.application);

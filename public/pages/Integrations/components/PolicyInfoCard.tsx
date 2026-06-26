@@ -22,6 +22,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 import { formatIntegrationMetadataDate } from '../utils/helpers';
 import { withPolicyGuard } from './PolicyGuard';
+import { UI_DISABLED_SETTINGS_IDS, isUiSettingDisabled } from '../../../utils/helpers';
 
 const truncateStyle: React.CSSProperties = {
   display: '-webkit-box',
@@ -95,7 +96,10 @@ const COL: React.CSSProperties = { flex: '1 1 0', minWidth: 0 };
 const DETAILS_DOC_COL: React.CSSProperties = { flex: '2 1 0', minWidth: 0 };
 const DETAILS_DESC_COL: React.CSSProperties = { flex: '3 1 0', minWidth: 0 };
 
-const settingsSkeletonRows = (
+const renderSettingsSkeletonRows = (
+  showDiscardedEvents: boolean,
+  showUnclassifiedEvents: boolean
+) => (
   <>
     <EuiFlexGroup gutterSize="l" alignItems="flexStart" responsive={false} wrap={false}>
       <EuiFlexItem style={COL}>
@@ -114,22 +118,26 @@ const settingsSkeletonRows = (
           </EuiDescriptionListDescription>
         </EuiDescriptionList>
       </EuiFlexItem>
-      <EuiFlexItem style={COL}>
-        <EuiDescriptionList>
-          <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>
-            <ValueSkeleton />
-          </EuiDescriptionListDescription>
-        </EuiDescriptionList>
-      </EuiFlexItem>
-      <EuiFlexItem style={COL}>
-        <EuiDescriptionList>
-          <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>
-            <ValueSkeleton />
-          </EuiDescriptionListDescription>
-        </EuiDescriptionList>
-      </EuiFlexItem>
+      {showDiscardedEvents && (
+        <EuiFlexItem style={COL}>
+          <EuiDescriptionList>
+            <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              <ValueSkeleton />
+            </EuiDescriptionListDescription>
+          </EuiDescriptionList>
+        </EuiFlexItem>
+      )}
+      {showUnclassifiedEvents && (
+        <EuiFlexItem style={COL}>
+          <EuiDescriptionList>
+            <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              <ValueSkeleton />
+            </EuiDescriptionListDescription>
+          </EuiDescriptionList>
+        </EuiFlexItem>
+      )}
     </EuiFlexGroup>
     <EuiSpacer size="l" />
     <EuiFlexGroup gutterSize="l" alignItems="flexStart" responsive={false} wrap={false}>
@@ -214,6 +222,12 @@ const detailsSkeletonRows = (
 /** Same tab structure as loaded state; placeholders while policy is loading. */
 const PolicyInfoCardSkeleton: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<PolicyInfoTabId>(POLICY_INFO_TAB.SETTINGS);
+  const showIndexDiscardedEventsSetting = !isUiSettingDisabled(
+    UI_DISABLED_SETTINGS_IDS.INDEX_DISCARDED_EVENTS
+  );
+  const showIndexUnclassifiedEventsSetting = !isUiSettingDisabled(
+    UI_DISABLED_SETTINGS_IDS.INDEX_UNCLASSIFIED_EVENTS
+  );
 
   return (
     <EuiCard
@@ -237,7 +251,12 @@ const PolicyInfoCardSkeleton: React.FC = () => {
       }
     >
       <EuiSpacer size="l" />
-      {selectedTab === POLICY_INFO_TAB.SETTINGS ? settingsSkeletonRows : detailsSkeletonRows}
+      {selectedTab === POLICY_INFO_TAB.SETTINGS
+        ? renderSettingsSkeletonRows(
+            showIndexDiscardedEventsSetting,
+            showIndexUnclassifiedEventsSetting
+          )
+        : detailsSkeletonRows}
     </EuiCard>
   );
 };
@@ -246,7 +265,9 @@ const renderSettingsPanel = (
   hasPolicy: boolean,
   policyDocumentData: PolicyDocument | undefined,
   rootDecoder: DecoderSource | undefined,
-  enrichmentsDisplay: string
+  enrichmentsDisplay: string,
+  showDiscardedEvents: boolean,
+  showUnclassifiedEvents: boolean
 ) => (
   <>
     <EuiFlexGroup gutterSize="l" alignItems="flexStart" responsive={false} wrap={false}>
@@ -268,26 +289,30 @@ const renderSettingsPanel = (
         <EuiDescriptionList>
           <EuiDescriptionListTitle>Root decoder</EuiDescriptionListTitle>
           <EuiDescriptionListDescription>
-            {renderValue(hasPolicy ? rootDecoder?.document?.name ?? '' : undefined)}
+            {renderValue(hasPolicy ? (rootDecoder?.document?.name ?? '') : undefined)}
           </EuiDescriptionListDescription>
         </EuiDescriptionList>
       </EuiFlexItem>
-      <EuiFlexItem style={COL}>
-        <EuiDescriptionList>
-          <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>
-            {renderYesNoOrDash(policyDocumentData?.index_discarded_events, hasPolicy)}
-          </EuiDescriptionListDescription>
-        </EuiDescriptionList>
-      </EuiFlexItem>
-      <EuiFlexItem style={COL}>
-        <EuiDescriptionList>
-          <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
-          <EuiDescriptionListDescription>
-            {renderYesNoOrDash(policyDocumentData?.index_unclassified_events, hasPolicy)}
-          </EuiDescriptionListDescription>
-        </EuiDescriptionList>
-      </EuiFlexItem>
+      {showDiscardedEvents && (
+        <EuiFlexItem style={COL}>
+          <EuiDescriptionList>
+            <EuiDescriptionListTitle>Index discarded events</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {renderYesNoOrDash(policyDocumentData?.index_discarded_events, hasPolicy)}
+            </EuiDescriptionListDescription>
+          </EuiDescriptionList>
+        </EuiFlexItem>
+      )}
+      {showUnclassifiedEvents && (
+        <EuiFlexItem style={COL}>
+          <EuiDescriptionList>
+            <EuiDescriptionListTitle>Index unclassified events</EuiDescriptionListTitle>
+            <EuiDescriptionListDescription>
+              {renderYesNoOrDash(policyDocumentData?.index_unclassified_events, hasPolicy)}
+            </EuiDescriptionListDescription>
+          </EuiDescriptionList>
+        </EuiFlexItem>
+      )}
     </EuiFlexGroup>
     <EuiSpacer size="l" />
     <EuiFlexGroup gutterSize="l" alignItems="flexStart" responsive={false} wrap={false}>
@@ -408,6 +433,12 @@ export const PolicyInfoCardLayout: React.FC<{
   const references = getMetadataValue(policyDocumentData, 'references');
   const dateStr = getMetadataValue(policyDocumentData, 'date');
   const modifiedStr = getMetadataValue(policyDocumentData, 'modified');
+  const showIndexDiscardedEventsSetting = !isUiSettingDisabled(
+    UI_DISABLED_SETTINGS_IDS.INDEX_DISCARDED_EVENTS
+  );
+  const showIndexUnclassifiedEventsSetting = !isUiSettingDisabled(
+    UI_DISABLED_SETTINGS_IDS.INDEX_UNCLASSIFIED_EVENTS
+  );
 
   const enrichmentsDisplay = !hasPolicy
     ? '-'
@@ -440,7 +471,14 @@ export const PolicyInfoCardLayout: React.FC<{
     >
       <EuiSpacer size="l" />
       {selectedTab === POLICY_INFO_TAB.SETTINGS
-        ? renderSettingsPanel(hasPolicy, policyDocumentData, rootDecoder, enrichmentsDisplay)
+        ? renderSettingsPanel(
+            hasPolicy,
+            policyDocumentData,
+            rootDecoder,
+            enrichmentsDisplay,
+            showIndexDiscardedEventsSetting,
+            showIndexUnclassifiedEventsSetting
+          )
         : renderDetailsPanel(
             hasPolicy,
             title,
@@ -466,15 +504,17 @@ export const PolicyInfoCard: React.FC<{}> = withPolicyGuard(
     rerunOn: ({ space, refresh }) => [space, refresh],
     loadingComponent: PolicyInfoCardLoading,
   }
-)(({
-  policyDocumentData,
-  rootDecoder,
-  notifications: _notifications,
-  space: _space,
-}: {
-  policyDocumentData: PolicyDocument;
-  rootDecoder: DecoderSource;
-  notifications: NotificationsStart;
-  space: Space;
-  refresh?: number;
-}) => <PolicyInfoCardLayout policyDocumentData={policyDocumentData} rootDecoder={rootDecoder} />);
+)(
+  ({
+    policyDocumentData,
+    rootDecoder,
+    notifications: _notifications,
+    space: _space,
+  }: {
+    policyDocumentData: PolicyDocument;
+    rootDecoder: DecoderSource;
+    notifications: NotificationsStart;
+    space: Space;
+    refresh?: number;
+  }) => <PolicyInfoCardLayout policyDocumentData={policyDocumentData} rootDecoder={rootDecoder} />
+);
