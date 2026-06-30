@@ -37,6 +37,6 @@ jobs:
           echo "${CHANGED_FILES}"
           git checkout $GITHUB_HEAD_REF
           echo "Installing dependencies"
-          yarn install
+          yarn install --ignore-scripts
           echo "Running prettier on the changed files"
           npx prettier ${CHANGED_FILES} --check --ignore-unknown
