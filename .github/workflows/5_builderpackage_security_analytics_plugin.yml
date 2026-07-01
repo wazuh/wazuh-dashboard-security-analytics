@@ -36,9 +36,12 @@ jobs:
   build:
     name: Build app package
     uses: ./.github/workflows/5_builderprecompiled_base-dev-environment.yml
+    permissions:
+      id-token: write
     with:
       reference: ${{ inputs.reference }}
       command: 'yarn build'
       artifact_name: 'security-analytics-dashboards'
       artifact_path: './wazuh-dashboard-security-analytics/build'
+      execution_repository: wazuh-dashboard-security-analytics/5_builderpackage_security_analytics_plugin
     secrets: inherit
