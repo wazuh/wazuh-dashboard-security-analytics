@@ -1164,66 +1164,7 @@ exports[`<UpdateDetectorBasicDetails /> spec renders the component 1`] = `
       <ThreatIntelligence
         isEdit={true}
         onThreatIntelChange={[Function]}
-      >
-        <EuiText
-          size="m"
-        >
-          <div
-            className="euiText euiText--medium"
-          >
-            <h3>
-              Threat intelligence feeds
-            </h3>
-          </div>
-        </EuiText>
-        <EuiText
-          size="s"
-        >
-          <div
-            className="euiText euiText--small"
-          >
-            <p>
-              To match your data source against known indicators of compromise configure logs scan with threat intel sources on the
-               
-              <EuiLink
-                href="#/threat-intel"
-                target="_blank"
-              >
-                <a
-                  className="euiLink euiLink--primary"
-                  href="#/threat-intel"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Threat intelligence
-                  <EuiIcon
-                    aria-label="External link"
-                    className="euiLink__externalIcon"
-                    size="s"
-                    type="popout"
-                  >
-                    EuiIconMock
-                  </EuiIcon>
-                  <EuiScreenReaderOnly>
-                    <span
-                      className="euiScreenReaderOnly"
-                    >
-                      <EuiI18n
-                        default="(opens in a new tab or window)"
-                        token="euiLink.newTarget.screenReaderOnlyText"
-                      >
-                        (opens in a new tab or window)
-                      </EuiI18n>
-                    </span>
-                  </EuiScreenReaderOnly>
-                </a>
-              </EuiLink>
-               
-              page.
-            </p>
-          </div>
-        </EuiText>
-      </ThreatIntelligence>
+      />
       <EuiSpacer
         size="l"
       >
