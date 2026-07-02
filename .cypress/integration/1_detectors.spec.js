@@ -351,18 +351,20 @@ describe('Detectors', () => {
       getCreateDetectorButton().should('be.enabled');
     });
 
-    it('...should show mappings warning', () => {
-      fillDetailsForm(detectorName, cypressIndexDns);
+    // Wazuh: the different log types warning is hidden in DetectorDataSource,
+    // so this assertion no longer applies.
+    // it('...should show mappings warning', () => {
+    //   fillDetailsForm(detectorName, cypressIndexDns);
 
-      getDataSourceField().selectComboboxItem(cypressIndexWindows);
-      getDataSourceField().focus().blur();
+    //   getDataSourceField().selectComboboxItem(cypressIndexWindows);
+    //   getDataSourceField().focus().blur();
 
-      cy.get('[data-test-subj="define-detector-diff-log-types-warning"]')
-        .should('be.visible')
-        .contains(
-          'To avoid issues with field mappings, we recommend creating separate detectors for different log types.'
-        );
-    });
+    //   cy.get('[data-test-subj="define-detector-diff-log-types-warning"]')
+    //     .should('be.visible')
+    //     .contains(
+    //       'To avoid issues with field mappings, we recommend creating separate detectors for different log types.'
+    //     );
+    // });
   });
 
   describe('...validate create detector flow', () => {

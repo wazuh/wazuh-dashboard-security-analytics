@@ -109,44 +109,46 @@ export default class DetectorDataSource extends Component<
   };
 
   onSelectionChange = async (options: EuiComboBoxOptionOption<string>[]) => {
-    const allIndices = _.map(options, 'label');
-    for (let indexName in this.indicesMappings) {
-      if (allIndices.indexOf(indexName) === -1) {
-        // cleanup removed indexes
-        delete this.indicesMappings[indexName];
-      }
-    }
+    // Wazuh: skip the log types mapping check, it does not apply to Wazuh
+    // integrations and blocked updating the selected indexes.
+    // const allIndices = _.map(options, 'label');
+    // for (let indexName in this.indicesMappings) {
+    //   if (allIndices.indexOf(indexName) === -1) {
+    //     // cleanup removed indexes
+    //     delete this.indicesMappings[indexName];
+    //   }
+    // }
 
-    const detectorType = this.props.detector_type.toLowerCase();
-    if (detectorType) {
-      for (const indexName of allIndices) {
-        if (!this.indicesMappings[indexName]) {
-          const result = await this.props.fieldMappingService?.getMappingsView(
-            indexName,
-            detectorType
-          );
-          result?.ok && (this.indicesMappings[indexName] = result.response.unmapped_field_aliases);
-        }
-      }
-    }
+    // const detectorType = this.props.detector_type.toLowerCase();
+    // if (detectorType) {
+    //   for (const indexName of allIndices) {
+    //     if (!this.indicesMappings[indexName]) {
+    //       const result = await this.props.fieldMappingService?.getMappingsView(
+    //         indexName,
+    //         detectorType
+    //       );
+    //       result?.ok && (this.indicesMappings[indexName] = result.response.unmapped_field_aliases);
+    //     }
+    //   }
+    // }
 
-    if (!_.isEmpty(this.indicesMappings)) {
-      let firstMapping: string[] = [];
-      let firstMatchMappingIndex: string = '';
-      let differentLogTypesDetected = false;
-      for (let indexName in this.indicesMappings) {
-        if (this.indicesMappings.hasOwnProperty(indexName)) {
-          if (!firstMapping.length) firstMapping = this.indicesMappings[indexName];
-          !firstMatchMappingIndex.length && (firstMatchMappingIndex = indexName);
-          if (!_.isEqual(firstMapping, this.indicesMappings[indexName])) {
-            differentLogTypesDetected = true;
-            break;
-          }
-        }
-      }
+    // if (!_.isEmpty(this.indicesMappings)) {
+    //   let firstMapping: string[] = [];
+    //   let firstMatchMappingIndex: string = '';
+    //   let differentLogTypesDetected = false;
+    //   for (let indexName in this.indicesMappings) {
+    //     if (this.indicesMappings.hasOwnProperty(indexName)) {
+    //       if (!firstMapping.length) firstMapping = this.indicesMappings[indexName];
+    //       !firstMatchMappingIndex.length && (firstMatchMappingIndex = indexName);
+    //       if (!_.isEqual(firstMapping, this.indicesMappings[indexName])) {
+    //         differentLogTypesDetected = true;
+    //         break;
+    //       }
+    //     }
+    //   }
 
-      this.setState({ differentLogTypesDetected });
-    }
+    //   this.setState({ differentLogTypesDetected });
+    // }
 
     this.props.onDetectorInputIndicesChange(options);
   };
@@ -200,7 +202,10 @@ export default class DetectorDataSource extends Component<
             }}
           />
         </EuiCompressedFormRow>
-        {differentLogTypesDetected ? (
+        {/* Wazuh: hide the different log types warning. Its detection compares
+            unmapped field aliases per Sigma log type, which fires spuriously
+            for Wazuh integrations across wazuh-events-v5-* indexes. */}
+        {/* {differentLogTypesDetected ? (
           <>
             <EuiSpacer size={'m'} />
             <EuiCallOut
@@ -209,13 +214,12 @@ export default class DetectorDataSource extends Component<
               data-test-subj={'define-detector-diff-log-types-warning'}
             >
               <EuiTextColor color={'default'}>
-                {/* Replace log types with integrations by Wazuh */}
                 To avoid issues with field mappings, we recommend creating separate detectors for
                 different integrations.
               </EuiTextColor>
             </EuiCallOut>
           </>
-        ) : null}
+        ) : null} */}
       </>
     );
   }
