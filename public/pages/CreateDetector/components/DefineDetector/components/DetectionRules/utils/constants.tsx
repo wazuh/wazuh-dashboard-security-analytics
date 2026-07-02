@@ -91,6 +91,9 @@ export const getRulesColumns = (
         );
       },
       width: '60px',
+      mobileOptions: {
+        header: false, // Wazuh: Hide the header to avoid switch duplication in mobile view
+      },
     });
   }
 
