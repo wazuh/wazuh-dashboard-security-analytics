@@ -10,6 +10,7 @@ import {
   Integration,
   IntegrationBase,
   PromoteIntegrationRequestBody,
+  PromoteSpaces,
 } from '../../types';
 import IntegrationService from '../services/IntegrationService';
 import { errorNotificationToast } from '../utils/helpers';
@@ -234,10 +235,11 @@ export class IntegrationStore {
   }
 
   public async getPromote(
-    data: GetPromote
+    data: GetPromote,
+    { showErrorToast = true }: { showErrorToast?: boolean } = {}
   ): Promise<[GetPromoteBySpaceResponse['ok'], GetPromoteBySpaceResponse['response']]> {
     const promoteRes = await this.service.getPromoteIntegration(data);
-    if (!promoteRes.ok) {
+    if (!promoteRes.ok && showErrorToast) {
       errorNotificationToast(
         this.notifications,
         'promote',
@@ -247,6 +249,24 @@ export class IntegrationStore {
     }
 
     return [promoteRes.ok, promoteRes.response];
+  }
+
+  /**
+   * Wazuh: silent check for pending CONTENT changes to promote; excludes 'policy' since it
+   * always reports changes due to regenerated timestamps.
+   */
+  public async hasPromotableContentChanges(space: PromoteSpaces): Promise<boolean> {
+    try {
+      const [ok, data] = await this.getPromote({ space }, { showErrorToast: false });
+      if (!ok || !data?.promote?.changes) {
+        return false;
+      }
+      return Object.entries(data.promote.changes).some(
+        ([group, items]) => group !== 'policy' && (items?.length ?? 0) > 0
+      );
+    } catch {
+      return false;
+    }
   }
 
   public async promoteIntegration(data: PromoteIntegrationRequestBody) {
