@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { EuiFlexGroup, EuiFlexItem, EuiSmallButton, EuiText } from '@elastic/eui';
+import { EuiFlexGroup, EuiFlexItem, EuiSmallButton, EuiText, EuiLink } from '@elastic/eui';
 import { CallOut } from '../../Main/components/Callout';
 
 export interface PendingPromotionCalloutProps {
@@ -27,7 +27,7 @@ export const PendingPromotionCallout: React.FC<PendingPromotionCalloutProps> = (
   onDismiss,
 }) => (
   <CallOut
-    title="You have changes pending promotion"
+    title="Pending changes ready for promotion"
     type="primary"
     closable={true}
     closeHandler={onDismiss}
@@ -36,19 +36,10 @@ export const PendingPromotionCallout: React.FC<PendingPromotionCalloutProps> = (
         <EuiFlexItem grow={false}>
           <EuiText size="s" data-test-subj="pendingPromotionCalloutText">
             <p>
-              The <b>{space}</b> space has changes that have not been promoted to the{' '}
-              <b>{nextSpace}</b> space.
+              Your <b>{space}</b> space has changes that haven't been promoted.{' '}
+              <EuiLink data-test-subj="pendingPromotionCalloutPromoteButton" onClick={onPromote}>Promote</EuiLink> them to the <b>{nextSpace}</b> space now?
             </p>
           </EuiText>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          <EuiSmallButton
-            fill={true}
-            onClick={onPromote}
-            data-test-subj="pendingPromotionCalloutPromoteButton"
-          >
-            Promote changes
-          </EuiSmallButton>
         </EuiFlexItem>
       </EuiFlexGroup>
     }
