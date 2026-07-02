@@ -21,7 +21,7 @@ import {
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { OVERVIEW_TAB, OverviewTabId } from '../utils/constants';
-import { DataSourceProps } from '../../../../types';
+import { DataSourceProps, PromoteSpaces } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import {
   getIntegrationsTableColumns,
@@ -38,11 +38,16 @@ import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { PolicyInfoCard } from '../components/PolicyInfoCard';
-import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
+import {
+  actionIsAllowedOnSpace,
+  getNextSpace,
+  getSpacesAllowAction,
+} from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { EditPolicy } from '../components/EditPolicy';
 import { FiltersTab } from '../../Filters/components/FiltersTab';
+import { PendingPromotionCallout } from '../components/PendingPromotionCallout';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -83,6 +88,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     isLoading: loading || isClearingSpace,
   });
   const [policyRefresh, setPolicyRefresh] = useState(0);
+  // Wazuh: pending-promotion callout state.
+  const [hasPendingPromotions, setHasPendingPromotions] = useState<boolean>(false);
+  const [promotionCalloutDismissed, setPromotionCalloutDismissed] = useState<boolean>(false);
   // This trusts the changes in the history location causes a rerender in the componnet
   const selectedTab =
     history.location.pathname === ROUTES.FILTERS ? OVERVIEW_TAB.FILTERS : OVERVIEW_TAB.INTEGRATIONS;
@@ -174,6 +182,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     ])
   );
   const isClearSpaceDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CLEAR_SPACE);
+  // Wazuh: promotion target of the current space, used by the pending-promotion callout.
+  const pendingPromotionNextSpace = getNextSpace(spaceFilter as PromoteSpaces);
 
   const clearSpace = useCallback(async () => {
     setIsClearingSpace(true);
@@ -420,6 +430,32 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     loadIntegrations();
   }, [dataSource, spaceFilter, loadIntegrations]);
 
+  // Wazuh: re-check pending content changes to promote on space/content changes, to drive
+  // the pending-promotion callout. Excludes 'policy' since it always reports a timestamps-only update. (issue #8719)
+  useEffect(() => {
+    let cancelled = false;
+    const checkPendingPromotions = async () => {
+      const promotable =
+        actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.PROMOTE) &&
+        getNextSpace(spaceFilter as PromoteSpaces) != null;
+      const hasChanges = promotable
+        ? await DataStore.integrations.hasPromotableContentChanges(spaceFilter as PromoteSpaces)
+        : false;
+      if (!cancelled && isMountedRef.current) {
+        setHasPendingPromotions(hasChanges);
+      }
+    };
+    checkPendingPromotions();
+    return () => {
+      cancelled = true;
+    };
+  }, [spaceFilter, dataSource, policyRefresh, integrations]);
+
+  // Wazuh: a dismissed callout stays hidden for the current space only.
+  useEffect(() => {
+    setPromotionCalloutDismissed(false);
+  }, [spaceFilter]);
+
   const onSelectionChange = (selectedItems: IntegrationTableItem[]) => {
     setSelectedItems(selectedItems);
   };
@@ -533,6 +569,16 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           <EuiSpacer size={'s'} />
         </EuiFlexItem>
       </PageHeader>
+      {hasPendingPromotions && !promotionCalloutDismissed && pendingPromotionNextSpace != null && (
+        <PendingPromotionCallout
+          space={String(spaceFilter)}
+          nextSpace={String(pendingPromotionNextSpace)}
+          onPromote={() =>
+            history.push({ pathname: ROUTES.PROMOTE, search: `?space=${spaceFilter}` })
+          }
+          onDismiss={() => setPromotionCalloutDismissed(true)}
+        />
+      )}
       <PolicyInfoCard space={spaceFilter} notifications={notifications} refresh={policyRefresh} />
       <EuiSpacer size={'m'} />
       <EuiCard
