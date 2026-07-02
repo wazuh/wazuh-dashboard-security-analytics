@@ -500,13 +500,15 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
         <EuiSpacer size="l" /> */}
 
-        <ThreatIntelligence
+        {/* Wazuh: hide the Threat intelligence feeds section, threat intel
+            detection is disabled (THREAT_INTEL_ENABLED). */}
+        {/* <ThreatIntelligence
           isEdit={true}
           threatIntelChecked={detector.threat_intel_enabled}
           onThreatIntelChange={onThreatIntelFeedToggle}
         />
 
-        <EuiSpacer size="l" />
+        <EuiSpacer size="l" /> */}
 
         <DetectorSchedule detector={detector} onDetectorScheduleChange={onDetectorScheduleChange} />
         <EuiSpacer size="l" />
