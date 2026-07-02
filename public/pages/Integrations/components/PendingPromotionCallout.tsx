@@ -37,7 +37,10 @@ export const PendingPromotionCallout: React.FC<PendingPromotionCalloutProps> = (
           <EuiText size="s" data-test-subj="pendingPromotionCalloutText">
             <p>
               Your <b>{space}</b> space has changes that haven't been promoted.{' '}
-              <EuiLink data-test-subj="pendingPromotionCalloutPromoteButton" onClick={onPromote}>Promote</EuiLink> them to the <b>{nextSpace}</b> space now?
+              <EuiLink data-test-subj="pendingPromotionCalloutPromoteButton" onClick={onPromote}>
+                Promote
+              </EuiLink>{' '}
+              them to the <b>{nextSpace}</b> space now?
             </p>
           </EuiText>
         </EuiFlexItem>
