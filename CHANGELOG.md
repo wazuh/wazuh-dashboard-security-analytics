@@ -1,8 +1,6 @@
 # Change Log
 
-All notable changes to the Wazuh ML Commons project will be documented in this file.
-
-## Wazuh dashboard v5.0.0 - OpenSearch Dashboards 3.6.0 - Revision 03
+## [v5.0.0]
 
 ### Added
 
@@ -13,7 +11,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Added Log test feature [#43](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/43) [#97](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/97) [#131](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/131) [#141](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/141) [#176](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/176) [#191](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/191) [#225](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/225) [#299](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/299)
 - Added space persistence when navigate [#63](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/63)
 - Added Filters management feature [#108](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/108) [#137](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/137) [#204](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/204) [#208](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/208) [#214](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/214) [#287](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/287) [#293](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/293) [#326](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/326) [#351](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/351)
-- Added clear space action to the Overview actions button [#186](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/186) 
+- Added clear space action to the Overview actions button [#186](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/186)
 - Added modifiers in the dropdown inside the rule creation and edition form [#259](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/259)
 - Added URL-based rule navigation from Log Test detection results [#308](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/308)
 - Added `opensearch_security_analytics.disabledSettings` configuration to hide specific settings in the UI about Index discarded/unclassified events [#350](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/350) [#375](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/375)
@@ -46,3 +44,5 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Fixed float numbers ending in .0 in the Decoders yaml editor being transformed into integers [#200](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/200)
 - Fixed detector details failing to load right after detector creation [#249](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/249)
 - Fixed integration documentation field being truncated in the details view [#322](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/322)
+
+## Prior versions
