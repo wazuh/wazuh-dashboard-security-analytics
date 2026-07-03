@@ -325,5 +325,5 @@ export const withConditionalHOC = (
 };
 
 export function isRootDecoderRequiementError(error){
-  return error.includes('root_decoder') // TODO: change taking into account the real 
+  return /missing root decoder/i.test(error);
 }
