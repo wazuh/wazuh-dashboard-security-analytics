@@ -13,7 +13,7 @@ env:
   CI: 1
   # avoid warnings like "tput: No value for $TERM and no -T specified"
   TERM: xterm
-# test concurrency
+
 jobs:
   verify-binary-installation:
     name: Run binary installation
