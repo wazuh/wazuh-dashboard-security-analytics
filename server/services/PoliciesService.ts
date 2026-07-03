@@ -254,6 +254,8 @@ export class PoliciesService extends MDSEnabledClientService {
                     {
                       _id: integration._id,
                       document: {
+                        id: doc.id,
+                        enabled: doc.enabled,
                         metadata: doc.metadata ?? {},
                         category: doc.category ?? '',
                         rulesCount: doc.rules?.length ?? 0,
