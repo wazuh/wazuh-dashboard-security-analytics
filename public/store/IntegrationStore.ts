@@ -251,19 +251,13 @@ export class IntegrationStore {
     return [promoteRes.ok, promoteRes.response];
   }
 
-  /**
-   * Wazuh: silent check for pending CONTENT changes to promote; excludes 'policy' since it
-   * always reports changes due to regenerated timestamps.
-   */
   public async hasPromotableContentChanges(space: PromoteSpaces): Promise<boolean> {
     try {
       const [ok, data] = await this.getPromote({ space }, { showErrorToast: false });
       if (!ok || !data?.promote?.changes) {
         return false;
       }
-      return Object.entries(data.promote.changes).some(
-        ([group, items]) => group !== 'policy' && (items?.length ?? 0) > 0
-      );
+      return Object.values(data.promote.changes).some((items) => (items?.length ?? 0) > 0);
     } catch {
       return false;
     }

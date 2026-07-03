@@ -55,7 +55,7 @@ describe('IntegrationStore.hasPromotableContentChanges', () => {
     await expect(store.hasPromotableContentChanges('draft' as PromoteSpaces)).resolves.toBe(true);
   });
 
-  it('returns false when only the policy group has changes (engine reports a timestamps-only policy update after every space reset)', async () => {
+  it('returns true when only the policy group has changes', async () => {
     const getPromoteIntegration = jest
       .fn()
       .mockResolvedValue(
@@ -63,7 +63,7 @@ describe('IntegrationStore.hasPromotableContentChanges', () => {
       );
     const store = makeStore(getPromoteIntegration);
 
-    await expect(store.hasPromotableContentChanges('draft' as PromoteSpaces)).resolves.toBe(false);
+    await expect(store.hasPromotableContentChanges('draft' as PromoteSpaces)).resolves.toBe(true);
   });
 
   it('returns true when policy AND a content group have changes', async () => {
