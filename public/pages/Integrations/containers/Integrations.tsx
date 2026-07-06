@@ -431,7 +431,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   }, [dataSource, spaceFilter, loadIntegrations]);
 
   // Wazuh: re-check pending content changes to promote on space/content changes, to drive
-  // the pending-promotion callout. Excludes 'policy' since it always reports a timestamps-only update. (issue #8719)
+  // the pending-promotion callout. (issue #8719)
   useEffect(() => {
     let cancelled = false;
     const checkPendingPromotions = async () => {
