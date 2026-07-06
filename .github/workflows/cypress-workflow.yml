@@ -1,4 +1,4 @@
-name: Cypress integration tests workflow
+name: Cypress integration tests workflow test
 on:
   pull_request:
     branches:
@@ -9,9 +9,9 @@ concurrency:
   cancel-in-progress: true
 env:
   OPENSEARCH_DASHBOARDS_VERSION: 3.6.0
-  OPENSEARCH_VERSION: '3.6.0-SNAPSHOT'
+  OPENSEARCH_VERSION: "3.6.0-SNAPSHOT"
   SECURITY_ANALYTICS_BRANCH: 3.6.0.0
-  GRADLE_VERSION: '7.6.1'
+  GRADLE_VERSION: "7.6.1"
 jobs:
   tests:
     name: Run Cypress E2E tests
@@ -72,8 +72,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version-file: './OpenSearch-Dashboards/.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
+          node-version-file: "./OpenSearch-Dashboards/.nvmrc"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install Yarn
         # Need to use bash to avoid having a windows/linux specific step
@@ -138,12 +138,12 @@ jobs:
         with:
           working-directory: OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
           command: yarn run cypress run --browser firefox
-          wait-on: 'http://localhost:5601'
+          wait-on: "http://localhost:5601"
           wait-on-timeout: 300
           browser: firefox
         env:
           CYPRESS_CACHE_FOLDER: ${{ matrix.cypress_cache_folder }}
-          SKIP_DOWNLOAD_ENGINE_SCHEMAS: 'true'
+          SKIP_DOWNLOAD_ENGINE_SCHEMAS: "true"
 
       # Screenshots are only captured on failure, will change this once we do visual regression tests
       - uses: actions/upload-artifact@v4
