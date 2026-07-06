@@ -8,7 +8,7 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 
 - Support for Wazuh 5.0.1
 
-## Wazuh dashboard v5.0.0 - OpenSearch Dashboards 3.6.0 - Revision 03
+## Wazuh dashboard v5.0.0 - OpenSearch Dashboards 3.6.0 - Revision 04
 
 ### Added
 
