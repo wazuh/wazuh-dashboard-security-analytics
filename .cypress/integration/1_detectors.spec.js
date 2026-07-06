@@ -351,8 +351,8 @@ describe('Detectors', () => {
       getCreateDetectorButton().should('be.enabled');
     });
 
-    // Wazuh: the different log types warning is hidden in DetectorDataSource,
-    // so this assertion no longer applies.
+    // Wazuh: the warning cannot be triggered, wazuh-events-v5-* data sources
+    // share the same schema, and the assertion text belongs to the upstream copy.
     // it('...should show mappings warning', () => {
     //   fillDetailsForm(detectorName, cypressIndexDns);
 
