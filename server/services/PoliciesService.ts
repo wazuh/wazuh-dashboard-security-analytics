@@ -182,10 +182,7 @@ export class PoliciesService extends MDSEnabledClientService {
           : integrationResponse?.hits?.total?.value ?? hits.length;
 
       const integrations = new Map(
-        hits.map((hit: any) => [
-          hit?._source?.document?.id,
-          { _id: hit._id, ...hit._source },
-        ])
+        hits.map((hit: any) => [hit?._source?.document?.id, { _id: hit._id, ...hit._source }])
       );
 
       return { integrations, total };
