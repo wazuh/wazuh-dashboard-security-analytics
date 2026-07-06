@@ -8,9 +8,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 env:
-  OPENSEARCH_DASHBOARDS_VERSION: 'main'
-  OPENSEARCH_VERSION: '3.1.0-SNAPSHOT'
-  SECURITY_ANALYTICS_BRANCH: 'main'
+  OPENSEARCH_DASHBOARDS_VERSION: 3.6.0
+  OPENSEARCH_VERSION: '3.6.0-SNAPSHOT'
+  SECURITY_ANALYTICS_BRANCH: 3.6.0.0
   GRADLE_VERSION: '7.6.1'
 jobs:
   tests:
