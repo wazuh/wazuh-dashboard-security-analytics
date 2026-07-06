@@ -123,7 +123,7 @@ export default class DetectorDataSource extends Component<
   onSelectionChange = async (options: EuiComboBoxOptionOption<string>[]) => {
     const allIndices = _.map(options, 'label');
     const detectorType = this.props.detector_type.toLowerCase();
-    const cacheKey = `${this.props.selectedSpace ?? ''}:${detectorType}`;
+    const cacheKey = `${this.props.selectedSpace}:${detectorType}`;
 
     if (this.indicesMappings?.[cacheKey]) {
       for (let indexName in this.indicesMappings[cacheKey]) {
