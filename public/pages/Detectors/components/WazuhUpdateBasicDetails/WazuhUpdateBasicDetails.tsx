@@ -86,10 +86,15 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
   });
   const [loadingRules, setLoadingRules] = useState(false);
 
-  const getSpaceForDetectorType = async (detectorType: string): Promise<string> => {
-    // FIXME: this seems to be broken if there are integration with the same name in custom and standard space
+  const getSpaceForDetector = async (det: Detector): Promise<string> => {
+    // The detector stores its space in the `source` field, so prefer it over
+    // guessing by integration name, which breaks when integrations with the
+    // same name coexist in the standard and custom spaces.
+    if (det.source) {
+      return det.source.toLowerCase();
+    }
     const standardOptions = await getIntegrationOptionsBySpace(SpaceTypes.STANDARD.value);
-    if (standardOptions.some((opt) => opt.value === detectorType)) {
+    if (standardOptions.some((opt) => opt.value === det.detector_type)) {
       return SpaceTypes.STANDARD.value;
     }
     return SpaceTypes.CUSTOM.value;
@@ -187,7 +192,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
           },
         });
 
-        const space = await getSpaceForDetectorType(loadedDetector.detector_type);
+        const space = await getSpaceForDetector(loadedDetector);
         setSelectedSpace(space);
         await loadIntegrationOptions(space);
         await loadRules(loadedDetector.detector_type, space, getEnabledRuleIds(loadedDetector));
@@ -207,7 +212,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         errorNotificationToast(props.notifications, 'retrieve', 'detector', e);
       });
     } else {
-      getSpaceForDetectorType(detector.detector_type).then(async (space) => {
+      getSpaceForDetector(detector).then(async (space) => {
         setSelectedSpace(space);
         await loadIntegrationOptions(space);
         await loadRules(detector.detector_type, space, getEnabledRuleIds(detector));
@@ -228,6 +233,8 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
       const updatedDetector = {
         ...detector,
         detector_type: '',
+        // Keep the space in sync so getSpaceForDetector stays consistent.
+        source: space,
         inputs: [
           {
             detector_input: {
@@ -435,6 +442,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         <DetectorDataSource
           isEdit={true}
           detector_type={detector.detector_type}
+          selectedSpace={selectedSpace}
           notifications={props.notifications}
           indexService={saContext?.services?.indexService as IndexService}
           detectorIndices={inputs[0].detector_input.indices}
