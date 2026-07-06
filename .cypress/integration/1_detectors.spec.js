@@ -352,7 +352,7 @@ describe('Detectors', () => {
     });
 
     // Wazuh: the warning cannot be triggered, wazuh-events-v5-* data sources
-    // share the same schema, and the assertion text belongs to the upstream copy.
+    // share the same schema.
     // it('...should show mappings warning', () => {
     //   fillDetailsForm(detectorName, cypressIndexDns);
 
@@ -362,7 +362,8 @@ describe('Detectors', () => {
     //   cy.get('[data-test-subj="define-detector-diff-log-types-warning"]')
     //     .should('be.visible')
     //     .contains(
-    //       'To avoid issues with field mappings, we recommend creating separate detectors for different log types.'
+    //       // Replace log types with integrations by Wazuh
+    //       'To avoid issues with field mappings, we recommend creating separate detectors for different integrations.'
     //     );
     // });
   });
