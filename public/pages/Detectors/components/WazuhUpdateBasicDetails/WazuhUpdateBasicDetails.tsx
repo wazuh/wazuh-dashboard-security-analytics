@@ -33,7 +33,7 @@ import {
   successNotificationToast,
 } from '../../../../utils/helpers';
 import { isDetectorFormValid } from '../../utils/helpers';
-import { FieldMapping, Detector } from '../../../../../types';
+import { FieldMapping, Detector, RuleItemInfoBase } from '../../../../../types';
 import { ThreatIntelligence } from '../../../CreateDetector/components/DefineDetector/components/ThreatIntelligence/ThreatIntelligence';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { dataSourceInfo } from '../../../../services/utils/constants';
@@ -86,18 +86,30 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
   });
   const [loadingRules, setLoadingRules] = useState(false);
 
-  const getSpaceForDetector = async (det: Detector): Promise<string> => {
-    // The detector stores its space in the `source` field, so prefer it over
-    // guessing by integration name, which breaks when integrations with the
-    // same name coexist in the standard and custom spaces.
-    if (det.source) {
-      return det.source.toLowerCase();
+  // Detectors do not persist their space and integrations with the same name
+  // can coexist in the standard and custom spaces, so guessing by integration
+  // name is not reliable. The detector rules do carry their space, so infer
+  // it from any enabled rule using the same fetch that feeds the rules table.
+  const resolveDetectorSpace = async (
+    det: Detector
+  ): Promise<{ space: string; allRules: RuleItemInfoBase[] }> => {
+    const allRules: RuleItemInfoBase[] = det.detector_type
+      ? await DataStore.rules.getAllRules({
+          'rule.category': [det.detector_type.toLowerCase()],
+        })
+      : [];
+
+    const enabledRuleIds = getEnabledRuleIds(det);
+    const enabledRule = allRules.find((rule) => enabledRuleIds.includes(rule._id));
+    if (enabledRule?.space) {
+      return { space: enabledRule.space, allRules };
     }
+
     const standardOptions = await getIntegrationOptionsBySpace(SpaceTypes.STANDARD.value);
-    if (standardOptions.some((opt) => opt.value === det.detector_type)) {
-      return SpaceTypes.STANDARD.value;
-    }
-    return SpaceTypes.CUSTOM.value;
+    const space = standardOptions.some((opt) => opt.value === det.detector_type)
+      ? SpaceTypes.STANDARD.value
+      : SpaceTypes.CUSTOM.value;
+    return { space, allRules };
   };
 
   const loadIntegrationOptions = useCallback(async (space: string) => {
@@ -111,16 +123,19 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
     async (
       detectorType: string,
       space: string,
-      enabledRuleIds?: string[]
+      enabledRuleIds?: string[],
+      prefetchedRules?: RuleItemInfoBase[]
     ): Promise<RuleItemInfo[]> => {
       if (!detectorType) {
         setRulesState({ page: { index: 0 }, allRules: [] });
         return [];
       }
       setLoadingRules(true);
-      const allRules = await DataStore.rules.getAllRules({
-        'rule.category': [detectorType.toLowerCase()],
-      });
+      const allRules =
+        prefetchedRules ??
+        (await DataStore.rules.getAllRules({
+          'rule.category': [detectorType.toLowerCase()],
+        }));
       const spaceRules = allRules.filter((rule) => rule.space === space);
       const ruleItems: RuleItemInfo[] = spaceRules.map((rule) => ({
         ...rule,
@@ -192,10 +207,15 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
           },
         });
 
-        const space = await getSpaceForDetector(loadedDetector);
+        const { space, allRules } = await resolveDetectorSpace(loadedDetector);
         setSelectedSpace(space);
         await loadIntegrationOptions(space);
-        await loadRules(loadedDetector.detector_type, space, getEnabledRuleIds(loadedDetector));
+        await loadRules(
+          loadedDetector.detector_type,
+          space,
+          getEnabledRuleIds(loadedDetector),
+          allRules
+        );
       } else {
         errorNotificationToast(props.notifications, 'retrieve', 'detector', response.error);
       }
@@ -212,10 +232,10 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         errorNotificationToast(props.notifications, 'retrieve', 'detector', e);
       });
     } else {
-      getSpaceForDetector(detector).then(async (space) => {
+      resolveDetectorSpace(detector).then(async ({ space, allRules }) => {
         setSelectedSpace(space);
         await loadIntegrationOptions(space);
-        await loadRules(detector.detector_type, space, getEnabledRuleIds(detector));
+        await loadRules(detector.detector_type, space, getEnabledRuleIds(detector), allRules);
       });
     }
   }, [saContext?.services]);
@@ -233,8 +253,6 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
       const updatedDetector = {
         ...detector,
         detector_type: '',
-        // Keep the space in sync so getSpaceForDetector stays consistent.
-        source: space,
         inputs: [
           {
             detector_input: {
