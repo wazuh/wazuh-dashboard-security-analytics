@@ -20,7 +20,6 @@ import {
   integrationCategoryFilters,
   integrationsByCategories,
 } from '../utils/constants';
-import { IntegrationMode } from '../pages/Integrations/utils/constants';
 
 export class IntegrationStore {
   constructor(
@@ -163,14 +162,6 @@ export class IntegrationStore {
 
   public async createIntegration(integration: IntegrationBase): Promise<[boolean, string]> {
     try {
-      // User created integrations on draft space will always have mode: user-managed
-      integration = {
-        ...integration,
-        document: {
-          ...integration.document,
-          mode: IntegrationMode.UserManaged,
-        },
-      };
       const { document, space } = integration;
       const createRes = await this.service.createIntegration({ document, space });
 
