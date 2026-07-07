@@ -61,3 +61,21 @@ export const defaultIntegration: IntegrationBase = {
     name: '',
   },
 };
+
+export enum IntegrationMode {
+  Protected = 'protected',
+  UserManaged = 'user-managed',
+}
+
+export const INTEGRATION_MODES: IntegrationMode[] = [
+  IntegrationMode.Protected,
+  IntegrationMode.UserManaged,
+];
+
+export const INTEGRATION_MODE_LABEL: Record<IntegrationMode, string> = {
+  [IntegrationMode.Protected]: 'Protected',
+  [IntegrationMode.UserManaged]: 'User-managed',
+};
+
+export const getIntegrationMode = (mode?: string): IntegrationMode =>
+  mode === IntegrationMode.Protected ? IntegrationMode.Protected : IntegrationMode.UserManaged;
