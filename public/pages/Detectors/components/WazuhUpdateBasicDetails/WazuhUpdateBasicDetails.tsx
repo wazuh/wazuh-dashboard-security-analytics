@@ -86,7 +86,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
   });
   const [loadingRules, setLoadingRules] = useState(false);
 
-  // Detectors do not persist their space and integrations with the same name
+  // Detectors do not persist the integration's space, and integrations with the same name
   // can coexist in the standard and custom spaces, so guessing by integration
   // name is not reliable. The detector rules do carry their space, so infer
   // it from any enabled rule using the same fetch that feeds the rules table.
