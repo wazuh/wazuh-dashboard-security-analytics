@@ -351,18 +351,21 @@ describe('Detectors', () => {
       getCreateDetectorButton().should('be.enabled');
     });
 
-    it('...should show mappings warning', () => {
-      fillDetailsForm(detectorName, cypressIndexDns);
+    // Wazuh: the warning cannot be triggered, wazuh-events-v5-* data sources
+    // share the same schema.
+    // it('...should show mappings warning', () => {
+    //   fillDetailsForm(detectorName, cypressIndexDns);
 
-      getDataSourceField().selectComboboxItem(cypressIndexWindows);
-      getDataSourceField().focus().blur();
+    //   getDataSourceField().selectComboboxItem(cypressIndexWindows);
+    //   getDataSourceField().focus().blur();
 
-      cy.get('[data-test-subj="define-detector-diff-log-types-warning"]')
-        .should('be.visible')
-        .contains(
-          'To avoid issues with field mappings, we recommend creating separate detectors for different log types.'
-        );
-    });
+    //   cy.get('[data-test-subj="define-detector-diff-log-types-warning"]')
+    //     .should('be.visible')
+    //     .contains(
+    //       // Replace log types with integrations by Wazuh
+    //       'To avoid issues with field mappings, we recommend creating separate detectors for different integrations.'
+    //     );
+    // });
   });
 
   describe('...validate create detector flow', () => {

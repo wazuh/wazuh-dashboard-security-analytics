@@ -37,6 +37,7 @@ import { ContentPanel } from '../../../../components/ContentPanel';
 import { DataStore } from '../../../../store/DataStore';
 import ReviewFieldMappings from '../ReviewFieldMappings/ReviewFieldMappings';
 import { FieldMapping, Detector } from '../../../../../types';
+import { filterRulesByDetectorSpace } from '../../utils/helpers';
 
 export interface UpdateDetectorRulesProps
   extends RouteComponentProps<
@@ -97,9 +98,14 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
       );
       enabledRuleIds = enabledRuleIds.concat(enabledCustomRuleIds);
 
-      const allRules = await DataStore.rules.getAllRules({
-        'rule.category': [detector.detector_type.toLowerCase()],
-      });
+      // Wazuh: keep only the rules of the detector's space, integrations with
+      // the same name can coexist in the standard and custom spaces.
+      const allRules = filterRulesByDetectorSpace(
+        await DataStore.rules.getAllRules({
+          'rule.category': [detector.detector_type.toLowerCase()],
+        }),
+        detector
+      );
       const prePackagedRules = allRules?.filter((rule) => rule.prePackaged);
       const prePackagedRuleItems = prePackagedRules?.map((rule) => ({
         // Wazuh: Remove duplicated fields in metadata and root: title.
