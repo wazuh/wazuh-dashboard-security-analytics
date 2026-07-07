@@ -420,7 +420,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
                   title: 'Mode',
                   description: (
                     <span style={{ overflowWrap: 'anywhere' }}>
-                      {integrationDetails.document.mode ?? IntegrationMode.UserManaged}
+                      {integrationDetails.document.mode}
                     </span>
                   ),
                 },

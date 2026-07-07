@@ -36,6 +36,7 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
           document: schema.object({
             id: schema.string({ defaultValue: '' }),
             category: schema.string(),
+            mode: schema.string(),
             metadata: integrationMetadataSchema,
             enabled: schema.boolean({ defaultValue: false }),
             tags: schema.nullable(
@@ -80,6 +81,7 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
           document: schema.object({
             id: schema.string({ defaultValue: '' }),
             category: schema.string(),
+            mode: schema.string(),
             metadata: integrationMetadataSchema,
             decoders: schema.arrayOf(schema.string(), { defaultValue: [] }),
             enabled: schema.boolean({ defaultValue: false }), // TODO: adapt if this can be configured by user in UI
