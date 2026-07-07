@@ -83,6 +83,7 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
             id: schema.string({ defaultValue: '' }),
             category: schema.string(),
             metadata: integrationMetadataSchema,
+            mode: schema.string(),
             decoders: schema.arrayOf(schema.string(), { defaultValue: [] }),
             enabled: schema.boolean({ defaultValue: false }), // TODO: adapt if this can be configured by user in UI
             kvdbs: schema.arrayOf(schema.string(), { defaultValue: [] }),
