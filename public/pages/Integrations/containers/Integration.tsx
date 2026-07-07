@@ -286,17 +286,17 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           <EuiHorizontalRule margin="xs" />,
           <EuiContextMenuItem
             key={'toggleIntegrationEnabled'}
-            disabled={isEditDisabled || togglingEnabled}
+            disabled={
+              togglingEnabled || integrationDetails?.document.mode === IntegrationMode.Protected
+            }
             onClick={() => {
               closeActionsPopover();
               toggleIntegrationEnabled(!integrationEnabled);
             }}
             data-test-subj={'integrationEnableDisableMenuItem'}
             toolTipContent={
-              isEditDisabled
-                ? `Integration can only be edited in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.EDIT
-                  ).join(', ')}`
+              integrationDetails?.document.mode === IntegrationMode.Protected
+                ? 'The integration is protected'
                 : undefined
             }
           >
