@@ -5,6 +5,7 @@
 
 import { RuleItemInfoBase } from './Rule';
 import { CatalogResourceMetadata } from './ResourceMetadata';
+import { IntegrationMode } from '../public/pages/Integrations/utils/constants';
 
 export interface IntegrationWithRules extends Integration {
   detectionRules: RuleItemInfoBase[];
@@ -29,6 +30,7 @@ export interface IntegrationBase {
     id: string;
     parent_decoder?: string;
     category: string;
+    mode: IntegrationMode;
     metadata: IntegrationMetadata;
     enabled?: boolean;
     decoders?: string[];

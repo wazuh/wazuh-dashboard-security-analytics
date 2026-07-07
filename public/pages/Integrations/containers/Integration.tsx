@@ -28,7 +28,11 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
-import { INTEGRATION_DETAILS_TAB, integrationDetailsTabs } from '../utils/constants';
+import {
+  INTEGRATION_DETAILS_TAB,
+  integrationDetailsTabs,
+  IntegrationMode,
+} from '../utils/constants';
 import { IntegrationDetails } from '../components/IntegrationDetails';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { IntegrationDetectionRules } from '../components/IntegrationDetectionRules';
@@ -103,9 +107,10 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   }, [integrationId]);
 
   const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
-  const decoderIds = useMemo(() => integrationDetails?.document.decoders ?? [], [
-    integrationDetails,
-  ]);
+  const decoderIds = useMemo(
+    () => integrationDetails?.document.decoders ?? [],
+    [integrationDetails]
+  );
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
 
   const renderTabContent = () => {
@@ -402,6 +407,20 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
                   description: (
                     <span style={{ overflowWrap: 'anywhere' }}>
                       {integrationDetails.document.id}
+                    </span>
+                  ),
+                },
+              ]}
+            />
+          </div>
+          <div className="integration-details-summary-panel__mode">
+            <EuiDescriptionList
+              listItems={[
+                {
+                  title: 'Mode',
+                  description: (
+                    <span style={{ overflowWrap: 'anywhere' }}>
+                      {integrationDetails.document.mode ?? IntegrationMode.UserManaged}
                     </span>
                   ),
                 },
