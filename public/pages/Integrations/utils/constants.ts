@@ -41,11 +41,20 @@ export const integrationDetailsTabs = [
   },
 ];
 
+export enum IntegrationMode {
+  Protected = 'protected',
+  UserManaged = 'user-managed',
+}
+
+// Default value defined for integrations created by the user, spaces: (draft, test, custom).
+export const DEFAULT_INTEGRATION_MODE = IntegrationMode.UserManaged;
+
 export const defaultIntegration: IntegrationBase = {
   document: {
     id: '',
     enabled: true,
     category: '',
+    mode: DEFAULT_INTEGRATION_MODE,
     metadata: {
       title: '',
       author: '',
@@ -62,11 +71,3 @@ export const defaultIntegration: IntegrationBase = {
     name: '',
   },
 };
-
-export enum IntegrationMode {
-  Protected = 'protected',
-  UserManaged = 'user-managed',
-}
-
-// Default value defined for integrations created by the user, spaces: (draft, test, custom).
-export const DEFAULT_INTEGRATION_MODE = IntegrationMode.UserManaged;

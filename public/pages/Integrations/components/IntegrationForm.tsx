@@ -299,7 +299,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
             <EuiSpacer />
           )}
           <EuiCompressedFormRow label="Mode">
-            <ReadOnlyField value={DEFAULT_INTEGRATION_MODE} />
+            <ReadOnlyField value={integrationDetails?.document.mode} />
           </EuiCompressedFormRow>
           <EuiSpacer />
           <EuiCompressedFormRow
