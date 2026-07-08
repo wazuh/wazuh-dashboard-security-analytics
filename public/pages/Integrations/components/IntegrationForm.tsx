@@ -37,7 +37,7 @@ import { useState } from 'react';
 import { isEqual } from 'lodash';
 import { getIntegrationCategoryOptions } from '../../../utils/helpers';
 import { FormFieldArray } from '../../../components/FormFieldArray';
-import { INTEGRATION_MODE_LABEL, getIntegrationMode } from '../utils/constants';
+import { DEFAULT_INTEGRATION_MODE } from '../utils/constants';
 
 interface ReadOnlyFieldProps {
   value: string | undefined;
@@ -107,9 +107,8 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     const [titleError, setTitleError] = useState('');
     const [categoryError, setCategoryError] = useState('');
     const [authorError, setAuthorError] = useState('');
-    const [editingIntegration, setEditingIntegration] = useState<IntegrationItem>(
-      integrationDetails
-    );
+    const [editingIntegration, setEditingIntegration] =
+      useState<IntegrationItem>(integrationDetails);
 
     useEffect(() => {
       if (isEditMode) {
@@ -300,11 +299,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
             <EuiSpacer />
           )}
           <EuiCompressedFormRow label="Mode">
-            {/* The `mode` is read-only in every space: it is only displayed,
-              the user must never be able to change it. */}
-            <ReadOnlyField
-              value={INTEGRATION_MODE_LABEL[getIntegrationMode(integrationDetails?.document.mode)]}
-            />
+            <ReadOnlyField value={DEFAULT_INTEGRATION_MODE} />
           </EuiCompressedFormRow>
           <EuiSpacer />
           <EuiCompressedFormRow

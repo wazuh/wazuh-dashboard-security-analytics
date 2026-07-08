@@ -10,7 +10,7 @@ export const OVERVIEW_TAB = {
   FILTERS: 'filters',
 } as const;
 
-export type OverviewTabId = typeof OVERVIEW_TAB[keyof typeof OVERVIEW_TAB];
+export type OverviewTabId = (typeof OVERVIEW_TAB)[keyof typeof OVERVIEW_TAB];
 
 export const INTEGRATION_DETAILS_TAB = {
   DETAILS: 'details',
@@ -19,7 +19,8 @@ export const INTEGRATION_DETAILS_TAB = {
   KVDBS: 'kvdbs',
 } as const;
 
-export type IntegrationDetailsTabId = typeof INTEGRATION_DETAILS_TAB[keyof typeof INTEGRATION_DETAILS_TAB];
+export type IntegrationDetailsTabId =
+  (typeof INTEGRATION_DETAILS_TAB)[keyof typeof INTEGRATION_DETAILS_TAB];
 
 export const integrationDetailsTabs = [
   {
@@ -67,15 +68,5 @@ export enum IntegrationMode {
   UserManaged = 'user-managed',
 }
 
-export const INTEGRATION_MODES: IntegrationMode[] = [
-  IntegrationMode.Protected,
-  IntegrationMode.UserManaged,
-];
-
-export const INTEGRATION_MODE_LABEL: Record<IntegrationMode, string> = {
-  [IntegrationMode.Protected]: 'Protected',
-  [IntegrationMode.UserManaged]: 'User-managed',
-};
-
-export const getIntegrationMode = (mode?: string): IntegrationMode =>
-  mode === IntegrationMode.Protected ? IntegrationMode.Protected : IntegrationMode.UserManaged;
+// Default value defined for integrations created by the user, spaces: (draft, test, custom).
+export const DEFAULT_INTEGRATION_MODE = IntegrationMode.UserManaged;
