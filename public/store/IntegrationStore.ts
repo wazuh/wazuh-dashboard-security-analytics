@@ -22,10 +22,7 @@ import {
 } from '../utils/constants';
 
 export class IntegrationStore {
-  constructor(
-    private service: IntegrationService,
-    private notifications: NotificationsStart
-  ) {}
+  constructor(private service: IntegrationService, private notifications: NotificationsStart) {}
 
   private formatRelatedEntitiesList(entities: string[]): string {
     if (entities.length === 0) {
