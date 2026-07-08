@@ -413,20 +413,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               ]}
             />
           </div>
-          <div className="integration-details-summary-panel__mode">
-            <EuiDescriptionList
-              listItems={[
-                {
-                  title: 'Mode',
-                  description: (
-                    <span style={{ overflowWrap: 'anywhere' }}>
-                      {integrationDetails.document.mode}
-                    </span>
-                  ),
-                },
-              ]}
-            />
-          </div>
           <div className="integration-details-summary-panel__date">
             <EuiDescriptionList
               listItems={[

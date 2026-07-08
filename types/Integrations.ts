@@ -5,6 +5,7 @@
 
 import { RuleItemInfoBase } from './Rule';
 import { CatalogResourceMetadata } from './ResourceMetadata';
+
 export interface IntegrationWithRules extends Integration {
   detectionRules: RuleItemInfoBase[];
 }
