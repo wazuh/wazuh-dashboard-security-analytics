@@ -32,7 +32,7 @@ import {
   setBreadcrumbs,
   successNotificationToast,
 } from '../../../../utils/helpers';
-import { isDetectorFormValid } from '../../utils/helpers';
+import { hasEnabledRules, isDetectorFormValid } from '../../utils/helpers';
 import { FieldMapping, Detector, RuleItemInfoBase } from '../../../../../types';
 import { ThreatIntelligence } from '../../../CreateDetector/components/DefineDetector/components/ThreatIntelligence/ThreatIntelligence';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
@@ -439,6 +439,10 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
   const isFormValid = isDetectorFormValid(detector);
 
+  // Wazuh: prevent saving a detector with no active rules, consistent with the
+  // create detector form validation.
+  const hasActiveRules = hasEnabledRules(detector);
+
   return (
     <>
       <PageHeader>
@@ -512,6 +516,21 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         />
 
         <EuiSpacer size="m" />
+
+        {/* Wazuh: prevent saving a detector with no active rules */}
+        {!loadingRules && !!detector.detector_type && !hasActiveRules ? (
+          <>
+            <EuiCallOut
+              title="At least one rule must be enabled"
+              color="danger"
+              iconType="alert"
+              data-test-subj="no-active-rules-callout"
+            >
+              <p>Enable at least one rule to save the detector.</p>
+            </EuiCallOut>
+            <EuiSpacer size="m" />
+          </>
+        ) : null}
 
         {/* <ConfigureFieldMapping
           {...props}
