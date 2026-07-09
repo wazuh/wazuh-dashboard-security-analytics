@@ -894,9 +894,12 @@ export const CreateCorrelationRule: React.FC<CreateCorrelationRuleProps> = (
 
           return errors;
         }}
-        onSubmit={(values, { setSubmitting }) => {
-          setSubmitting(false);
-          submit(values);
+        onSubmit={async (values, { setSubmitting }) => {
+          try {
+            await submit(values);
+          } finally {
+            setSubmitting(false);
+          }
         }}
         enableReinitialize={true}
       >
@@ -1249,7 +1252,12 @@ export const CreateCorrelationRule: React.FC<CreateCorrelationRuleProps> = (
                   <EuiSpacer size="xl" />
                   <EuiFlexGroup justifyContent="flexEnd">
                     <EuiFlexItem grow={false}>
-                      <EuiSmallButton href={`#${ROUTES.CORRELATION_RULES}`}>Cancel</EuiSmallButton>
+                      <EuiSmallButton
+                        href={`#${ROUTES.CORRELATION_RULES}`}
+                        isDisabled={props.isSubmitting}
+                      >
+                        Cancel
+                      </EuiSmallButton>
                     </EuiFlexItem>
                     <EuiFlexItem grow={false}>
                       <EuiSmallButton
@@ -1257,6 +1265,7 @@ export const CreateCorrelationRule: React.FC<CreateCorrelationRuleProps> = (
                           props.handleSubmit();
                         }}
                         fill={true}
+                        isLoading={props.isSubmitting}
                       >
                         {action === 'Edit' ? 'Update' : 'Create '} correlation rule
                       </EuiSmallButton>

@@ -21,14 +21,14 @@ import {
   EuiText,
 } from '@elastic/eui';
 import React from 'react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface DeleteLogTypeModalProps {
   logTypeName: string;
   detectionRulesCount: number;
   loading?: boolean;
   closeModal: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
 }
 
 export const DeleteLogTypeModal: React.FC<DeleteLogTypeModalProps> = ({
@@ -39,6 +39,14 @@ export const DeleteLogTypeModal: React.FC<DeleteLogTypeModalProps> = ({
   onConfirm,
 }) => {
   const [confirmDeleteText, setConfirmDeleteText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -50,9 +58,18 @@ export const DeleteLogTypeModal: React.FC<DeleteLogTypeModalProps> = ({
     );
   }
 
-  const onConfirmClick = () => {
-    onConfirm();
-    closeModal();
+  const onConfirmClick = async () => {
+    setIsDeleting(true);
+    try {
+      await onConfirm();
+      if (isMountedRef.current) {
+        closeModal();
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsDeleting(false);
+      }
+    }
   };
 
   return (
@@ -79,8 +96,8 @@ export const DeleteLogTypeModal: React.FC<DeleteLogTypeModalProps> = ({
             <EuiSpacer />
             <EuiText size="s">
               <p>
-                Only integrations that don’t have any associated rules can be deleted. Consider editing
-                integration or deleting associated detection rules.
+                Only integrations that don’t have any associated rules can be deleted. Consider
+                editing integration or deleting associated detection rules.
               </p>
             </EuiText>
           </EuiModalBody>
@@ -92,14 +109,23 @@ export const DeleteLogTypeModal: React.FC<DeleteLogTypeModalProps> = ({
         </EuiModal>
       ) : (
         <EuiConfirmModal
-          title={<EuiText size="s"><h2>Delete integration?</h2></EuiText>}
-          onCancel={closeModal}
+          title={
+            <EuiText size="s">
+              <h2>Delete integration?</h2>
+            </EuiText>
+          }
+          onCancel={() => {
+            if (!isDeleting) {
+              closeModal();
+            }
+          }}
           onConfirm={onConfirmClick}
           cancelButtonText={'Cancel'}
           confirmButtonText={`Delete integration`}
           buttonColor={'danger'}
           defaultFocusedButton="confirm"
           confirmButtonDisabled={confirmDeleteText != logTypeName}
+          isLoading={isDeleting}
         >
           <EuiForm>
             <p>
@@ -107,12 +133,10 @@ export const DeleteLogTypeModal: React.FC<DeleteLogTypeModalProps> = ({
                 The integration will be permanently deleted. This action is irreversible.
               </EuiText>
             </p>
-            <EuiSpacer size="s"/>
-              <p style={{marginBottom: '0.3rem'}}>
-                <EuiText size="s">
-                  Type {<b>{logTypeName}</b>} to confirm
-                </EuiText>
-              </p>
+            <EuiSpacer size="s" />
+            <p style={{ marginBottom: '0.3rem' }}>
+              <EuiText size="s">Type {<b>{logTypeName}</b>} to confirm</EuiText>
+            </p>
 
             <EuiCompressedFormRow>
               <EuiCompressedFieldText

@@ -232,12 +232,15 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
           title="Delete filter?"
-          onCancel={() => setItemForAction(null)}
+          onCancel={() => {
+            if (!isDeleting) setItemForAction(null);
+          }}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>Are you sure you want to delete this filter? This action cannot be undone.</p>
         </EuiConfirmModal>
@@ -246,7 +249,9 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
         <EuiConfirmModal
           title={`Delete ${selectedItems.length} ${pluralize(selectedItems.length, 'filter')}?`}
-          onCancel={() => setItemForAction(null)}
+          onCancel={() => {
+            if (!isDeleting) setItemForAction(null);
+          }}
           onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"

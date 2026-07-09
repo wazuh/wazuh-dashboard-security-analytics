@@ -3978,9 +3978,11 @@ exports[`<RuleEditorForm /> spec renders the component 1`] = `
                 className="euiFlexItem euiFlexItem--flexGrowZero"
               >
                 <EuiSmallButton
+                  disabled={false}
                   onClick={[Function]}
                 >
                   <EuiButton
+                    disabled={false}
                     onClick={[Function]}
                     size="s"
                   >
@@ -4039,11 +4041,13 @@ exports[`<RuleEditorForm /> spec renders the component 1`] = `
                 <EuiSmallButton
                   data-test-subj="submit_rule_form_button"
                   fill={true}
+                  isLoading={false}
                   onClick={[Function]}
                 >
                   <EuiButton
                     data-test-subj="submit_rule_form_button"
                     fill={true}
+                    isLoading={false}
                     onClick={[Function]}
                     size="s"
                   >
@@ -4054,6 +4058,7 @@ exports[`<RuleEditorForm /> spec renders the component 1`] = `
                       element="button"
                       fill={true}
                       isDisabled={false}
+                      isLoading={false}
                       onClick={[Function]}
                       size="s"
                       type="button"
@@ -4074,6 +4079,7 @@ exports[`<RuleEditorForm /> spec renders the component 1`] = `
                           className="euiButton__content"
                           iconGap="m"
                           iconSide="left"
+                          isLoading={false}
                           textProps={
                             Object {
                               "className": "euiButton__text",

@@ -10,7 +10,6 @@ import {
   EuiCompressedFieldText,
   EuiForm,
   EuiCompressedFormRow,
-  EuiLoadingSpinner,
   EuiModal,
   EuiModalBody,
   EuiModalFooter,
@@ -21,8 +20,7 @@ import {
   EuiText,
 } from '@elastic/eui';
 import React from 'react';
-import { useState } from 'react';
-import { withGuardAsync } from '../utils/helpers';
+import { useEffect, useRef, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
 
 export interface DeleteIntegrationModalProps {
@@ -31,21 +29,12 @@ export interface DeleteIntegrationModalProps {
   detectionRulesCount?: number;
   decodersCount?: number;
   kvdbsCount?: number;
-  loading?: boolean;
   closeModal: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
 }
 
 const DELETE_INTEGRATION_ASSOCIATED_ENTITIES_MESSAGE =
   "Only integrations that don't have associated rules, decoders, or KVDBs can be deleted. Consider editing integration or deleting the associated entities.";
-
-const LoadingModal = ({ closeModal }) => (
-  <EuiOverlayMask>
-    <EuiModal onClose={closeModal}>
-      <EuiLoadingSpinner size="l" />
-    </EuiModal>
-  </EuiOverlayMask>
-);
 
 export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
   detectionRulesCount = 0,
@@ -56,6 +45,14 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
   onConfirm,
 }) => {
   const [confirmDeleteText, setConfirmDeleteText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const isMountedRef = useRef(true);
+  useEffect(
+    () => () => {
+      isMountedRef.current = false;
+    },
+    []
+  );
   const hasRelatedEntities = detectionRulesCount > 0 || decodersCount > 0 || kvdbsCount > 0;
   const relatedEntitiesMessage = DataStore.integrations.getRelatedEntitiesMessage({
     hasRules: detectionRulesCount > 0,
@@ -64,8 +61,17 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
   });
 
   const onConfirmClick = async () => {
-    await onConfirm();
-    closeModal();
+    setIsDeleting(true);
+    try {
+      await onConfirm();
+      if (isMountedRef.current) {
+        closeModal();
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsDeleting(false);
+      }
+    }
   };
 
   return (
@@ -105,13 +111,18 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
               <h2>Delete integration?</h2>
             </EuiText>
           }
-          onCancel={closeModal}
+          onCancel={() => {
+            if (!isDeleting) {
+              closeModal();
+            }
+          }}
           onConfirm={onConfirmClick}
           cancelButtonText={'Cancel'}
           confirmButtonText={`Delete integration`}
           buttonColor={'danger'}
           defaultFocusedButton="confirm"
           confirmButtonDisabled={confirmDeleteText != integrationName}
+          isLoading={isDeleting}
         >
           <EuiForm>
             <p>

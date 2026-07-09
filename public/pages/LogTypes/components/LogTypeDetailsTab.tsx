@@ -17,7 +17,7 @@ import {
   EuiButtonEmpty,
 } from '@elastic/eui';
 import { ContentPanel } from '../../../components/ContentPanel';
-import React from 'react';
+import React, { useState } from 'react';
 import { LogTypeItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 
@@ -36,17 +36,26 @@ export const LogTypeDetailsTab: React.FC<LogTypeDetailsTabProps> = ({
   setIsEditMode,
   setLogTypeDetails,
 }) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const onUpdateLogType = async () => {
-    const success = await DataStore.logTypes.updateLogType(logTypeDetails);
-    if (success) {
-      setIsEditMode(false);
+    setIsUpdating(true);
+    try {
+      const success = await DataStore.logTypes.updateLogType(logTypeDetails);
+      if (success) {
+        setIsEditMode(false);
+      }
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   return (
     <ContentPanel
       title="Details"
-      actions={!isEditMode && [<EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>]}
+      actions={
+        !isEditMode && [<EuiSmallButton onClick={() => setIsEditMode(true)}>Edit</EuiSmallButton>]
+      }
     >
       <EuiDescriptionList
         type="column"
@@ -94,12 +103,19 @@ export const LogTypeDetailsTab: React.FC<LogTypeDetailsTabProps> = ({
                             setLogTypeDetails(initialLogTypeDetails);
                             setIsEditMode(false);
                           }}
+                          isDisabled={isUpdating}
                         >
                           Cancel
                         </EuiButtonEmpty>
                       </EuiFlexItem>
                       <EuiFlexItem grow={false}>
-                        <EuiButton color="primary" fill size="s" onClick={onUpdateLogType}>
+                        <EuiButton
+                          color="primary"
+                          fill
+                          size="s"
+                          onClick={onUpdateLogType}
+                          isLoading={isUpdating}
+                        >
                           Update
                         </EuiButton>
                       </EuiFlexItem>

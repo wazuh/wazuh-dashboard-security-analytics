@@ -263,12 +263,15 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
           title="Delete KVDB"
-          onCancel={() => setItemForAction(null)}
+          onCancel={() => {
+            if (!isDeleting) setItemForAction(null);
+          }}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>Are you sure you want to delete this KVDB? This action cannot be undone.</p>
         </EuiConfirmModal>
@@ -276,12 +279,15 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
         <EuiConfirmModal
           title={`Delete ${selectedItems.length} KVDB${selectedItems.length !== 1 ? 's' : ''}`}
-          onCancel={() => setItemForAction(null)}
+          onCancel={() => {
+            if (!isDeleting) setItemForAction(null);
+          }}
           onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>{`Are you sure you want to delete ${selectedItems.length} KVDB${
             selectedItems.length !== 1 ? 's' : ''
