@@ -29,7 +29,7 @@ export interface LogTypeFormProps {
   notifications: NotificationsStart;
   setLogTypeDetails: (logType: LogTypeItem) => void;
   onCancel: () => void;
-  onConfirm: () => void | Promise<void>;
+  onConfirm: () => void;
 }
 
 export const LogTypeForm: React.FC<LogTypeFormProps> = ({
@@ -44,7 +44,6 @@ export const LogTypeForm: React.FC<LogTypeFormProps> = ({
   const [nameError, setNameError] = useState('');
   const [categoryError, setCategoryError] = useState('');
   const [categoryTouched, setCategoryTouched] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateErrors = (details: LogTypeItem, onSubmit = false) => {
     const nameInvalid = !validateName(details.name, LOG_TYPE_NAME_REGEX, false /* shouldTrim */);
@@ -54,7 +53,7 @@ export const LogTypeForm: React.FC<LogTypeFormProps> = ({
 
     return { nameInvalid, categoryInvalid };
   };
-  const onConfirmClicked = async () => {
+  const onConfirmClicked = () => {
     const { nameInvalid, categoryInvalid } = updateErrors(logTypeDetails, true);
 
     if (nameInvalid || categoryInvalid) {
@@ -66,12 +65,7 @@ export const LogTypeForm: React.FC<LogTypeFormProps> = ({
 
       return;
     }
-    setIsSubmitting(true);
-    try {
-      await onConfirm();
-    } finally {
-      setIsSubmitting(false);
-    }
+    onConfirm();
   };
 
   return (
@@ -147,25 +141,12 @@ export const LogTypeForm: React.FC<LogTypeFormProps> = ({
         <EuiBottomBar>
           <EuiFlexGroup gutterSize="s" justifyContent="flexEnd">
             <EuiFlexItem grow={false}>
-              <EuiButtonEmpty
-                color="ghost"
-                size="s"
-                iconType="cross"
-                onClick={onCancel}
-                isDisabled={isSubmitting}
-              >
+              <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={onCancel}>
                 Cancel
               </EuiButtonEmpty>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiButton
-                color="primary"
-                fill
-                iconType="check"
-                size="s"
-                onClick={onConfirmClicked}
-                isLoading={isSubmitting}
-              >
+              <EuiButton color="primary" fill iconType="check" size="s" onClick={onConfirmClicked}>
                 {confirmButtonText}
               </EuiButton>
             </EuiFlexItem>

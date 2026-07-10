@@ -50,7 +50,7 @@ export interface VisualRuleEditorProps {
   initialValue: RuleEditorFormModel;
   notifications?: NotificationsStart;
   validateOnMount?: boolean;
-  submit: (values: RuleEditorFormModel) => Promise<void> | void;
+  submit: (values: RuleEditorFormModel) => void;
   cancel: () => void;
   mode: 'create' | 'edit';
   title: string;
@@ -177,16 +177,14 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         }
         return errors;
       }}
-      onSubmit={async (values, { setSubmitting }) => {
-        try {
-          // Wazuh: fixed to prevent submission when it's visual editor to yaml works correctly
-          if (isDetectionInvalid && selectedEditorType === 'visual') {
-            return;
-          }
-          await submit(values);
-        } finally {
-          setSubmitting(false);
+      onSubmit={(values, { setSubmitting }) => {
+        // Wazuh: fixed to prevent submission when it's visual editor to yaml works correctly
+        if (isDetectionInvalid && selectedEditorType === 'visual') {
+          return;
         }
+
+        setSubmitting(false);
+        submit(values);
       }}
     >
       {(props) => {
@@ -367,7 +365,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                               ? [
                                   {
                                     value: props.values.logType,
-                                    label: getLogTypeLabel(String(props.values.logType)),
+                                  label: getLogTypeLabel(String(props.values.logType)),
                                   },
                                 ]
                               : []
@@ -595,15 +593,12 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
 
             <EuiFlexGroup justifyContent="flexEnd">
               <EuiFlexItem grow={false}>
-                <EuiSmallButton onClick={cancel} disabled={props.isSubmitting}>
-                  Cancel
-                </EuiSmallButton>
+                <EuiSmallButton onClick={cancel}>Cancel</EuiSmallButton>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <EuiSmallButton
                   onClick={() => props.handleSubmit()}
                   data-test-subj={'submit_rule_form_button'}
-                  isLoading={props.isSubmitting}
                   fill
                 >
                   {mode === 'create' ? 'Create detection rule' : 'Save changes'}
