@@ -265,7 +265,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           title="Delete KVDB"
           onCancel={() => {
             if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
