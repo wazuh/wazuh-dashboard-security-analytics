@@ -110,9 +110,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
             </h2>
           </EuiText>
         }
-        onCancel={() => {
-          if (!isPromoting) closeModal();
-        }}
+        onCancel={closeModal}
         onConfirm={onConfirmClick}
         cancelButtonText={'Cancel'}
         confirmButtonText={`Promote`}
