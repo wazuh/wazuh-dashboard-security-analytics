@@ -232,9 +232,7 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
           title="Delete filter?"
-          onCancel={() => {
-            if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
