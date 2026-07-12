@@ -310,8 +310,6 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
           title="Delete rule"
-          onCancel={() => {
-            if (!isDeleting) setItemForAction(null);
           onCancel={() => setItemForAction(null)}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"

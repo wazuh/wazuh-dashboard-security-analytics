@@ -263,8 +263,6 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
           title="Delete KVDB"
-          onCancel={() => {
-            if (!isDeleting) setItemForAction(null);
           onCancel={() => setItemForAction(null)}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
@@ -279,7 +277,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
         <EuiConfirmModal
           title={`Delete ${selectedItems.length} KVDB${selectedItems.length !== 1 ? 's' : ''}`}
-         onCancel={() => setItemForAction(null)}
+          onCancel={() => setItemForAction(null)}
           onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"

@@ -247,9 +247,7 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
         <EuiConfirmModal
           title={`Delete ${selectedItems.length} ${pluralize(selectedItems.length, 'filter')}?`}
-          onCancel={() => {
-            if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
