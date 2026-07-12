@@ -312,7 +312,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
           title="Delete rule"
           onCancel={() => {
             if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
