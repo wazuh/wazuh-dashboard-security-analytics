@@ -306,7 +306,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
           title={`Delete ${selectedItems.length} decoder${selectedItems.length !== 1 ? 's' : ''}`}
           onCancel={() => {
             if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
