@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAsyncActionRunOnStart, withGuardAsync } from '../utils/helpers';
+import { useAsyncAction, useAsyncActionRunOnStart, withGuardAsync } from '../utils/helpers';
 import { DataStore } from '../../../store/DataStore';
 import {
   EuiButton,
@@ -106,7 +106,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
     { refreshDataOnPreRun: false }
   );
 
-  const updatePolicy = async () => {
+  const updatePolicyAction = useAsyncAction(async () => {
     const [success] = await DataStore.policies.updatePolicy(space, {
       metadata: {
         title: policyDocumentData.metadata?.title ?? '',
@@ -129,7 +129,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
     } else {
       errorNotificationToast(notifications, 'updated', `[${space}] policy`);
     }
-  };
+  })
 
   useEffect(() => {
     if (action.data?.items && !action.data?.items.some((item) => item.value === selected)) {
@@ -194,7 +194,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
             <EuiButtonEmpty onClick={onCancel}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton fill={true} onClick={updatePolicy} isDisabled={!selected}>
+            <EuiButton fill={true} onClick={updatePolicyAction.run} isDisabled={!selected} isLoading={updatePolicyAction.running}>
               Confirm
             </EuiButton>
           </EuiFlexItem>
