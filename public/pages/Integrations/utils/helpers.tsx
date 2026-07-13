@@ -313,3 +313,33 @@ export function useAsyncActionRunOnStart<T>(
 
   return { data, error, run, running };
 }
+
+export function useAsyncAction<T>(
+  action: useAsyncActionRunOnStartAction<T>,
+  dependencies: useAsyncActionRunOnStartDependencies = [],
+  { refreshDataOnPreRun }: { refreshDataOnPreRun: boolean } = {
+    refreshDataOnPreRun: true,
+  }
+): useAsyncActionRunOnStartDependenciesReturns<T> {
+  const [running, setRunning] = useState(false);
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const run = async () => {
+    try {
+      setRunning(true);
+      setError(null);
+      if (refreshDataOnPreRun) {
+        setData(null);
+      }
+      const result = await action(dependencies, { data, error, running });
+      setData(result);
+    } catch (error) {
+      setError(error as Error);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return { data, error, run, running };
+}
