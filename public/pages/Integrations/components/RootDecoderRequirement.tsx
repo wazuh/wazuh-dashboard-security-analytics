@@ -129,7 +129,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
     } else {
       errorNotificationToast(notifications, 'updated', `[${space}] policy`);
     }
-  })
+  });
 
   useEffect(() => {
     if (action.data?.items && !action.data?.items.some((item) => item.value === selected)) {
