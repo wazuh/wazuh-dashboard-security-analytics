@@ -115,36 +115,6 @@ Object {
                           </button>
                         </div>
                       </div>
-                      <div
-                        class="euiPopover euiPopover--anchorDownCenter"
-                        id="field_value_selection_1"
-                      >
-                        <div
-                          class="euiPopover__anchor"
-                        >
-                          <button
-                            class="euiButtonEmpty euiButtonEmpty--text euiFilterButton euiFilterButton--hasIcon"
-                            type="button"
-                          >
-                            <span
-                              class="euiButtonContent euiButtonContent--iconRight euiButtonEmpty__content"
-                            >
-                              EuiIconMock
-                              <span
-                                class="euiButtonEmpty__text"
-                              >
-                                <span
-                                  class="euiFilterButton__textShift"
-                                  data-text="Source"
-                                  title="Source"
-                                >
-                                  Source
-                                </span>
-                              </span>
-                            </span>
-                          </button>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -181,7 +151,7 @@ Object {
                       <thead>
                         <tr>
                           <th
-                            class="euiTableHeaderCell"
+                            class="euiTableHeaderCell euiTableHeaderCell--hideForMobile"
                             data-test-subj="tableHeaderCell_[object Object]_0"
                             role="columnheader"
                             scope="col"
@@ -516,36 +486,6 @@ Object {
                         </button>
                       </div>
                     </div>
-                    <div
-                      class="euiPopover euiPopover--anchorDownCenter"
-                      id="field_value_selection_1"
-                    >
-                      <div
-                        class="euiPopover__anchor"
-                      >
-                        <button
-                          class="euiButtonEmpty euiButtonEmpty--text euiFilterButton euiFilterButton--hasIcon"
-                          type="button"
-                        >
-                          <span
-                            class="euiButtonContent euiButtonContent--iconRight euiButtonEmpty__content"
-                          >
-                            EuiIconMock
-                            <span
-                              class="euiButtonEmpty__text"
-                            >
-                              <span
-                                class="euiFilterButton__textShift"
-                                data-text="Source"
-                                title="Source"
-                              >
-                                Source
-                              </span>
-                            </span>
-                          </span>
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -582,7 +522,7 @@ Object {
                     <thead>
                       <tr>
                         <th
-                          class="euiTableHeaderCell"
+                          class="euiTableHeaderCell euiTableHeaderCell--hideForMobile"
                           data-test-subj="tableHeaderCell_[object Object]_0"
                           role="columnheader"
                           scope="col"

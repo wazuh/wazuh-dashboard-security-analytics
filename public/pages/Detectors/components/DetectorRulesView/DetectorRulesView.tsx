@@ -17,6 +17,7 @@ import { RuleViewerFlyout } from '../../../WazuhRules/components/RuleViewerFlyou
 import { DataStore } from '../../../../store/DataStore';
 import { Detector } from '../../../../../types';
 import { isStandardSource } from '../../../../utils/detectorSource';
+import { filterRulesByDetectorSpace } from '../../utils/helpers';
 
 export interface DetectorRulesViewProps {
   detector: Detector;
@@ -79,9 +80,14 @@ export const DetectorRulesView: React.FC<DetectorRulesViewProps> = (props) => {
         props.detector.inputs[0].detector_input.custom_rules.map((ruleInfo) => ruleInfo.id)
       );
 
-      const allRules = await DataStore.rules.getAllRules({
-        'rule.category': [props.detector.detector_type.toLowerCase()],
-      });
+      // Wazuh: keep only the rules of the detector's integration, integrations with
+      // the same name can coexist in the standard and custom spaces.
+      const allRules = filterRulesByDetectorSpace(
+        await DataStore.rules.getAllRules({
+          'rule.category': [props.detector.detector_type.toLowerCase()],
+        }),
+        props.detector
+      );
 
       const prePackagedRules = allRules?.filter((rule) => rule.prePackaged);
       const customRules = allRules?.filter((rule) => !rule.prePackaged);

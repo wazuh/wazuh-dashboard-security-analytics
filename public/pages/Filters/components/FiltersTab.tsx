@@ -238,6 +238,7 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>Are you sure you want to delete this filter? This action cannot be undone.</p>
         </EuiConfirmModal>
