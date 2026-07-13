@@ -45,6 +45,35 @@ Object {
             style="padding: 0px 10px;"
           >
             <div
+              class="euiCallOut euiCallOut--danger"
+              data-test-subj="no-active-rules-callout"
+            >
+              <div
+                class="euiCallOutHeader"
+              >
+                EuiIconMock
+                <span
+                  class="euiCallOutHeader__title"
+                >
+                  At least one rule must be enabled
+                </span>
+              </div>
+              <div
+                class="euiText euiText--small"
+              >
+                <div
+                  class="euiTextColor euiTextColor--default"
+                >
+                  <p>
+                    Enable at least one rule to save the detector.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="euiSpacer euiSpacer--m"
+            />
+            <div
               style="padding: 10px;"
             >
               <div>
@@ -351,8 +380,9 @@ Object {
             class="euiFlexItem euiFlexItem--flexGrowZero"
           >
             <button
-              class="euiButton euiButton--primary euiButton--small euiButton--fill"
+              class="euiButton euiButton--primary euiButton--small euiButton--fill euiButton-isDisabled"
               data-test-subj="save-detector-rules-edits"
+              disabled=""
               type="button"
             >
               <span
@@ -415,6 +445,35 @@ Object {
         <div
           style="padding: 0px 10px;"
         >
+          <div
+            class="euiCallOut euiCallOut--danger"
+            data-test-subj="no-active-rules-callout"
+          >
+            <div
+              class="euiCallOutHeader"
+            >
+              EuiIconMock
+              <span
+                class="euiCallOutHeader__title"
+              >
+                At least one rule must be enabled
+              </span>
+            </div>
+            <div
+              class="euiText euiText--small"
+            >
+              <div
+                class="euiTextColor euiTextColor--default"
+              >
+                <p>
+                  Enable at least one rule to save the detector.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="euiSpacer euiSpacer--m"
+          />
           <div
             style="padding: 10px;"
           >
