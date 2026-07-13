@@ -57,7 +57,7 @@ export interface VisualRuleEditorProps {
   initialValue: RuleEditorFormModel;
   notifications?: NotificationsStart;
   validateOnMount?: boolean;
-  submit: (values: RuleEditorFormModel, integrationId: string) => void;
+  submit: (values: RuleEditorFormModel, integrationId: string) => Promise<void> | void;
   cancel: () => void;
   mode: 'create' | 'edit';
   title: string;
@@ -181,12 +181,15 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
 
         return errors;
       }}
-      onSubmit={(values, { setSubmitting }) => {
-        if (isDetectionInvalid && selectedEditorType === 'visual') {
-          return;
+      onSubmit={async (values, { setSubmitting }) => {
+        try {
+          if (isDetectionInvalid && selectedEditorType === 'visual') {
+            return;
+          }
+          await submit(values, integrationId);
+        } finally {
+          setSubmitting(false);
         }
-        setSubmitting(false);
-        submit(values, integrationId);
       }}
     >
       {(props) => {
@@ -745,7 +748,13 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
               responsive={false}
             >
               <EuiFlexItem grow={false}>
-                <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={cancel}>
+                <EuiButtonEmpty
+                  color="ghost"
+                  size="s"
+                  iconType="cross"
+                  onClick={cancel}
+                  isDisabled={props.isSubmitting}
+                >
                   Cancel
                 </EuiButtonEmpty>
               </EuiFlexItem>
@@ -772,6 +781,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     fill
                     iconType="check"
                     size="s"
+                    isLoading={props.isSubmitting}
                     disabled={
                       (mode === 'create' && !integrationId) || Object.keys(props.errors).length > 0
                     }

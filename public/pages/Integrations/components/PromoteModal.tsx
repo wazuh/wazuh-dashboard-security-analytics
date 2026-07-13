@@ -71,6 +71,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
 }) => {
   const [confirmActionText, setconfirmActionText] = useState('');
   const [requireRootDecoderError, setRequireRootDecoderError] = useState(false);
+  const [isPromoting, setIsPromoting] = useState(false);
 
   const onConfirmPromote = async () => {
     // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
@@ -89,8 +90,12 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
 
   const onConfirmClick = async () => {
     // Generate promote payload
-    (await onConfirmPromote()) && closeModal();
-    
+    setIsPromoting(true);
+    try {
+      (await onConfirmPromote()) && closeModal();
+    } finally {
+      setIsPromoting(false);
+    }
   };
 
   const nextSpace = getNextSpace(space);
@@ -111,6 +116,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
         confirmButtonText={`Promote`}
         buttonColor={'primary'}
         defaultFocusedButton="confirm"
+        isLoading={isPromoting}
         confirmButtonDisabled={confirmActionText !== expectedConfirmActionText && !requireRootDecoderError}
       >
         <EuiForm>

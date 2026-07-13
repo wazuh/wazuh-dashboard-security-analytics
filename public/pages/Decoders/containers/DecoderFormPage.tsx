@@ -251,9 +251,12 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           validateOnMount={true}
           enableReinitialize={true}
           validate={validateForm}
-          onSubmit={(values, { setSubmitting }) => {
-            setSubmitting(false);
-            handleOnClick(mapYamlToLosslessObject<DecoderDocument>(values.rawDecoder));
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              await handleOnClick(mapYamlToLosslessObject<DecoderDocument>(values.rawDecoder));
+            } finally {
+              setSubmitting(false);
+            }
           }}
         >
           {(props) => (
@@ -329,6 +332,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                       size="s"
                       iconType="cross"
                       href={`#${ROUTES.DECODERS}`}
+                      isDisabled={props.isSubmitting}
                     >
                       Cancel
                     </EuiButtonEmpty>
@@ -352,11 +356,16 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                         iconType="check"
                         size="s"
                         disabled={!integrationType}
-                        onClick={() => {
-                          props.setSubmitting(false);
-                          handleOnClick(
-                            mapYamlToLosslessObject<DecoderDocument>(props.values.rawDecoder)
-                          );
+                        isLoading={props.isSubmitting}
+                        onClick={async () => {
+                          props.setSubmitting(true);
+                          try {
+                            await handleOnClick(
+                              mapYamlToLosslessObject<DecoderDocument>(props.values.rawDecoder)
+                            );
+                          } finally {
+                            props.setSubmitting(false);
+                          }
                         }}
                       >
                         {actionLabels[action]} decoder

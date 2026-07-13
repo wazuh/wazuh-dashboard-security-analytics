@@ -316,6 +316,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>Are you sure you want to delete this rule? This action cannot be undone.</p>
         </EuiConfirmModal>
@@ -334,6 +335,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>{`Are you sure you want to delete ${selectedItems.length} rule${
             selectedItems.length !== 1 ? 's' : ''

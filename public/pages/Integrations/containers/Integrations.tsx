@@ -84,6 +84,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isOverviewActionsOpen, setIsOverviewActionsOpen] = useState<boolean>(false);
   const [isClearingSpace, setIsClearingSpace] = useState<boolean>(false);
+  const [isDeletingSelected, setIsDeletingSelected] = useState<boolean>(false);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading || isClearingSpace,
   });
@@ -210,6 +211,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
   const deleteSelectedIntegrations = useCallback(async () => {
     setLoading(true);
+    setIsDeletingSelected(true);
 
     try {
       const deleteResults = await Promise.all(
@@ -256,6 +258,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
+        setIsDeletingSelected(false);
         setItemForAction(null);
       }
     }
@@ -536,6 +539,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeletingSelected}
         >
           <p>
             {`Are you sure you want to delete ${

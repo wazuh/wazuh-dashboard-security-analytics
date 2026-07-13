@@ -269,6 +269,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>Are you sure you want to delete this KVDB? This action cannot be undone.</p>
         </EuiConfirmModal>
@@ -282,6 +283,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>{`Are you sure you want to delete ${selectedItems.length} KVDB${
             selectedItems.length !== 1 ? 's' : ''
