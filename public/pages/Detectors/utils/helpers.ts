@@ -8,12 +8,20 @@ import { Detector, FieldMappingsTableItem, RuleItemInfoBase } from '../../../../
 import { validateName } from '../../../utils/validation';
 import { MIN_NUM_DATA_SOURCES } from './constants';
 
+/* Wazuh: Add hasEnabledRules function */
+export function hasEnabledRules(detector: Detector): boolean {
+  const { detector_input } = detector.inputs[0];
+  return detector_input.pre_packaged_rules.length + detector_input.custom_rules.length > 0;
+}
+/* End Wazuh */
+
 /* Wazuh: Add isDetectorFormValid function */
 export function isDetectorFormValid(detector: Detector): boolean {
   return (
     validateName(detector.name) &&
     detector.inputs[0].detector_input.indices.length >= MIN_NUM_DATA_SOURCES &&
-    !!detector.detector_type
+    !!detector.detector_type &&
+    hasEnabledRules(detector)
   );
 }
 /* End Wazuh */
