@@ -310,9 +310,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
           title="Delete rule"
-          onCancel={() => {
-            if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
@@ -326,9 +324,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
         <EuiConfirmModal
           title={`Delete ${selectedItems.length} rule${selectedItems.length !== 1 ? 's' : ''}`}
-          onCancel={() => {
-            if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={() =>
             confirmDeleteSelected(
               selectedItems.map((item) => ({ id: item.ruleId })),

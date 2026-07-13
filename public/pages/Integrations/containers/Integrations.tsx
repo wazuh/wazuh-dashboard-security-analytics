@@ -533,11 +533,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           title={`Delete ${selectedItemsWithoutRelatedEntities.length} integration${
             selectedItemsWithoutRelatedEntities.length !== 1 ? 's' : ''
           }`}
-          onCancel={() => {
-            if (!isDeletingSelected) {
-              setItemForAction(null);
-            }
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={deleteSelectedIntegrations}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"

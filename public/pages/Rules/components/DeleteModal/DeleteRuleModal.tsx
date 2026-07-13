@@ -25,11 +25,7 @@ export const DeleteRuleModal: React.FC<DeleteRuleModalProps> = ({ title, onCance
   return (
     <EuiConfirmModal
       title={`Delete ${title}?`}
-      onCancel={() => {
-        if (!isDeleting) {
-          onCancel();
-        }
-      }}
+      onCancel={onCancel}
       onConfirm={async () => {
         setIsDeleting(true);
         try {

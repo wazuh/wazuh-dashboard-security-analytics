@@ -288,9 +288,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       {itemForAction?.action === DELETE_ACTION && (
         <EuiConfirmModal
           title="Delete decoder"
-          onCancel={() => {
-            if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={confirmDeleteSingle}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"
@@ -304,9 +302,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       {itemForAction?.action === DELETE_SELECTED_ACTION && (
         <EuiConfirmModal
           title={`Delete ${selectedItems.length} decoder${selectedItems.length !== 1 ? 's' : ''}`}
-          onCancel={() => {
-            if (!isDeleting) setItemForAction(null);
-          }}
+          onCancel={() => setItemForAction(null)}
           onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
           cancelButtonText="Cancel"
           confirmButtonText="Delete"

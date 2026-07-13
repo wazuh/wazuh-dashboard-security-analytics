@@ -111,11 +111,7 @@ export const DeleteIntegrationModal: React.FC<DeleteIntegrationModalProps> = ({
               <h2>Delete integration?</h2>
             </EuiText>
           }
-          onCancel={() => {
-            if (!isDeleting) {
-              closeModal();
-            }
-          }}
+          onCancel={closeModal}
           onConfirm={onConfirmClick}
           cancelButtonText={'Cancel'}
           confirmButtonText={`Delete integration`}

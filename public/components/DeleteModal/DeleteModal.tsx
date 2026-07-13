@@ -84,11 +84,7 @@ export default class DeleteModal extends Component<DeleteModalProps, DeleteModal
               <h2>Delete {ids}</h2>
             </EuiText>
           }
-          onCancel={(e) => {
-            if (!this.state.isLoading) {
-              closeDeleteModal(e);
-            }
-          }}
+          onCancel={closeDeleteModal}
           onConfirm={this.onConfirm}
           cancelButtonText={'Cancel'}
           confirmButtonText={confirmButtonText ?? `Delete ${type}`}
