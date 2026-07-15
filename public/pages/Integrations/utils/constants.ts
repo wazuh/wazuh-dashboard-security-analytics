@@ -10,7 +10,7 @@ export const OVERVIEW_TAB = {
   FILTERS: 'filters',
 } as const;
 
-export type OverviewTabId = (typeof OVERVIEW_TAB)[keyof typeof OVERVIEW_TAB];
+export type OverviewTabId = typeof OVERVIEW_TAB[keyof typeof OVERVIEW_TAB];
 
 export const INTEGRATION_DETAILS_TAB = {
   DETAILS: 'details',
@@ -19,8 +19,7 @@ export const INTEGRATION_DETAILS_TAB = {
   KVDBS: 'kvdbs',
 } as const;
 
-export type IntegrationDetailsTabId =
-  (typeof INTEGRATION_DETAILS_TAB)[keyof typeof INTEGRATION_DETAILS_TAB];
+export type IntegrationDetailsTabId = typeof INTEGRATION_DETAILS_TAB[keyof typeof INTEGRATION_DETAILS_TAB];
 
 export const integrationDetailsTabs = [
   {
@@ -46,15 +45,12 @@ export enum IntegrationMode {
   UserManaged = 'user-managed',
 }
 
-// Default value defined for integrations created by the user, spaces: (draft, test, custom).
-export const DEFAULT_INTEGRATION_MODE = IntegrationMode.UserManaged;
-
 export const defaultIntegration: IntegrationBase = {
   document: {
     id: '',
     enabled: true,
     category: '',
-    mode: DEFAULT_INTEGRATION_MODE,
+    mode: IntegrationMode.UserManaged,
     metadata: {
       title: '',
       author: '',
