@@ -7,6 +7,7 @@ import {
   EuiBottomBar,
   EuiButton,
   EuiButtonEmpty,
+  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiSpacer,
@@ -37,6 +38,7 @@ import { ContentPanel } from '../../../../components/ContentPanel';
 import { DataStore } from '../../../../store/DataStore';
 import ReviewFieldMappings from '../ReviewFieldMappings/ReviewFieldMappings';
 import { FieldMapping, Detector } from '../../../../../types';
+import { filterRulesByDetectorSpace } from '../../utils/helpers';
 
 export interface UpdateDetectorRulesProps
   extends RouteComponentProps<
@@ -97,9 +99,14 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
       );
       enabledRuleIds = enabledRuleIds.concat(enabledCustomRuleIds);
 
-      const allRules = await DataStore.rules.getAllRules({
-        'rule.category': [detector.detector_type.toLowerCase()],
-      });
+      // Wazuh: keep only the rules of the detector's space, integrations with
+      // the same name can coexist in the standard and custom spaces.
+      const allRules = filterRulesByDetectorSpace(
+        await DataStore.rules.getAllRules({
+          'rule.category': [detector.detector_type.toLowerCase()],
+        }),
+        detector
+      );
       const prePackagedRules = allRules?.filter((rule) => rule.prePackaged);
       const prePackagedRuleItems = prePackagedRules?.map((rule) => ({
         // Wazuh: Remove duplicated fields in metadata and root: title.
@@ -247,6 +254,10 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
 
   const ruleItems = prePackagedRuleItems.concat(customRuleItems);
 
+  // Wazuh: prevent saving a detector with no active rules, consistent with the
+  // create detector form validation.
+  const activeRulesCount = ruleItems.filter((item) => item.active).length;
+
   const onRuleDetails = (ruleItem: RuleItem) => {
     setFlyoutData(() => ({
       title: ruleItem.name,
@@ -306,9 +317,23 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
       <ContentPanel
         title={`Rules (${
           // Wazuh: rename 'Detection rules' to 'Rules'
-          prePackagedRuleItems.concat(customRuleItems).filter((item) => item.active).length
+          activeRulesCount
         })`}
       >
+        {/* Wazuh: prevent saving a detector with no active rules */}
+        {!loading && activeRulesCount === 0 ? (
+          <>
+            <EuiCallOut
+              title="At least one rule must be enabled"
+              color="danger"
+              iconType="alert"
+              data-test-subj="no-active-rules-callout"
+            >
+              <p>Enable at least one rule to save the detector.</p>
+            </EuiCallOut>
+            <EuiSpacer size="m" />
+          </>
+        ) : null}
         <DetectionRulesTable
           loading={loading}
           ruleItems={ruleItems}
@@ -377,7 +402,8 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
                 fill
                 iconType="check"
                 size="s"
-                disabled={loading}
+                // Wazuh: prevent saving a detector with no active rules
+                disabled={loading || activeRulesCount === 0}
                 isLoading={submitting}
                 onClick={onSave}
                 data-test-subj={'save-detector-rules-edits'}
