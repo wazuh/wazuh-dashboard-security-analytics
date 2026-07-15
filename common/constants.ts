@@ -70,6 +70,7 @@ export const SPACE_ACTIONS = {
   PROMOTE: 'promote',
   DEFINE_ROOT_DECODER: 'define_root_decoder',
   REARRANGE_INTEGRATIONS: 'rearrange_integrations',
+  DISABLE_INTEGRATIONS: 'disable_integrations',
   EDIT_POLICY: 'edit_policy',
   EDIT_POLICY_INDEXING_SETTINGS: 'edit_policy_indexing_settings',
   EDIT_POLICY_ENRICHMENTS: 'edit_enrichments',
@@ -88,20 +89,32 @@ export const AllowedActionsBySpace = {
     SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS,
     SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS,
     SPACE_ACTIONS.CLEAR_SPACE,
+    SPACE_ACTIONS.DISABLE_INTEGRATIONS,
   ],
   [SpaceTypes.TEST.value]: [SPACE_ACTIONS.PROMOTE],
   [SpaceTypes.CUSTOM.value]: [],
   [SpaceTypes.STANDARD.value]: [
+    SPACE_ACTIONS.DISABLE_INTEGRATIONS,
     SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS,
     SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS,
   ],
 };
 
 export const FiltersAllowedActionsBySpace = {
-  [SpaceTypes.DRAFT.value]: [SPACE_ACTIONS.CREATE, SPACE_ACTIONS.EDIT, SPACE_ACTIONS.DELETE],
+  [SpaceTypes.DRAFT.value]: [
+    SPACE_ACTIONS.CREATE,
+    SPACE_ACTIONS.EDIT,
+    SPACE_ACTIONS.DISABLE_INTEGRATIONS,
+    SPACE_ACTIONS.DELETE,
+  ],
   [SpaceTypes.TEST.value]: [],
   [SpaceTypes.CUSTOM.value]: [],
-  [SpaceTypes.STANDARD.value]: [SPACE_ACTIONS.CREATE, SPACE_ACTIONS.EDIT, SPACE_ACTIONS.DELETE],
+  [SpaceTypes.STANDARD.value]: [
+    SPACE_ACTIONS.CREATE,
+    SPACE_ACTIONS.EDIT,
+    SPACE_ACTIONS.DISABLE_INTEGRATIONS,
+    SPACE_ACTIONS.DELETE,
+  ],
 };
 
 export const UserSpacesOrder: PromoteSpaces[] = [
