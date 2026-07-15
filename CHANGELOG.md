@@ -48,3 +48,4 @@ All notable changes to the Wazuh ML Commons project will be documented in this f
 - Fixed detector details failing to load right after detector creation [#249](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/249)
 - Fixed integration documentation field being truncated in the details view [#322](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/322)
 - Fixed duplicate submissions by adding a loading state to create, edit and delete buttons [#398](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/398)
+- Fixed inconsistent error handling in integration create and edit forms to show the server error message [#401](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/401)
