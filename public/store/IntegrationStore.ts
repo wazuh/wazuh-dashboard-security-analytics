@@ -54,11 +54,6 @@ export class IntegrationStore {
       if (typeof msg === 'string' && msg.length > 0) {
         return msg;
       }
-      try {
-        return JSON.stringify(error);
-      } catch {
-        return fallback;
-      }
     }
     return fallback;
   }
