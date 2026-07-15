@@ -107,10 +107,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   }, [integrationId]);
 
   const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
-  const decoderIds = useMemo(
-    () => integrationDetails?.document.decoders ?? [],
-    [integrationDetails]
-  );
+  const decoderIds = useMemo(() => integrationDetails?.document.decoders ?? [], [
+    integrationDetails,
+  ]);
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
 
   const renderTabContent = () => {
@@ -200,6 +199,10 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   const isCreateDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.CREATE);
   const isEditDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.EDIT);
   const isDeleteDisabled = !actionIsAllowedOnSpace(spaceName, SPACE_ACTIONS.DELETE);
+  const isDisableIntegrationsDisabled = !actionIsAllowedOnSpace(
+    spaceName,
+    SPACE_ACTIONS.DISABLE_INTEGRATIONS
+  );
 
   const integrationEnabled = integrationDetails?.document.enabled === true;
 
@@ -287,7 +290,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           <EuiContextMenuItem
             key={'toggleIntegrationEnabled'}
             disabled={
-              togglingEnabled || integrationDetails?.document.mode === IntegrationMode.Protected
+              togglingEnabled ||
+              integrationDetails?.document.mode === IntegrationMode.Protected ||
+              isDisableIntegrationsDisabled
             }
             onClick={() => {
               closeActionsPopover();
@@ -295,7 +300,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             }}
             data-test-subj={'integrationEnableDisableMenuItem'}
             toolTipContent={
-              integrationDetails?.document.mode === IntegrationMode.Protected
+              isDisableIntegrationsDisabled
+                ? `Integration can only be enabled or disabled in the spaces: ${getSpacesAllowAction(
+                    SPACE_ACTIONS.DISABLE_INTEGRATIONS
+                  ).join(', ')}`
+                : integrationDetails?.document.mode === IntegrationMode.Protected
                 ? 'The integration is protected'
                 : undefined
             }

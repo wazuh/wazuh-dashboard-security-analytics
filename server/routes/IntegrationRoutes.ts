@@ -9,7 +9,6 @@ import { NodeServices } from '../models/interfaces';
 import { API } from '../utils/constants';
 import { createQueryValidationSchema } from '../utils/helpers';
 import { AllowedActionsBySpace, SPACE_ACTIONS } from '../../common/constants';
-import { DEFAULT_INTEGRATION_MODE } from '../../public/pages/Integrations/utils/constants';
 
 export function setupIntegrationRoutes(services: NodeServices, router: IRouter) {
   const { integrationService } = services;
@@ -37,7 +36,7 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
           document: schema.object({
             id: schema.string({ defaultValue: '' }),
             category: schema.string(),
-            mode: schema.string({ defaultValue: DEFAULT_INTEGRATION_MODE }),
+            mode: schema.string(),
             metadata: integrationMetadataSchema,
             enabled: schema.boolean({ defaultValue: false }),
             tags: schema.nullable(
