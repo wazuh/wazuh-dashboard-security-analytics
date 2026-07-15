@@ -45,9 +45,6 @@ export class IntegrationStore {
     if (typeof error === 'string') {
       return error;
     }
-    if (error instanceof Error) {
-      return error.message || fallback;
-    }
     if (error && typeof error === 'object') {
       const e = error as { message?: string; body?: { message?: string } };
       const msg = e.body?.message ?? e.message;
