@@ -23,6 +23,7 @@ import {
   UpdateDetectorResponse,
 } from '../models/interfaces';
 import { CLIENT_DETECTOR_METHODS } from '../utils/constants';
+import { extractErrorMessage } from '../utils/helpers';
 import { ServerResponse } from '../models/types';
 import { Detector } from '../../types';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
@@ -60,7 +61,7 @@ export default class DetectorService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -98,7 +99,7 @@ export default class DetectorService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -136,7 +137,7 @@ export default class DetectorService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -174,7 +175,7 @@ export default class DetectorService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -213,7 +214,7 @@ export default class DetectorService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
