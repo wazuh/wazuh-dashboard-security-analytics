@@ -13,7 +13,7 @@ import {
   PromoteSpaces,
 } from '../../types';
 import IntegrationService from '../services/IntegrationService';
-import { errorNotificationToast } from '../utils/helpers';
+import { errorNotificationToast, getErrorMessage } from '../utils/helpers';
 import { ruleTypes } from '../pages/Rules/utils/constants';
 import {
   DATA_SOURCE_NOT_SET_ERROR,
@@ -38,21 +38,6 @@ export class IntegrationStore {
     }
 
     return `${entities.slice(0, -1).join(', ')}, and ${entities[entities.length - 1]}`;
-  }
-
-  /** Same role as KVDBsStore.getErrorMessage: string / Http body / thrown errors. */
-  private getErrorMessage(error: unknown, fallback: string): string {
-    if (typeof error === 'string') {
-      return error;
-    }
-    if (error && typeof error === 'object') {
-      const e = error as { message?: string; body?: { message?: string } };
-      const msg = e.body?.message ?? e.message;
-      if (typeof msg === 'string' && msg.length > 0) {
-        return msg;
-      }
-    }
-    return fallback;
   }
 
   public async getIntegration(
@@ -159,7 +144,7 @@ export class IntegrationStore {
           this.notifications,
           'create',
           'integration',
-          this.getErrorMessage(createRes.error, 'Failed to create integration.')
+          getErrorMessage(createRes.error, 'Failed to create integration.')
         );
         return [false, ''];
       }
@@ -170,7 +155,7 @@ export class IntegrationStore {
         this.notifications,
         'create',
         'integration',
-        this.getErrorMessage(error, 'An unexpected error occurred.')
+        getErrorMessage(error, 'An unexpected error occurred.')
       );
       return [false, ''];
     }
@@ -185,7 +170,7 @@ export class IntegrationStore {
           this.notifications,
           'update',
           'integration',
-          this.getErrorMessage(updateRes.error, 'Failed to update integration.')
+          getErrorMessage(updateRes.error, 'Failed to update integration.')
         );
         return false;
       }
@@ -196,7 +181,7 @@ export class IntegrationStore {
         this.notifications,
         'update',
         'integration',
-        this.getErrorMessage(error, 'An unexpected error occurred.')
+        getErrorMessage(error, 'An unexpected error occurred.')
       );
       return false;
     }
@@ -211,17 +196,17 @@ export class IntegrationStore {
           this.notifications,
           'delete',
           'integration',
-          this.getErrorMessage(deleteRes.error, 'Error occurred while deleting integration.')
+          getErrorMessage(deleteRes.error, 'Error occurred while deleting integration.')
         );
       }
 
       return { ok: deleteRes.ok, error: deleteRes.error || null };
     } catch (e: unknown) {
-      const msg = this.getErrorMessage(e, 'An unexpected error occurred.');
+      const msg = getErrorMessage(e, 'An unexpected error occurred.');
       errorNotificationToast(this.notifications, 'delete', 'integration', msg);
       return {
         ok: false,
-        error: { message: msg },
+        error: msg,
       };
     }
   }
@@ -232,12 +217,7 @@ export class IntegrationStore {
   ): Promise<[GetPromoteBySpaceResponse['ok'], GetPromoteBySpaceResponse['response']]> {
     const promoteRes = await this.service.getPromoteIntegration(data);
     if (!promoteRes.ok && showErrorToast) {
-      errorNotificationToast(
-        this.notifications,
-        'promote',
-        'integration',
-        promoteRes.error.message || promoteRes.error
-      );
+      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
     }
 
     return [promoteRes.ok, promoteRes.response];
