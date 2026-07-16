@@ -20,7 +20,7 @@ import {
 } from '../../types';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 import { CLIENT_FILTER_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { buildYamlBody } from '../utils/helpers';
+import { buildYamlBody, extractErrorMessage } from '../utils/helpers';
 
 export class FiltersService extends MDSEnabledClientService {
   searchFilters = async (
@@ -67,14 +67,14 @@ export class FiltersService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const createResponse = await client(CLIENT_FILTER_METHODS.CREATE_FILTER, {
         body: buildYamlBody(resourceYaml, { space: space }),
-        headers: { 'Content-Type': 'application/yaml' },
+        headers: { 'Content-Type': 'application/yaml', Accept: 'application/json' },
       });
       return response.custom({ statusCode: 200, body: { ok: true, response: createResponse } });
     } catch (error) {
       console.error('Security Analytics - FiltersService - createFilter:', error);
       return response.custom({
         statusCode: 200,
-        body: { ok: false, error: error.body?.message || error.message },
+        body: { ok: false, error: extractErrorMessage(error) },
       });
     }
   };
@@ -91,14 +91,14 @@ export class FiltersService extends MDSEnabledClientService {
       const updateResponse = await client(CLIENT_FILTER_METHODS.UPDATE_FILTER, {
         filterId,
         body: buildYamlBody(resourceYaml, { space: space }),
-        headers: { 'Content-Type': 'application/yaml' },
+        headers: { 'Content-Type': 'application/yaml', Accept: 'application/json' },
       });
       return response.custom({ statusCode: 200, body: { ok: true, response: updateResponse } });
     } catch (error) {
       console.error('Security Analytics - FiltersService - updateFilter:', error);
       return response.custom({
         statusCode: 200,
-        body: { ok: false, error: error.body?.message || error.message },
+        body: { ok: false, error: extractErrorMessage(error) },
       });
     }
   };

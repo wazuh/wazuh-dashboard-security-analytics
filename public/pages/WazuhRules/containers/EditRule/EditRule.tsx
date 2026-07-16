@@ -46,8 +46,8 @@ export const EditRule: React.FC<EditRuleProps> = ({ history, match, notification
         }
 
         setRule(item._source);
-      } catch {
-        errorNotificationToast(notifications, 'retrieve', 'rule');
+      } catch (error: any) {
+        errorNotificationToast(notifications, 'retrieve', 'rule', error);
         history.replace(ROUTES.RULES);
       } finally {
         setIsLoading(false);

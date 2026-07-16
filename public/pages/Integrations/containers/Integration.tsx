@@ -39,11 +39,7 @@ import { IntegrationDetectionRules } from '../components/IntegrationDetectionRul
 import { IntegrationDecoders } from '../components/IntegrationDecoders';
 import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
-import {
-  errorNotificationToast,
-  setBreadcrumbs,
-  successNotificationToast,
-} from '../../../utils/helpers';
+import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { formatIntegrationMetadataDate } from '../utils/helpers';
 

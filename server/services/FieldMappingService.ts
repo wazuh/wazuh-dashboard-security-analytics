@@ -22,6 +22,7 @@ import {
 import { ServerResponse } from '../models/types';
 import { CLIENT_FIELD_MAPPINGS_METHODS } from '../utils/constants';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
+import { extractErrorMessage } from '../utils/helpers';
 import { extractFieldsFromMappings } from '../../common/helpers';
 
 export default class FieldMappingService extends MDSEnabledClientService {
@@ -60,7 +61,7 @@ export default class FieldMappingService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -97,7 +98,7 @@ export default class FieldMappingService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -137,7 +138,7 @@ export default class FieldMappingService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -177,7 +178,7 @@ export default class FieldMappingService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }

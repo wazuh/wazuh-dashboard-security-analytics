@@ -6,6 +6,7 @@
 import React from 'react';
 import { EuiText } from '@elastic/eui';
 import { withGuardAsync } from '../utils/helpers';
+import { getErrorMessage } from '../../../utils/helpers';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderSource, PolicyDocument, SearchPolicyOptions, Space } from '../../../../types';
 
@@ -55,7 +56,11 @@ export const withPolicyGuard: <T>(
       }
     },
     ({ error }) =>
-      error ? <EuiText color="danger">Error loading the policy: {error.message}</EuiText> : null,
+      error ? (
+        <EuiText color="danger">
+          Error loading the policy: {getErrorMessage(error, 'Unknown error')}
+        </EuiText>
+      ) : null,
     withGuardOptions?.loadingComponent ?? null,
     {
       rerunOn: withGuardOptions?.rerunOn ?? (({ space }) => [space]),

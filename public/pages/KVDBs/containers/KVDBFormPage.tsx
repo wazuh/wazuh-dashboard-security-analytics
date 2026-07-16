@@ -35,6 +35,7 @@ import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import {
   errorNotificationToast,
+  getErrorMessage,
   setBreadcrumbs,
   successNotificationToast,
 } from '../../../utils/helpers';
@@ -101,20 +102,29 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       setIsLoading(true);
       try {
         const item = await DataStore.kvdbs.getKVDB(kvdbId!);
-        setRawKvdb(item.yaml);
-        setInitialValue(mapYamlToForm(item.yaml));
+        if (item) {
+          setRawKvdb(item.yaml);
+          setInitialValue(mapYamlToForm(item.yaml));
+        } else {
+          errorNotificationToast(
+            notifications,
+            'retrieve',
+            'KVDB',
+            `There was an error retrieving the KVDB with id ${kvdbId}.`
+          );
+        }
         setBreadcrumbs([
           BREADCRUMBS.NORMALIZATION,
           BREADCRUMBS.KVDBS,
           BREADCRUMBS.KVDBS_EDIT,
           { text: item?.document?.metadata?.title || kvdbId },
         ]);
-      } catch {
+      } catch (err) {
         errorNotificationToast(
           notifications,
           'retrieve',
           'KVDB',
-          `There was an error retrieving the KVDB with id ${kvdbId}.`
+          getErrorMessage(err, `There was an error retrieving the KVDB with id ${kvdbId}.`)
         );
       } finally {
         setIsLoading(false);

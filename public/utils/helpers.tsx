@@ -280,19 +280,62 @@ export const capitalizeFirstLetter = (str: string) => {
   return `${str.charAt(0).toUpperCase()}${str.slice(1).toLowerCase()}`;
 };
 
+const asTrimmedString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() ? value.trim() : undefined;
+
+export const getErrorMessage = (error: unknown, fallback: string = ''): string => {
+  if (typeof error === 'string') {
+    return error.trim() || fallback;
+  }
+  if (error && typeof error === 'object') {
+    try {
+      const e = error as any;
+      const rootCause = e.body?.error?.root_cause;
+      const rootCauseReason = Array.isArray(rootCause)
+        ? rootCause.map((cause: any) => asTrimmedString(cause?.reason)).find(Boolean)
+        : undefined;
+      const message =
+        asTrimmedString(e.body?.error?.reason) ??
+        rootCauseReason ??
+        asTrimmedString(e.body?.message) ??
+        asTrimmedString(e.body) ??
+        asTrimmedString(e.error?.reason) ??
+        asTrimmedString(e.error?.message) ??
+        asTrimmedString(e.error) ??
+        asTrimmedString(e.reason) ??
+        asTrimmedString(e.message);
+      if (message) {
+        return message;
+      }
+    } catch (_e) {
+      // Never let a malformed error object (e.g. throwing getters) crash the caller.
+    }
+  }
+  return fallback;
+};
+
 // A helper function that shows toast messages for backend errors.
 export const errorNotificationToast = (
   notifications: NotificationsStart | null,
   actionName: string,
   objectName: string,
-  errorMessage: string = '',
+  error: unknown = '',
   displayTime: number = 5000 // 5 seconds; default is 10 seconds
 ) => {
-  if (JSON.stringify(errorMessage)?.toLowerCase().includes('no living connections')) {
+  const errorMessage = getErrorMessage(error);
+  let serialized = '';
+  try {
+    // Error instances stringify to '{}' (message is non-enumerable), so the extracted
+    // message is checked as well.
+    serialized = JSON.stringify(error) ?? '';
+  } catch (_e) {
+    serialized = '';
+  }
+  if (`${serialized} ${errorMessage}`.toLowerCase().includes('no living connections')) {
     return;
   }
   const message = `Failed to ${actionName} ${objectName}:`;
-  console.error(message, errorMessage);
+  console.error(message, error);
   notifications?.toasts.addDanger({
     title: message,
     text: errorMessage,
@@ -588,7 +631,7 @@ export async function getDataSources(
 
     return {
       ok: false,
-      error,
+      error: getErrorMessage(error, 'Failed to retrieve indices.'),
     };
   }
 }

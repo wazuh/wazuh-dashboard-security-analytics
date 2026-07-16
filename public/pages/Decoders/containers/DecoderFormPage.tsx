@@ -11,6 +11,7 @@ import {
 } from '../../../components/YamlForm';
 import {
   errorNotificationToast,
+  getErrorMessage,
   setBreadcrumbs,
   successNotificationToast,
 } from '../../../utils/helpers';
@@ -97,7 +98,10 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
             notifications,
             'retrieve',
             'decoder',
-            `There was an error retrieving the decoder with id ${idDecoder}.`
+            getErrorMessage(
+              error,
+              `There was an error retrieving the decoder with id ${idDecoder}.`
+            )
           );
         } finally {
           setIsLoading(false);
@@ -164,7 +168,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           notifications,
           'create',
           'decoder',
-          error?.message || 'An unexpected error occurred while creating the decoder.'
+          getErrorMessage(error, 'An unexpected error occurred while creating the decoder.')
         );
       }
     },
@@ -198,7 +202,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           notifications,
           'update',
           'decoder',
-          error?.message || 'An unexpected error occurred while updating the decoder.'
+          getErrorMessage(error, 'An unexpected error occurred while updating the decoder.')
         );
       }
     },
