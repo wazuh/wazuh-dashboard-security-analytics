@@ -25,7 +25,7 @@ you to create/open/submit it.
 - **English everywhere.** Describe the _why_, not just the _what_.
 - **Issues arrive as URLs** and may live in a different repo. Read them with
   `gh issue view <url>` and classify the source (see below) — it changes both
-  "Issues Resolved" and the CHANGELOG.
+  the PR's `## Description` closing reference and the CHANGELOG.
 
 ## Issue source: public vs internal
 
@@ -33,11 +33,12 @@ Detect the source repo from the issue URL:
 
 - **Internal** — the URL/repo contains `internal-devel-request` (e.g.
   `https://github.com/wazuh/internal-devel-requests/issues/5526`):
-  - PR "Issues Resolved": **leave empty** — never expose the internal link.
+  - PR `## Description`: **no closing reference** — never expose the internal
+    link.
   - CHANGELOG: **no entry** for internal-devel-requests issues.
 - **Public** — any other repo (e.g.
   `https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/373`):
-  - PR "Issues Resolved": `closes #<n>` (same repo) or `closes <issue-url>`
+  - PR `## Description`: `Closes #<n>` (same repo) or `Closes <issue-url>`
     (another public repo).
   - CHANGELOG: add an entry linking to the **issue** (see step 4).
 
@@ -111,37 +112,15 @@ When unsure (and the issue is public), add an entry.
 
 ### 5. Fill the PR body
 
-Fill the repository PR template **verbatim** (keep every heading and checklist
-item exactly).
+Read [`.github/PULL_REQUEST_TEMPLATE.md`](../../../.github/PULL_REQUEST_TEMPLATE.md)
+first and fill it **verbatim** — keep every heading and checklist item exactly;
+do not restate its structure here, just follow the file.
 
-> **repo-specific (wazuh-dashboard-security-analytics):** this mirrors
-> [`.github/PULL_REQUEST_TEMPLATE.md`](../../../.github/PULL_REQUEST_TEMPLATE.md).
-> Read it first and keep this block in sync if the repo template changes. The
-> template is minimal and has **no dedicated Evidence/Test sections** — put the
-> screenshot/video (REQUIRED for any UI change) and any test notes under
-> `### Description`.
-
-```markdown
-### Description
-
-<why this change exists and what it achieves; screenshots/video for UI changes>
-
-### Issues Resolved
-
-closes #<issue-number>
-
-### Check List
-
-- [ ] Commits are signed per the DCO using --signoff
-
-By submitting this pull request, I confirm that my contribution is made under the terms of the Apache 2.0 license.
-For more information on following Developer Certificate of Origin and signing off your commits, please check [here](https://github.com/opensearch-project/OpenSearch/blob/main/CONTRIBUTING.md#developer-certificate-of-origin).
-```
-
-Fill each section with real content; check the boxes that genuinely apply. For
-**Issues Resolved**: public issue → closing keyword (`closes`, `fixes`, `fix`)
-with `#<n>` or the full issue URL; **internal-devel-requests issue → leave the
-section empty** (see "Issue source" above).
+Fill each section with real content; check the boxes that genuinely apply. In
+`## Description`: public issue → `Closes #<n>` or the full issue URL;
+**internal-devel-requests issue → no closing reference** (see "Issue source"
+above). Any UI change requires evidence (screenshot/video) under
+`### Results and Evidence`.
 
 **Default deliverable — pre-flight report.** Unless the user asked you to create the
 PR, stop here and output the filled body plus this report for the human to act on:
@@ -164,12 +143,11 @@ PR pre-flight
 gh pr create --draft \
   --base <version-branch> \
   --title "<Imperative, capitalized subject>" \
-  --body "$(cat <<'EOF'
-### Description
-...
-EOF
-)"
+  --body-file .github/PULL_REQUEST_TEMPLATE.md
 ```
+
+Fill the body file's sections before running this (or use `--body` with the
+already-filled content); don't submit the template placeholders as-is.
 
 ### 7. Mark Ready for review — only when explicitly asked
 

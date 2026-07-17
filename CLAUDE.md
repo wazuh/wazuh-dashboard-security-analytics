@@ -159,7 +159,8 @@ Shared Wazuh Dashboard conventions:
   `internal-devel-requests` issues or tooling/docs/test-only PRs.
 - Issues arrive as URLs and may live in another repo. Issues from
   `internal-devel-requests` are internal: don't expose their link in the PR
-  ("Issues Resolved" empty) and add no CHANGELOG entry.
+  (leave the `## Description` closing reference empty, no `Closes #<issue_number>`)
+  and add no CHANGELOG entry.
 
 ## Fork coexistence
 
