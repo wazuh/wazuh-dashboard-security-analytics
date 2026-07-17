@@ -26,6 +26,7 @@ import {
   UpdateIntegrationResponse,
 } from '../../types';
 import { CLIENT_INTEGRATION_METHODS, CONTENT_INDICES } from '../utils/constants';
+import { extractErrorMessage } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 import { get, sortBy } from 'lodash';
 import { getNextSpace } from '../../common/helpers';
@@ -59,7 +60,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -103,7 +104,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -144,7 +145,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -351,7 +352,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -386,7 +387,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body?.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -421,7 +422,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }

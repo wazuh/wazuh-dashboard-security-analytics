@@ -14,6 +14,7 @@ import {
 import { ServerResponse } from '../models/types';
 import { DecoderItem, GetDecoderResponse, SearchDecodersResponse } from '../../types';
 import { CLIENT_DECODER_METHODS, CONTENT_INDICES } from '../utils/constants';
+import { extractErrorMessage } from '../utils/helpers';
 
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',
@@ -85,7 +86,7 @@ export class DecodersService {
           this.spaceFieldCaps = result;
           return result;
         } catch (error: any) {
-          console.warn('Security Analytics - DecodersService - fieldCaps:', error?.message);
+          console.warn('Security Analytics - DecodersService - fieldCaps:', error);
         }
 
         const fallback = {
@@ -179,7 +180,7 @@ export class DecodersService {
         });
       });
     } catch (error: any) {
-      console.warn('Security Analytics - DecodersService - fetchIntegrationMap:', error?.message);
+      console.warn('Security Analytics - DecodersService - fetchIntegrationMap:', error);
     }
 
     return integrations;
@@ -251,7 +252,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body?.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -309,7 +310,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body?.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -354,7 +355,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body?.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -401,7 +402,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body?.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -432,7 +433,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body?.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -480,7 +481,7 @@ export class DecodersService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body?.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }

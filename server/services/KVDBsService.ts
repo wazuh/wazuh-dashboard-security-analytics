@@ -19,7 +19,7 @@ import {
   UpdateKVDBPayload,
 } from '../../types';
 import { CLIENT_KVDB_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { buildYamlBody } from '../utils/helpers';
+import { buildYamlBody, extractErrorMessage } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 
 export class KVDBsService extends MDSEnabledClientService {
@@ -43,13 +43,13 @@ export class KVDBsService extends MDSEnabledClientService {
           response: searchResponse,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Security Analytics - KVDBsService - searchKVDBs:', error);
       return response.custom({
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -95,13 +95,13 @@ export class KVDBsService extends MDSEnabledClientService {
           response: searchResponse,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Security Analytics - KVDBsService - searchIntegrations:', error);
       return response.custom({
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -124,15 +124,15 @@ export class KVDBsService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const createResponse = await client(CLIENT_KVDB_METHODS.CREATE_KVDB, {
         body: buildYamlBody(resourceYaml, integrationId ? { integration: integrationId } : undefined),
-        headers: { 'Content-Type': 'application/yaml' },
+        headers: { 'Content-Type': 'application/yaml', Accept: 'application/json' },
       });
 
       return response.custom({ statusCode: 200, body: { ok: true, response: createResponse } });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Security Analytics - KVDBsService - createKVDB:', error);
       return response.custom({
         statusCode: 200,
-        body: { ok: false, error: error.body?.message || error.message },
+        body: { ok: false, error: extractErrorMessage(error) },
       });
     }
   };
@@ -156,15 +156,15 @@ export class KVDBsService extends MDSEnabledClientService {
       const updateResponse = await client(CLIENT_KVDB_METHODS.UPDATE_KVDB, {
         body: buildYamlBody(resourceYaml),
         kvdbId,
-        headers: { 'Content-Type': 'application/yaml' },
+        headers: { 'Content-Type': 'application/yaml', Accept: 'application/json' },
       });
 
       return response.custom({ statusCode: 200, body: { ok: true, response: updateResponse } });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Security Analytics - KVDBsService - updateKVDB:', error);
       return response.custom({
         statusCode: 200,
-        body: { ok: false, error: error.body?.message || error.message },
+        body: { ok: false, error: extractErrorMessage(error) },
       });
     }
   };
@@ -188,13 +188,13 @@ export class KVDBsService extends MDSEnabledClientService {
           response: null,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Security Analytics - KVDBsService - deleteKVDB:', error);
       return response.custom({
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
