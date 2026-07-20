@@ -40,11 +40,17 @@ export const integrationDetailsTabs = [
   },
 ];
 
+export enum IntegrationMode {
+  Protected = 'protected',
+  UserManaged = 'user-managed',
+}
+
 export const defaultIntegration: IntegrationBase = {
   document: {
     id: '',
     enabled: true,
     category: '',
+    mode: IntegrationMode.UserManaged,
     metadata: {
       title: '',
       author: '',

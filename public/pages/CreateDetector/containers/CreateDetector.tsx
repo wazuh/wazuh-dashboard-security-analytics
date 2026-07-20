@@ -45,7 +45,7 @@ import {
   DetectorCreationStep,
 } from "../../../../types";
 import { DataStore } from "../../../store/DataStore";
-import { errorNotificationToast, setBreadcrumbs } from "../../../utils/helpers";
+import { errorNotificationToast, getErrorMessage, setBreadcrumbs } from "../../../utils/helpers";
 import { MetricsContext } from "../../../metrics/MetricsContext";
 import { PageHeader } from "../../../components/PageHeader/PageHeader";
 
@@ -180,7 +180,7 @@ export default class CreateDetector extends Component<
         this.props.notifications,
         "create",
         "detector",
-        "Invalid field mappings.",
+        getErrorMessage(fieldMappingRes.error, "Invalid field mappings.")
       );
       this.setState({ creatingDetector: false });
       return;

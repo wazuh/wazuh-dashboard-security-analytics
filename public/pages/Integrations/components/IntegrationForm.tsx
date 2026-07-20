@@ -35,7 +35,7 @@ import {
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { useState } from 'react';
 import { isEqual } from 'lodash';
-import { getIntegrationCategoryOptions } from '../../../utils/helpers';
+import { errorNotificationToast, getIntegrationCategoryOptions } from '../../../utils/helpers';
 import { FormFieldArray } from '../../../components/FormFieldArray';
 
 interface ReadOnlyFieldProps {
@@ -151,11 +151,12 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(editingIntegration);
 
     if (titleInvalid || categoryInvalid || authorInvalid) {
-      notifications?.toasts.addDanger({
-        title: `Failed to ${confirmButtonText.toLowerCase()}`,
-        text: `Fix the marked errors.`,
-        toastLifeTimeMs: 3000,
-      });
+      errorNotificationToast(
+        notifications,
+        isEditMode ? 'update' : 'create',
+        'integration',
+        'Fix the marked errors.'
+      );
       return;
     }
     setIsSubmitting(true);
@@ -164,7 +165,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingIntegration, notifications, confirmButtonText, onConfirm, isSubmitting]);
+  }, [editingIntegration, notifications, isEditMode, onConfirm, isSubmitting]);
 
   const onCancelClicked = useCallback(() => {
     setEditingIntegration(integrationDetails);
@@ -295,6 +296,10 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
         ) : (
           <EuiSpacer />
         )}
+        <EuiCompressedFormRow label="Mode">
+            <ReadOnlyField value={integrationDetails?.document.mode } />
+        </EuiCompressedFormRow>
+        <EuiSpacer />
         <EuiCompressedFormRow
           label={
             isEditMode ? (
