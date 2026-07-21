@@ -47,3 +47,4 @@
 - Fixed inconsistent error handling in operations with integrations, filters, decoders, kvdbs, detectors, rules and promotion to show the server error message [#401](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/401)
 
 ## Prior versions
+
