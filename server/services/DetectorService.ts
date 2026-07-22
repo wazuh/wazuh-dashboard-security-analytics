@@ -116,8 +116,10 @@ export default class DetectorService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<SearchDetectorsResponse> | ResponseError>
   > => {
     try {
-      const { query } = request.body as { query: object };
-      const params: SearchDetectorsParams = { body: { size: 10000, query } };
+      const { query, size } = request.body as { query: object; size?: number };
+      const params: SearchDetectorsParams = {
+        body: { size: size ?? 10000, query },
+      };
       const client = this.getClient(request, context);
       const searchDetectorResponse: SearchDetectorsResponse = await client(
         CLIENT_DETECTOR_METHODS.SEARCH_DETECTORS,
