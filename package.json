@@ -11,7 +11,7 @@
   },
   "wazuh": {
     "version": "5.0.0",
-    "revision": "04"
+    "revision": "05"
   },
   "config": {
     "id": "securityAnalyticsDashboards",
