@@ -37,7 +37,7 @@ import {
 import { DecoderDocument } from '../../../../types/Decoders';
 import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
-import { validateWithJsonSchema } from '../../../utils/jsonSchemaValidation';
+import { validateWithJsonSchemaAsync } from '../../../utils/jsonSchemaValidation';
 import decoderSchema from '../../../../common/schemas/wazuh-decoders.schema.json';
 
 const editorTypes = [
@@ -231,7 +231,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         return { rawDecoder: msg };
       }
       const skippedFields = action === 'create' ? ['id'] : [];
-      return validateWithJsonSchema(decoderSchema, decoder, {
+      return validateWithJsonSchemaAsync(decoderSchema, decoder, {
         skipRequired: skippedFields,
       });
     },
