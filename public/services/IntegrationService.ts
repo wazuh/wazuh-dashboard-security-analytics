@@ -63,7 +63,7 @@ export default class IntegrationService {
       };
     }
 
-    const queryString = JSON.stringify(query);
+    const queryString = JSON.stringify({ query });
     return (await this.httpClient.post(url, {
       body: queryString,
       query: {
