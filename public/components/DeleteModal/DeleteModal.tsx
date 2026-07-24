@@ -66,14 +66,8 @@ export default class DeleteModal extends Component<DeleteModalProps, DeleteModal
   };
 
   render() {
-    const {
-      type,
-      ids,
-      closeDeleteModal,
-      additionalWarning,
-      confirmation,
-      confirmButtonText,
-    } = this.props;
+    const { type, ids, closeDeleteModal, additionalWarning, confirmation, confirmButtonText } =
+      this.props;
     const { confirmDeleteText } = this.state;
 
     return (

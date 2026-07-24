@@ -106,9 +106,8 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     const [titleError, setTitleError] = useState('');
     const [categoryError, setCategoryError] = useState('');
     const [authorError, setAuthorError] = useState('');
-    const [editingIntegration, setEditingIntegration] = useState<IntegrationItem>(
-      integrationDetails
-    );
+    const [editingIntegration, setEditingIntegration] =
+      useState<IntegrationItem>(integrationDetails);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {

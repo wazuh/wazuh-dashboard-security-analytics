@@ -103,9 +103,10 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   }, [integrationId]);
 
   const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
-  const decoderIds = useMemo(() => integrationDetails?.document.decoders ?? [], [
-    integrationDetails,
-  ]);
+  const decoderIds = useMemo(
+    () => integrationDetails?.document.decoders ?? [],
+    [integrationDetails]
+  );
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
 
   const renderTabContent = () => {

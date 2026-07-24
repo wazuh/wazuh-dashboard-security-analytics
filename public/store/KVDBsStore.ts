@@ -183,9 +183,8 @@ export class KVDBsStore {
       return new Map();
     }
 
-    const response: ServerResponse<KVDBIntegrationsSearchResponse> = await this.service.searchIntegrations(
-      kvdbIds
-    );
+    const response: ServerResponse<KVDBIntegrationsSearchResponse> =
+      await this.service.searchIntegrations(kvdbIds);
 
     if (!response.ok) {
       errorNotificationToast(this.notifications, 'fetch', 'integrations', response.error);

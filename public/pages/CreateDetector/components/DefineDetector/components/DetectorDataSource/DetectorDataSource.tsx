@@ -174,13 +174,8 @@ export default class DetectorDataSource extends Component<
 
   render() {
     const { detectorIndices } = this.props;
-    const {
-      loading,
-      fieldTouched,
-      indexOptions,
-      errorMessage,
-      differentLogTypesDetected,
-    } = this.state;
+    const { loading, fieldTouched, indexOptions, errorMessage, differentLogTypesDetected } =
+      this.state;
     const isInvalid = fieldTouched && detectorIndices.length < MIN_NUM_DATA_SOURCES;
     return (
       <>
