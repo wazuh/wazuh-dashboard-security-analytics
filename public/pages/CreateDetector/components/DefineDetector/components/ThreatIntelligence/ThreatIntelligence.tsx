@@ -33,7 +33,8 @@ export const ThreatIntelligence: React.FC<ThreatIntelligenceProps> = ({
 
   return (
     <>
-      {!shouldShowEditUI && (
+      {/* Wazuh: hide the Threat intelligence feeds title and description. */}
+      {/* {!shouldShowEditUI && (
         <>
           <EuiText size="m">
             <h3>Threat intelligence feeds</h3>
@@ -49,7 +50,7 @@ export const ThreatIntelligence: React.FC<ThreatIntelligenceProps> = ({
             </p>
           </EuiText>
         </>
-      )}
+      )} */}
       {shouldShowEditUI && (
         <>
           <EuiText size="m">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAsyncActionRunOnStart, withGuardAsync } from '../utils/helpers';
+import { useAsyncAction, useAsyncActionRunOnStart, withGuardAsync } from '../utils/helpers';
 import { DataStore } from '../../../store/DataStore';
 import {
   EuiButton,
@@ -67,9 +67,9 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
 
       const isNewSearch = currentSearch !== state.data?.search;
 
-      const prevItems = isNewSearch ? [] : (state.data?.items ?? []);
+      const prevItems = isNewSearch ? [] : state.data?.items ?? [];
       const size = itemsPerPage;
-      const from = isNewSearch ? 0 : (state.data?.nextFrom ?? 0);
+      const from = isNewSearch ? 0 : state.data?.nextFrom ?? 0;
       const query = buildDecodersSearchQuery(currentSearch); // FIXME: this query does not match with the format of the decoders name, it can not find a substring in the name, it needs to be an exact match, we need to change the query builder to make it work with the name field or change the search field to be the keyword version of the name
       const response = await DataStore.decoders.searchDecoders(
         {
@@ -106,7 +106,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
     { refreshDataOnPreRun: false }
   );
 
-  const updatePolicy = async () => {
+  const updatePolicyAction = useAsyncAction(async () => {
     const [success] = await DataStore.policies.updatePolicy(space, {
       metadata: {
         title: policyDocumentData.metadata?.title ?? '',
@@ -129,7 +129,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
     } else {
       errorNotificationToast(notifications, 'updated', `[${space}] policy`);
     }
-  };
+  });
 
   useEffect(() => {
     if (action.data?.items && !action.data?.items.some((item) => item.value === selected)) {
@@ -194,7 +194,12 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
             <EuiButtonEmpty onClick={onCancel}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton fill={true} onClick={updatePolicy} isDisabled={!selected}>
+            <EuiButton
+              fill={true}
+              onClick={updatePolicyAction.run}
+              isDisabled={!selected}
+              isLoading={updatePolicyAction.running}
+            >
               Confirm
             </EuiButton>
           </EuiFlexItem>
@@ -288,8 +293,8 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
         rootDecoder = await DataStore.decoders.getDecoder(rootDecoderId, space);
       }
 
-      if (onSuccess && rootDecoder){
-        onSuccess()
+      if (onSuccess && rootDecoder) {
+        onSuccess();
       }
 
       return {
@@ -303,11 +308,12 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
   Callout
 );
 
-export const RootDecoderRequirement: React.FC<{space: UserSpace, onSucess?: () => void}> = withRootDecoderRequirementGuard(
-  ({ error }: { error: Error }) => {
-    return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
-  }
-);
+export const RootDecoderRequirement: React.FC<{
+  space: UserSpace;
+  onSucess?: () => void;
+}> = withRootDecoderRequirementGuard(({ error }: { error: Error }) => {
+  return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
+});
 
 export const withConditionalHOC = (
   condition: (props: any) => boolean,
@@ -324,6 +330,6 @@ export const withConditionalHOC = (
   };
 };
 
-export function isRootDecoderRequiementError(error){
-  return error.includes('root_decoder') // TODO: change taking into account the real 
+export function isRootDecoderRequiementError(error) {
+  return /missing root decoder/i.test(error);
 }

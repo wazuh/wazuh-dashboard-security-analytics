@@ -32,8 +32,8 @@ import {
   setBreadcrumbs,
   successNotificationToast,
 } from '../../../../utils/helpers';
-import { isDetectorFormValid } from '../../utils/helpers';
-import { FieldMapping, Detector } from '../../../../../types';
+import { hasEnabledRules, isDetectorFormValid } from '../../utils/helpers';
+import { FieldMapping, Detector, RuleItemInfoBase } from '../../../../../types';
 import { ThreatIntelligence } from '../../../CreateDetector/components/DefineDetector/components/ThreatIntelligence/ThreatIntelligence';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { dataSourceInfo } from '../../../../services/utils/constants';
@@ -86,13 +86,30 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
   });
   const [loadingRules, setLoadingRules] = useState(false);
 
-  const getSpaceForDetectorType = async (detectorType: string): Promise<string> => {
-    // FIXME: this seems to be broken if there are integration with the same name in custom and standard space
-    const standardOptions = await getIntegrationOptionsBySpace(SpaceTypes.STANDARD.value);
-    if (standardOptions.some((opt) => opt.value === detectorType)) {
-      return SpaceTypes.STANDARD.value;
+  // Detectors do not persist the integration's space, and integrations with the same name
+  // can coexist in the standard and custom spaces, so guessing by integration
+  // name is not reliable. The detector rules do carry their space, so infer
+  // it from any enabled rule using the same fetch that feeds the rules table.
+  const resolveDetectorSpace = async (
+    det: Detector
+  ): Promise<{ space: string; allRules: RuleItemInfoBase[] }> => {
+    const allRules: RuleItemInfoBase[] = det.detector_type
+      ? await DataStore.rules.getAllRules({
+          'rule.category': [det.detector_type.toLowerCase()],
+        })
+      : [];
+
+    const enabledRuleIds = getEnabledRuleIds(det);
+    const enabledRule = allRules.find((rule) => enabledRuleIds.includes(rule._id));
+    if (enabledRule?.space) {
+      return { space: enabledRule.space, allRules };
     }
-    return SpaceTypes.CUSTOM.value;
+
+    const standardOptions = await getIntegrationOptionsBySpace(SpaceTypes.STANDARD.value);
+    const space = standardOptions.some((opt) => opt.value === det.detector_type)
+      ? SpaceTypes.STANDARD.value
+      : SpaceTypes.CUSTOM.value;
+    return { space, allRules };
   };
 
   const loadIntegrationOptions = useCallback(async (space: string) => {
@@ -106,16 +123,19 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
     async (
       detectorType: string,
       space: string,
-      enabledRuleIds?: string[]
+      enabledRuleIds?: string[],
+      prefetchedRules?: RuleItemInfoBase[]
     ): Promise<RuleItemInfo[]> => {
       if (!detectorType) {
         setRulesState({ page: { index: 0 }, allRules: [] });
         return [];
       }
       setLoadingRules(true);
-      const allRules = await DataStore.rules.getAllRules({
-        'rule.category': [detectorType.toLowerCase()],
-      });
+      const allRules =
+        prefetchedRules ??
+        (await DataStore.rules.getAllRules({
+          'rule.category': [detectorType.toLowerCase()],
+        }));
       const spaceRules = allRules.filter((rule) => rule.space === space);
       const ruleItems: RuleItemInfo[] = spaceRules.map((rule) => ({
         ...rule,
@@ -161,9 +181,8 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
   useEffect(() => {
     const getDetector = async () => {
-      const response = (await saContext?.services.detectorsService.getDetectors()) as ServerResponse<
-        SearchDetectorsResponse
-      >;
+      const response =
+        (await saContext?.services.detectorsService.getDetectors()) as ServerResponse<SearchDetectorsResponse>;
       if (response.ok) {
         const detectorHit = response.response.hits.hits.find(
           (detectorHit) => detectorHit._id === detectorId
@@ -187,10 +206,15 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
           },
         });
 
-        const space = await getSpaceForDetectorType(loadedDetector.detector_type);
+        const { space, allRules } = await resolveDetectorSpace(loadedDetector);
         setSelectedSpace(space);
         await loadIntegrationOptions(space);
-        await loadRules(loadedDetector.detector_type, space, getEnabledRuleIds(loadedDetector));
+        await loadRules(
+          loadedDetector.detector_type,
+          space,
+          getEnabledRuleIds(loadedDetector),
+          allRules
+        );
       } else {
         errorNotificationToast(props.notifications, 'retrieve', 'detector', response.error);
       }
@@ -207,10 +231,10 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         errorNotificationToast(props.notifications, 'retrieve', 'detector', e);
       });
     } else {
-      getSpaceForDetectorType(detector.detector_type).then(async (space) => {
+      resolveDetectorSpace(detector).then(async ({ space, allRules }) => {
         setSelectedSpace(space);
         await loadIntegrationOptions(space);
-        await loadRules(detector.detector_type, space, getEnabledRuleIds(detector));
+        await loadRules(detector.detector_type, space, getEnabledRuleIds(detector), allRules);
       });
     }
   }, [saContext?.services]);
@@ -414,6 +438,10 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
   const isFormValid = isDetectorFormValid(detector);
 
+  // Wazuh: prevent saving a detector with no active rules, consistent with the
+  // create detector form validation.
+  const hasActiveRules = hasEnabledRules(detector);
+
   return (
     <>
       <PageHeader>
@@ -435,6 +463,7 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
         <DetectorDataSource
           isEdit={true}
           detector_type={detector.detector_type}
+          selectedSpace={selectedSpace}
           notifications={props.notifications}
           indexService={saContext?.services?.indexService as IndexService}
           detectorIndices={inputs[0].detector_input.indices}
@@ -487,6 +516,21 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
         <EuiSpacer size="m" />
 
+        {/* Wazuh: prevent saving a detector with no active rules */}
+        {!loadingRules && !!detector.detector_type && !hasActiveRules ? (
+          <>
+            <EuiCallOut
+              title="At least one rule must be enabled"
+              color="danger"
+              iconType="alert"
+              data-test-subj="no-active-rules-callout"
+            >
+              <p>Enable at least one rule to save the detector.</p>
+            </EuiCallOut>
+            <EuiSpacer size="m" />
+          </>
+        ) : null}
+
         {/* <ConfigureFieldMapping
           {...props}
           isEdit={true}
@@ -500,13 +544,15 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
         <EuiSpacer size="l" /> */}
 
-        <ThreatIntelligence
+        {/* Wazuh: hide the Threat intelligence feeds section, threat intel
+            detection is disabled (THREAT_INTEL_ENABLED). */}
+        {/* <ThreatIntelligence
           isEdit={true}
           threatIntelChecked={detector.threat_intel_enabled}
           onThreatIntelChange={onThreatIntelFeedToggle}
         />
 
-        <EuiSpacer size="l" />
+        <EuiSpacer size="l" /> */}
 
         <DetectorSchedule detector={detector} onDetectorScheduleChange={onDetectorScheduleChange} />
         <EuiSpacer size="l" />

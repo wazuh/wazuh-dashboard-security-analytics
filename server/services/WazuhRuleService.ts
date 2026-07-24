@@ -18,6 +18,7 @@ import {
   GetRulesResponse,
 } from '../models/interfaces';
 import { CLIENT_RULE_METHODS, CONTENT_INDICES } from '../utils/constants';
+import { extractErrorMessage } from '../utils/helpers';
 import { ServerResponse } from '../models/types';
 import { load } from 'js-yaml';
 import { Rule } from '../../types';
@@ -136,7 +137,10 @@ export default class WazuhRulesService {
         });
       });
     } catch (error: any) {
-      console.warn('Security Analytics - WazuhRulesService - fetchIntegrationMap:', error?.message);
+      console.warn(
+        'Security Analytics - WazuhRulesService - fetchIntegrationMap:',
+        extractErrorMessage(error)
+      );
     }
 
     return integrationMap;
@@ -199,7 +203,7 @@ export default class WazuhRulesService {
       console.error('Security Analytics - RulesService - getRules:', error);
       return response.custom({
         statusCode: 200,
-        body: { ok: false, error: error.message },
+        body: { ok: false, error: extractErrorMessage(error) },
       });
     }
   };
@@ -237,7 +241,7 @@ export default class WazuhRulesService {
       console.error('Security Analytics - RulesService - createRule:', error);
       return response.custom({
         statusCode: 200,
-        body: { ok: false, error: error?.body?.message || error.message },
+        body: { ok: false, error: extractErrorMessage(error) },
       });
     }
   };
@@ -266,15 +270,11 @@ export default class WazuhRulesService {
         statusCode: 200,
         body: { ok: true, response: updateResponse },
       });
-      return response.custom({
-        statusCode: 200,
-        body: { ok: true, response: updateResponse },
-      });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - updateRule:', error);
       return response.custom({
         statusCode: 200,
-        body: { ok: false, error: error?.body?.message || error.message },
+        body: { ok: false, error: extractErrorMessage(error) },
       });
     }
   };
@@ -293,19 +293,11 @@ export default class WazuhRulesService {
         statusCode: 200,
         body: { ok: true, response: {} },
       });
-      return response.custom({
-        statusCode: 200,
-        body: { ok: true, response: {} },
-      });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Security Analytics - RulesService - deleteRule:', error);
       return response.custom({
         statusCode: 200,
-        body: { ok: false, error: error.message },
-      });
-      return response.custom({
-        statusCode: 200,
-        body: { ok: false, error: error.message },
+        body: { ok: false, error: extractErrorMessage(error) },
       });
     }
   };
