@@ -8,7 +8,9 @@ import React, { useState } from 'react';
 import { RuleItem } from './types/interfaces';
 import { getRulesColumns } from './utils/constants';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { ruleSeverity, ruleSource } from '../../../../../Rules/utils/constants';
+// Wazuh: hide the Source filter in the detector rules table.
+// import { ruleSeverity, ruleSource } from '../../../../../Rules/utils/constants';
+import { ruleSeverity } from '../../../../../Rules/utils/constants';
 
 export interface DetectionRulesTableProps {
   ruleItems: RuleItem[];
@@ -50,15 +52,16 @@ export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
         multiSelect: false,
         options: ruleSeverity,
       },
-      {
-        type: 'field_value_selection',
-        field: 'library',
-        name: 'Source',
-        multiSelect: false,
-        options: ruleSource.map((source: string) => ({
-          value: source,
-        })),
-      },
+      // Wazuh: hide the Source filter, rules are managed through Wazuh spaces.
+      // {
+      //   type: 'field_value_selection',
+      //   field: 'library',
+      //   name: 'Source',
+      //   multiSelect: false,
+      //   options: ruleSource.map((source: string) => ({
+      //     value: source,
+      //   })),
+      // },
     ],
   };
   const [pagination, setPagination] = useState({ pageIndex: pageIndex || 0 });

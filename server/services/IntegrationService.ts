@@ -26,6 +26,7 @@ import {
   UpdateIntegrationResponse,
 } from '../../types';
 import { CLIENT_INTEGRATION_METHODS, CONTENT_INDICES } from '../utils/constants';
+import { extractErrorMessage } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 import { get, sortBy } from 'lodash';
 import { getNextSpace } from '../../common/helpers';
@@ -59,7 +60,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -73,7 +74,7 @@ export class IntegrationService extends MDSEnabledClientService {
     IOpenSearchDashboardsResponse<ServerResponse<SearchIntegrationsResponse> | ResponseError>
   > => {
     try {
-      let query: any = request.body;
+      const { query, size } = request.body as { query?: object; size?: number };
 
       const client = this.getClient(request, context);
       const searchIntegrationsResponse: SearchIntegrationsResponse = await client(
@@ -82,10 +83,8 @@ export class IntegrationService extends MDSEnabledClientService {
         {
           index: CONTENT_INDICES.INTEGRATIONS,
           body: {
-            size: 10000,
-            query: query ?? {
-              match_all: {},
-            },
+            size: size ?? 10000,
+            query: query ?? { match_all: {} },
           },
         }
       );
@@ -103,7 +102,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -144,7 +143,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -351,7 +350,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -386,7 +385,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body?.message || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }
@@ -421,7 +420,7 @@ export class IntegrationService extends MDSEnabledClientService {
         statusCode: 200,
         body: {
           ok: false,
-          error: error.body || error.message,
+          error: extractErrorMessage(error),
         },
       });
     }

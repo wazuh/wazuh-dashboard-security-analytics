@@ -294,6 +294,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>Are you sure you want to delete this decoder? This action cannot be undone.</p>
         </EuiConfirmModal>
@@ -307,6 +308,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
           confirmButtonText="Delete"
           buttonColor="danger"
           defaultFocusedButton="cancel"
+          isLoading={isDeleting}
         >
           <p>{`Are you sure you want to delete ${selectedItems.length} decoder${
             selectedItems.length !== 1 ? 's' : ''

@@ -12,7 +12,7 @@ import {
   ROUTES,
 } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import { getErrorMessage, setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   EuiButton,
@@ -88,7 +88,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
         return {
           ok: false,
           data: {
-            errorPromote: error.message || 'Error getting the promote data',
+            errorPromote: getErrorMessage(error, 'Error getting the promote data'),
           },
         };
       }

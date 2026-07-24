@@ -35,7 +35,7 @@ import {
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { useState } from 'react';
 import { isEqual } from 'lodash';
-import { getIntegrationCategoryOptions } from '../../../utils/helpers';
+import { errorNotificationToast, getIntegrationCategoryOptions } from '../../../utils/helpers';
 import { FormFieldArray } from '../../../components/FormFieldArray';
 
 interface ReadOnlyFieldProps {
@@ -76,7 +76,7 @@ export interface IntegrationFormProps {
   confirmButtonText: string;
   notifications: NotificationsStart;
   onCancel: () => void;
-  onConfirm: (integrationData: IntegrationItem) => void;
+  onConfirm: (integrationData: IntegrationItem) => void | Promise<void>;
   hideBottomBar?: boolean;
   onDirtyChange?: (isDirty: boolean) => void;
 }
@@ -97,6 +97,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
   const [categoryError, setCategoryError] = useState('');
   const [authorError, setAuthorError] = useState('');
   const [editingIntegration, setEditingIntegration] = useState<IntegrationItem>(integrationDetails);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isEditMode) {
@@ -143,19 +144,28 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     [categoryOptions]
   );
 
-  const onConfirmClicked = useCallback(() => {
+  const onConfirmClicked = useCallback(async () => {
+    if (isSubmitting) {
+      return;
+    }
     const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(editingIntegration);
 
     if (titleInvalid || categoryInvalid || authorInvalid) {
-      notifications?.toasts.addDanger({
-        title: `Failed to ${confirmButtonText.toLowerCase()}`,
-        text: `Fix the marked errors.`,
-        toastLifeTimeMs: 3000,
-      });
+      errorNotificationToast(
+        notifications,
+        isEditMode ? 'update' : 'create',
+        'integration',
+        'Fix the marked errors.'
+      );
       return;
     }
-    onConfirm(editingIntegration);
-  }, [editingIntegration, notifications, confirmButtonText, onConfirm]);
+    setIsSubmitting(true);
+    try {
+      await onConfirm(editingIntegration);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [editingIntegration, notifications, isEditMode, onConfirm, isSubmitting]);
 
   const onCancelClicked = useCallback(() => {
     setEditingIntegration(integrationDetails);
@@ -286,6 +296,10 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
         ) : (
           <EuiSpacer />
         )}
+        <EuiCompressedFormRow label="Mode">
+            <ReadOnlyField value={integrationDetails?.document.mode } />
+        </EuiCompressedFormRow>
+        <EuiSpacer />
         <EuiCompressedFormRow
           label={
             isEditMode ? (
@@ -456,7 +470,13 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
         <EuiBottomBar>
           <EuiFlexGroup gutterSize="s" justifyContent="flexEnd" alignItems="center" responsive={false}>
             <EuiFlexItem grow={false}>
-              <EuiButtonEmpty color="ghost" size="s" iconType="cross" onClick={onCancelClicked}>
+              <EuiButtonEmpty
+                color="ghost"
+                size="s"
+                iconType="cross"
+                onClick={onCancelClicked}
+                isDisabled={isSubmitting}
+              >
                 Cancel
               </EuiButtonEmpty>
             </EuiFlexItem>
@@ -482,6 +502,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                   size="s"
                   onClick={onConfirmClicked}
                   disabled={isSubmitDisabled}
+                  isLoading={isSubmitting}
                 >
                   {confirmButtonText}
                 </EuiButton>

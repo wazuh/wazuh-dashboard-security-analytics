@@ -29,6 +29,7 @@ export interface IntegrationBase {
     id: string;
     parent_decoder?: string;
     category: string;
+    mode: string;
     metadata: IntegrationMetadata;
     enabled?: boolean;
     decoders?: string[];
