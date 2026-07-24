@@ -39,6 +39,7 @@ export interface PolicyIntegrationTableEntry {
       title: string;
     };
     category: string;
+    enabled?: boolean;
     rulesCount: number;
     decodersCount: number;
     kvdbsCount: number;

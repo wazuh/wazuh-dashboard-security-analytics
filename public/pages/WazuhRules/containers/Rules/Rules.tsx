@@ -28,6 +28,7 @@ import { DataStore } from '../../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import { buildRulesSearchQuery } from '../../utils/constants';
 import { RuleTableItem } from '../../utils/helpers';
@@ -64,6 +65,7 @@ const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
   ruleInfo: rule,
   ruleId: rule._id,
   integration: rule.integration,
+  enabled: rule._source.enabled,
 });
 
 export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
@@ -123,6 +125,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             'document.logsource.category',
             'document.logsource.product',
             'document.metadata.description',
+            'document.enabled',
             'space',
           ],
         },
@@ -211,6 +214,14 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         name: 'Description',
         sortable: false,
         truncateText: true,
+      },
+      {
+        field: 'enabled',
+        name: 'Status',
+        sortable: false,
+        render: (enabled: boolean) => (
+          <EnabledHealth enabled={enabled} data-test-subj="rule_status" />
+        ),
       },
       {
         name: 'Actions',

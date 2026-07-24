@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel } from '@elastic/eui';
+import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { startCase } from 'lodash';
@@ -40,6 +41,7 @@ export interface IntegrationTableItem {
   decoders: number;
   kvdbs: number;
   rules: number;
+  enabled?: boolean;
 }
 
 export const mapPolicyToIntegrationTableItems = (
@@ -61,6 +63,7 @@ export const mapPolicyToIntegrationTableItems = (
       decoders: source.document.decodersCount,
       kvdbs: source.document.kvdbsCount,
       rules: source.document.rulesCount,
+      enabled: source.document.enabled,
     }));
 };
 
@@ -109,6 +112,14 @@ export const getIntegrationsTableColumns = ({
     name: 'KVDBs',
     sortable: false,
     render: (kvdbs: number) => kvdbs ?? 0,
+  },
+  {
+    field: 'enabled',
+    name: 'Status',
+    sortable: true,
+    render: (enabled: boolean) => (
+      <EnabledHealth enabled={enabled} data-test-subj="integration_status" />
+    ),
   },
   {
     name: 'Actions',

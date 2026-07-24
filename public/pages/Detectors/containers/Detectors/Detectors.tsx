@@ -13,6 +13,7 @@ import {
   EuiEmptyPrompt,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiHealth,
   EuiInMemoryTable,
   EuiLink,
   EuiPanel,
@@ -248,6 +249,9 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         name: 'Status',
         sortable: true,
         dataType: 'string',
+        render: (status: string, item: DetectorHit) => (
+          <EuiHealth color={item._source.enabled ? 'success' : 'subdued'}>{status}</EuiHealth>
+        ),
       },
       {
         field: 'logType',
