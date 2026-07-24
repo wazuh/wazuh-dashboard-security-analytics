@@ -11,6 +11,7 @@ import {
 } from '../../../components/YamlForm';
 import {
   errorNotificationToast,
+  getErrorMessage,
   setBreadcrumbs,
   successNotificationToast,
 } from '../../../utils/helpers';
@@ -36,7 +37,7 @@ import {
 import { DecoderDocument } from '../../../../types/Decoders';
 import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
-import { validateWithJsonSchema } from '../../../utils/jsonSchemaValidation';
+import { validateWithJsonSchemaAsync } from '../../../utils/jsonSchemaValidation';
 import decoderSchema from '../../../../common/schemas/wazuh-decoders.schema.json';
 
 const editorTypes = [
@@ -97,7 +98,10 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
             notifications,
             'retrieve',
             'decoder',
-            `There was an error retrieving the decoder with id ${idDecoder}.`
+            getErrorMessage(
+              error,
+              `There was an error retrieving the decoder with id ${idDecoder}.`
+            )
           );
         } finally {
           setIsLoading(false);
@@ -164,7 +168,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           notifications,
           'create',
           'decoder',
-          error?.message || 'An unexpected error occurred while creating the decoder.'
+          getErrorMessage(error, 'An unexpected error occurred while creating the decoder.')
         );
       }
     },
@@ -198,7 +202,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           notifications,
           'update',
           'decoder',
-          error?.message || 'An unexpected error occurred while updating the decoder.'
+          getErrorMessage(error, 'An unexpected error occurred while updating the decoder.')
         );
       }
     },
@@ -227,7 +231,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         return { rawDecoder: msg };
       }
       const skippedFields = action === 'create' ? ['id'] : [];
-      return validateWithJsonSchema(decoderSchema, decoder, {
+      return validateWithJsonSchemaAsync(decoderSchema, decoder, {
         skipRequired: skippedFields,
       });
     },
@@ -251,9 +255,12 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           validateOnMount={true}
           enableReinitialize={true}
           validate={validateForm}
-          onSubmit={(values, { setSubmitting }) => {
-            setSubmitting(false);
-            handleOnClick(mapYamlToLosslessObject<DecoderDocument>(values.rawDecoder));
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              await handleOnClick(mapYamlToLosslessObject<DecoderDocument>(values.rawDecoder));
+            } finally {
+              setSubmitting(false);
+            }
           }}
         >
           {(props) => (
@@ -329,6 +336,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                       size="s"
                       iconType="cross"
                       href={`#${ROUTES.DECODERS}`}
+                      isDisabled={props.isSubmitting}
                     >
                       Cancel
                     </EuiButtonEmpty>
@@ -352,11 +360,16 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                         iconType="check"
                         size="s"
                         disabled={!integrationType}
-                        onClick={() => {
-                          props.setSubmitting(false);
-                          handleOnClick(
-                            mapYamlToLosslessObject<DecoderDocument>(props.values.rawDecoder)
-                          );
+                        isLoading={props.isSubmitting}
+                        onClick={async () => {
+                          props.setSubmitting(true);
+                          try {
+                            await handleOnClick(
+                              mapYamlToLosslessObject<DecoderDocument>(props.values.rawDecoder)
+                            );
+                          } finally {
+                            props.setSubmitting(false);
+                          }
                         }}
                       >
                         {actionLabels[action]} decoder

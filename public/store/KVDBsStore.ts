@@ -16,13 +16,10 @@ import {
   UpdateKVDBPayload,
 } from '../../types';
 import KVDBsService from '../services/KVDBsService';
-import { errorNotificationToast } from '../utils/helpers';
+import { errorNotificationToast, getErrorMessage } from '../utils/helpers';
 
 export class KVDBsStore {
-  constructor(
-    private service: KVDBsService,
-    private notifications: NotificationsStart
-  ) {}
+  constructor(private service: KVDBsService, private notifications: NotificationsStart) {}
 
   public async searchKVDBs(
     params: KVDBSearchRequest,
@@ -39,7 +36,7 @@ export class KVDBsStore {
       const total =
         typeof response.response.hits.total === 'number'
           ? response.response.hits.total
-          : (response.response.hits.total?.value ?? hits.length);
+          : response.response.hits.total?.value ?? hits.length;
       const items: KVDBItem[] = hits.map((hit) => ({
         id: hit._id,
         ...hit._source,
@@ -64,7 +61,7 @@ export class KVDBsStore {
 
       return { items: itemsWithIntegration, total };
     } catch (error: any) {
-      errorNotificationToast(this.notifications, 'fetch', 'KVDBs', error.message);
+      errorNotificationToast(this.notifications, 'fetch', 'KVDBs', error);
       return { items: [], total: 0 };
     }
   }
@@ -104,12 +101,6 @@ export class KVDBsStore {
     };
   }
 
-  private getErrorMessage(error: unknown, fallback: string): string {
-    if (typeof error === 'string') return error;
-    const err = error as { body?: { message?: string }; message?: string };
-    return err?.body?.message ?? err?.message ?? fallback;
-  }
-
   public async createKVDB(body: CreateKVDBPayload): Promise<CUDKVDBResponse | undefined> {
     try {
       const response = await this.service.createKVDB(body);
@@ -118,7 +109,7 @@ export class KVDBsStore {
           this.notifications,
           'create',
           'KVDB',
-          this.getErrorMessage(response.error, 'Failed to create KVDB')
+          getErrorMessage(response.error, 'Failed to create KVDB')
         );
         return undefined;
       }
@@ -128,7 +119,7 @@ export class KVDBsStore {
         this.notifications,
         'create',
         'KVDB',
-        this.getErrorMessage(error, 'An unexpected error occurred.')
+        getErrorMessage(error, 'An unexpected error occurred.')
       );
       return undefined;
     }
@@ -145,7 +136,7 @@ export class KVDBsStore {
           this.notifications,
           'update',
           'KVDB',
-          this.getErrorMessage(response.error, 'Failed to update KVDB')
+          getErrorMessage(response.error, 'Failed to update KVDB')
         );
         return undefined;
       }
@@ -155,7 +146,7 @@ export class KVDBsStore {
         this.notifications,
         'update',
         'KVDB',
-        this.getErrorMessage(error, 'An unexpected error occurred.')
+        getErrorMessage(error, 'An unexpected error occurred.')
       );
       return undefined;
     }
@@ -169,7 +160,7 @@ export class KVDBsStore {
           this.notifications,
           'delete',
           'KVDB',
-          this.getErrorMessage(response.error, 'Failed to delete KVDB')
+          getErrorMessage(response.error, 'Failed to delete KVDB')
         );
         return undefined;
       }
@@ -179,7 +170,7 @@ export class KVDBsStore {
         this.notifications,
         'delete',
         'KVDB',
-        this.getErrorMessage(error, 'An unexpected error occurred.')
+        getErrorMessage(error, 'An unexpected error occurred.')
       );
       return undefined;
     }
