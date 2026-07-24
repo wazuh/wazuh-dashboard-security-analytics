@@ -78,21 +78,26 @@ export function setupIntegrationRoutes(services: NodeServices, router: IRouter) 
           detectionRulesCount: schema.maybe(schema.number()),
           decodersCount: schema.maybe(schema.number()),
           kvdbsCount: schema.maybe(schema.number()),
-          document: schema.object({
-            id: schema.string({ defaultValue: '' }),
-            category: schema.string(),
-            metadata: integrationMetadataSchema,
-            mode: schema.string(),
-            decoders: schema.arrayOf(schema.string(), { defaultValue: [] }),
-            enabled: schema.boolean({ defaultValue: false }), // TODO: adapt if this can be configured by user in UI
-            kvdbs: schema.arrayOf(schema.string(), { defaultValue: [] }),
-            rules: schema.arrayOf(schema.string(), { defaultValue: [] }),
-            tags: schema.nullable(
-              schema.object({
-                correlation_id: schema.number(),
-              })
-            ),
-          }),
+          document: schema.object(
+            {
+              id: schema.string({ defaultValue: '' }),
+              category: schema.string(),
+              metadata: integrationMetadataSchema,
+              mode: schema.string(),
+              decoders: schema.arrayOf(schema.string(), { defaultValue: [] }),
+              enabled: schema.boolean({ defaultValue: false }), // TODO: adapt if this can be configured by user in UI
+              kvdbs: schema.arrayOf(schema.string(), { defaultValue: [] }),
+              rules: schema.arrayOf(schema.string(), { defaultValue: [] }),
+              tags: schema.nullable(
+                schema.object({
+                  correlation_id: schema.number(),
+                })
+              ),
+            },
+            {
+              unknowns: 'allow',
+            }
+          ),
           space: schema.maybe(spaceSchema),
         }),
         query: createQueryValidationSchema(),
