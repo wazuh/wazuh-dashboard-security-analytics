@@ -145,7 +145,8 @@ export default class DetectorDataSource extends Component<
             detectorType
           );
           result?.ok &&
-            (this.indicesMappings[cacheKey][indexName] = result.response.unmapped_field_aliases ?? []);
+            (this.indicesMappings[cacheKey][indexName] =
+              result.response.unmapped_field_aliases ?? []);
         }
       }
     }

@@ -123,7 +123,10 @@ export class KVDBsService extends MDSEnabledClientService {
 
       const client = this.getClient(request, context);
       const createResponse = await client(CLIENT_KVDB_METHODS.CREATE_KVDB, {
-        body: buildYamlBody(resourceYaml, integrationId ? { integration: integrationId } : undefined),
+        body: buildYamlBody(
+          resourceYaml,
+          integrationId ? { integration: integrationId } : undefined
+        ),
         headers: { 'Content-Type': 'application/yaml', Accept: 'application/json' },
       });
 

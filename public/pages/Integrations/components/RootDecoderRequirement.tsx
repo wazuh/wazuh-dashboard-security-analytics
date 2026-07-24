@@ -67,9 +67,9 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
 
       const isNewSearch = currentSearch !== state.data?.search;
 
-      const prevItems = isNewSearch ? [] : (state.data?.items ?? []);
+      const prevItems = isNewSearch ? [] : state.data?.items ?? [];
       const size = itemsPerPage;
-      const from = isNewSearch ? 0 : (state.data?.nextFrom ?? 0);
+      const from = isNewSearch ? 0 : state.data?.nextFrom ?? 0;
       const query = buildDecodersSearchQuery(currentSearch); // FIXME: this query does not match with the format of the decoders name, it can not find a substring in the name, it needs to be an exact match, we need to change the query builder to make it work with the name field or change the search field to be the keyword version of the name
       const response = await DataStore.decoders.searchDecoders(
         {
@@ -194,7 +194,12 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
             <EuiButtonEmpty onClick={onCancel}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton fill={true} onClick={updatePolicyAction.run} isDisabled={!selected} isLoading={updatePolicyAction.running}>
+            <EuiButton
+              fill={true}
+              onClick={updatePolicyAction.run}
+              isDisabled={!selected}
+              isLoading={updatePolicyAction.running}
+            >
               Confirm
             </EuiButton>
           </EuiFlexItem>
@@ -288,8 +293,8 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
         rootDecoder = await DataStore.decoders.getDecoder(rootDecoderId, space);
       }
 
-      if (onSuccess && rootDecoder){
-        onSuccess()
+      if (onSuccess && rootDecoder) {
+        onSuccess();
       }
 
       return {
@@ -303,11 +308,12 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
   Callout
 );
 
-export const RootDecoderRequirement: React.FC<{space: UserSpace, onSucess?: () => void}> = withRootDecoderRequirementGuard(
-  ({ error }: { error: Error }) => {
-    return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
-  }
-);
+export const RootDecoderRequirement: React.FC<{
+  space: UserSpace;
+  onSucess?: () => void;
+}> = withRootDecoderRequirementGuard(({ error }: { error: Error }) => {
+  return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
+});
 
 export const withConditionalHOC = (
   condition: (props: any) => boolean,
@@ -324,6 +330,6 @@ export const withConditionalHOC = (
   };
 };
 
-export function isRootDecoderRequiementError(error){
+export function isRootDecoderRequiementError(error) {
   return /missing root decoder/i.test(error);
 }

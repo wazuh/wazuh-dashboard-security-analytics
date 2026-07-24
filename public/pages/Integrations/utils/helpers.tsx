@@ -158,7 +158,6 @@ export const getIntegrationsTableSearchConfig = (options?: {
   toolsRight: options?.toolsRight,
 });
 
-
 export const withGuardAsync = (
   condition: (props: any) => Promise<{ ok: boolean; data: any }>,
   ComponentFulfillsCondition: React.FC,
