@@ -28,8 +28,8 @@ export interface PromoteBySpaceModalProps {
   promote: GetPromoteBySpaceResponse['response'];
   closeModal: () => void;
   space: PromoteSpaces;
-  notifications: NotificationsStart
-  history: RouteComponentProps['history']
+  notifications: NotificationsStart;
+  history: RouteComponentProps['history'];
 }
 
 const PromoteEntity: React.FC<{
@@ -67,10 +67,11 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
   promote,
   space,
   notifications,
-  history
+  history,
 }) => {
   const [confirmActionText, setconfirmActionText] = useState('');
   const [requireRootDecoderError, setRequireRootDecoderError] = useState(false);
+  const [isPromoting, setIsPromoting] = useState(false);
 
   const onConfirmPromote = async () => {
     // TODO: generate promote payload based on the selected entities to promote. For now, we are promoting all the entities.
@@ -81,16 +82,20 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
     if (success) {
       successNotificationToast(notifications, 'promoted', `[${space}] space`);
       history.push(ROUTES.INTEGRATIONS);
-    }else if(isRootDecoderRequiementError(error)){
-      setRequireRootDecoderError(true)
+    } else if (isRootDecoderRequiementError(error)) {
+      setRequireRootDecoderError(true);
     }
     return success;
   };
 
   const onConfirmClick = async () => {
     // Generate promote payload
-    (await onConfirmPromote()) && closeModal();
-    
+    setIsPromoting(true);
+    try {
+      (await onConfirmPromote()) && closeModal();
+    } finally {
+      setIsPromoting(false);
+    }
   };
 
   const nextSpace = getNextSpace(space);
@@ -111,7 +116,10 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
         confirmButtonText={`Promote`}
         buttonColor={'primary'}
         defaultFocusedButton="confirm"
-        confirmButtonDisabled={confirmActionText !== expectedConfirmActionText && !requireRootDecoderError}
+        isLoading={isPromoting}
+        confirmButtonDisabled={
+          confirmActionText !== expectedConfirmActionText && !requireRootDecoderError
+        }
       >
         <EuiForm>
           <p>
@@ -133,14 +141,15 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
             return null;
           })}
 
-          {
-            requireRootDecoderError && (
-              <>
-                <RootDecoderRequirement space={space} onSucess={() => setRequireRootDecoderError(false)}/>
-                <EuiSpacer size="m" />
-              </>
-            )
-          }
+          {requireRootDecoderError && (
+            <>
+              <RootDecoderRequirement
+                space={space}
+                onSucess={() => setRequireRootDecoderError(false)}
+              />
+              <EuiSpacer size="m" />
+            </>
+          )}
 
           <p style={{ marginBottom: '0.3rem' }}>
             <EuiText size="s">Type {<b>{expectedConfirmActionText}</b>} to confirm</EuiText>

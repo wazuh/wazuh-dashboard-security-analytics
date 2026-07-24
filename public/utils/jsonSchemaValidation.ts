@@ -1,13 +1,7 @@
-import Ajv, { ErrorObject } from 'ajv';
+import { ErrorObject } from 'ajv';
 import { FormikErrors } from 'formik';
-
-const ajv = new Ajv({ allErrors: true, strict: false });
-const validatorCache = new WeakMap<object, ReturnType<typeof ajv.compile>>();
-
-function getValidator(schema: object) {
-  if (!validatorCache.has(schema)) validatorCache.set(schema, ajv.compile(schema));
-  return validatorCache.get(schema)!;
-}
+import type { ValidateResponse } from './jsonSchemaValidation.worker';
+import { createValidatorWorker } from './createValidatorWorker';
 
 // Showing these top level errors adds noise without helping the user fix anything.
 const SKIP_KEYWORDS = new Set(['oneOf', 'anyOf', 'allOf', 'if', 'then', 'else']);
@@ -17,7 +11,7 @@ function instancePathToKey(instancePath: string): string {
   return instancePath
     .replace(/^\//, '')
     .split('/')
-    .map(seg => {
+    .map((seg) => {
       const decoded = seg.replace(/~1/g, '/').replace(/~0/g, '~');
       return /^\d+$/.test(decoded) ? `[${decoded}]` : decoded;
     })
@@ -53,7 +47,8 @@ const MAX_LABEL_LENGTH = 60;
 
 function humanLabel(path: string): string {
   if (path === 'root') return 'value';
-  const display = path.length > MAX_LABEL_LENGTH ? path.slice(0, MAX_LABEL_LENGTH - 3) + '...' : path;
+  const display =
+    path.length > MAX_LABEL_LENGTH ? path.slice(0, MAX_LABEL_LENGTH - 3) + '...' : path;
   return `'${display}'`;
 }
 
@@ -85,7 +80,10 @@ function buildMessage(error: ErrorObject): string | null {
 // Resolve a $ref within the root schema.
 function resolveRef(rootSchema: any, ref: string): any {
   if (!ref?.startsWith('#/')) return null;
-  return ref.slice(2).split('/').reduce((node: any, part: string) => node?.[part], rootSchema);
+  return ref
+    .slice(2)
+    .split('/')
+    .reduce((node: any, part: string) => node?.[part], rootSchema);
 }
 
 // Follow a chain of $ref until a concrete schema is reached (safe cycle).
@@ -105,11 +103,7 @@ function derefSchema(node: any, rootSchema: any): any {
  * A node can have multiple combiners simultaneously (e.g. allOf for constraints + oneOf for variants).
  */
 function collectBranches(node: any): any[] {
-  return [
-    ...(node.oneOf ?? []),
-    ...(node.anyOf ?? []),
-    ...(node.allOf ?? []),
-  ];
+  return [...(node.oneOf ?? []), ...(node.anyOf ?? []), ...(node.allOf ?? [])];
 }
 
 /**
@@ -124,7 +118,11 @@ function findPropertySchema(node: any, seg: string, rootSchema: any): any | null
 
   // Pattern property
   const patternMatch = Object.entries<any>(node.patternProperties ?? {}).find(([pattern]) => {
-    try { return new RegExp(pattern).test(seg); } catch { return false; }
+    try {
+      return new RegExp(pattern).test(seg);
+    } catch {
+      return false;
+    }
   });
   if (patternMatch) return patternMatch[1];
 
@@ -227,22 +225,20 @@ interface ValidateOptions {
   skipRequired?: string[];
 }
 
-export function validateWithJsonSchema<T extends object>(
+// Turns raw Ajv errors into a FormikErrors object. Pure, so it also works on errors
+// received from the worker.
+function formatValidationErrors<T extends object>(
   schema: object,
-  data: T,
+  allErrors: ErrorObject[],
   options?: ValidateOptions
 ): FormikErrors<T> {
-  const validate = getValidator(schema);
-  if (validate(data)) return {};
-
   const skipRequired = new Set(options?.skipRequired ?? []);
-  const allErrors = validate.errors ?? [];
 
   // Instance paths where a oneOf/anyOf combiner failed.
   const combinerPaths = new Set<string>(
     allErrors
-      .filter(e => e.keyword === 'oneOf' || e.keyword === 'anyOf')
-      .map(e => e.instancePath)
+      .filter((e) => e.keyword === 'oneOf' || e.keyword === 'anyOf')
+      .map((e) => e.instancePath)
   );
 
   const result: Record<string, string> = {};
@@ -254,7 +250,7 @@ export function validateWithJsonSchema<T extends object>(
   // structure and validation went deeper.
   for (const path of Array.from(combinerPaths)) {
     const childPrefix = path === '' ? '/' : path + '/';
-    const hasChildErrors = allErrors.some(e => e.instancePath.startsWith(childPrefix));
+    const hasChildErrors = allErrors.some((e) => e.instancePath.startsWith(childPrefix));
     if (hasChildErrors) continue;
 
     const key = instancePathToKey(path);
@@ -271,7 +267,8 @@ export function validateWithJsonSchema<T extends object>(
     if (error.keyword === 'oneOf' || error.keyword === 'anyOf') continue;
     if (SKIP_KEYWORDS.has(error.keyword)) continue;
     if (combinerPaths.has(error.instancePath)) continue; // branch-level noise
-    if (error.keyword === 'required' && skipRequired.has(error.params?.missingProperty as string)) continue;
+    if (error.keyword === 'required' && skipRequired.has(error.params?.missingProperty as string))
+      continue;
 
     const msg = buildMessage(error);
     if (!msg) continue;
@@ -284,8 +281,49 @@ export function validateWithJsonSchema<T extends object>(
   const keys = Object.keys(result);
   return Object.fromEntries(
     Object.entries(result).filter(
-      ([key]) => !keys.some(other => other !== key && (other.startsWith(key + '.') || other.startsWith(key + '[')))
+      ([key]) =>
+        !keys.some(
+          (other) => other !== key && (other.startsWith(key + '.') || other.startsWith(key + '['))
+        )
     )
   ) as FormikErrors<T>;
 }
 
+// Validation runs in a Web Worker so the main thread never blocks. One worker
+// per page load (module-scoped singleton, not tied to any component's lifecycle);
+// concurrent calls are multiplexed by request id.
+let worker: Worker | null = null;
+let nextRequestId = 0;
+const pendingRequests = new Map<number, (response: ValidateResponse) => void>();
+
+function getWorker(): Worker {
+  if (!worker) {
+    worker = createValidatorWorker();
+    worker.onmessage = (event: MessageEvent<ValidateResponse>) => {
+      const resolve = pendingRequests.get(event.data.id);
+      if (resolve) {
+        pendingRequests.delete(event.data.id);
+        resolve(event.data);
+      }
+    };
+  }
+  return worker;
+}
+
+export function validateWithJsonSchemaAsync<T extends object>(
+  schema: object,
+  data: T,
+  options?: ValidateOptions
+): Promise<FormikErrors<T>> {
+  const id = nextRequestId++;
+  return new Promise((resolve) => {
+    pendingRequests.set(id, (response) => {
+      if (response.valid) {
+        resolve({});
+      } else {
+        resolve(formatValidationErrors<T>(schema, response.errors ?? [], options));
+      }
+    });
+    getWorker().postMessage({ id, schema, data });
+  });
+}

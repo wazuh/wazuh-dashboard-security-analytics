@@ -158,70 +158,74 @@ export const getIntegrationsTableSearchConfig = (options?: {
   toolsRight: options?.toolsRight,
 });
 
+export const withGuardAsync =
+  (
+    condition: (props: any) => Promise<{ ok: boolean; data: any }>,
+    ComponentFulfillsCondition: React.FC,
+    ComponentLoadingResolution: null | React.FC = null,
+    options: { rerunOn?: (props) => any[] }
+  ) =>
+  (WrappedComponent: React.FC) =>
+  (props: any) => {
+    const [loading, setLoading] = useState(true);
+    const [fulfillsCondition, setFulfillsCondition] = useState({
+      ok: false,
+      data: {},
+    });
 
-export const withGuardAsync = (
-  condition: (props: any) => Promise<{ ok: boolean; data: any }>,
-  ComponentFulfillsCondition: React.FC,
-  ComponentLoadingResolution: null | React.FC = null,
-  options: { rerunOn?: (props) => any[] }
-) => (WrappedComponent: React.FC) => (props: any) => {
-  const [loading, setLoading] = useState(true);
-  const [fulfillsCondition, setFulfillsCondition] = useState({
-    ok: false,
-    data: {},
-  });
+    const execCondition = async () => {
+      try {
+        setLoading(true);
+        setFulfillsCondition({ ok: false, data: {} });
+        setFulfillsCondition(await condition({ ...props, check: execCondition }));
+      } catch (error) {
+        setFulfillsCondition({ ok: false, data: { error } });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const execCondition = async () => {
-    try {
-      setLoading(true);
-      setFulfillsCondition({ ok: false, data: {} });
-      setFulfillsCondition(await condition({ ...props, check: execCondition }));
-    } catch (error) {
-      setFulfillsCondition({ ok: false, data: { error } });
-    } finally {
-      setLoading(false);
+    const dependenciesRun = options?.rerunOn ? options.rerunOn(props) : [];
+
+    useEffect(() => {
+      execCondition();
+    }, dependenciesRun);
+
+    if (loading) {
+      return ComponentLoadingResolution ? <ComponentLoadingResolution {...props} /> : null;
     }
+
+    return fulfillsCondition.ok ? (
+      <ComponentFulfillsCondition
+        {...props}
+        {...(fulfillsCondition?.data ?? {})}
+        check={execCondition}
+      />
+    ) : (
+      <WrappedComponent {...props} {...(fulfillsCondition?.data ?? {})} check={execCondition} />
+    );
   };
 
-  const dependenciesRun = options?.rerunOn ? options.rerunOn(props) : [];
+export const withGuard =
+  (condition: (props: any) => boolean, ComponentFulfillsCondition: React.FC) =>
+  (WrappedComponent: React.FC) =>
+  (props: any) => {
+    return condition(props) ? (
+      <ComponentFulfillsCondition {...props} />
+    ) : (
+      <WrappedComponent {...props} />
+    );
+  };
 
-  useEffect(() => {
-    execCondition();
-  }, dependenciesRun);
-
-  if (loading) {
-    return ComponentLoadingResolution ? <ComponentLoadingResolution {...props} /> : null;
-  }
-
-  return fulfillsCondition.ok ? (
-    <ComponentFulfillsCondition
-      {...props}
-      {...(fulfillsCondition?.data ?? {})}
-      check={execCondition}
-    />
-  ) : (
-    <WrappedComponent {...props} {...(fulfillsCondition?.data ?? {})} check={execCondition} />
-  );
-};
-
-export const withGuard = (
-  condition: (props: any) => boolean,
-  ComponentFulfillsCondition: React.FC
-) => (WrappedComponent: React.FC) => (props: any) => {
-  return condition(props) ? (
-    <ComponentFulfillsCondition {...props} />
-  ) : (
-    <WrappedComponent {...props} />
-  );
-};
-
-export const withWrapComponent = (WrapComponent, mapWrapComponentProps = () => {}) => (
-  WrappedComponent
-) => (props) => (
-  <WrapComponent {...props} {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}>
-    <WrappedComponent {...props}></WrappedComponent>
-  </WrapComponent>
-);
+export const withWrapComponent =
+  (WrapComponent, mapWrapComponentProps = () => {}) =>
+  (WrappedComponent) =>
+  (props) =>
+    (
+      <WrapComponent {...props} {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}>
+        <WrappedComponent {...props}></WrappedComponent>
+      </WrapComponent>
+    );
 
 export const withModal = (options) =>
   withWrapComponent(
@@ -310,6 +314,36 @@ export function useAsyncActionRunOnStart<T>(
   useEffect(() => {
     run();
   }, [...dependencies]);
+
+  return { data, error, run, running };
+}
+
+export function useAsyncAction<T>(
+  action: useAsyncActionRunOnStartAction<T>,
+  dependencies: useAsyncActionRunOnStartDependencies = [],
+  { refreshDataOnPreRun }: { refreshDataOnPreRun: boolean } = {
+    refreshDataOnPreRun: true,
+  }
+): useAsyncActionRunOnStartDependenciesReturns<T> {
+  const [running, setRunning] = useState(false);
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const run = async () => {
+    try {
+      setRunning(true);
+      setError(null);
+      if (refreshDataOnPreRun) {
+        setData(null);
+      }
+      const result = await action(dependencies, { data, error, running });
+      setData(result);
+    } catch (error) {
+      setError(error as Error);
+    } finally {
+      setRunning(false);
+    }
+  };
 
   return { data, error, run, running };
 }

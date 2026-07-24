@@ -218,7 +218,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
           "calls": Array [
             Array [
               Object {
-                "text": [TypeError: detectorService.getDetectorWithId is not a function],
+                "text": "detectorService.getDetectorWithId is not a function",
                 "title": "Failed to retrieve detector:",
                 "toastLifeTimeMs": 5000,
               },
@@ -840,7 +840,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
             "calls": Array [
               Array [
                 Object {
-                  "text": [TypeError: detectorService.getDetectorWithId is not a function],
+                  "text": "detectorService.getDetectorWithId is not a function",
                   "title": "Failed to retrieve detector:",
                   "toastLifeTimeMs": 5000,
                 },
@@ -1127,7 +1127,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
               "calls": Array [
                 Array [
                   Object {
-                    "text": [TypeError: detectorService.getDetectorWithId is not a function],
+                    "text": "detectorService.getDetectorWithId is not a function",
                     "title": "Failed to retrieve detector:",
                     "toastLifeTimeMs": 5000,
                   },
@@ -2280,7 +2280,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
               "calls": Array [
                 Array [
                   Object {
-                    "text": [TypeError: detectorService.getDetectorWithId is not a function],
+                    "text": "detectorService.getDetectorWithId is not a function",
                     "title": "Failed to retrieve detector:",
                     "toastLifeTimeMs": 5000,
                   },

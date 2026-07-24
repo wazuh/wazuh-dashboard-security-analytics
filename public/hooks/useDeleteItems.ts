@@ -40,19 +40,26 @@ export function useDeleteItems({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const confirmDeleteSingle = useCallback(async () => {
-    if (itemForAction?.action !== DELETE_ACTION) return;
+    if (itemForAction?.action !== DELETE_ACTION || isDeleting) return;
     const { id } = itemForAction;
-    setItemForAction(null);
-
-    const result = await deleteOneRef.current(id);
-    if (result !== undefined) {
-      successNotificationToast(notifications, 'deleted', entityName);
-      reloadRef.current();
+    setIsDeleting(true);
+    try {
+      const result = await deleteOneRef.current(id);
+      if (result !== undefined) {
+        successNotificationToast(notifications, 'deleted', entityName);
+        await reloadRef.current();
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsDeleting(false);
+        setItemForAction(null);
+      }
     }
-  }, [itemForAction, notifications, entityName]);
+  }, [itemForAction, isDeleting, notifications, entityName, isMountedRef]);
 
   const confirmDeleteSelected = useCallback(
     async (selectedItems: Array<{ id: string }>, onSuccess: () => void) => {
+      if (isDeleting) return;
       setIsDeleting(true);
       try {
         const deleteResults = await Promise.all(
@@ -90,7 +97,7 @@ export function useDeleteItems({
         }
       }
     },
-    [notifications, entityName, entityNamePlural, isMountedRef]
+    [isDeleting, notifications, entityName, entityNamePlural, isMountedRef]
   );
 
   return {
