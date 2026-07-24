@@ -65,9 +65,8 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
   useEffect(() => {
     const getDetector = async () => {
       setLoading(true);
-      const response = (await saContext?.services.detectorsService.getDetectors()) as ServerResponse<
-        SearchDetectorsResponse
-      >;
+      const response =
+        (await saContext?.services.detectorsService.getDetectors()) as ServerResponse<SearchDetectorsResponse>;
       if (response.ok) {
         const detectorHit = response.response.hits.hits.find(
           (detectorHit) => detectorHit._id === detectorId
@@ -227,11 +226,12 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
 
     try {
       if (fieldMappings?.length) {
-        const createMappingsResponse = await saContext?.services.fieldMappingService?.createMappings(
-          detector.inputs[0].detector_input.indices[0],
-          detector.detector_type.toLowerCase(),
-          fieldMappings
-        );
+        const createMappingsResponse =
+          await saContext?.services.fieldMappingService?.createMappings(
+            detector.inputs[0].detector_input.indices[0],
+            detector.detector_type.toLowerCase(),
+            fieldMappings
+          );
 
         if (!createMappingsResponse?.ok) {
           errorNotificationToast(

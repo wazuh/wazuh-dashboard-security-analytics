@@ -181,9 +181,8 @@ export const WazuhUpdateDetectorBasicDetails: React.FC<WazuhUpdateDetectorBasicD
 
   useEffect(() => {
     const getDetector = async () => {
-      const response = (await saContext?.services.detectorsService.getDetectors()) as ServerResponse<
-        SearchDetectorsResponse
-      >;
+      const response =
+        (await saContext?.services.detectorsService.getDetectors()) as ServerResponse<SearchDetectorsResponse>;
       if (response.ok) {
         const detectorHit = response.response.hits.hits.find(
           (detectorHit) => detectorHit._id === detectorId

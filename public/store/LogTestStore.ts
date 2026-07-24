@@ -9,48 +9,40 @@ import LogTestService from '../services/LogTestService';
 import { LogTestApiRequest, LogTestResponse } from '../../types';
 
 export interface LogTestStoreResult {
-    success: boolean;
-    data?: LogTestResponse;
-    error?: string;
+  success: boolean;
+  data?: LogTestResponse;
+  error?: string;
 }
 
 export class LogTestStore {
-    constructor(
-        private service: LogTestService,
-        private notifications: NotificationsStart
-    ) {}
+  constructor(private service: LogTestService, private notifications: NotificationsStart) {}
 
-    executeLogTest = async (request: LogTestApiRequest): Promise<LogTestStoreResult> => {
-        try {
-            const response = await this.service.executeLogTest(request);
+  executeLogTest = async (request: LogTestApiRequest): Promise<LogTestStoreResult> => {
+    try {
+      const response = await this.service.executeLogTest(request);
 
-            if (!response.ok) {
-                errorNotificationToast(
-                    this.notifications,
-                    'execute',
-                    'log test',
-                    response.error
-                );
-                return {
-                    success: false,
-                    error: response.error,
-                };
-            }
+      if (!response.ok) {
+        errorNotificationToast(this.notifications, 'execute', 'log test', response.error);
+        return {
+          success: false,
+          error: response.error,
+        };
+      }
 
-            return {
-                success: true,
-                data: response.response,
-            };
-        } catch (error: unknown) {
-            const errorMessage = getErrorMessage(
-                error,
-                'An unexpected error occurred while running the log test.'
-            );
-            errorNotificationToast(this.notifications, 'submit', 'Log test', errorMessage);
-            return {
-                success: false,
-                error: errorMessage,
-            };
-        }
-    };
+      return {
+        success: true,
+        data: response.response,
+      };
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(
+        error,
+        'An unexpected error occurred while running the log test.'
+      );
+      errorNotificationToast(this.notifications, 'submit', 'Log test', errorMessage);
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+  };
 }

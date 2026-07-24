@@ -19,10 +19,7 @@ import KVDBsService from '../services/KVDBsService';
 import { errorNotificationToast, getErrorMessage } from '../utils/helpers';
 
 export class KVDBsStore {
-  constructor(
-    private service: KVDBsService,
-    private notifications: NotificationsStart
-  ) {}
+  constructor(private service: KVDBsService, private notifications: NotificationsStart) {}
 
   public async searchKVDBs(
     params: KVDBSearchRequest,
@@ -39,7 +36,7 @@ export class KVDBsStore {
       const total =
         typeof response.response.hits.total === 'number'
           ? response.response.hits.total
-          : (response.response.hits.total?.value ?? hits.length);
+          : response.response.hits.total?.value ?? hits.length;
       const items: KVDBItem[] = hits.map((hit) => ({
         id: hit._id,
         ...hit._source,
