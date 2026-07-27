@@ -187,11 +187,13 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         name: 'Name',
         sortable: true,
         truncateText: true,
+        width: '24%',
       },
       {
         field: 'level',
         name: 'Severity',
         sortable: true,
+        width: '120px',
         render: (level: string) => {
           const { text, background } = getSeverityColor(level);
           return (
@@ -205,6 +207,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         field: 'category',
         name: 'Integration',
         sortable: false,
+        width: '11%',
         render: (_: any, row: RuleTableItem) => {
           return row.integration?.document?.metadata?.title || '-';
         },
@@ -219,12 +222,14 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         field: 'enabled',
         name: 'Status',
         sortable: false,
+        width: '110px',
         render: (enabled: boolean) => (
           <EnabledHealth enabled={enabled} data-test-subj="rule_status" />
         ),
       },
       {
         name: 'Actions',
+        width: '100px',
         actions: [
           {
             name: 'View',
