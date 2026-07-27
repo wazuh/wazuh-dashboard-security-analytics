@@ -15,7 +15,6 @@
 - Added `opensearch_security_analytics.disabledSettings` configuration to hide specific settings in the UI about Index discarded/unclassified events [#350](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/350) [#375](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/375)
 - Added date formatter that respects the dateFormat advanced setting [#362](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/362)
 - Added a callout to promote pending changes between spaces [#381](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/381)
-- Added a Status column to the Integrations, Decoders, KVDBs and Rules tables, an enabled/disabled health indicator to the Detectors Status column, and a Mode column to the Integrations table [#419](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/419)
 
 ### Changed
 
