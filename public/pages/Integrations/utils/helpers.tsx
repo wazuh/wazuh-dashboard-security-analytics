@@ -5,10 +5,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel } from '@elastic/eui';
+import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { startCase } from 'lodash';
-import { integrationCategories } from '../../../utils/constants';
+import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
 import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
@@ -36,10 +37,12 @@ export interface IntegrationTableItem {
   id: string;
   title: string;
   category: string;
+  mode: string;
   space: string;
   decoders: number;
   kvdbs: number;
   rules: number;
+  enabled?: boolean;
 }
 
 export const mapPolicyToIntegrationTableItems = (
@@ -57,10 +60,12 @@ export const mapPolicyToIntegrationTableItems = (
       id: source._id,
       title: source.document.metadata?.title ?? '',
       category: source.document.category,
+      mode: source.document.mode ?? '',
       space: source.space.name,
       decoders: source.document.decodersCount,
       kvdbs: source.document.kvdbsCount,
       rules: source.document.rulesCount,
+      enabled: source.document.enabled,
     }));
 };
 
@@ -93,6 +98,12 @@ export const getIntegrationsTableColumns = ({
     render: (category: string) => getIntegrationCategoryFilterDisplayName(category ?? ''),
   },
   {
+    field: 'mode',
+    name: 'Mode',
+    truncateText: false,
+    render: (mode: string) => mode || DEFAULT_EMPTY_DATA,
+  },
+  {
     field: 'rules',
     name: 'Rules',
     sortable: false,
@@ -109,6 +120,14 @@ export const getIntegrationsTableColumns = ({
     name: 'KVDBs',
     sortable: false,
     render: (kvdbs: number) => kvdbs ?? 0,
+  },
+  {
+    field: 'enabled',
+    name: 'Status',
+    sortable: true,
+    render: (enabled: boolean) => (
+      <EnabledHealth enabled={enabled} data-test-subj="integration_status" />
+    ),
   },
   {
     name: 'Actions',
@@ -158,70 +177,74 @@ export const getIntegrationsTableSearchConfig = (options?: {
   toolsRight: options?.toolsRight,
 });
 
+export const withGuardAsync =
+  (
+    condition: (props: any) => Promise<{ ok: boolean; data: any }>,
+    ComponentFulfillsCondition: React.FC,
+    ComponentLoadingResolution: null | React.FC = null,
+    options: { rerunOn?: (props) => any[] }
+  ) =>
+  (WrappedComponent: React.FC) =>
+  (props: any) => {
+    const [loading, setLoading] = useState(true);
+    const [fulfillsCondition, setFulfillsCondition] = useState({
+      ok: false,
+      data: {},
+    });
 
-export const withGuardAsync = (
-  condition: (props: any) => Promise<{ ok: boolean; data: any }>,
-  ComponentFulfillsCondition: React.FC,
-  ComponentLoadingResolution: null | React.FC = null,
-  options: { rerunOn?: (props) => any[] }
-) => (WrappedComponent: React.FC) => (props: any) => {
-  const [loading, setLoading] = useState(true);
-  const [fulfillsCondition, setFulfillsCondition] = useState({
-    ok: false,
-    data: {},
-  });
+    const execCondition = async () => {
+      try {
+        setLoading(true);
+        setFulfillsCondition({ ok: false, data: {} });
+        setFulfillsCondition(await condition({ ...props, check: execCondition }));
+      } catch (error) {
+        setFulfillsCondition({ ok: false, data: { error } });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const execCondition = async () => {
-    try {
-      setLoading(true);
-      setFulfillsCondition({ ok: false, data: {} });
-      setFulfillsCondition(await condition({ ...props, check: execCondition }));
-    } catch (error) {
-      setFulfillsCondition({ ok: false, data: { error } });
-    } finally {
-      setLoading(false);
+    const dependenciesRun = options?.rerunOn ? options.rerunOn(props) : [];
+
+    useEffect(() => {
+      execCondition();
+    }, dependenciesRun);
+
+    if (loading) {
+      return ComponentLoadingResolution ? <ComponentLoadingResolution {...props} /> : null;
     }
+
+    return fulfillsCondition.ok ? (
+      <ComponentFulfillsCondition
+        {...props}
+        {...(fulfillsCondition?.data ?? {})}
+        check={execCondition}
+      />
+    ) : (
+      <WrappedComponent {...props} {...(fulfillsCondition?.data ?? {})} check={execCondition} />
+    );
   };
 
-  const dependenciesRun = options?.rerunOn ? options.rerunOn(props) : [];
+export const withGuard =
+  (condition: (props: any) => boolean, ComponentFulfillsCondition: React.FC) =>
+  (WrappedComponent: React.FC) =>
+  (props: any) => {
+    return condition(props) ? (
+      <ComponentFulfillsCondition {...props} />
+    ) : (
+      <WrappedComponent {...props} />
+    );
+  };
 
-  useEffect(() => {
-    execCondition();
-  }, dependenciesRun);
-
-  if (loading) {
-    return ComponentLoadingResolution ? <ComponentLoadingResolution {...props} /> : null;
-  }
-
-  return fulfillsCondition.ok ? (
-    <ComponentFulfillsCondition
-      {...props}
-      {...(fulfillsCondition?.data ?? {})}
-      check={execCondition}
-    />
-  ) : (
-    <WrappedComponent {...props} {...(fulfillsCondition?.data ?? {})} check={execCondition} />
-  );
-};
-
-export const withGuard = (
-  condition: (props: any) => boolean,
-  ComponentFulfillsCondition: React.FC
-) => (WrappedComponent: React.FC) => (props: any) => {
-  return condition(props) ? (
-    <ComponentFulfillsCondition {...props} />
-  ) : (
-    <WrappedComponent {...props} />
-  );
-};
-
-export const withWrapComponent = (WrapComponent, mapWrapComponentProps = () => {}) => (
-  WrappedComponent
-) => (props) => (
-  <WrapComponent {...props} {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}>
-    <WrappedComponent {...props}></WrappedComponent>
-  </WrapComponent>
-);
+export const withWrapComponent =
+  (WrapComponent, mapWrapComponentProps = () => {}) =>
+  (WrappedComponent) =>
+  (props) =>
+    (
+      <WrapComponent {...props} {...(mapWrapComponentProps ? mapWrapComponentProps(props) : {})}>
+        <WrappedComponent {...props}></WrappedComponent>
+      </WrapComponent>
+    );
 
 export const withModal = (options) =>
   withWrapComponent(
