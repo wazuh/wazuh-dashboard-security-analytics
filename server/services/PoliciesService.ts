@@ -253,6 +253,7 @@ export class PoliciesService extends MDSEnabledClientService {
                       document: {
                         id: doc.id,
                         enabled: doc.enabled,
+                        mode: doc.mode,
                         metadata: doc.metadata ?? {},
                         category: doc.category ?? '',
                         rulesCount: doc.rules?.length ?? 0,

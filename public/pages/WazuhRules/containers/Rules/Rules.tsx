@@ -28,6 +28,7 @@ import { DataStore } from '../../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import { buildRulesSearchQuery } from '../../utils/constants';
 import { RuleTableItem } from '../../utils/helpers';
@@ -64,6 +65,7 @@ const toRuleTableItem = (rule: RuleItemInfoBase): RuleTableItem => ({
   ruleInfo: rule,
   ruleId: rule._id,
   integration: rule.integration,
+  enabled: rule._source.enabled,
 });
 
 export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
@@ -123,6 +125,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             'document.logsource.category',
             'document.logsource.product',
             'document.metadata.description',
+            'document.enabled',
             'space',
           ],
         },
@@ -184,11 +187,13 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         name: 'Name',
         sortable: true,
         truncateText: true,
+        width: '24%',
       },
       {
         field: 'level',
         name: 'Severity',
         sortable: true,
+        width: '120px',
         render: (level: string) => {
           const { text, background } = getSeverityColor(level);
           return (
@@ -202,6 +207,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         field: 'category',
         name: 'Integration',
         sortable: false,
+        width: '11%',
         render: (_: any, row: RuleTableItem) => {
           return row.integration?.document?.metadata?.title || '-';
         },
@@ -213,7 +219,17 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         truncateText: true,
       },
       {
+        field: 'enabled',
+        name: 'Status',
+        sortable: false,
+        width: '110px',
+        render: (enabled: boolean) => (
+          <EnabledHealth enabled={enabled} data-test-subj="rule_status" />
+        ),
+      },
+      {
         name: 'Actions',
+        width: '100px',
         actions: [
           {
             name: 'View',

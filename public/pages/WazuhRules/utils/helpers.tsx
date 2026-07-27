@@ -27,6 +27,7 @@ export interface RuleTableItem {
   ruleInfo: RuleItemInfoBase;
   ruleId: string;
   integration?: IntegrationBase;
+  enabled?: boolean;
 }
 
 export const getRuleIntegrationTitle = (rule: { integration?: any }): string =>

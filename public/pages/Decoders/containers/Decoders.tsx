@@ -27,6 +27,7 @@ import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
@@ -112,6 +113,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
             'document.name',
             'document.metadata.title',
             'document.metadata.author',
+            'document.enabled',
             'space',
           ],
         },
@@ -179,6 +181,13 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         name: 'Author',
         sortable: true,
         render: (value: string) => formatCellValue(value),
+      },
+      {
+        field: 'document.enabled',
+        name: 'Status',
+        render: (enabled: boolean) => (
+          <EnabledHealth enabled={enabled} data-test-subj="decoder_status" />
+        ),
       },
       {
         name: 'Actions',
