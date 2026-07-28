@@ -39,6 +39,7 @@ import {
   DELETE_SELECTED_ACTION,
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
+import { useDeleteReconciliation } from '../../../hooks/useDeleteReconciliation';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -88,6 +89,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     return () => clearTimeout(timeout);
   }, [searchText]);
 
+  const { markDeleted, reconcile } = useDeleteReconciliation<DecoderItem>((item) => item.id);
+
   const loadDecoders = useCallback(async () => {
     setLoading(true);
     const query = buildDecodersSearchQuery(appliedSearch);
@@ -124,10 +127,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     if (!isMountedRef.current) {
       return;
     }
-    setDecoders(response.items);
-    setTotal(response.total);
+    const { items: nextItems, total: nextTotal } = reconcile(response.items, response.total);
+    setDecoders(nextItems);
+    setTotal(nextTotal);
     setLoading(false);
-  }, [appliedSearch, pageIndex, pageSize, spaceFilter, sortField, sortDirection]);
+  }, [appliedSearch, pageIndex, pageSize, spaceFilter, sortField, sortDirection, reconcile]);
 
   useEffect(() => {
     loadDecoders();
@@ -146,6 +150,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     entityName: 'decoder',
     entityNamePlural: 'decoders',
     isMountedRef,
+    onDeleted: markDeleted,
   });
 
   const onTableChange = ({ page, sort }: { page: any; sort?: any }) => {

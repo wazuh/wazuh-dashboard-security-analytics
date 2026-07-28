@@ -41,6 +41,7 @@ import {
   DELETE_SELECTED_ACTION,
   useDeleteItems,
 } from '../../../../hooks/useDeleteItems';
+import { useDeleteReconciliation } from '../../../../hooks/useDeleteReconciliation';
 import { useUrlParamItem } from '../../../../hooks/useUrlParamItem';
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -106,6 +107,10 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     return () => clearTimeout(timeout);
   }, [searchText]);
 
+  const { markDeleted, reconcile } = useDeleteReconciliation<RuleTableItem>(
+    (item) => item.ruleId
+  );
+
   const loadRules = useCallback(async () => {
     setLoading(true);
     const query = buildRulesSearchQuery(appliedSearch);
@@ -135,11 +140,15 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
 
     if (!isMountedRef.current) return;
 
-    setAllRules(response.items.map(toRuleTableItem));
-    setTotalRules(response.total);
+    const { items: nextItems, total } = reconcile(
+      response.items.map(toRuleTableItem),
+      response.total
+    );
+    setAllRules(nextItems);
+    setTotalRules(total);
     setSelectedItems([]);
     setLoading(false);
-  }, [appliedSearch, spaceFilter, pageIndex, pageSize, sortField, sortDirection]);
+  }, [appliedSearch, spaceFilter, pageIndex, pageSize, sortField, sortDirection, reconcile]);
 
   useEffect(() => {
     loadRules();
@@ -161,6 +170,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     entityName: 'rule',
     entityNamePlural: 'rules',
     isMountedRef,
+    onDeleted: markDeleted,
   });
 
   const onTableChange = ({ page, sort }: { page?: any; sort?: any }) => {

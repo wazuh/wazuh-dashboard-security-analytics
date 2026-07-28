@@ -66,7 +66,7 @@ export const RuleEditorContainer: React.FC<RuleEditorProps> = ({
     if (result) {
       successNotificationToast(
         notifications!,
-        mode === 'create' ? 'create' : 'update',
+        mode === 'create' ? 'created' : 'updated',
         'rule',
         result.message ??
           `The rule ${values.metadata.title} has been ${

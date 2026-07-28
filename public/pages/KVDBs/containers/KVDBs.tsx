@@ -37,6 +37,7 @@ import {
   DELETE_SELECTED_ACTION,
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
+import { useDeleteReconciliation } from '../../../hooks/useDeleteReconciliation';
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -90,6 +91,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     return query;
   }, [searchQuery, spaceFilter]);
 
+  const { markDeleted, reconcile } = useDeleteReconciliation<KVDBItem>((item) => item.id);
+
   const fetchKVDBs = useCallback(async () => {
     setLoading(true);
     const sort = sortField ? [{ [sortField]: { order: sortDirection } }] : undefined;
@@ -112,12 +115,13 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         },
       });
 
-      setItems(response.items);
-      setTotalItemCount(response.total);
+      const { items: nextItems, total } = reconcile(response.items, response.total);
+      setItems(nextItems);
+      setTotalItemCount(total);
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, sortField, sortDirection, buildQuery]);
+  }, [pageIndex, pageSize, sortField, sortDirection, buildQuery, reconcile]);
 
   useEffect(() => {
     fetchKVDBs();
@@ -136,6 +140,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     entityName: 'KVDB',
     entityNamePlural: 'KVDBs',
     isMountedRef,
+    onDeleted: markDeleted,
   });
 
   const onTableChange = ({ page, sort }: any) => {
