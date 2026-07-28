@@ -41,9 +41,7 @@ export const RuleEditorContainer: React.FC<RuleEditorProps> = ({
   validateOnMount,
   subtitleData,
 }) => {
-  const initialRuleValue = rule
-    ? { ...mapRuleToForm(rule) }
-    : ruleEditorStateDefaultValue;
+  const initialRuleValue = rule ? { ...mapRuleToForm(rule) } : ruleEditorStateDefaultValue;
 
   const onSubmit = async (values: RuleEditorFormModel, integrationId: string) => {
     // Wazuh: added integrationId param

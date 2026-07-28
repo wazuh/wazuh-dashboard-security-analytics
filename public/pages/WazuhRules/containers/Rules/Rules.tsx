@@ -107,9 +107,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     return () => clearTimeout(timeout);
   }, [searchText]);
 
-  const { markDeleted, reconcile } = useDeleteReconciliation<RuleTableItem>(
-    (item) => item.ruleId
-  );
+  const { markDeleted, reconcile } = useDeleteReconciliation<RuleTableItem>((item) => item.ruleId);
 
   const loadRules = useCallback(async () => {
     setLoading(true);

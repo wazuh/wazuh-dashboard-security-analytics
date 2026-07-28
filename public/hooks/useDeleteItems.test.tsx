@@ -93,9 +93,11 @@ describe('useDeleteItems onDeleted', () => {
   it('passes only the succeeded ids to onDeleted for delete-selected with mixed results', async () => {
     const callOrder: string[] = [];
     const onDeleted = jest.fn();
-    const deleteOne = jest.fn().mockImplementation((id: string) =>
-      Promise.resolve(id === 'ok-1' || id === 'ok-2' ? 'ok' : undefined)
-    );
+    const deleteOne = jest
+      .fn()
+      .mockImplementation((id: string) =>
+        Promise.resolve(id === 'ok-1' || id === 'ok-2' ? 'ok' : undefined)
+      );
     const ref = React.createRef<any>();
 
     await act(async () => {
