@@ -5,6 +5,7 @@
 
 import { Props, schema } from '@osd/config-schema';
 import YAML from 'yaml';
+import { IntegrationBase, IntegrationResourcePayload } from '../../types';
 
 export function createQueryValidationSchema(fieldSchemaObj?: Props) {
   return schema.object({
@@ -12,6 +13,16 @@ export function createQueryValidationSchema(fieldSchemaObj?: Props) {
     dataSourceId: schema.maybe(schema.string()),
   });
 }
+
+// The Content Manager derives `document.enabled` from `user_enabled`/`cti_enabled` itself and
+// rejects requests that still send `enabled`; the user's explicit choice must be sent as
+// `user_enabled` instead, in every space.
+export const toIntegrationResourcePayload = (
+  document: IntegrationBase['document']
+): IntegrationResourcePayload => {
+  const { enabled, ...resource } = document;
+  return { ...resource, user_enabled: enabled };
+};
 
 // This function recieves the crude yaml resource and optional extra params (e.g: integration for kvdbs or space for filters).
 // The function formats the yaml to have the structure that the backend expects.

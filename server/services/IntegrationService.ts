@@ -26,7 +26,7 @@ import {
   UpdateIntegrationResponse,
 } from '../../types';
 import { CLIENT_INTEGRATION_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { extractErrorMessage } from '../utils/helpers';
+import { extractErrorMessage, toIntegrationResourcePayload } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 import { get, sortBy } from 'lodash';
 import { getNextSpace } from '../../common/helpers';
@@ -44,7 +44,7 @@ export class IntegrationService extends MDSEnabledClientService {
       const client = this.getClient(request, context);
       const createIntegrationResponse: CreateIntegrationResponse = await client(
         CLIENT_INTEGRATION_METHODS.CREATE_INTEGRATION,
-        { body: { resource: document } }
+        { body: { resource: toIntegrationResourcePayload(document) } }
       );
 
       return response.custom({
@@ -121,7 +121,7 @@ export class IntegrationService extends MDSEnabledClientService {
       } = request.body;
       const { integrationId } = request.params;
       const params: UpdateIntegrationParams = {
-        body: { resource: document },
+        body: { resource: toIntegrationResourcePayload(document) },
         integrationId,
       };
       const client = this.getClient(request, context);

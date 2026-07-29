@@ -60,9 +60,15 @@ export interface CreateIntegrationResponse {
   status: number;
 }
 
+// The Content Manager derives `document.enabled` from `user_enabled`/`cti_enabled` and
+// rejects requests that still send `enabled` directly.
+export type IntegrationResourcePayload = Omit<IntegrationBase['document'], 'enabled'> & {
+  user_enabled?: boolean;
+};
+
 export interface UpdateIntegrationParams {
   integrationId: string;
-  body: { resource: IntegrationBase['document'] };
+  body: { resource: IntegrationResourcePayload };
 }
 
 export interface UpdateIntegrationResponse {

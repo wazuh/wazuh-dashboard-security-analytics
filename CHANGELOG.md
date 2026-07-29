@@ -45,6 +45,7 @@
 - Fixed integration documentation field being truncated in the details view [#322](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/322)
 - Fixed duplicate submissions by adding a loading state to create, edit and delete buttons [#398](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/398)
 - Fixed inconsistent error handling in operations with integrations, filters, decoders, kvdbs, detectors, rules and promotion to show the server error message [#401](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/401)
+- Fixed integration creation and update requests to send `user_enabled` instead of `enabled`, matching the Content Manager's new enabled-state contract [#1470](https://github.com/wazuh/wazuh-dashboard/issues/1470)
 
 ## Prior versions
 
