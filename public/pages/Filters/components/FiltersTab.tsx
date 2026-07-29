@@ -25,7 +25,6 @@ import {
   DELETE_SELECTED_ACTION,
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
-import { useDeleteReconciliation } from '../../../hooks/useDeleteReconciliation';
 import {
   FilterTableItem,
   getFiltersTableColumns,
@@ -66,8 +65,6 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
     return baseQuery;
   }, [spaceFilter]);
 
-  const { markDeleted, reconcile } = useDeleteReconciliation<FilterTableItem>((item) => item.id);
-
   const fetchFilters = useCallback(async () => {
     setLoading(true);
     try {
@@ -86,16 +83,14 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
         },
       });
       if (isMountedRef.current) {
-        const tableItems = fetchedItems.map(toFilterTableItem);
-        const { items: nextItems } = reconcile(tableItems, tableItems.length);
-        setItems(nextItems);
+        setItems(fetchedItems.map(toFilterTableItem));
       }
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
       }
     }
-  }, [buildQuery, reconcile]);
+  }, [buildQuery]);
 
   useEffect(() => {
     fetchFilters();
@@ -125,7 +120,6 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
     entityName: 'filter',
     entityNamePlural: 'filters',
     isMountedRef,
-    onDeleted: markDeleted,
   });
 
   const onViewDetails = useCallback((id: string) => {

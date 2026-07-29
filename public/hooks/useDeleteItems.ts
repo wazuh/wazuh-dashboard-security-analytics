@@ -21,8 +21,6 @@ interface UseDeleteItemsOptions {
   entityName: string;
   entityNamePlural: string;
   isMountedRef: MutableRefObject<boolean>;
-  /** Fires with the ids whose deleteOne resolved successfully, before reload(). */
-  onDeleted?: (deletedIds: string[]) => void;
 }
 
 export function useDeleteItems({
@@ -32,14 +30,11 @@ export function useDeleteItems({
   entityName,
   entityNamePlural,
   isMountedRef,
-  onDeleted,
 }: UseDeleteItemsOptions) {
   const deleteOneRef = useRef(deleteOne);
   const reloadRef = useRef(reload);
-  const onDeletedRef = useRef(onDeleted);
   deleteOneRef.current = deleteOne;
   reloadRef.current = reload;
-  onDeletedRef.current = onDeleted;
 
   const [itemForAction, setItemForAction] = useState<DeleteItemForAction | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -52,7 +47,6 @@ export function useDeleteItems({
       const result = await deleteOneRef.current(id);
       if (result !== undefined) {
         successNotificationToast(notifications, 'deleted', entityName);
-        onDeletedRef.current?.([id]);
         await reloadRef.current();
       }
     } finally {
@@ -69,13 +63,9 @@ export function useDeleteItems({
       setIsDeleting(true);
       try {
         const deleteResults = await Promise.all(
-          selectedItems.map(async (item) => ({
-            id: item.id,
-            deleted: (await deleteOneRef.current(item.id)) !== undefined,
-          }))
+          selectedItems.map((item) => deleteOneRef.current(item.id))
         );
-        const deletedIds = deleteResults.filter((r) => r.deleted).map((r) => r.id);
-        const deletedCount = deletedIds.length;
+        const deletedCount = deleteResults.filter((r) => r !== undefined).length;
         const failedCount = deleteResults.length - deletedCount;
 
         if (deletedCount > 0) {
@@ -94,10 +84,6 @@ export function useDeleteItems({
             } could not be deleted.`,
             toastLifeTimeMs: 5000,
           });
-        }
-
-        if (deletedIds.length > 0) {
-          onDeletedRef.current?.(deletedIds);
         }
 
         await reloadRef.current();
