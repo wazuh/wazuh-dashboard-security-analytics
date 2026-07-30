@@ -288,6 +288,8 @@ export default class WazuhRulesService {
       const { ruleId } = request.params;
       const client = this.getClient(request);
       await client(CLIENT_RULE_METHODS.DELETE_RULE, { ruleId });
+      // Wazuh: force the index to refresh so the immediate post-delete reload doesn't race OpenSearch's refresh_interval.
+      await client('indices.refresh', { index: CONTENT_INDICES.RULES });
 
       return response.custom({
         statusCode: 200,

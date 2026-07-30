@@ -163,7 +163,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       if (result) {
         successNotificationToast(
           notifications,
-          KVDB_ACTION.CREATE,
+          'created',
           'KVDB',
           result.message || `The KVDB "${values.title}" has been created successfully.`
         );
@@ -184,7 +184,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       if (result) {
         successNotificationToast(
           notifications,
-          'update',
+          'updated',
           'KVDB',
           result.message || `The KVDB "${values.title}" has been updated successfully.`
         );

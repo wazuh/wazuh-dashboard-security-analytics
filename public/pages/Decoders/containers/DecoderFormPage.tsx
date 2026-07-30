@@ -156,7 +156,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         if (result) {
           successNotificationToast(
             notifications,
-            'create',
+            'created',
             'decoder',
             result.message || `The decoder ${values.name} has been created successfully.`
           );
@@ -190,7 +190,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         if (result) {
           successNotificationToast(
             notifications,
-            'update',
+            'updated',
             'decoder',
             result.message || `The decoder ${values.name} has been updated successfully.`
           );

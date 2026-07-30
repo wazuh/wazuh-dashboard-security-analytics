@@ -112,6 +112,8 @@ export class FiltersService extends MDSEnabledClientService {
       const { filterId } = request.params;
       const client = this.getClient(request, context);
       await client(CLIENT_FILTER_METHODS.DELETE_FILTER, { filterId });
+      // Wazuh: force the index to refresh so the immediate post-delete reload doesn't race OpenSearch's refresh_interval.
+      await client('indices.refresh', { index: CONTENT_INDICES.FILTERS });
       return response.custom({ statusCode: 200, body: { ok: true, response: null } });
     } catch (error) {
       console.error('Security Analytics - FiltersService - deleteFilter:', error);
