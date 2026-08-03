@@ -149,6 +149,7 @@ export interface IRulesStore {
       size?: number;
       sort?: Array<Record<string, any>>;
       _source?: any;
+      searchText?: string;
     },
     space: string
   ) => Promise<{ total: number; items: RuleItemInfoBase[] }>;

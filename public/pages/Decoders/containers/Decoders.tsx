@@ -107,6 +107,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         size: pageSize,
         sort,
         query,
+        searchText: appliedSearch,
         _source: {
           includes: [
             'document.id',

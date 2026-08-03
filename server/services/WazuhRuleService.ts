@@ -18,7 +18,7 @@ import {
   GetRulesResponse,
 } from '../models/interfaces';
 import { CLIENT_RULE_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { extractErrorMessage } from '../utils/helpers';
+import { escapeWildcard, extractErrorMessage, mergeIdsClause } from '../utils/helpers';
 import { ServerResponse } from '../models/types';
 import { load } from 'js-yaml';
 import { Rule } from '../../types';
@@ -146,6 +146,54 @@ export default class WazuhRulesService {
     return integrationMap;
   }
 
+  // Wazuh: find rule ids belonging to integrations whose name matches the search text,
+  // so the rules search can also be reached by integration name.
+  private async fetchRuleIdsByIntegrationName(
+    client: any,
+    searchText: string | undefined,
+    space: string
+  ): Promise<string[]> {
+    const trimmed = searchText?.trim();
+    if (!trimmed) return [];
+
+    try {
+      const response = await client('search', {
+        index: CONTENT_INDICES.INTEGRATIONS,
+        body: {
+          size: 10000,
+          query: {
+            bool: {
+              must: [
+                {
+                  wildcard: {
+                    'document.metadata.title': {
+                      value: `*${escapeWildcard(trimmed)}*`,
+                      case_insensitive: true,
+                    },
+                  },
+                },
+                { term: { 'space.name': space } },
+              ],
+            },
+          },
+          _source: ['document.rules'],
+        },
+      });
+
+      const ruleIds = new Set<string>();
+      (response?.hits?.hits || []).forEach((hit: any) => {
+        (hit._source?.document?.rules || []).forEach((ruleId: string) => ruleIds.add(ruleId));
+      });
+      return Array.from(ruleIds);
+    } catch (error: any) {
+      console.warn(
+        'Security Analytics - WazuhRulesService - fetchRuleIdsByIntegrationName:',
+        extractErrorMessage(error)
+      );
+      return [];
+    }
+  }
+
   getRules = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<{}, GetRulesParams>,
@@ -157,13 +205,27 @@ export default class WazuhRulesService {
         space?: string;
       };
 
-      const { from = 0, size = 5000, query, sort, _source } = (request.body as any) ?? {};
+      const {
+        from = 0,
+        size = 5000,
+        query,
+        sort,
+        _source,
+        searchText,
+      } = (request.body as any) ?? {};
       const client = this.getClient(request);
+      const resolvedSpace = space ?? this.getSpaceFromPrePackaged(prePackaged);
+      const integrationRuleIds = await this.fetchRuleIdsByIntegrationName(
+        client,
+        searchText,
+        resolvedSpace
+      );
+      const mergedQuery = mergeIdsClause(query, 'document.id', integrationRuleIds);
       const searchBody: any = {
         from,
         size,
         track_total_hits: true,
-        query: this.buildQuery(prePackaged, query, space),
+        query: this.buildQuery(prePackaged, mergedQuery, space),
       };
       if (sort) searchBody.sort = sort;
       if (_source !== undefined) searchBody._source = _source;
@@ -174,11 +236,7 @@ export default class WazuhRulesService {
 
       const ruleHits = searchResponse?.hits?.hits || [];
       const ruleIds = ruleHits.map((hit: any) => hit._source?.document?.id || hit.document?.id);
-      const integrationMap = await this.fetchIntegrationMap(
-        client,
-        ruleIds,
-        space ?? this.getSpaceFromPrePackaged(prePackaged)
-      );
+      const integrationMap = await this.fetchIntegrationMap(client, ruleIds, resolvedSpace);
       const enrichedHits = ruleHits.map((hit: any) => ({
         ...hit,
         integration: integrationMap.get(hit._source?.document?.id || hit.document?.id) || null,
