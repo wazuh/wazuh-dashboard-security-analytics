@@ -117,6 +117,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         from: pageIndex * pageSize,
         size: pageSize,
         sort,
+        searchText: appliedSearch,
         _source: {
           includes: [
             'document.id',

@@ -4,6 +4,7 @@
  */
 
 const RULE_KEYWORD_SEARCH_FIELDS = [
+  'document.id',
   'document.metadata.title',
   'document.metadata.author',
   'document.level',

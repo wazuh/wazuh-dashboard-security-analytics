@@ -219,6 +219,8 @@ export class RulesStore implements IWazuhRulesStore {
       size?: number;
       sort?: Array<Record<string, any>>;
       _source?: any;
+      // Wazuh: raw search text, used server-side to also match rules by integration name
+      searchText?: string;
     },
     space: string
   ): Promise<{ total: number; items: RuleItemInfoBase[] }> {
@@ -230,6 +232,7 @@ export class RulesStore implements IWazuhRulesStore {
     };
     if (params.sort) body.sort = params.sort;
     if (params._source !== undefined) body._source = params._source;
+    if (params.searchText !== undefined) body.searchText = params.searchText;
 
     const isStandard = space === 'standard';
     const response = await this.service.getRules(isStandard, body, space);

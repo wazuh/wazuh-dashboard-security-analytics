@@ -14,6 +14,8 @@ export interface DecodersSearchParams {
   sort?: any;
   query?: any;
   _source?: any;
+  // Wazuh: raw search text, used server-side to also match decoders by integration name
+  searchText?: string;
 }
 
 export class DecodersStore {
