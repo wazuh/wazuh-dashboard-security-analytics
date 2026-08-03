@@ -476,6 +476,8 @@ export class DecodersService {
       const deleteBody = { decoderId };
 
       await client(CLIENT_DECODER_METHODS.DELETE_DECODER, deleteBody);
+      // Wazuh: force the index to refresh so the immediate post-delete reload doesn't race OpenSearch's refresh_interval.
+      await client('indices.refresh', { index: CONTENT_INDICES.DECODERS });
       return response.custom({
         statusCode: 200,
         body: {
