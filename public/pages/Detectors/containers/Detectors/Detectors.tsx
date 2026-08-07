@@ -13,6 +13,7 @@ import {
   EuiEmptyPrompt,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiHealth,
   EuiInMemoryTable,
   EuiLink,
   EuiPanel,
@@ -212,13 +213,8 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
   };
 
   render() {
-    const {
-      detectorHits,
-      isDeleteModalVisible,
-      isPopoverOpen,
-      loadingDetectors,
-      selectedItems,
-    } = this.state;
+    const { detectorHits, isDeleteModalVisible, isPopoverOpen, loadingDetectors, selectedItems } =
+      this.state;
 
     const actions = [
       <EuiSmallButton
@@ -248,6 +244,9 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         name: 'Status',
         sortable: true,
         dataType: 'string',
+        render: (status: string, item: DetectorHit) => (
+          <EuiHealth color={item._source.enabled ? 'success' : 'subdued'}>{status}</EuiHealth>
+        ),
       },
       {
         field: 'logType',
@@ -351,13 +350,13 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
 
     // Wazuh: Unique space labels from loaded detectors
     const spaceOptions = [
-      ...new Set(detectorHits.map((detector) => getDetectorSourceLabel(detector._source.source)))
+      ...new Set(detectorHits.map((detector) => getDetectorSourceLabel(detector._source.source))),
     ]
       .filter((v) => v)
       .sort()
       .map((space) => ({ value: space, name: space }));
     // End Wazuh
-    
+
     const search = {
       toolsLeft: renderActionsLeft(loadingDetectors, selectedItems),
       toolsRight: renderActionsRight(),

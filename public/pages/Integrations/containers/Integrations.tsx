@@ -108,6 +108,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         'document.id',
         'document.metadata.title',
         'document.category',
+        'document.enabled',
+        'document.mode',
         'document.rules',
         'document.decoders',
         'document.kvdbs',

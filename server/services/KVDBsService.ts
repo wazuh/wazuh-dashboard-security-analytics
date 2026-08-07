@@ -184,6 +184,8 @@ export class KVDBsService extends MDSEnabledClientService {
       const deleteBody = { kvdbId };
 
       await client(CLIENT_KVDB_METHODS.DELETE_KVDB, deleteBody);
+      // Wazuh: force the index to refresh so the immediate post-delete reload doesn't race OpenSearch's refresh_interval.
+      await client('indices.refresh', { index: CONTENT_INDICES.KVDBS });
       return response.custom({
         statusCode: 200,
         body: {
