@@ -206,6 +206,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       "dataType": "string",
                       "field": "status",
                       "name": "Status",
+                      "render": [Function],
                       "sortable": true,
                     },
                     Object {
@@ -1609,6 +1610,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "dataType": "string",
                           "field": "status",
                           "name": "Status",
+                          "render": [Function],
                           "sortable": true,
                         },
                         Object {
@@ -2641,7 +2643,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         }
                                       }
                                       setScopeRow={false}
-                                      textOnly={true}
+                                      textOnly={false}
                                     >
                                       <td
                                         className="euiTableRowCell"
@@ -2657,13 +2659,51 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                           Status
                                         </div>
                                         <div
-                                          className="euiTableCellContent"
+                                          className="euiTableCellContent euiTableCellContent--overflowingContent"
                                         >
-                                          <span
-                                            className="euiTableCellContent__text"
+                                          <EuiHealth
+                                            className=""
+                                            color="success"
+                                            key=".0"
                                           >
-                                            Active
-                                          </span>
+                                            <div
+                                              className="euiHealth euiHealth--textSizeS"
+                                            >
+                                              <EuiFlexGroup
+                                                alignItems="center"
+                                                gutterSize="xs"
+                                                responsive={false}
+                                              >
+                                                <div
+                                                  className="euiFlexGroup euiFlexGroup--gutterExtraSmall euiFlexGroup--alignItemsCenter euiFlexGroup--directionRow"
+                                                >
+                                                  <EuiFlexItem
+                                                    grow={false}
+                                                  >
+                                                    <div
+                                                      className="euiFlexItem euiFlexItem--flexGrowZero"
+                                                    >
+                                                      <EuiIcon
+                                                        color="success"
+                                                        type="dot"
+                                                      >
+                                                        EuiIconMock
+                                                      </EuiIcon>
+                                                    </div>
+                                                  </EuiFlexItem>
+                                                  <EuiFlexItem
+                                                    grow={false}
+                                                  >
+                                                    <div
+                                                      className="euiFlexItem euiFlexItem--flexGrowZero"
+                                                    >
+                                                      Active
+                                                    </div>
+                                                  </EuiFlexItem>
+                                                </div>
+                                              </EuiFlexGroup>
+                                            </div>
+                                          </EuiHealth>
                                         </div>
                                       </td>
                                     </EuiTableRowCell>
