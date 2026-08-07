@@ -25,6 +25,7 @@ import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { KVDBS_PAGE_SIZE, KVDBS_SEARCH_SCHEMA, KVDBS_SORT_FIELD } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
@@ -101,7 +102,13 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         query: buildQuery(),
         track_total_hits: true,
         _source: {
-          includes: ['document.id', 'document.metadata.title', 'document.metadata.author', 'space'],
+          includes: [
+            'document.id',
+            'document.metadata.title',
+            'document.metadata.author',
+            'document.enabled',
+            'space',
+          ],
         },
       });
 
@@ -220,6 +227,13 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         name: 'Author',
         sortable: true,
         render: (value: string) => formatCellValue(value),
+      },
+      {
+        field: 'document.enabled',
+        name: 'Status',
+        render: (enabled: boolean) => (
+          <EnabledHealth enabled={enabled} data-test-subj="kvdb_status" />
+        ),
       },
       {
         name: 'Actions',
