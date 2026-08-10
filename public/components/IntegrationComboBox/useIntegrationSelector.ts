@@ -18,7 +18,7 @@ interface UseIntegrationSelectorParams {
   notifications: NotificationsStart;
   enabled?: boolean;
   /** Space to scope the integration list to (e.g. 'draft', 'standard', a custom space). */
-  space: string;
+  space?: string;
   /**
    * Exclude integrations with no document.<relatedField> — e.g. 'decoders' on the
    * Decoders page — since filtering by one would always resolve to zero results.
@@ -50,7 +50,7 @@ export function useIntegrationSelector({
     // `listIntegrationOptions` requests only `document.metadata.title` (id comes
     // free from `_id`), unlike getIntegrations() below which fetches full documents.
     DataStore.integrations
-      .listIntegrationOptions(space, relatedField)
+      .listIntegrationOptions(space ?? 'draft', relatedField)
       .then((result) => {
         if (!cancelled) {
           setOptions(

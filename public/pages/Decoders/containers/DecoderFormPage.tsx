@@ -76,7 +76,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     loading: loadingIntegrations,
     options: integrationTypeOptions,
     refresh: refreshIntegrations,
-  } = useIntegrationSelector({ notifications, space: 'draft' });
+  } = useIntegrationSelector({ notifications });
 
   useEffect(() => {
     const fetchDecoder = async () => {
