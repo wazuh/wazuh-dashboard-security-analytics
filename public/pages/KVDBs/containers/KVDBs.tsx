@@ -38,6 +38,7 @@ import {
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
 import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
+import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -226,7 +227,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         field: 'integration.title',
         name: 'Integration',
         dataType: 'string',
-        render: (value: string) => formatCellValue(value),
+        render: (value: string) => <IntegrationCell name={value || ''} />,
       },
       {
         field: 'document.metadata.author',

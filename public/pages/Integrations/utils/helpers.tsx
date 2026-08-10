@@ -173,6 +173,20 @@ export const getIntegrationsTableSearchConfig = (options?: {
       multiSelect: 'or',
       options: getIntegrationCategoryFilterOptions(false),
     },
+    // Wazuh: Status dropdown parity with the other entity tables (spec: "Status
+    // dropdown parity"). Client-side field filter, consistent with this table's
+    // existing EuiInMemoryTable approach (Category filter above).
+    {
+      type: 'field_value_selection',
+      field: 'enabled',
+      name: 'Status',
+      compressed: true,
+      multiSelect: false,
+      options: [
+        { value: true, name: 'Enabled' },
+        { value: false, name: 'Disabled' },
+      ],
+    },
   ],
   toolsRight: options?.toolsRight,
 });
