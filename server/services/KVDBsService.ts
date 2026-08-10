@@ -107,22 +107,27 @@ export class KVDBsService extends MDSEnabledClientService {
     }
   };
 
-  // Wazuh: resolve an integration name to its KVDB ids, space-scoped, via an EXACT
-  // term match on document.metadata.title (see design A4 / spike: this field is
-  // keyword-mapped). Powers the Integration column CTA's "Go to integration KVDBs".
+  // Wazuh: resolve one or more integration names (multiSelect 'or') to their KVDB
+  // ids, space-scoped, via an EXACT terms match on document.metadata.title (see
+  // design A4 / spike: this field is keyword-mapped). Powers the Integration
+  // column CTA's "Go to integration KVDBs" and the KVDBs table's Integration filter.
   fetchKVDBIdsByIntegrationName = async (
     context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest<unknown, unknown, { integrationName: string; space?: string }>,
+    request: OpenSearchDashboardsRequest<
+      unknown,
+      unknown,
+      { integrationNames: string[]; space?: string }
+    >,
     response: OpenSearchDashboardsResponseFactory
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<{ kvdbIds: string[] }> | ResponseError>> => {
     try {
-      const { integrationName, space } = request.body ?? ({} as any);
-      const trimmed = integrationName?.trim();
-      if (!trimmed) {
+      const { integrationNames, space } = request.body ?? ({} as any);
+      const trimmed = (integrationNames ?? []).map((name: string) => name.trim()).filter(Boolean);
+      if (!trimmed.length) {
         return response.custom({ statusCode: 200, body: { ok: true, response: { kvdbIds: [] } } });
       }
 
-      const must: any[] = [{ term: { 'document.metadata.title': trimmed } }];
+      const must: any[] = [{ terms: { 'document.metadata.title': trimmed } }];
       if (space) {
         must.push({ term: { 'space.name': space } });
       }

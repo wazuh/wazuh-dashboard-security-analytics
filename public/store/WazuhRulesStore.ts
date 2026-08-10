@@ -221,9 +221,10 @@ export class RulesStore implements IWazuhRulesStore {
       _source?: any;
       // Wazuh: raw search text, used server-side to also match rules by integration name
       searchText?: string;
-      // Wazuh: Status/Integration dropdown filters, applied server-side as hard filters
+      // Wazuh: Status/Integration filters (multiSelect 'or'), applied server-side as
+      // hard filters.
       status?: 'enabled' | 'disabled';
-      integrationName?: string;
+      integrationNames?: string[];
     },
     space: string
   ): Promise<{ total: number; items: RuleItemInfoBase[] }> {
@@ -237,7 +238,7 @@ export class RulesStore implements IWazuhRulesStore {
     if (params._source !== undefined) body._source = params._source;
     if (params.searchText !== undefined) body.searchText = params.searchText;
     if (params.status !== undefined) body.status = params.status;
-    if (params.integrationName !== undefined) body.integrationName = params.integrationName;
+    if (params.integrationNames?.length) body.integrationNames = params.integrationNames;
 
     const isStandard = space === 'standard';
     const response = await this.service.getRules(isStandard, body, space);

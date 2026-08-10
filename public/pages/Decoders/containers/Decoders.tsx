@@ -10,10 +10,10 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
-  EuiCompressedFieldSearch,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
+  EuiSearchBar,
   EuiSpacer,
   EuiText,
   EuiToolTip,
@@ -23,6 +23,7 @@ import {
   EuiContextMenuItem,
   EuiConfirmModal,
 } from '@elastic/eui';
+import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -40,8 +41,15 @@ import {
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
 import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
-import { EntityFilterBar, StatusFilterValue } from '../../../components/EntityFilterBar/EntityFilterBar';
+import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
 import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
+import {
+  buildQueryFromValues,
+  decodeMultiValue,
+  encodeMultiValue,
+  getFreeText,
+  getOrSelectedValues,
+} from '../../../utils/entitySearchBarFilters';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -56,8 +64,30 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] }, history);
-  const [searchText, setSearchText] = useState(urlFilters.values.query);
-  const [appliedSearch, setAppliedSearch] = useState(urlFilters.values.query);
+  // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
+  // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
+  // matching the pattern already used by Detectors. `appliedQueryText`/
+  // `appliedStatus`/`appliedIntegrationNames` are what actually drives the fetch:
+  // free text debounces like before, filter checkboxes apply immediately.
+  const buildQueryFromUrl = () =>
+    buildQueryFromValues(urlFilters.values.query, [
+      { field: 'status', values: decodeMultiValue(urlFilters.values.status) },
+      { field: 'integration', values: decodeMultiValue(urlFilters.values.integration) },
+    ]);
+  const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
+  const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
+  const [appliedStatus, setAppliedStatus] = useState<'enabled' | 'disabled' | undefined>(() => {
+    const statuses = decodeMultiValue(urlFilters.values.status);
+    return statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined;
+  });
+  const [appliedIntegrationNames, setAppliedIntegrationNames] = useState<string[]>(() =>
+    decodeMultiValue(urlFilters.values.integration)
+  );
+  const selectedStatuses = useMemo(() => getOrSelectedValues(searchQuery, 'status'), [searchQuery]);
+  const selectedIntegrations = useMemo(
+    () => getOrSelectedValues(searchQuery, 'integration'),
+    [searchQuery]
+  );
   const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('document.name');
@@ -91,31 +121,56 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       return;
     }
     const timeout = setTimeout(() => {
-      setAppliedSearch(searchText);
-      urlFilters.setParams({ query: searchText });
-      urlFilters.setPage(1);
+      const freeText = getFreeText(searchQuery);
+      setAppliedQueryText(freeText);
+      // 'query' is in resetPageOn, so this alone already resets the page.
+      urlFilters.setParams({ query: freeText });
     }, 300);
 
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText]);
+  }, [getFreeText(searchQuery)]);
+
+  // Wazuh: Status/Integration checkboxes (multiSelect 'or') apply immediately,
+  // unlike the free-text debounce above — matches the Detectors filter pattern.
+  const isFirstFilterRender = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
+    }
+    setAppliedStatus(
+      selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
+    );
+    setAppliedIntegrationNames(selectedIntegrations);
+    // 'status'/'integration' are also in resetPageOn — same reasoning as above.
+    urlFilters.setParams({
+      status: selectedStatuses.length ? encodeMultiValue(selectedStatuses) : undefined,
+      integration: selectedIntegrations.length ? encodeMultiValue(selectedIntegrations) : undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatuses.join(','), selectedIntegrations.join(',')]);
 
   // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
   // integration decoders" while already on Decoders) updates the URL without
-  // remounting this component, so `searchText`/`appliedSearch` must resync from the
-  // URL-owned value instead of relying on their mount-time initializer.
+  // remounting this component, so the search bar must resync from the URL-owned
+  // value instead of relying on its mount-time initializer.
   useEffect(() => {
-    setSearchText(urlFilters.values.query);
-    setAppliedSearch(urlFilters.values.query);
+    setSearchQuery(buildQueryFromUrl());
+    setAppliedQueryText(urlFilters.values.query);
+    const statuses = decodeMultiValue(urlFilters.values.status);
+    setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
+    setAppliedIntegrationNames(decodeMultiValue(urlFilters.values.integration));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlFilters.values.query]);
+  }, [urlFilters.values.query, urlFilters.values.status, urlFilters.values.integration]);
 
-  const status = (urlFilters.values.status || undefined) as 'enabled' | 'disabled' | undefined;
-  const integrationName = urlFilters.values.integration || undefined;
+  const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
+    { notifications, enabled: true, space: spaceFilter }
+  );
 
   const loadDecoders = useCallback(async () => {
     setLoading(true);
-    const query = buildDecodersSearchQuery(appliedSearch);
+    const query = buildDecodersSearchQuery(appliedQueryText);
     const sort = sortField
       ? [
           {
@@ -132,9 +187,9 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         size: pageSize,
         sort,
         query,
-        searchText: appliedSearch,
-        status,
-        integrationName,
+        searchText: appliedQueryText,
+        status: appliedStatus,
+        integrationNames: appliedIntegrationNames.length ? appliedIntegrationNames : undefined,
         _source: {
           includes: [
             'document.id',
@@ -155,7 +210,16 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     setDecoders(response.items);
     setTotal(response.total);
     setLoading(false);
-  }, [appliedSearch, pageIndex, pageSize, spaceFilter, sortField, sortDirection, status, integrationName]);
+  }, [
+    appliedQueryText,
+    pageIndex,
+    pageSize,
+    spaceFilter,
+    sortField,
+    sortDirection,
+    appliedStatus,
+    appliedIntegrationNames,
+  ]);
 
   useEffect(() => {
     loadDecoders();
@@ -378,26 +442,41 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         <EuiPanel>
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
-              <EuiCompressedFieldSearch
-                fullWidth
-                placeholder="Search decoders"
-                value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
-                isClearable
-                aria-label="Search decoders"
-              />
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EntityFilterBar
-                status={(urlFilters.values.status || '') as StatusFilterValue}
-                onStatusChange={(value) => urlFilters.setParams({ status: value || undefined })}
-                integration={{
-                  selectedName: urlFilters.values.integration,
-                  onChange: (name) => urlFilters.setParams({ integration: name || undefined }),
-                  notifications,
-                  space: spaceFilter,
+              <EuiSearchBar
+                query={searchQuery}
+                box={{
+                  placeholder: 'Search decoders',
+                  incremental: true,
+                  compressed: true,
                 }}
-                data-test-subj="decodersFilterBar"
+                filters={
+                  [
+                    {
+                      type: 'field_value_selection',
+                      field: 'status',
+                      name: 'Status',
+                      compressed: true,
+                      multiSelect: 'or',
+                      options: [
+                        { value: 'enabled', name: 'Enabled' },
+                        { value: 'disabled', name: 'Disabled' },
+                      ],
+                    },
+                    {
+                      type: 'field_value_selection',
+                      field: 'integration',
+                      name: 'Integration',
+                      compressed: true,
+                      multiSelect: 'or',
+                      loading: integrationOptionsLoading,
+                      options: integrationOptions.map((option) => ({
+                        value: option.value,
+                        name: option.label,
+                      })),
+                    },
+                  ] as FieldValueSelectionFilterConfigType[]
+                }
+                onChange={({ query }) => query && setSearchQuery(query)}
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>

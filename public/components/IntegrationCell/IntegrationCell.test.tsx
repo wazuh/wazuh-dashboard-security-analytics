@@ -32,20 +32,20 @@ describe('IntegrationCell', () => {
     const { getPushedPath } = renderWithFakeHistory('aws');
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     fireEvent.click(screen.getByText('Go to integration decoders'));
-    expect(getPushedPath()).toBe(`${ROUTES.DECODERS}?query=aws`);
+    expect(getPushedPath()).toBe(`${ROUTES.DECODERS}?integration=aws`);
   });
 
   it('navigates to rules with the integration name pre-filled', () => {
     const { getPushedPath } = renderWithFakeHistory('aws');
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     fireEvent.click(screen.getByText('Go to integration rules'));
-    expect(getPushedPath()).toBe(`${ROUTES.RULES}?query=aws`);
+    expect(getPushedPath()).toBe(`${ROUTES.RULES}?integration=aws`);
   });
 
   it('navigates to KVDBs with the integration name pre-filled', () => {
     const { getPushedPath } = renderWithFakeHistory('aws');
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     fireEvent.click(screen.getByText('Go to integration KVDBs'));
-    expect(getPushedPath()).toBe(`${ROUTES.KVDBS}?query=aws`);
+    expect(getPushedPath()).toBe(`${ROUTES.KVDBS}?integration=aws`);
   });
 });

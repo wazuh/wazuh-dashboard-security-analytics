@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
+  EuiButtonIcon,
   EuiConfirmModal,
   EuiContextMenuItem,
   EuiContextMenuPanel,
@@ -18,9 +19,11 @@ import {
   EuiSmallButton,
   EuiSpacer,
   EuiText,
+  EuiToolTip,
 } from '@elastic/eui';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
+import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
@@ -38,7 +41,15 @@ import {
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
 import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
+import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
 import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
+import {
+  buildQueryFromValues,
+  decodeMultiValue,
+  encodeMultiValue,
+  getFreeText,
+  getOrSelectedValues,
+} from '../../../utils/entitySearchBarFilters';
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -49,14 +60,22 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'page'] }, history);
+  const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] }, history);
   const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [searchQuery, setSearchQuery] = useState<any>(() =>
-    urlFilters.values.query ? EuiSearchBar.Query.parse(urlFilters.values.query) : null
-  );
+  // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
+  // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
+  // matching the pattern already used by Detectors. Neither `status` nor
+  // `integration` are real KVDB document fields, so both get stripped back out
+  // and resolved to explicit filters in buildQuery below.
+  const buildQueryFromUrl = () =>
+    buildQueryFromValues(urlFilters.values.query, [
+      { field: 'status', values: decodeMultiValue(urlFilters.values.status) },
+      { field: 'integration', values: decodeMultiValue(urlFilters.values.integration) },
+    ]);
+  const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
@@ -85,30 +104,56 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   // of relying on its mount-time initializer.
   const isFirstQuerySyncRender = useRef(true);
   useEffect(() => {
-    setSearchQuery(urlFilters.values.query ? EuiSearchBar.Query.parse(urlFilters.values.query) : null);
+    setSearchQuery(buildQueryFromUrl());
     if (isFirstQuerySyncRender.current) {
       isFirstQuerySyncRender.current = false;
       return;
     }
     urlFilters.setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlFilters.values.query]);
+  }, [urlFilters.values.query, urlFilters.values.status, urlFilters.values.integration]);
 
-  const buildQuery = useCallback(() => {
-    let query = searchQuery ? EuiSearchBar.Query.toESQuery(searchQuery) : { match_all: {} };
+  const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
+    { notifications, enabled: true, space: spaceFilter }
+  );
+
+  // Wazuh: `status`/`integration` are UI-only filter fields (see the schema
+  // comment) — strip their OR clauses out before toESQuery ever sees them, and
+  // resolve them into explicit filters ourselves.
+  const buildQuery = useCallback(async () => {
+    const selectedStatuses = getOrSelectedValues(searchQuery, 'status');
+    const selectedIntegrations = getOrSelectedValues(searchQuery, 'integration');
+
+    let esSourceQuery = searchQuery;
+    selectedStatuses.forEach((value) => {
+      esSourceQuery = esSourceQuery.removeOrFieldValue('status', value);
+    });
+    selectedIntegrations.forEach((value) => {
+      esSourceQuery = esSourceQuery.removeOrFieldValue('integration', value);
+    });
+
+    let query = EuiSearchBar.Query.toESQuery(esSourceQuery);
     if (!query || Object.keys(query).length === 0) {
       query = { match_all: {} };
     }
 
+    const filter: any[] = [];
     if (spaceFilter) {
-      query = {
-        bool: {
-          must: [query, { term: { 'space.name': spaceFilter } }],
-        },
-      };
+      filter.push({ term: { 'space.name': spaceFilter } });
+    }
+    // Wazuh: both/neither selected => no status filter (matches everything).
+    if (selectedStatuses.length === 1) {
+      filter.push({ term: { 'document.enabled': selectedStatuses[0] === 'enabled' } });
+    }
+    if (selectedIntegrations.length) {
+      const kvdbIds = await DataStore.kvdbs.fetchKVDBIdsByIntegrationName(
+        selectedIntegrations,
+        spaceFilter
+      );
+      filter.push({ terms: { 'document.id': kvdbIds } });
     }
 
-    return query;
+    return filter.length ? { bool: { must: [query], filter } } : query;
   }, [searchQuery, spaceFilter]);
 
   const fetchKVDBs = useCallback(async () => {
@@ -120,7 +165,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         from: pageIndex * pageSize,
         size: pageSize,
         sort,
-        query: buildQuery(),
+        query: await buildQuery(),
         track_total_hits: true,
         _source: {
           includes: [
@@ -176,9 +221,15 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   };
 
   const onSearchChange = ({ query }: { query: any }) => {
+    if (!query) return;
     setSearchQuery(query);
-    urlFilters.setParams({ query: query?.text ?? '' });
-    urlFilters.setPage(1);
+    // 'query'/'status'/'integration' are all in resetPageOn, so this alone already
+    // resets the page.
+    urlFilters.setParams({
+      query: getFreeText(query),
+      status: encodeMultiValue(getOrSelectedValues(query, 'status')) || undefined,
+      integration: encodeMultiValue(getOrSelectedValues(query, 'integration')) || undefined,
+    });
   };
 
   const pagination = useMemo(
@@ -369,7 +420,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
               <EuiSearchBar
-                query={searchQuery ?? undefined}
+                query={searchQuery}
                 box={{
                   placeholder: 'Search KVDBs',
                   incremental: true,
@@ -377,13 +428,44 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                   schema: true,
                 }}
                 schema={KVDBS_SEARCH_SCHEMA}
+                filters={
+                  [
+                    {
+                      type: 'field_value_selection',
+                      field: 'status',
+                      name: 'Status',
+                      compressed: true,
+                      multiSelect: 'or',
+                      options: [
+                        { value: 'enabled', name: 'Enabled' },
+                        { value: 'disabled', name: 'Disabled' },
+                      ],
+                    },
+                    {
+                      type: 'field_value_selection',
+                      field: 'integration',
+                      name: 'Integration',
+                      compressed: true,
+                      multiSelect: 'or',
+                      loading: integrationOptionsLoading,
+                      options: integrationOptions.map((option) => ({
+                        value: option.value,
+                        name: option.label,
+                      })),
+                    },
+                  ] as FieldValueSelectionFilterConfigType[]
+                }
                 onChange={onSearchChange}
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiSmallButton iconType="refresh" onClick={fetchKVDBs}>
-                Refresh
-              </EuiSmallButton>
+              <EuiToolTip content="Refresh">
+                <EuiButtonIcon
+                  iconType="refresh"
+                  aria-label="Refresh KVDBs"
+                  onClick={() => fetchKVDBs()}
+                />
+              </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="m" />

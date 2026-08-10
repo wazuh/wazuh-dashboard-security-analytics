@@ -73,7 +73,11 @@ export const applyEntityFilters = (
     filter.push(statusFilter);
   }
 
-  if (opts.integrationIds && opts.integrationIds.length) {
+  // Wazuh: `undefined` means "no integration filter active" — an empty array means
+  // the filter IS active but resolved to zero ids (e.g. a matched integration with
+  // no associated decoders/rules), which must still filter down to zero results,
+  // not silently fall back to unfiltered.
+  if (opts.integrationIds !== undefined) {
     filter.push({ terms: { 'document.id': opts.integrationIds } });
   }
 

@@ -16,9 +16,10 @@ export interface DecodersSearchParams {
   _source?: any;
   // Wazuh: raw search text, used server-side to also match decoders by integration name
   searchText?: string;
-  // Wazuh: Status/Integration dropdown filters, applied server-side as hard filters
+  // Wazuh: Status/Integration filters (multiSelect 'or'), applied server-side as
+  // hard filters.
   status?: 'enabled' | 'disabled';
-  integrationName?: string;
+  integrationNames?: string[];
 }
 
 export class DecodersStore {

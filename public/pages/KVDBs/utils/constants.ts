@@ -31,5 +31,17 @@ export const KVDBS_SEARCH_SCHEMA = {
     'document.metadata.title': {
       type: 'string',
     },
+    // Wazuh: neither `status` nor `integration` are real KVDB document fields —
+    // both are stripped out and resolved to explicit filters (a term on
+    // document.enabled, and a document.id terms clause from a name->ids lookup)
+    // client-side before the query reaches EuiSearchBar's toESQuery (see
+    // KVDBs.tsx buildQuery). Declared here only so the strict schema accepts the
+    // field_value_selection filters' OR clauses.
+    status: {
+      type: 'string',
+    },
+    integration: {
+      type: 'string',
+    },
   },
 };

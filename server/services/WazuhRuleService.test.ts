@@ -58,7 +58,7 @@ describe('WazuhRulesService.getRules — status/integration filters', () => {
     );
   });
 
-  it('resolves integrationName to rule ids via an exact term match, space-scoped', async () => {
+  it('resolves integrationNames to rule ids via an exact terms match, space-scoped', async () => {
     const { osDriver, callAsCurrentUser } = buildClient((params) => {
       if (params.index === 'wazuh-threatintel-integrations') {
         return {
@@ -74,19 +74,22 @@ describe('WazuhRulesService.getRules — status/integration filters', () => {
 
     await service.getRules(
       {} as any,
-      makeRequest({ query: { match_all: {} }, integrationName: 'aws' }, { prePackaged: true, space: 'standard' }),
+      makeRequest(
+        { query: { match_all: {} }, integrationNames: ['aws'] },
+        { prePackaged: true, space: 'standard' }
+      ),
       response as any
     );
 
     const integrationSearchCall = callAsCurrentUser.mock.calls.find(
       (call) =>
         call[1]?.index === 'wazuh-threatintel-integrations' &&
-        call[1]?.body?.query?.bool?.must?.some((clause: any) => clause.term?.['document.metadata.title'])
+        call[1]?.body?.query?.bool?.must?.some((clause: any) => clause.terms?.['document.metadata.title'])
     );
     expect(integrationSearchCall).toBeDefined();
     expect(integrationSearchCall![1].body.query.bool.must).toEqual(
       expect.arrayContaining([
-        { term: { 'document.metadata.title': 'aws' } },
+        { terms: { 'document.metadata.title': ['aws'] } },
         { term: { 'space.name': 'standard' } },
       ])
     );

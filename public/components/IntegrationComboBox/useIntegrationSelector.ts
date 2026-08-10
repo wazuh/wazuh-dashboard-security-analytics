@@ -39,15 +39,17 @@ export function useIntegrationSelector({
     // Wazuh: scope the list to the currently selected space — this previously
     // always called the "draft" integrations endpoint regardless of `space`, so
     // switching spaces kept showing the draft space's integrations verbatim.
+    // `listIntegrationOptions` requests only `document.metadata.title` (id comes
+    // free from `_id`), unlike getIntegrations() below which fetches full documents.
     DataStore.integrations
       .listIntegrationOptions(space ?? 'draft')
       .then((result) => {
         if (!cancelled) {
           setOptions(
-            result.map((option: any) => ({
-              value: String(option?.document?.metadata?.title ?? ''),
-              label: String(option?.document?.metadata?.title ?? ''),
-              id: String(option?.id ?? ''),
+            result.map((item) => ({
+              value: item.title,
+              label: item.title,
+              id: item.id,
             }))
           );
         }

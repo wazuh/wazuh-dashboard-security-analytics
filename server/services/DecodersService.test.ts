@@ -46,7 +46,7 @@ describe('DecodersService.searchDecoders — status/integration filters', () => 
     );
   });
 
-  it('resolves integrationName to decoder ids via an exact term match, space-scoped', async () => {
+  it('resolves integrationNames to decoder ids via an exact terms match, space-scoped', async () => {
     const { osDriver, callAsCurrentUser } = buildClient((params) => {
       if (params.index === 'wazuh-threatintel-integrations') {
         return {
@@ -60,21 +60,50 @@ describe('DecodersService.searchDecoders — status/integration filters', () => 
 
     await service.searchDecoders(
       {} as any,
-      makeRequest({ integrationName: 'aws' }, { space: 'standard' }),
+      makeRequest({ integrationNames: ['aws'] }, { space: 'standard' }),
       response as any
     );
 
     const integrationSearchCall = callAsCurrentUser.mock.calls.find(
       (call) =>
         call[1]?.index === 'wazuh-threatintel-integrations' &&
-        call[1]?.body?.query?.bool?.must?.some((clause: any) => clause.term?.['document.metadata.title'])
+        call[1]?.body?.query?.bool?.must?.some((clause: any) => clause.terms?.['document.metadata.title'])
     );
     expect(integrationSearchCall).toBeDefined();
     expect(integrationSearchCall![1].body.query.bool.must).toEqual(
       expect.arrayContaining([
-        { term: { 'document.metadata.title': 'aws' } },
+        { terms: { 'document.metadata.title': ['aws'] } },
         { term: { 'space.name': 'standard' } },
       ])
+    );
+  });
+
+  it('resolves multiple integrationNames (multiSelect or) in one terms clause', async () => {
+    const { osDriver, callAsCurrentUser } = buildClient((params) => {
+      if (params.index === 'wazuh-threatintel-integrations') {
+        return {
+          hits: { hits: [{ _source: { document: { decoders: ['decoder-1'] } } }] },
+        };
+      }
+      return emptySearchHits;
+    });
+    const service = new DecodersService(osDriver);
+    const response = buildResponseFactory();
+
+    await service.searchDecoders(
+      {} as any,
+      makeRequest({ integrationNames: ['aws', 'cisco'] }, { space: 'standard' }),
+      response as any
+    );
+
+    const integrationSearchCall = callAsCurrentUser.mock.calls.find(
+      (call) =>
+        call[1]?.index === 'wazuh-threatintel-integrations' &&
+        call[1]?.body?.query?.bool?.must?.some((clause: any) => clause.terms?.['document.metadata.title'])
+    );
+    expect(integrationSearchCall).toBeDefined();
+    expect(integrationSearchCall![1].body.query.bool.must).toEqual(
+      expect.arrayContaining([{ terms: { 'document.metadata.title': ['aws', 'cisco'] } }])
     );
   });
 

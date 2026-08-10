@@ -216,17 +216,18 @@ export default class WazuhRulesService {
     }
   }
 
-  // Wazuh: resolve an Integration dropdown selection to rule ids via an EXACT name
-  // match (unlike fetchRuleIdsByIntegrationName's wildcard search-by-text), space-scoped.
-  // document.metadata.title is keyword-mapped (existing wildcard usage never needs a
-  // .keyword subfield), so `term` gives precise, case-sensitive matching. See design A4.
+  // Wazuh: resolve an Integration dropdown selection (one or more, multiSelect 'or')
+  // to rule ids via an EXACT name match (unlike fetchRuleIdsByIntegrationName's
+  // wildcard search-by-text), space-scoped. document.metadata.title is
+  // keyword-mapped (existing wildcard usage never needs a .keyword subfield), so
+  // `terms` gives precise, case-sensitive matching. See design A4.
   private async fetchRuleIdsByExactIntegrationName(
     client: any,
-    integrationName: string | undefined,
+    integrationNames: string[] | undefined,
     space: string
   ): Promise<string[]> {
-    const trimmed = integrationName?.trim();
-    if (!trimmed) return [];
+    const trimmed = (integrationNames ?? []).map((name) => name.trim()).filter(Boolean);
+    if (!trimmed.length) return [];
 
     try {
       const response = await client('search', {
@@ -236,7 +237,7 @@ export default class WazuhRulesService {
           query: {
             bool: {
               must: [
-                { term: { 'document.metadata.title': trimmed } },
+                { terms: { 'document.metadata.title': trimmed } },
                 { term: { 'space.name': space } },
               ],
             },
@@ -278,7 +279,7 @@ export default class WazuhRulesService {
         _source,
         searchText,
         status,
-        integrationName,
+        integrationNames,
       } = (request.body as any) ?? {};
       const client = this.getClient(request);
       const resolvedSpace = space ?? this.getSpaceFromPrePackaged(prePackaged);
@@ -288,18 +289,17 @@ export default class WazuhRulesService {
         resolvedSpace
       );
       const mergedQuery = mergeIdsClause(query, 'document.id', integrationRuleIds);
-      const exactIntegrationRuleIds = await this.fetchRuleIdsByExactIntegrationName(
-        client,
-        integrationName,
-        resolvedSpace
-      );
+      const hasIntegrationFilter = Boolean(integrationNames?.length);
+      const exactIntegrationRuleIds = hasIntegrationFilter
+        ? await this.fetchRuleIdsByExactIntegrationName(client, integrationNames, resolvedSpace)
+        : [];
       const searchBody: any = {
         from,
         size,
         track_total_hits: true,
         query: this.buildQuery(prePackaged, mergedQuery, space, {
           status,
-          integrationIds: integrationName ? exactIntegrationRuleIds : undefined,
+          integrationIds: hasIntegrationFilter ? exactIntegrationRuleIds : undefined,
         }),
       };
       if (sort) searchBody.sort = sort;

@@ -242,17 +242,18 @@ export class DecodersService {
     }
   }
 
-  // Wazuh: resolve an Integration dropdown selection to decoder ids via an EXACT name
-  // match, space-scoped. See design A4 / WazuhRuleService.fetchRuleIdsByExactIntegrationName.
+  // Wazuh: resolve an Integration dropdown selection (one or more, multiSelect 'or')
+  // to decoder ids via an EXACT name match, space-scoped. See design A4 /
+  // WazuhRuleService.fetchRuleIdsByExactIntegrationName.
   private async fetchDecoderIdsByExactIntegrationName(
     client: any,
-    integrationName: string | undefined,
+    integrationNames: string[] | undefined,
     space: string | undefined
   ): Promise<string[]> {
-    const trimmed = integrationName?.trim();
-    if (!trimmed) return [];
+    const trimmed = (integrationNames ?? []).map((name) => name.trim()).filter(Boolean);
+    if (!trimmed.length) return [];
 
-    const must: any[] = [{ term: { 'document.metadata.title': trimmed } }];
+    const must: any[] = [{ terms: { 'document.metadata.title': trimmed } }];
     if (space) {
       must.push({ term: { 'space.name': space } });
     }
@@ -293,7 +294,7 @@ export class DecodersService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source, searchText, status, integrationName } = body;
+      const { from = 0, size = 25, sort, query, _source, searchText, status, integrationNames } = body;
 
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
@@ -303,16 +304,17 @@ export class DecodersService {
         space
       );
       const mergedQuery = mergeIdsClause(query, 'document.id', integrationDecoderIds);
-      const hasExtraFilters = Boolean(status) || Boolean(integrationName);
-      const exactIntegrationDecoderIds = hasExtraFilters
-        ? await this.fetchDecoderIdsByExactIntegrationName(client, integrationName, space)
+      const hasIntegrationFilter = Boolean(integrationNames?.length);
+      const hasExtraFilters = Boolean(status) || hasIntegrationFilter;
+      const exactIntegrationDecoderIds = hasIntegrationFilter
+        ? await this.fetchDecoderIdsByExactIntegrationName(client, integrationNames, space)
         : [];
       // Wazuh: no status/integration filter selected -> keep query shape byte-identical
       // to the pre-change output (spec: "No filters active — no regression").
       const filteredQuery = hasExtraFilters
         ? applyEntityFilters(mergedQuery ?? { match_all: {} }, {
             status: status as EntityStatus,
-            integrationIds: integrationName ? exactIntegrationDecoderIds : undefined,
+            integrationIds: hasIntegrationFilter ? exactIntegrationDecoderIds : undefined,
           })
         : mergedQuery;
       const searchResponse = await client('search', {

@@ -69,6 +69,21 @@ export class KVDBsStore {
     }
   }
 
+  // Wazuh: resolve one or more integration names (multiSelect 'or') to KVDB ids,
+  // space-scoped. Powers the KVDBs table's Integration filter.
+  public async fetchKVDBIdsByIntegrationName(
+    integrationNames: string[],
+    space?: string
+  ): Promise<string[]> {
+    if (!integrationNames.length) return [];
+    try {
+      const response = await this.service.fetchKVDBIdsByIntegrationName(integrationNames, space);
+      return response.ok ? response.response.kvdbIds : [];
+    } catch {
+      return [];
+    }
+  }
+
   public async getKVDB(id: string): Promise<KVDBItem | undefined> {
     const response: ServerResponse<KVDBSearchResponse> = await this.service.searchKVDBs({
       size: 1,

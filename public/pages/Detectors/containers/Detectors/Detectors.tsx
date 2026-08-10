@@ -42,6 +42,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { IntegrationCell } from '../../../../components/IntegrationCell/IntegrationCell';
 import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource'; // Wazuh: import functions to handle detector source and space
 import {
   buildQueryTextWithStatus,
@@ -274,7 +275,9 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         name: 'Integration', // replace log type to integration by Wazuh
         sortable: true,
         dataType: 'string',
-        render: (logType: string) => formatRuleType(logType),
+        render: (logType: string) => (
+          <IntegrationCell name={formatRuleType(logType)} history={this.props.history} />
+        ),
       },
       {
         field: 'space',

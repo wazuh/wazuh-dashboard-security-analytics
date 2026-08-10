@@ -62,17 +62,22 @@ export class IntegrationStore {
     return undefined;
   }
 
-  // Wazuh: space-scoped integration listing for filter/search dropdowns (e.g.
-  // EntityFilterBar). Deliberately side-effect-free — unlike getIntegrations()
-  // below, it must not mutate the shared ruleTypes/integrationCategoryFilters
-  // module-level caches those creation-form flows depend on.
-  public async listIntegrationOptions(spaceFilter: string): Promise<Integration[]> {
-    const integrationsRes = await this.service.searchIntegrations({ spaceFilter });
+  // Wazuh: space-scoped integration listing for the Rules/Decoders/KVDBs
+  // EuiSearchBar Integration filter. Deliberately side-effect-free — unlike
+  // getIntegrations() below, it must not mutate the shared
+  // ruleTypes/integrationCategoryFilters module-level caches those creation-form
+  // flows depend on — and requests only the fields it actually needs.
+  public async listIntegrationOptions(
+    spaceFilter: string
+  ): Promise<Array<{ id: string; title: string }>> {
+    const integrationsRes = await this.service.searchIntegrations({
+      spaceFilter,
+      _source: ['document.metadata.title'],
+    });
     if (integrationsRes.ok) {
       return integrationsRes.response.hits.hits.map((hit) => ({
         id: hit._id,
-        ...hit._source,
-        space: hit._source.space,
+        title: hit._source?.document?.metadata?.title ?? '',
       }));
     }
     return [];

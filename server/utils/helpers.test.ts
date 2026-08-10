@@ -141,9 +141,15 @@ describe('applyEntityFilters', () => {
     ]);
   });
 
-  it('does not add an ids clause when integrationIds is an empty array', () => {
+  it('does not add an ids clause when integrationIds is omitted (no filter active)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, {});
+    expect(result.bool.filter).toEqual([]);
+  });
+
+  it('adds an empty ids clause (matches nothing) when integrationIds is an empty array — the filter IS active but resolved to no ids, e.g. a matched integration with no associated decoders/rules', () => {
     const query = { match_all: {} };
     const result = applyEntityFilters(query, { integrationIds: [] });
-    expect(result.bool.filter).toEqual([]);
+    expect(result.bool.filter).toEqual([{ terms: { 'document.id': [] } }]);
   });
 });
