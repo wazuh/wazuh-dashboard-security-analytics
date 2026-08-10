@@ -62,6 +62,22 @@ export class IntegrationStore {
     return undefined;
   }
 
+  // Wazuh: space-scoped integration listing for filter/search dropdowns (e.g.
+  // EntityFilterBar). Deliberately side-effect-free — unlike getIntegrations()
+  // below, it must not mutate the shared ruleTypes/integrationCategoryFilters
+  // module-level caches those creation-form flows depend on.
+  public async listIntegrationOptions(spaceFilter: string): Promise<Integration[]> {
+    const integrationsRes = await this.service.searchIntegrations({ spaceFilter });
+    if (integrationsRes.ok) {
+      return integrationsRes.response.hits.hits.map((hit) => ({
+        id: hit._id,
+        ...hit._source,
+        space: hit._source.space,
+      }));
+    }
+    return [];
+  }
+
   public async getIntegrations(spaceFilter: string): Promise<Integration[]> {
     try {
       const integrationsRes = await this.service.searchIntegrations({

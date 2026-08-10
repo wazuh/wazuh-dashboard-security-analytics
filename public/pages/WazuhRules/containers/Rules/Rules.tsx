@@ -11,7 +11,7 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
-  EuiFieldSearch,
+  EuiCompressedFieldSearch,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
@@ -85,7 +85,8 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    onSpaceChange: () => urlFilters.setPage(1),
+    clearParamsOnChange: ['page'],
+    history,
   });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<RuleTableItem[]>([]);
@@ -102,7 +103,12 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.RULES]);
   }, []);
 
+  const isFirstSearchRender = useRef(true);
   useEffect(() => {
+    if (isFirstSearchRender.current) {
+      isFirstSearchRender.current = false;
+      return;
+    }
     const timeout = setTimeout(() => {
       setAppliedSearch(searchText);
       urlFilters.setParams({ query: searchText });
@@ -111,6 +117,16 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
+
+  // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
+  // integration rules" while already on Rules) updates the URL without remounting
+  // this component, so `searchText`/`appliedSearch` must resync from the URL-owned
+  // value instead of relying on their mount-time initializer.
+  useEffect(() => {
+    setSearchText(urlFilters.values.query);
+    setAppliedSearch(urlFilters.values.query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlFilters.values.query]);
 
   const status = (urlFilters.values.status || undefined) as 'enabled' | 'disabled' | undefined;
   const integrationName = urlFilters.values.integration || undefined;
@@ -176,7 +192,10 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   });
 
   const onTableChange = ({ page, sort }: { page?: any; sort?: any }) => {
-    if (sort) {
+    // Wazuh: EuiBasicTable reports the current sort criteria on every onChange call
+    // (including plain pagination clicks), not only when it actually changes — guard
+    // on an actual change so paging doesn't get silently reset back to page 1.
+    if (sort && (sort.field !== sortField || sort.direction !== sortDirection)) {
       setSortField(sort.field);
       setSortDirection(sort.direction);
       urlFilters.setPage(1);
@@ -392,7 +411,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         <EuiPanel>
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
-              <EuiFieldSearch
+              <EuiCompressedFieldSearch
                 fullWidth
                 placeholder="Search rules"
                 value={searchText}

@@ -90,7 +90,12 @@ export const useUrlFilterParams = (
 
   const writeToUrl = useCallback(
     (patch: Partial<Record<FilterParamName, string | undefined>>, resetPage: boolean) => {
-      const params = new URLSearchParams(location.search);
+      // Wazuh: read from `history.location` (live/mutable) rather than the `location`
+      // captured at render time — another `history.replace` can land synchronously in
+      // the same tick (e.g. a space-selector write right before `setPage`), and a
+      // stale `location` snapshot would silently clobber it back out.
+      const current = history.location;
+      const params = new URLSearchParams(current.search);
       Object.entries(patch).forEach(([key, value]) => {
         if (key === 'page') return;
         if (value === undefined || value === '') {
@@ -102,10 +107,10 @@ export const useUrlFilterParams = (
       if (resetPage && hasPage) {
         params.delete('page');
       }
-      history.replace({ ...location, search: params.toString() });
+      history.replace({ ...current, search: params.toString() });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [location, hasPage]
+    [history, hasPage]
   );
 
   const setParams = useCallback(
@@ -153,12 +158,14 @@ export const useUrlFilterParams = (
       }
       const safePage = Number.isFinite(page1Based) && page1Based >= 1 ? page1Based : 1;
       setPageState(safePage);
-      const params = new URLSearchParams(location.search);
+      // Wazuh: read from `history.location` — see the comment in `writeToUrl`.
+      const current = history.location;
+      const params = new URLSearchParams(current.search);
       params.set('page', String(safePage));
-      history.replace({ ...location, search: params.toString() });
+      history.replace({ ...current, search: params.toString() });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [location, hasPage]
+    [history, hasPage]
   );
 
   const clearParam = useCallback(

@@ -48,6 +48,7 @@ export const EntityFilterBar: React.FC<EntityFilterBarProps> = ({
   const { options, loading } = useIntegrationSelector({
     notifications: integration?.notifications as NotificationsStart,
     enabled: Boolean(integration),
+    space: integration?.space,
   });
 
   // Wazuh: design A6 — a selected integration name that no longer matches any real
@@ -94,6 +95,8 @@ export const EntityFilterBar: React.FC<EntityFilterBarProps> = ({
             resourceName="items"
             space={integration.space}
             fullWidth
+            label=""
+            hideEmptyStateCallout
             onChange={(selected) => integration.onChange(selected[0]?.value ?? '')}
           />
         </EuiFlexItem>

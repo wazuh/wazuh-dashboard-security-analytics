@@ -60,7 +60,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    onSpaceChange: () => urlFilters.setPage(1),
+    clearParamsOnChange: ['page'],
+    history,
   });
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<KVDBItem[]>([]);
@@ -77,6 +78,21 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   useEffect(() => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
   }, []);
+
+  // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
+  // integration KVDBs" while already on KVDBs) updates the URL without remounting
+  // this component, so the search bar must resync from the URL-owned value instead
+  // of relying on its mount-time initializer.
+  const isFirstQuerySyncRender = useRef(true);
+  useEffect(() => {
+    setSearchQuery(urlFilters.values.query ? EuiSearchBar.Query.parse(urlFilters.values.query) : null);
+    if (isFirstQuerySyncRender.current) {
+      isFirstQuerySyncRender.current = false;
+      return;
+    }
+    urlFilters.setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlFilters.values.query]);
 
   const buildQuery = useCallback(() => {
     let query = searchQuery ? EuiSearchBar.Query.toESQuery(searchQuery) : { match_all: {} };
@@ -144,15 +160,18 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   });
 
   const onTableChange = ({ page, sort }: any) => {
-    if (page) {
-      urlFilters.setPage(page.index + 1);
-      setPageSize(page.size);
-    }
-
-    if (sort) {
+    // Wazuh: EuiBasicTable reports the current sort criteria on every onChange call
+    // (including plain pagination clicks), not only when it actually changes — guard
+    // on an actual change so paging doesn't get silently reset back to page 1.
+    if (sort && (sort.field !== sortField || sort.direction !== sortDirection)) {
       setSortField(sort.field || KVDBS_SORT_FIELD);
       setSortDirection(sort.direction || 'asc');
       urlFilters.setPage(1);
+    }
+
+    if (page) {
+      urlFilters.setPage(page.index + 1);
+      setPageSize(page.size);
     }
   };
 
@@ -350,7 +369,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
               <EuiSearchBar
-                defaultQuery={searchQuery ?? undefined}
+                query={searchQuery ?? undefined}
                 box={{
                   placeholder: 'Search KVDBs',
                   incremental: true,

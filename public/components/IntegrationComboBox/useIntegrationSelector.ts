@@ -17,11 +17,14 @@ export interface IntegrationOption {
 interface UseIntegrationSelectorParams {
   notifications: NotificationsStart;
   enabled?: boolean;
+  /** Space to scope the integration list to (e.g. 'draft', 'standard', a custom space). */
+  space?: string;
 }
 
 export function useIntegrationSelector({
   notifications,
   enabled = true,
+  space,
 }: UseIntegrationSelectorParams) {
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState<IntegrationOption[]>([]);
@@ -33,15 +36,18 @@ export function useIntegrationSelector({
     let cancelled = false;
     setLoading(true);
 
-    DataStore.decoders
-      .getDraftIntegrations()
+    // Wazuh: scope the list to the currently selected space — this previously
+    // always called the "draft" integrations endpoint regardless of `space`, so
+    // switching spaces kept showing the draft space's integrations verbatim.
+    DataStore.integrations
+      .listIntegrationOptions(space ?? 'draft')
       .then((result) => {
         if (!cancelled) {
           setOptions(
             result.map((option: any) => ({
-              value: String(option?._source?.document?.metadata?.title ?? ''),
-              label: String(option?._source?.document?.metadata?.title ?? ''),
-              id: String(option?._id ?? ''),
+              value: String(option?.document?.metadata?.title ?? ''),
+              label: String(option?.document?.metadata?.title ?? ''),
+              id: String(option?.id ?? ''),
             }))
           );
         }
@@ -65,7 +71,7 @@ export function useIntegrationSelector({
     return () => {
       cancelled = true;
     };
-  }, [notifications, enabled, refreshCount]);
+  }, [notifications, enabled, space, refreshCount]);
 
   const refresh = useCallback(() => setRefreshCount((c) => c + 1), []);
 

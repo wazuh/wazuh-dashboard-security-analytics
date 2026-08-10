@@ -41,6 +41,10 @@ interface IntegrationComboBoxProps {
   error?: string;
   space?: string;
   fullWidth?: boolean;
+  /** Hide the "No integrations available" callout — e.g. in a compact toolbar filter
+   * bar, where an empty result set is a normal, low-stakes state, not a form
+   * blocker, and the callout's width otherwise breaks a horizontal layout. */
+  hideEmptyStateCallout?: boolean;
 }
 
 export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
@@ -57,6 +61,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   error,
   space = 'draft',
   fullWidth = false,
+  hideEmptyStateCallout = false,
 }) => {
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
@@ -141,7 +146,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
         )}
       </EuiCompressedFormRow>
 
-      {!isLoading && options.length === 0 && (
+      {!isLoading && !hideEmptyStateCallout && options.length === 0 && (
         <>
           <EuiSpacer size="m" />
           <EuiCallOut title="No integrations available" color="warning" iconType="alert">
