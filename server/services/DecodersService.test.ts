@@ -37,7 +37,7 @@ describe('DecodersService.searchDecoders — status/integration filters', () => 
     );
 
     const decodersSearchCall = callAsCurrentUser.mock.calls.find(
-      (call) => call[1]?.index === 'wazuh-threatintel-decoders'
+      (call) => call[0] === 'search' && call[1]?.index === 'wazuh-threatintel-decoders'
     );
     expect(decodersSearchCall).toBeDefined();
     const filterClause = decodersSearchCall![1].body.query.bool.filter;
@@ -86,7 +86,7 @@ describe('DecodersService.searchDecoders — status/integration filters', () => 
     await service.searchDecoders({} as any, makeRequest({}, {}), response as any);
 
     const decodersSearchCall = callAsCurrentUser.mock.calls.find(
-      (call) => call[1]?.index === 'wazuh-threatintel-decoders'
+      (call) => call[0] === 'search' && call[1]?.index === 'wazuh-threatintel-decoders'
     );
     expect(decodersSearchCall![1].body.query).toEqual({ match_all: {} });
   });

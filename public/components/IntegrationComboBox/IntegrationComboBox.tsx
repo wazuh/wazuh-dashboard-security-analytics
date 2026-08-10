@@ -12,12 +12,11 @@ import {
   EuiFlexItem,
   EuiSpacer,
 } from '@elastic/eui';
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
 import { IntegrationOption } from './useIntegrationSelector';
 import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
-import React, { ReactNode, useState } from 'react';
 
 const DEFAULT_LABEL = (
   <div>

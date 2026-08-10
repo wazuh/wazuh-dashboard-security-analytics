@@ -12,13 +12,23 @@ import { buildEntityQueryRoute } from '../../utils/routes';
 export interface IntegrationCellProps {
   /** Integration name for this row. Renders as plain text (no popover) when empty. */
   name: string;
+  /**
+   * Optional history override (the same `history` prop every container in this
+   * codebase already receives via RouteComponentProps). Falls back to
+   * `useHistory()` when omitted. See useUrlFilterParams.ts for why: react-router's
+   * hooks are implemented via `React.useContext`, which `test/setup.jest.ts`
+   * globally mocks for the unrelated SecurityAnalyticsContext pattern — plain
+   * prop-drilling bypasses that mock and is unaffected.
+   */
+  history?: Pick<ReturnType<typeof useHistory>, 'push'>;
 }
 
 // Wazuh: clickable Integration column cell. Opens a popover with a jump-to-entity
 // menu (Decoders/Rules/KVDBs) scoped to this integration's name, reusing the
 // existing space-scoped search-by-name behavior via buildEntityQueryRoute.
-export const IntegrationCell: React.FC<IntegrationCellProps> = ({ name }) => {
-  const history = useHistory();
+export const IntegrationCell: React.FC<IntegrationCellProps> = ({ name, history: historyOverride }) => {
+  const routerHistory = useHistory();
+  const history = historyOverride ?? routerHistory;
   const [isOpen, setIsOpen] = useState(false);
 
   if (!name) {

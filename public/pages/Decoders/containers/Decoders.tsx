@@ -55,7 +55,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] });
+  const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] }, history);
   const [searchText, setSearchText] = useState(urlFilters.values.query);
   const [appliedSearch, setAppliedSearch] = useState(urlFilters.values.query);
   const pageIndex = urlFilters.page - 1;
@@ -188,7 +188,9 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       {
         field: 'integrations',
         name: 'Integration',
-        render: (integrations: string[]) => <IntegrationCell name={integrations?.[0] || ''} />,
+        render: (integrations: string[]) => (
+          <IntegrationCell name={integrations?.[0] || ''} history={history} />
+        ),
       },
       {
         field: 'document.metadata.author',

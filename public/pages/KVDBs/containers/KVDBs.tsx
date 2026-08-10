@@ -49,7 +49,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'page'] });
+  const urlFilters = useUrlFilterParams({ params: ['query', 'page'] }, history);
   const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
@@ -227,7 +227,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         field: 'integration.title',
         name: 'Integration',
         dataType: 'string',
-        render: (value: string) => <IntegrationCell name={value || ''} />,
+        render: (value: string) => <IntegrationCell name={value || ''} history={history} />,
       },
       {
         field: 'document.metadata.author',

@@ -76,7 +76,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const [allRules, setAllRules] = useState<RuleTableItem[]>([]);
   const [totalRules, setTotalRules] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] });
+  const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] }, history);
   const [searchText, setSearchText] = useState(urlFilters.values.query);
   const [appliedSearch, setAppliedSearch] = useState(urlFilters.values.query);
   const pageIndex = urlFilters.page - 1;
@@ -221,7 +221,10 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         sortable: false,
         width: '11%',
         render: (_: any, row: RuleTableItem) => (
-          <IntegrationCell name={row.integration?.document?.metadata?.title || ''} />
+          <IntegrationCell
+            name={row.integration?.document?.metadata?.title || ''}
+            history={history}
+          />
         ),
       },
       {
