@@ -14,7 +14,7 @@ import {
 import { ServerResponse } from '../models/types';
 import { DecoderItem, GetDecoderResponse, SearchDecodersResponse } from '../../types';
 import { CLIENT_DECODER_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { extractErrorMessage } from '../utils/helpers';
+import { escapeWildcard, extractErrorMessage, mergeIdsClause } from '../utils/helpers';
 
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',
@@ -186,6 +186,56 @@ export class DecodersService {
     return integrations;
   }
 
+  // Wazuh: find decoder ids belonging to integrations whose name matches the search text,
+  // so the decoders search can also be reached by integration name.
+  private async fetchDecoderIdsByIntegrationName(
+    client: any,
+    searchText: string | undefined,
+    space: string | undefined
+  ): Promise<string[]> {
+    const trimmed = searchText?.trim();
+    if (!trimmed) return [];
+
+    const must: any[] = [
+      {
+        wildcard: {
+          'document.metadata.title': {
+            value: `*${escapeWildcard(trimmed)}*`,
+            case_insensitive: true,
+          },
+        },
+      },
+    ];
+    if (space) {
+      must.push({ term: { 'space.name': space } });
+    }
+
+    try {
+      const response = await client('search', {
+        index: CONTENT_INDICES.INTEGRATIONS,
+        body: {
+          size: 10000,
+          query: { bool: { must } },
+          _source: ['document.decoders'],
+        },
+      });
+
+      const decoderIds = new Set<string>();
+      (response?.hits?.hits || []).forEach((hit: any) => {
+        (hit._source?.document?.decoders || []).forEach((decoderId: string) =>
+          decoderIds.add(decoderId)
+        );
+      });
+      return Array.from(decoderIds);
+    } catch (error: any) {
+      console.warn(
+        'Security Analytics - DecodersService - fetchDecoderIdsByIntegrationName:',
+        extractErrorMessage(error)
+      );
+      return [];
+    }
+  }
+
   searchDecoders = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest,
@@ -196,10 +246,16 @@ export class DecodersService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source } = body;
+      const { from = 0, size = 25, sort, query, _source, searchText } = body;
 
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
+      const integrationDecoderIds = await this.fetchDecoderIdsByIntegrationName(
+        client,
+        searchText,
+        space
+      );
+      const mergedQuery = mergeIdsClause(query, 'document.id', integrationDecoderIds);
       const searchResponse = await client('search', {
         index: CONTENT_INDICES.DECODERS,
         body: {
@@ -219,7 +275,7 @@ export class DecodersService {
                   ],
                 }
               : _source,
-          query: this.applySpaceFilter(query, space, searchFields),
+          query: this.applySpaceFilter(mergedQuery, space, searchFields),
         },
       });
 
@@ -420,6 +476,8 @@ export class DecodersService {
       const deleteBody = { decoderId };
 
       await client(CLIENT_DECODER_METHODS.DELETE_DECODER, deleteBody);
+      // Wazuh: force the index to refresh so the immediate post-delete reload doesn't race OpenSearch's refresh_interval.
+      await client('indices.refresh', { index: CONTENT_INDICES.DECODERS });
       return response.custom({
         statusCode: 200,
         body: {
