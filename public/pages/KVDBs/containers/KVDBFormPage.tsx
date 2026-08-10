@@ -93,7 +93,11 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
     loading: loadingIntegrations,
     options: integrationTypeOptions,
     refresh: refreshIntegrations,
-  } = useIntegrationSelector({ notifications, enabled: action === KVDB_ACTION.CREATE });
+  } = useIntegrationSelector({
+    notifications,
+    enabled: action === KVDB_ACTION.CREATE,
+    space: 'draft',
+  });
 
   useEffect(() => {
     if (action !== KVDB_ACTION.EDIT) return;

@@ -183,7 +183,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   }, [urlFilters.values.query, urlFilters.values.status, urlFilters.values.integration]);
 
   const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
-    { notifications, enabled: true, space: spaceFilter }
+    { notifications, enabled: true, space: spaceFilter, relatedField: 'rules' }
   );
 
   const loadRules = useCallback(async () => {

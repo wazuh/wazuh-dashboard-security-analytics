@@ -18,13 +18,21 @@ interface UseIntegrationSelectorParams {
   notifications: NotificationsStart;
   enabled?: boolean;
   /** Space to scope the integration list to (e.g. 'draft', 'standard', a custom space). */
-  space?: string;
+  space: string;
+  /**
+   * Exclude integrations with no document.<relatedField> — e.g. 'decoders' on the
+   * Decoders page — since filtering by one would always resolve to zero results.
+   * Omit for form contexts (creating/editing a resource), which need every
+   * integration regardless of what it's currently related to.
+   */
+  relatedField?: 'decoders' | 'rules' | 'kvdbs';
 }
 
 export function useIntegrationSelector({
   notifications,
   enabled = true,
   space,
+  relatedField,
 }: UseIntegrationSelectorParams) {
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState<IntegrationOption[]>([]);
@@ -42,7 +50,7 @@ export function useIntegrationSelector({
     // `listIntegrationOptions` requests only `document.metadata.title` (id comes
     // free from `_id`), unlike getIntegrations() below which fetches full documents.
     DataStore.integrations
-      .listIntegrationOptions(space ?? 'draft')
+      .listIntegrationOptions(space, relatedField)
       .then((result) => {
         if (!cancelled) {
           setOptions(
@@ -73,7 +81,7 @@ export function useIntegrationSelector({
     return () => {
       cancelled = true;
     };
-  }, [notifications, enabled, space, refreshCount]);
+  }, [notifications, enabled, space, relatedField, refreshCount]);
 
   const refresh = useCallback(() => setRefreshCount((c) => c + 1), []);
 

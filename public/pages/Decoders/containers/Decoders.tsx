@@ -165,7 +165,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   }, [urlFilters.values.query, urlFilters.values.status, urlFilters.values.integration]);
 
   const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
-    { notifications, enabled: true, space: spaceFilter }
+    { notifications, enabled: true, space: spaceFilter, relatedField: 'decoders' }
   );
 
   const loadDecoders = useCallback(async () => {

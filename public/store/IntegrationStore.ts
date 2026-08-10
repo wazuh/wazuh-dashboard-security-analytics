@@ -67,18 +67,27 @@ export class IntegrationStore {
   // getIntegrations() below, it must not mutate the shared
   // ruleTypes/integrationCategoryFilters module-level caches those creation-form
   // flows depend on — and requests only the fields it actually needs.
+  //
+  // `relatedField` (e.g. 'decoders' on the Decoders page) excludes integrations
+  // with an empty/missing document.<relatedField> array — filtering by one of
+  // those would always resolve to zero results, so there's no reason to offer it.
   public async listIntegrationOptions(
-    spaceFilter: string
+    spaceFilter: string,
+    relatedField?: 'decoders' | 'rules' | 'kvdbs'
   ): Promise<Array<{ id: string; title: string }>> {
     const integrationsRes = await this.service.searchIntegrations({
       spaceFilter,
-      _source: ['document.metadata.title'],
+      _source: relatedField
+        ? ['document.metadata.title', `document.${relatedField}`]
+        : ['document.metadata.title'],
     });
     if (integrationsRes.ok) {
-      return integrationsRes.response.hits.hits.map((hit) => ({
-        id: hit._id,
-        title: hit._source?.document?.metadata?.title ?? '',
-      }));
+      return integrationsRes.response.hits.hits
+        .filter((hit) => !relatedField || (hit._source?.document?.[relatedField]?.length ?? 0) > 0)
+        .map((hit) => ({
+          id: hit._id,
+          title: hit._source?.document?.metadata?.title ?? '',
+        }));
     }
     return [];
   }

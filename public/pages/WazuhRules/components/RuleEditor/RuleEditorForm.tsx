@@ -102,7 +102,11 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
     loading: loadingIntegrations,
     options: integrationOptions,
     refresh: refreshIntegrations,
-  } = useIntegrationSelector({ notifications: notifications!, enabled: mode === 'create' });
+  } = useIntegrationSelector({
+    notifications: notifications!,
+    enabled: mode === 'create',
+    space: 'draft',
+  });
 
   const validateTags = (fields: string[]) => {
     let isValid = true;

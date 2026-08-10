@@ -114,7 +114,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   }, [urlFilters.values.query, urlFilters.values.status, urlFilters.values.integration]);
 
   const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
-    { notifications, enabled: true, space: spaceFilter }
+    { notifications, enabled: true, space: spaceFilter, relatedField: 'kvdbs' }
   );
 
   // Wazuh: `status`/`integration` are UI-only filter fields (see the schema
