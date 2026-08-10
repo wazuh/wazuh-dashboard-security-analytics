@@ -23,6 +23,40 @@ import { buildYamlBody, extractErrorMessage } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 
 export class KVDBsService extends MDSEnabledClientService {
+  // Wazuh: resolve one or more integration names (multiSelect 'or') to their KVDB
+  // ids, space-scoped, via an EXACT terms match on document.metadata.title (a
+  // keyword-mapped field). Mirrors WazuhRuleService/DecodersService's equivalent
+  // resolvers — same server-side, single-round-trip pattern as the Rules/Decoders
+  // Integration filter.
+  private async resolveKVDBIdsByIntegrationNames(
+    client: any,
+    integrationNames: string[] | undefined,
+    space: string | undefined
+  ): Promise<string[]> {
+    const trimmed = (integrationNames ?? []).map((name) => name.trim()).filter(Boolean);
+    if (!trimmed.length) return [];
+
+    const must: any[] = [{ terms: { 'document.metadata.title': trimmed } }];
+    if (space) {
+      must.push({ term: { 'space.name': space } });
+    }
+
+    const searchResponse: any = await client('search', {
+      index: CONTENT_INDICES.INTEGRATIONS,
+      body: {
+        size: 10000,
+        query: { bool: { must } },
+        _source: ['document.kvdbs'],
+      },
+    });
+
+    const kvdbIds = new Set<string>();
+    (searchResponse?.hits?.hits || []).forEach((hit: any) => {
+      (hit._source?.document?.kvdbs || []).forEach((kvdbId: string) => kvdbIds.add(kvdbId));
+    });
+    return Array.from(kvdbIds);
+  }
+
   searchKVDBs = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<unknown, unknown, KVDBSearchRequest>,
@@ -30,10 +64,32 @@ export class KVDBsService extends MDSEnabledClientService {
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<KVDBSearchResponse> | ResponseError>> => {
     try {
       const body = request.body ?? { query: { match_all: {} } };
+      const { integrationNames, space, ...searchBody } = body;
       const client = this.getClient(request, context);
+
+      const hasIntegrationFilter = Boolean(integrationNames?.length);
+      const query = hasIntegrationFilter
+        ? {
+            bool: {
+              must: [searchBody.query ?? { match_all: {} }],
+              filter: [
+                {
+                  terms: {
+                    'document.id': await this.resolveKVDBIdsByIntegrationNames(
+                      client,
+                      integrationNames,
+                      space
+                    ),
+                  },
+                },
+              ],
+            },
+          }
+        : searchBody.query;
+
       const searchResponse: KVDBSearchResponse = await client('search', {
         index: CONTENT_INDICES.KVDBS,
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...searchBody, query }),
       });
 
       return response.custom({
@@ -107,58 +163,6 @@ export class KVDBsService extends MDSEnabledClientService {
     }
   };
 
-  // Wazuh: resolve one or more integration names (multiSelect 'or') to their KVDB
-  // ids, space-scoped, via an EXACT terms match on document.metadata.title (a
-  // keyword-mapped field). Powers the Integration column CTA's "Go to integration
-  // KVDBs" and the KVDBs table's Integration filter.
-  fetchKVDBIdsByIntegrationName = async (
-    context: RequestHandlerContext,
-    request: OpenSearchDashboardsRequest<
-      unknown,
-      unknown,
-      { integrationNames: string[]; space?: string }
-    >,
-    response: OpenSearchDashboardsResponseFactory
-  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<{ kvdbIds: string[] }> | ResponseError>> => {
-    try {
-      const { integrationNames, space } = request.body ?? ({} as any);
-      const trimmed = (integrationNames ?? []).map((name: string) => name.trim()).filter(Boolean);
-      if (!trimmed.length) {
-        return response.custom({ statusCode: 200, body: { ok: true, response: { kvdbIds: [] } } });
-      }
-
-      const must: any[] = [{ terms: { 'document.metadata.title': trimmed } }];
-      if (space) {
-        must.push({ term: { 'space.name': space } });
-      }
-
-      const client = this.getClient(request, context);
-      const searchResponse: any = await client('search', {
-        index: CONTENT_INDICES.INTEGRATIONS,
-        body: JSON.stringify({
-          size: 10000,
-          query: { bool: { must } },
-          _source: ['document.kvdbs'],
-        }),
-      });
-
-      const kvdbIds = new Set<string>();
-      (searchResponse?.hits?.hits || []).forEach((hit: any) => {
-        (hit._source?.document?.kvdbs || []).forEach((kvdbId: string) => kvdbIds.add(kvdbId));
-      });
-
-      return response.custom({
-        statusCode: 200,
-        body: { ok: true, response: { kvdbIds: Array.from(kvdbIds) } },
-      });
-    } catch (error: any) {
-      console.error('Security Analytics - KVDBsService - fetchKVDBIdsByIntegrationName:', error);
-      return response.custom({
-        statusCode: 200,
-        body: { ok: false, error: extractErrorMessage(error) },
-      });
-    }
-  };
 
   createKVDB = async (
     context: RequestHandlerContext,

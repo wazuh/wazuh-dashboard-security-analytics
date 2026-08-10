@@ -57,20 +57,6 @@ export function setupKVDBsRoutes(services: NodeServices, router: IRouter) {
 
   router.post(
     {
-      path: `${API.KVDBS_BASE}/_by_integration_name`,
-      validate: {
-        body: schema.object({
-          integrationNames: schema.arrayOf(schema.string()),
-          space: schema.maybe(schema.string()),
-        }),
-        query: createQueryValidationSchema(),
-      },
-    },
-    kvdbsService.fetchKVDBIdsByIntegrationName
-  );
-
-  router.post(
-    {
       path: `${API.KVDBS_BASE}`,
       validate: {
         body: schema.object({

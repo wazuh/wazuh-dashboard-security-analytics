@@ -9,7 +9,7 @@ const buildResponseFactory = () => ({
   custom: jest.fn((opts: any) => opts),
 });
 
-describe('KVDBsService.fetchKVDBIdsByIntegrationName', () => {
+describe('KVDBsService.searchKVDBs — Integration filter', () => {
   const buildService = (searchImpl: (params: any) => any) => {
     const callAsCurrentUser = jest.fn((method: string, params: any) => {
       if (method === 'search') {
@@ -22,76 +22,108 @@ describe('KVDBsService.fetchKVDBIdsByIntegrationName', () => {
     return { service, callAsCurrentUser };
   };
 
-  it('returns an empty list when integrationNames is blank', async () => {
-    const { service } = buildService(() => ({ hits: { hits: [] } }));
+  it('resolves integrationNames to kvdb ids server-side and filters by document.id, in one client call chain', async () => {
+    const { service, callAsCurrentUser } = buildService((params) => {
+      if (params.index === 'wazuh-threatintel-integrations') {
+        return { hits: { hits: [{ _source: { document: { kvdbs: ['kvdb-1', 'kvdb-2'] } } }] } };
+      }
+      return { hits: { hits: [], total: { value: 0 } } };
+    });
     const response = buildResponseFactory();
 
-    await service.fetchKVDBIdsByIntegrationName(
+    await service.searchKVDBs(
       {} as any,
-      { body: { integrationNames: ['  '] }, query: {} } as any,
+      {
+        body: { query: { match_all: {} }, integrationNames: ['aws'], space: 'standard' },
+        query: {},
+      } as any,
       response as any
     );
 
-    expect(response.custom).toHaveBeenCalledWith(
-      expect.objectContaining({ body: { ok: true, response: { kvdbIds: [] } } })
+    const integrationsCall = callAsCurrentUser.mock.calls.find(
+      (call) => call[1]?.index === 'wazuh-threatintel-integrations'
     );
-  });
-
-  it('resolves kvdb ids via an exact terms match, scoped to the given space', async () => {
-    const { service, callAsCurrentUser } = buildService((params) => ({
-      hits: { hits: [{ _source: { document: { kvdbs: ['kvdb-1', 'kvdb-2'] } } }] },
-    }));
-    const response = buildResponseFactory();
-
-    await service.fetchKVDBIdsByIntegrationName(
-      {} as any,
-      { body: { integrationNames: ['aws'], space: 'standard' }, query: {} } as any,
-      response as any
-    );
-
-    const searchCall = callAsCurrentUser.mock.calls.find((call) => call[0] === 'search');
-    expect(searchCall).toBeDefined();
-    const body = JSON.parse(searchCall![1].body);
-    expect(body.query.bool.must).toEqual([
+    expect(integrationsCall).toBeDefined();
+    expect(integrationsCall![1].body.query.bool.must).toEqual([
       { terms: { 'document.metadata.title': ['aws'] } },
       { term: { 'space.name': 'standard' } },
     ]);
-    expect(response.custom).toHaveBeenCalledWith(
-      expect.objectContaining({ body: { ok: true, response: { kvdbIds: ['kvdb-1', 'kvdb-2'] } } })
+
+    const kvdbsCall = callAsCurrentUser.mock.calls.find(
+      (call) => call[1]?.index === 'wazuh-threatintel-kvdbs'
     );
+    expect(kvdbsCall).toBeDefined();
+    const kvdbsBody = JSON.parse(kvdbsCall![1].body);
+    expect(kvdbsBody.query.bool.filter).toEqual([{ terms: { 'document.id': ['kvdb-1', 'kvdb-2'] } }]);
+    expect(kvdbsBody.query.bool.must).toEqual([{ match_all: {} }]);
   });
 
   it('resolves multiple integrationNames (multiSelect or) in one terms clause', async () => {
-    const { service, callAsCurrentUser } = buildService(() => ({
-      hits: { hits: [{ _source: { document: { kvdbs: ['kvdb-1'] } } }] },
-    }));
+    const { service, callAsCurrentUser } = buildService((params) => {
+      if (params.index === 'wazuh-threatintel-integrations') {
+        return { hits: { hits: [{ _source: { document: { kvdbs: ['kvdb-1'] } } }] } };
+      }
+      return { hits: { hits: [], total: { value: 0 } } };
+    });
     const response = buildResponseFactory();
 
-    await service.fetchKVDBIdsByIntegrationName(
+    await service.searchKVDBs(
       {} as any,
-      { body: { integrationNames: ['aws', 'cisco'] }, query: {} } as any,
+      { body: { query: { match_all: {} }, integrationNames: ['aws', 'cisco'] }, query: {} } as any,
       response as any
     );
 
-    const searchCall = callAsCurrentUser.mock.calls.find((call) => call[0] === 'search');
-    const body = JSON.parse(searchCall![1].body);
-    expect(body.query.bool.must).toEqual([
+    const integrationsCall = callAsCurrentUser.mock.calls.find(
+      (call) => call[1]?.index === 'wazuh-threatintel-integrations'
+    );
+    expect(integrationsCall![1].body.query.bool.must).toEqual([
       { terms: { 'document.metadata.title': ['aws', 'cisco'] } },
     ]);
   });
 
-  it('returns an empty list when no integration matches', async () => {
-    const { service } = buildService(() => ({ hits: { hits: [] } }));
+  it('filters to zero results (document.id: []) when no integration matches, rather than falling back to unfiltered', async () => {
+    const { service, callAsCurrentUser } = buildService((params) => {
+      if (params.index === 'wazuh-threatintel-integrations') {
+        return { hits: { hits: [] } };
+      }
+      return { hits: { hits: [], total: { value: 0 } } };
+    });
     const response = buildResponseFactory();
 
-    await service.fetchKVDBIdsByIntegrationName(
+    await service.searchKVDBs(
       {} as any,
-      { body: { integrationNames: ['unknown'] }, query: {} } as any,
+      { body: { query: { match_all: {} }, integrationNames: ['unknown'] }, query: {} } as any,
       response as any
     );
 
-    expect(response.custom).toHaveBeenCalledWith(
-      expect.objectContaining({ body: { ok: true, response: { kvdbIds: [] } } })
+    const kvdbsCall = callAsCurrentUser.mock.calls.find(
+      (call) => call[1]?.index === 'wazuh-threatintel-kvdbs'
     );
+    const kvdbsBody = JSON.parse(kvdbsCall![1].body);
+    expect(kvdbsBody.query.bool.filter).toEqual([{ terms: { 'document.id': [] } }]);
+  });
+
+  it('does not resolve or filter by integration when integrationNames is omitted', async () => {
+    const { service, callAsCurrentUser } = buildService(() => ({
+      hits: { hits: [], total: { value: 0 } },
+    }));
+    const response = buildResponseFactory();
+
+    await service.searchKVDBs(
+      {} as any,
+      { body: { query: { match_all: {} } }, query: {} } as any,
+      response as any
+    );
+
+    const integrationsCall = callAsCurrentUser.mock.calls.find(
+      (call) => call[1]?.index === 'wazuh-threatintel-integrations'
+    );
+    expect(integrationsCall).toBeUndefined();
+
+    const kvdbsCall = callAsCurrentUser.mock.calls.find(
+      (call) => call[1]?.index === 'wazuh-threatintel-kvdbs'
+    );
+    const kvdbsBody = JSON.parse(kvdbsCall![1].body);
+    expect(kvdbsBody.query).toEqual({ match_all: {} });
   });
 });

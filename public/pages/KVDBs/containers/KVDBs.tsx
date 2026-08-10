@@ -117,13 +117,17 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     { notifications, enabled: true, space: spaceFilter, relatedField: 'kvdbs' }
   );
 
-  // Wazuh: `status`/`integration` are UI-only filter fields (see the schema
-  // comment) — strip their OR clauses out before toESQuery ever sees them, and
-  // resolve them into explicit filters ourselves.
-  const buildQuery = useCallback(async () => {
-    const selectedStatuses = getOrSelectedValues(searchQuery, 'status');
-    const selectedIntegrations = getOrSelectedValues(searchQuery, 'integration');
+  const selectedStatuses = useMemo(() => getOrSelectedValues(searchQuery, 'status'), [searchQuery]);
+  const selectedIntegrations = useMemo(
+    () => getOrSelectedValues(searchQuery, 'integration'),
+    [searchQuery]
+  );
 
+  // Wazuh: `status`/`integration` are UI-only filter fields (see the schema
+  // comment) — strip their OR clauses out before toESQuery ever sees them.
+  // `integration` is resolved server-side (see KVDBsService.searchKVDBs), matching
+  // the Rules/Decoders Integration filter's single-round-trip pattern.
+  const buildQuery = useCallback(() => {
     let esSourceQuery = searchQuery;
     selectedStatuses.forEach((value) => {
       esSourceQuery = esSourceQuery.removeOrFieldValue('status', value);
@@ -145,16 +149,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     if (selectedStatuses.length === 1) {
       filter.push({ term: { 'document.enabled': selectedStatuses[0] === 'enabled' } });
     }
-    if (selectedIntegrations.length) {
-      const kvdbIds = await DataStore.kvdbs.fetchKVDBIdsByIntegrationName(
-        selectedIntegrations,
-        spaceFilter
-      );
-      filter.push({ terms: { 'document.id': kvdbIds } });
-    }
 
     return filter.length ? { bool: { must: [query], filter } } : query;
-  }, [searchQuery, spaceFilter]);
+  }, [searchQuery, spaceFilter, selectedStatuses, selectedIntegrations]);
 
   const fetchKVDBs = useCallback(async () => {
     setLoading(true);
@@ -165,7 +162,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         from: pageIndex * pageSize,
         size: pageSize,
         sort,
-        query: await buildQuery(),
+        query: buildQuery(),
+        integrationNames: selectedIntegrations.length ? selectedIntegrations : undefined,
+        space: selectedIntegrations.length ? spaceFilter : undefined,
         track_total_hits: true,
         _source: {
           includes: [
@@ -183,7 +182,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, sortField, sortDirection, buildQuery]);
+  }, [pageIndex, pageSize, sortField, sortDirection, buildQuery, selectedIntegrations, spaceFilter]);
 
   useEffect(() => {
     fetchKVDBs();

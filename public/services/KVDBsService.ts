@@ -36,16 +36,6 @@ export default class KVDBsService {
     })) as ServerResponse<KVDBIntegrationsSearchResponse>;
   };
 
-  fetchKVDBIdsByIntegrationName = async (
-    integrationNames: string[],
-    space?: string
-  ): Promise<ServerResponse<{ kvdbIds: string[] }>> => {
-    const url = `${this.baseUrl}/_by_integration_name`;
-    return (await this.httpClient.post(url, {
-      body: JSON.stringify({ integrationNames, space }),
-    })) as ServerResponse<{ kvdbIds: string[] }>;
-  };
-
   createKVDB = async (body: CreateKVDBPayload): Promise<ServerResponse<CUDKVDBResponse>> => {
     const url = `${this.baseUrl}`;
     return await this.httpClient.post(url, {
