@@ -22,6 +22,7 @@ import {
   EuiText,
   EuiButtonIcon,
   EuiToolTip,
+  EuiSearchBar,
 } from '@elastic/eui';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
@@ -42,6 +43,12 @@ import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direct
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource'; // Wazuh: import functions to handle detector source and space
+import {
+  buildQueryTextWithStatus,
+  readInMemoryUrlFilterValues,
+  splitStatusFromQueryText,
+  writeInMemoryUrlFilterValues,
+} from '../../../../utils/inMemoryUrlFilterAdapter';
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -68,7 +75,21 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       isDeleteModalVisible: false,
       isPopoverOpen: false,
     };
+    // Wazuh: query/status persisted in the URL (no 'page' — Detectors is an
+    // in-memory table, per the no-goal boundary). Guarded: `history` is optional
+    // in some existing test mocks that don't pass RouteComponentProps.
+    this.urlFilters = readInMemoryUrlFilterValues(props.history?.location?.search ?? '');
   }
+
+  private urlFilters: { query: string; status: string };
+
+  private onSearchChange = ({ query }: { query: any }) => {
+    const { query: freeText, status } = splitStatusFromQueryText(query?.text ?? '', 'status');
+    if (this.props.history) {
+      writeInMemoryUrlFilterValues(this.props.history, { query: freeText, status });
+    }
+    return true;
+  };
 
   async componentDidMount() {
     setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS]);
@@ -397,6 +418,11 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         } as FieldValueSelectionFilterConfigType,
         // End Wazuh
       ],
+      // Wazuh: persist query/status in the URL (see this.urlFilters / onSearchChange).
+      defaultQuery: EuiSearchBar.Query.parse(
+        buildQueryTextWithStatus(this.urlFilters.query, this.urlFilters.status, 'status')
+      ),
+      onChange: this.onSearchChange,
     };
 
     const sorting: { sort: { field: string; direction: Direction } } = {

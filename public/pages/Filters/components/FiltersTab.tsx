@@ -12,6 +12,7 @@ import {
   EuiContextMenuPanel,
   EuiInMemoryTable,
   EuiPopover,
+  EuiSearchBar,
 } from '@elastic/eui';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
@@ -32,6 +33,12 @@ import {
   toFilterTableItem,
 } from '../utils/helpers';
 import { FilterDetailsFlyout } from './FilterDetailsFlyout';
+import {
+  buildQueryTextWithStatus,
+  readInMemoryUrlFilterValues,
+  splitStatusFromQueryText,
+  writeInMemoryUrlFilterValues,
+} from '../../../utils/inMemoryUrlFilterAdapter';
 
 export interface FiltersTabProps {
   spaceFilter: string;
@@ -46,6 +53,10 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
   const [selectedItems, setSelectedItems] = useState<FilterTableItem[]>([]);
   const [selectedFilterId, setSelectedFilterId] = useState<string | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  // Wazuh: query/status persisted in the URL (no 'page' — Filters is an in-memory
+  // table, per the no-goal boundary). Uses the history prop directly, consistent
+  // with this page's existing `history.replace`/`history.push` usage.
+  const [urlFilters] = useState(() => readInMemoryUrlFilterValues(history.location.search));
 
   useEffect(() => {
     return () => {
@@ -213,7 +224,20 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
         loading={loading || isDeleting}
         columns={getFiltersTableColumns(spaceFilter, onViewDetails, onEdit, onDelete)}
         pagination={{ initialPageSize: 25 }}
-        search={getFiltersTableSearchConfig(items, { toolsRight: [actionsButton] })}
+        search={{
+          ...getFiltersTableSearchConfig(items, { toolsRight: [actionsButton] }),
+          defaultQuery: EuiSearchBar.Query.parse(
+            buildQueryTextWithStatus(urlFilters.query, urlFilters.status, 'enabled')
+          ),
+          onChange: ({ query }: { query: any }) => {
+            const { query: freeText, status } = splitStatusFromQueryText(
+              query?.text ?? '',
+              'enabled'
+            );
+            writeInMemoryUrlFilterValues(history, { query: freeText, status });
+            return true;
+          },
+        }}
         selection={{
           onSelectionChange: setSelectedItems,
           initialSelected: [],

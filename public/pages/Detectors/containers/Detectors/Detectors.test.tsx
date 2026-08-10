@@ -26,4 +26,17 @@ describe('<Detectors /> spec', () => {
     wrapper.update();
     expect(wrapper).toMatchSnapshot();
   });
+
+  // Wazuh: no-goal boundary (spec: "Detectors has no Integration filter") — the
+  // Integration/detector_type column must stay plain text, no IntegrationCell
+  // popover/CTA.
+  it('does not render an Integration column CTA/popover', async () => {
+    let wrapper;
+    await act(async () => {
+      Detectors.contextType = React.createContext(coreContextMock);
+      wrapper = await mount(<Detectors {...props} />);
+    });
+    wrapper.update();
+    expect(wrapper!.find('[data-test-subj="integrationCellLink"]').length).toBe(0);
+  });
 });

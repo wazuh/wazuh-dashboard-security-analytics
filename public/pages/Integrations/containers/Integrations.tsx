@@ -18,6 +18,7 @@ import {
   EuiConfirmModal,
   EuiTab,
   EuiTabs,
+  EuiSearchBar,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { OVERVIEW_TAB, OverviewTabId } from '../utils/constants';
@@ -48,6 +49,12 @@ import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { EditPolicy } from '../components/EditPolicy';
 import { FiltersTab } from '../../Filters/components/FiltersTab';
 import { PendingPromotionCallout } from '../components/PendingPromotionCallout';
+import {
+  buildQueryTextWithStatus,
+  readInMemoryUrlFilterValues,
+  splitStatusFromQueryText,
+  writeInMemoryUrlFilterValues,
+} from '../../../utils/inMemoryUrlFilterAdapter';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -85,6 +92,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [isOverviewActionsOpen, setIsOverviewActionsOpen] = useState<boolean>(false);
   const [isClearingSpace, setIsClearingSpace] = useState<boolean>(false);
   const [isDeletingSelected, setIsDeletingSelected] = useState<boolean>(false);
+  // Wazuh: query/status persisted in the URL (no 'page' — Integrations is an
+  // in-memory table, per the no-goal boundary).
+  const [urlFilters] = useState(() => readInMemoryUrlFilterValues(history.location.search));
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading || isClearingSpace,
   });
@@ -619,7 +629,20 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             pagination={{
               initialPageSize: 25,
             }}
-            search={getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] })}
+            search={{
+              ...getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] }),
+              defaultQuery: EuiSearchBar.Query.parse(
+                buildQueryTextWithStatus(urlFilters.query, urlFilters.status, 'enabled')
+              ),
+              onChange: ({ query }: { query: any }) => {
+                const { query: freeText, status } = splitStatusFromQueryText(
+                  query?.text ?? '',
+                  'enabled'
+                );
+                writeInMemoryUrlFilterValues(history, { query: freeText, status });
+                return true;
+              },
+            }}
             selection={{
               onSelectionChange: onSelectionChange,
               initialSelected: [],

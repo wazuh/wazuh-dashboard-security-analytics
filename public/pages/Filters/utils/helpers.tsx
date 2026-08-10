@@ -106,6 +106,20 @@ export const getFiltersTableSearchConfig = (
         multiSelect: 'or',
         options: FILTER_TYPE_OPTIONS.map((option) => ({ value: option.value, name: option.text })),
       },
+      // Wazuh: Status dropdown parity with the other entity tables (spec: "Status
+      // dropdown parity"). Labels normalized to Enabled/Disabled, consistent with
+      // Rules/Decoders/Integrations, instead of a bespoke Yes/No wording.
+      {
+        type: 'field_value_selection',
+        field: 'enabled',
+        name: 'Status',
+        compressed: true,
+        multiSelect: false,
+        options: [
+          { value: true, name: 'Enabled' },
+          { value: false, name: 'Disabled' },
+        ],
+      },
     ],
     toolsRight: options?.toolsRight,
   };
