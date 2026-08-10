@@ -37,6 +37,7 @@ import {
   DELETE_SELECTED_ACTION,
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
+import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -47,15 +48,18 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [pageIndex, setPageIndex] = useState(0);
+  const urlFilters = useUrlFilterParams({ params: ['query', 'page'] });
+  const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [searchQuery, setSearchQuery] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState<any>(() =>
+    urlFilters.values.query ? EuiSearchBar.Query.parse(urlFilters.values.query) : null
+  );
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    onSpaceChange: () => setPageIndex(0),
+    onSpaceChange: () => urlFilters.setPage(1),
   });
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<KVDBItem[]>([]);
@@ -140,19 +144,21 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
 
   const onTableChange = ({ page, sort }: any) => {
     if (page) {
-      setPageIndex(page.index);
+      urlFilters.setPage(page.index + 1);
       setPageSize(page.size);
     }
 
     if (sort) {
       setSortField(sort.field || KVDBS_SORT_FIELD);
       setSortDirection(sort.direction || 'asc');
+      urlFilters.setPage(1);
     }
   };
 
   const onSearchChange = ({ query }: { query: any }) => {
     setSearchQuery(query);
-    setPageIndex(0);
+    urlFilters.setParams({ query: query?.text ?? '' });
+    urlFilters.setPage(1);
   };
 
   const pagination = useMemo(
@@ -343,6 +349,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
               <EuiSearchBar
+                defaultQuery={searchQuery ?? undefined}
                 box={{
                   placeholder: 'Search KVDBs',
                   incremental: true,

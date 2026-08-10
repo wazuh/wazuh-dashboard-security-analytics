@@ -107,6 +107,54 @@ export class KVDBsService extends MDSEnabledClientService {
     }
   };
 
+  // Wazuh: resolve an integration name to its KVDB ids, space-scoped, via an EXACT
+  // term match on document.metadata.title (see design A4 / spike: this field is
+  // keyword-mapped). Powers the Integration column CTA's "Go to integration KVDBs".
+  fetchKVDBIdsByIntegrationName = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest<unknown, unknown, { integrationName: string; space?: string }>,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<{ kvdbIds: string[] }> | ResponseError>> => {
+    try {
+      const { integrationName, space } = request.body ?? ({} as any);
+      const trimmed = integrationName?.trim();
+      if (!trimmed) {
+        return response.custom({ statusCode: 200, body: { ok: true, response: { kvdbIds: [] } } });
+      }
+
+      const must: any[] = [{ term: { 'document.metadata.title': trimmed } }];
+      if (space) {
+        must.push({ term: { 'space.name': space } });
+      }
+
+      const client = this.getClient(request, context);
+      const searchResponse: any = await client('search', {
+        index: CONTENT_INDICES.INTEGRATIONS,
+        body: JSON.stringify({
+          size: 10000,
+          query: { bool: { must } },
+          _source: ['document.kvdbs'],
+        }),
+      });
+
+      const kvdbIds = new Set<string>();
+      (searchResponse?.hits?.hits || []).forEach((hit: any) => {
+        (hit._source?.document?.kvdbs || []).forEach((kvdbId: string) => kvdbIds.add(kvdbId));
+      });
+
+      return response.custom({
+        statusCode: 200,
+        body: { ok: true, response: { kvdbIds: Array.from(kvdbIds) } },
+      });
+    } catch (error: any) {
+      console.error('Security Analytics - KVDBsService - fetchKVDBIdsByIntegrationName:', error);
+      return response.custom({
+        statusCode: 200,
+        body: { ok: false, error: extractErrorMessage(error) },
+      });
+    }
+  };
+
   createKVDB = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest,
