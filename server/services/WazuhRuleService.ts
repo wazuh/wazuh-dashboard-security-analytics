@@ -18,7 +18,13 @@ import {
   GetRulesResponse,
 } from '../models/interfaces';
 import { CLIENT_RULE_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { escapeWildcard, extractErrorMessage, mergeIdsClause } from '../utils/helpers';
+import {
+  applyEntityFilters,
+  EntityStatus,
+  escapeWildcard,
+  extractErrorMessage,
+  mergeIdsClause,
+} from '../utils/helpers';
 import { ServerResponse } from '../models/types';
 import { load } from 'js-yaml';
 import { Rule } from '../../types';
@@ -35,17 +41,33 @@ export default class WazuhRulesService {
     return prePackaged === false ? SpaceTypes.CUSTOM.value : SpaceTypes.STANDARD.value;
   }
 
-  private buildQuery(prePackaged: boolean, incomingQuery?: any, space?: string) {
+  private buildQuery(
+    prePackaged: boolean,
+    incomingQuery?: any,
+    space?: string,
+    opts?: { status?: EntityStatus; integrationIds?: string[] }
+  ) {
     // When an explicit space is provided it takes precedence over the prePackaged binary model
-    const bool: any = {
-      filter: [{ term: { 'space.name': space ?? this.getSpaceFromPrePackaged(prePackaged) } }],
-    };
+    const spaceTerm = { term: { 'space.name': space ?? this.getSpaceFromPrePackaged(prePackaged) } };
+    const hasExtraFilters = Boolean(opts?.status) || Boolean(opts?.integrationIds?.length);
 
-    if (incomingQuery && !incomingQuery.match_all) {
-      bool.must = [incomingQuery];
+    // Wazuh: no status/integration filter selected -> keep the query shape byte-identical
+    // to the pre-change output (spec: "No filters active — no regression").
+    if (!hasExtraFilters) {
+      const bool: any = { filter: [spaceTerm] };
+      if (incomingQuery && !incomingQuery.match_all) {
+        bool.must = [incomingQuery];
+      }
+      return { bool };
     }
 
-    return { bool };
+    const baseQuery = incomingQuery && !incomingQuery.match_all ? incomingQuery : { match_all: {} };
+    const composed = applyEntityFilters(baseQuery, {
+      status: opts?.status,
+      integrationIds: opts?.integrationIds,
+    });
+    composed.bool.filter.unshift(spaceTerm);
+    return composed;
   }
 
   private parseYamlField(yamlStr: string | undefined): any {
@@ -194,6 +216,49 @@ export default class WazuhRulesService {
     }
   }
 
+  // Wazuh: resolve an Integration dropdown selection to rule ids via an EXACT name
+  // match (unlike fetchRuleIdsByIntegrationName's wildcard search-by-text), space-scoped.
+  // document.metadata.title is keyword-mapped (existing wildcard usage never needs a
+  // .keyword subfield), so `term` gives precise, case-sensitive matching. See design A4.
+  private async fetchRuleIdsByExactIntegrationName(
+    client: any,
+    integrationName: string | undefined,
+    space: string
+  ): Promise<string[]> {
+    const trimmed = integrationName?.trim();
+    if (!trimmed) return [];
+
+    try {
+      const response = await client('search', {
+        index: CONTENT_INDICES.INTEGRATIONS,
+        body: {
+          size: 10000,
+          query: {
+            bool: {
+              must: [
+                { term: { 'document.metadata.title': trimmed } },
+                { term: { 'space.name': space } },
+              ],
+            },
+          },
+          _source: ['document.rules'],
+        },
+      });
+
+      const ruleIds = new Set<string>();
+      (response?.hits?.hits || []).forEach((hit: any) => {
+        (hit._source?.document?.rules || []).forEach((ruleId: string) => ruleIds.add(ruleId));
+      });
+      return Array.from(ruleIds);
+    } catch (error: any) {
+      console.warn(
+        'Security Analytics - WazuhRulesService - fetchRuleIdsByExactIntegrationName:',
+        extractErrorMessage(error)
+      );
+      return [];
+    }
+  }
+
   getRules = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<{}, GetRulesParams>,
@@ -212,6 +277,8 @@ export default class WazuhRulesService {
         sort,
         _source,
         searchText,
+        status,
+        integrationName,
       } = (request.body as any) ?? {};
       const client = this.getClient(request);
       const resolvedSpace = space ?? this.getSpaceFromPrePackaged(prePackaged);
@@ -221,11 +288,19 @@ export default class WazuhRulesService {
         resolvedSpace
       );
       const mergedQuery = mergeIdsClause(query, 'document.id', integrationRuleIds);
+      const exactIntegrationRuleIds = await this.fetchRuleIdsByExactIntegrationName(
+        client,
+        integrationName,
+        resolvedSpace
+      );
       const searchBody: any = {
         from,
         size,
         track_total_hits: true,
-        query: this.buildQuery(prePackaged, mergedQuery, space),
+        query: this.buildQuery(prePackaged, mergedQuery, space, {
+          status,
+          integrationIds: integrationName ? exactIntegrationRuleIds : undefined,
+        }),
       };
       if (sort) searchBody.sort = sort;
       if (_source !== undefined) searchBody._source = _source;

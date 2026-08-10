@@ -14,7 +14,13 @@ import {
 import { ServerResponse } from '../models/types';
 import { DecoderItem, GetDecoderResponse, SearchDecodersResponse } from '../../types';
 import { CLIENT_DECODER_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { escapeWildcard, extractErrorMessage, mergeIdsClause } from '../utils/helpers';
+import {
+  applyEntityFilters,
+  EntityStatus,
+  escapeWildcard,
+  extractErrorMessage,
+  mergeIdsClause,
+} from '../utils/helpers';
 
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',
@@ -236,6 +242,47 @@ export class DecodersService {
     }
   }
 
+  // Wazuh: resolve an Integration dropdown selection to decoder ids via an EXACT name
+  // match, space-scoped. See design A4 / WazuhRuleService.fetchRuleIdsByExactIntegrationName.
+  private async fetchDecoderIdsByExactIntegrationName(
+    client: any,
+    integrationName: string | undefined,
+    space: string | undefined
+  ): Promise<string[]> {
+    const trimmed = integrationName?.trim();
+    if (!trimmed) return [];
+
+    const must: any[] = [{ term: { 'document.metadata.title': trimmed } }];
+    if (space) {
+      must.push({ term: { 'space.name': space } });
+    }
+
+    try {
+      const response = await client('search', {
+        index: CONTENT_INDICES.INTEGRATIONS,
+        body: {
+          size: 10000,
+          query: { bool: { must } },
+          _source: ['document.decoders'],
+        },
+      });
+
+      const decoderIds = new Set<string>();
+      (response?.hits?.hits || []).forEach((hit: any) => {
+        (hit._source?.document?.decoders || []).forEach((decoderId: string) =>
+          decoderIds.add(decoderId)
+        );
+      });
+      return Array.from(decoderIds);
+    } catch (error: any) {
+      console.warn(
+        'Security Analytics - DecodersService - fetchDecoderIdsByExactIntegrationName:',
+        extractErrorMessage(error)
+      );
+      return [];
+    }
+  }
+
   searchDecoders = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest,
@@ -246,7 +293,7 @@ export class DecodersService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source, searchText } = body;
+      const { from = 0, size = 25, sort, query, _source, searchText, status, integrationName } = body;
 
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
@@ -256,6 +303,18 @@ export class DecodersService {
         space
       );
       const mergedQuery = mergeIdsClause(query, 'document.id', integrationDecoderIds);
+      const hasExtraFilters = Boolean(status) || Boolean(integrationName);
+      const exactIntegrationDecoderIds = hasExtraFilters
+        ? await this.fetchDecoderIdsByExactIntegrationName(client, integrationName, space)
+        : [];
+      // Wazuh: no status/integration filter selected -> keep query shape byte-identical
+      // to the pre-change output (spec: "No filters active — no regression").
+      const filteredQuery = hasExtraFilters
+        ? applyEntityFilters(mergedQuery ?? { match_all: {} }, {
+            status: status as EntityStatus,
+            integrationIds: integrationName ? exactIntegrationDecoderIds : undefined,
+          })
+        : mergedQuery;
       const searchResponse = await client('search', {
         index: CONTENT_INDICES.DECODERS,
         body: {
@@ -275,7 +334,7 @@ export class DecodersService {
                   ],
                 }
               : _source,
-          query: this.applySpaceFilter(mergedQuery, space, searchFields),
+          query: this.applySpaceFilter(filteredQuery, space, searchFields),
         },
       });
 

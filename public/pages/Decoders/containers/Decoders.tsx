@@ -39,6 +39,9 @@ import {
   DELETE_SELECTED_ACTION,
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
+import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
+import { EntityFilterBar, StatusFilterValue } from '../../../components/EntityFilterBar/EntityFilterBar';
+import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -52,15 +55,16 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState('');
-  const [pageIndex, setPageIndex] = useState(0);
+  const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] });
+  const [searchText, setSearchText] = useState(urlFilters.values.query);
+  const [appliedSearch, setAppliedSearch] = useState(urlFilters.values.query);
+  const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('document.name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    onSpaceChange: () => setPageIndex(0),
+    onSpaceChange: () => urlFilters.setPage(1),
   });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedDecoder, setSelectedDecoder] = useState<{
@@ -82,11 +86,16 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   useEffect(() => {
     const timeout = setTimeout(() => {
       setAppliedSearch(searchText);
-      setPageIndex(0);
+      urlFilters.setParams({ query: searchText });
+      urlFilters.setPage(1);
     }, 300);
 
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
+
+  const status = (urlFilters.values.status || undefined) as 'enabled' | 'disabled' | undefined;
+  const integrationName = urlFilters.values.integration || undefined;
 
   const loadDecoders = useCallback(async () => {
     setLoading(true);
@@ -108,6 +117,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         sort,
         query,
         searchText: appliedSearch,
+        status,
+        integrationName,
         _source: {
           includes: [
             'document.id',
@@ -128,7 +139,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     setDecoders(response.items);
     setTotal(response.total);
     setLoading(false);
-  }, [appliedSearch, pageIndex, pageSize, spaceFilter, sortField, sortDirection]);
+  }, [appliedSearch, pageIndex, pageSize, spaceFilter, sortField, sortDirection, status, integrationName]);
 
   useEffect(() => {
     loadDecoders();
@@ -151,12 +162,13 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
 
   const onTableChange = ({ page, sort }: { page: any; sort?: any }) => {
     if (page) {
-      setPageIndex(page.index);
+      urlFilters.setPage(page.index + 1);
       setPageSize(page.size);
     }
     if (sort) {
       setSortField(sort.field);
       setSortDirection(sort.direction);
+      urlFilters.setPage(1);
     }
   };
 
@@ -176,6 +188,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       {
         field: 'integrations',
         name: 'Integration',
+        render: (integrations: string[]) => <IntegrationCell name={integrations?.[0] || ''} />,
       },
       {
         field: 'document.metadata.author',
@@ -351,6 +364,19 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                 onChange={(event) => setSearchText(event.target.value)}
                 isClearable
                 aria-label="Search decoders"
+              />
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EntityFilterBar
+                status={(urlFilters.values.status || '') as StatusFilterValue}
+                onStatusChange={(value) => urlFilters.setParams({ status: value || undefined })}
+                integration={{
+                  selectedName: urlFilters.values.integration,
+                  onChange: (name) => urlFilters.setParams({ integration: name || undefined }),
+                  notifications,
+                  space: spaceFilter,
+                }}
+                data-test-subj="decodersFilterBar"
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
