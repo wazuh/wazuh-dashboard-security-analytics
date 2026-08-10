@@ -36,6 +36,50 @@ export const mergeIdsClause = (query: any, field: string, ids: string[]): any =>
   return { bool: { should: [query, idsClause], minimum_should_match: 1 } };
 };
 
+export type EntityStatus = 'enabled' | 'disabled';
+
+// Wazuh: build the hard status filter clause used by applyEntityFilters. Missing
+// `document.enabled` counts as enabled (mirrors `rule.enabled ?? true` at resource build time).
+export const buildStatusFilter = (status?: EntityStatus): any | undefined => {
+  if (status === 'disabled') {
+    return { term: { 'document.enabled': false } };
+  }
+  if (status === 'enabled') {
+    return {
+      bool: {
+        should: [
+          { term: { 'document.enabled': true } },
+          { bool: { must_not: { exists: { field: 'document.enabled' } } } },
+        ],
+        minimum_should_match: 1,
+      },
+    };
+  }
+  return undefined;
+};
+
+// Wazuh: compose the incoming (untouched) search query with hard AND filters
+// (status, integration ids, ...) without diluting its `should`/`minimum_should_match`
+// semantics. The incoming query is nested under `bool.must[0]`; filters are appended
+// to `bool.filter`. No filters selected => `filter` is empty and the shape is stable.
+export const applyEntityFilters = (
+  query: any,
+  opts: { status?: EntityStatus; integrationIds?: string[] }
+): any => {
+  const filter: any[] = [];
+
+  const statusFilter = buildStatusFilter(opts.status);
+  if (statusFilter) {
+    filter.push(statusFilter);
+  }
+
+  if (opts.integrationIds && opts.integrationIds.length) {
+    filter.push({ terms: { 'document.id': opts.integrationIds } });
+  }
+
+  return { bool: { must: [query], filter } };
+};
+
 // This function recieves the crude yaml resource and optional extra params (e.g: integration for kvdbs or space for filters).
 // The function formats the yaml to have the structure that the backend expects.
 export const buildYamlBody = (resourceYaml: string, params?: Record<string, any>): string => {
