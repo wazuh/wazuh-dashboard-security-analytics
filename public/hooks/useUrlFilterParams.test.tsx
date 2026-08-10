@@ -7,13 +7,9 @@ import React from 'react';
 import { render, act } from '@testing-library/react';
 import { useUrlFilterParams, UrlFilterConfig, UrlFilterState } from './useUrlFilterParams';
 
-// Wazuh: a hand-rolled fake `history` (the same shape as RouteComponentProps['history']
-// every container in this codebase already receives as a prop). We pass it via
-// useUrlFilterParams's `historyOverride` param instead of wrapping in <MemoryRouter> +
-// relying on useLocation()/useHistory(), because those hooks are implemented via
-// React.useContext internally, and test/setup.jest.ts globally mocks `useContext`
-// for the unrelated SecurityAnalyticsContext pattern — which breaks react-router's
-// hooks (but not plain prop-drilling) in every test in this suite.
+// Wazuh: a hand-rolled fake `history`, passed via `historyOverride` instead of
+// wrapping in <MemoryRouter> + useLocation()/useHistory(). See useUrlFilterParams.ts
+// for why.
 const createFakeHistory = (search: string) => {
   let location = { pathname: '/rules', search, hash: '', state: undefined as any };
   const listeners: Array<(loc: typeof location) => void> = [];

@@ -36,8 +36,6 @@ export default class KVDBsService {
     })) as ServerResponse<KVDBIntegrationsSearchResponse>;
   };
 
-  // Wazuh: resolve one or more integration names (multiSelect 'or') to KVDB ids,
-  // space-scoped. Powers the KVDBs table's Integration filter.
   fetchKVDBIdsByIntegrationName = async (
     integrationNames: string[],
     space?: string

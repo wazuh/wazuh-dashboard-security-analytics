@@ -69,8 +69,6 @@ export class KVDBsStore {
     }
   }
 
-  // Wazuh: resolve one or more integration names (multiSelect 'or') to KVDB ids,
-  // space-scoped. Powers the KVDBs table's Integration filter.
   public async fetchKVDBIdsByIntegrationName(
     integrationNames: string[],
     space?: string

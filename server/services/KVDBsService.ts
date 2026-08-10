@@ -108,9 +108,9 @@ export class KVDBsService extends MDSEnabledClientService {
   };
 
   // Wazuh: resolve one or more integration names (multiSelect 'or') to their KVDB
-  // ids, space-scoped, via an EXACT terms match on document.metadata.title (see
-  // design A4 / spike: this field is keyword-mapped). Powers the Integration
-  // column CTA's "Go to integration KVDBs" and the KVDBs table's Integration filter.
+  // ids, space-scoped, via an EXACT terms match on document.metadata.title (a
+  // keyword-mapped field). Powers the Integration column CTA's "Go to integration
+  // KVDBs" and the KVDBs table's Integration filter.
   fetchKVDBIdsByIntegrationName = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<

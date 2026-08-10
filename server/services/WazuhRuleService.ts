@@ -51,8 +51,7 @@ export default class WazuhRulesService {
     const spaceTerm = { term: { 'space.name': space ?? this.getSpaceFromPrePackaged(prePackaged) } };
     const hasExtraFilters = Boolean(opts?.status) || Boolean(opts?.integrationIds?.length);
 
-    // Wazuh: no status/integration filter selected -> keep the query shape byte-identical
-    // to the pre-change output (spec: "No filters active — no regression").
+    // Skip the bool.must/filter wrapping entirely when no filter is selected.
     if (!hasExtraFilters) {
       const bool: any = { filter: [spaceTerm] };
       if (incomingQuery && !incomingQuery.match_all) {
@@ -216,11 +215,9 @@ export default class WazuhRulesService {
     }
   }
 
-  // Wazuh: resolve an Integration dropdown selection (one or more, multiSelect 'or')
-  // to rule ids via an EXACT name match (unlike fetchRuleIdsByIntegrationName's
-  // wildcard search-by-text), space-scoped. document.metadata.title is
-  // keyword-mapped (existing wildcard usage never needs a .keyword subfield), so
-  // `terms` gives precise, case-sensitive matching. See design A4.
+  // Wazuh: unlike fetchRuleIdsByIntegrationName's wildcard search-by-text, this is an
+  // exact match — document.metadata.title is keyword-mapped, so `terms` gives
+  // precise, case-sensitive matching.
   private async fetchRuleIdsByExactIntegrationName(
     client: any,
     integrationNames: string[] | undefined,

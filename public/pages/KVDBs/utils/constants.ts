@@ -6,9 +6,8 @@
 export const KVDBS_PAGE_SIZE = 25;
 export const KVDBS_SORT_FIELD = 'document.metadata.title';
 
-// Wazuh: buildKVDBsSearchQuery was retired — KVDBs search now uses only
-// EuiSearchBar/toESQuery (see useIntegrationKVDBs.ts and KVDBs.tsx), one search
-// semantic per entity (spec: "KVDB search migration").
+// Wazuh: KVDBs search goes through EuiSearchBar/toESQuery (see
+// useIntegrationKVDBs.ts and KVDBs.tsx).
 
 export const KVDBS_SEARCH_SCHEMA = {
   strict: true,

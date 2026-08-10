@@ -45,9 +45,8 @@ export function useIntegrationKVDBs({
     const from = pageIndex * pageSize;
     const size = pageSize;
 
-    // Wazuh: migrated off buildKVDBsSearchQuery — every KVDBs search now goes through
-    // EuiSearchBar.Query.toESQuery, the same structured-query builder used by the
-    // main KVDBs table (spec: "KVDB search migration").
+    // Wazuh: same structured-query builder (EuiSearchBar.Query.toESQuery) the main
+    // KVDBs table uses.
     const trimmedSearch = search.trim();
     const textQuery = trimmedSearch
       ? EuiSearchBar.Query.toESQuery(EuiSearchBar.Query.parse(trimmedSearch))

@@ -243,8 +243,7 @@ export class DecodersService {
   }
 
   // Wazuh: resolve an Integration dropdown selection (one or more, multiSelect 'or')
-  // to decoder ids via an EXACT name match, space-scoped. See design A4 /
-  // WazuhRuleService.fetchRuleIdsByExactIntegrationName.
+  // to decoder ids via an EXACT name match, space-scoped.
   private async fetchDecoderIdsByExactIntegrationName(
     client: any,
     integrationNames: string[] | undefined,
@@ -309,8 +308,7 @@ export class DecodersService {
       const exactIntegrationDecoderIds = hasIntegrationFilter
         ? await this.fetchDecoderIdsByExactIntegrationName(client, integrationNames, space)
         : [];
-      // Wazuh: no status/integration filter selected -> keep query shape byte-identical
-      // to the pre-change output (spec: "No filters active — no regression").
+      // Skip the bool.must/filter wrapping entirely when no filter is selected.
       const filteredQuery = hasExtraFilters
         ? applyEntityFilters(mergedQuery ?? { match_all: {} }, {
             status: status as EntityStatus,
