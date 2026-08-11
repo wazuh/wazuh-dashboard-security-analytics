@@ -54,6 +54,7 @@ export interface KVDBSearchRequest {
   /** Resolved server-side (exact name match, multiSelect 'or') into a document.id filter. */
   integrationNames?: string[];
   space?: string;
+  status?: 'enabled' | 'disabled';
 }
 
 export interface CreateKVDBPayload {
