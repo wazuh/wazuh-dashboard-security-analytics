@@ -46,22 +46,10 @@ const readPage = (search: string, hasPage: boolean): number => {
   return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
 };
 
-// Wazuh: single map-aware URL-state hook. Owns every filter/pagination param for a
-// table so every write is one `history.replace` (never racing sibling writers), and
-// unlisted params (e.g. `space`) always survive untouched.
-//
-// `historyOverride` lets a caller pass the `history` object it already receives as a
-// prop (RouteComponentProps['history'] — every container in this codebase already
-// gets one) instead of relying on `useHistory()`/`useLocation()`. Both hooks are
-// still called unconditionally (Rules of Hooks) but their result is ignored when an
-// override is supplied. This is required because `test/setup.jest.ts` globally mocks
-// `react`'s `useContext` (`jest.mock('react', ...)`) for the unrelated
-// SecurityAnalyticsContext pattern used app-wide; react-router's `useLocation`/
-// `useHistory` hooks are themselves implemented via `useContext` internally, so under
-// that global mock they silently resolve to the wrong context value in tests. The
-// `history` prop path bypasses `useContext` entirely (it's plain prop-drilling), so
-// it is unaffected and remains identical to the real `history` singleton the app
-// already shares between hooks and props.
+// Wazuh: single map-aware URL-state hook — every write is one `history.replace`
+// (never racing sibling writers), unlisted params (e.g. `space`) survive untouched.
+// `historyOverride` (a container's own `history` prop) bypasses `useHistory()`/
+// `useLocation()`, which resolve incorrectly under this suite's global useContext mock.
 export const useUrlFilterParams = (
   cfg: UrlFilterConfig,
   historyOverride?: History
@@ -85,7 +73,6 @@ export const useUrlFilterParams = (
       setValues(readValues(loc.search, cfg.params));
       setPageState(readPage(loc.search, hasPage));
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const writeToUrl = useCallback(
@@ -109,7 +96,6 @@ export const useUrlFilterParams = (
       }
       history.replace({ ...current, search: params.toString() });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [history, hasPage]
   );
 
@@ -145,7 +131,6 @@ export const useUrlFilterParams = (
         writeToUrl(patch, shouldResetPage);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [writeToUrl, resetPageOn, debouncedParams, hasPage]
   );
 
@@ -164,7 +149,6 @@ export const useUrlFilterParams = (
       params.set('page', String(safePage));
       history.replace({ ...current, search: params.toString() });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [history, hasPage]
   );
 
