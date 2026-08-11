@@ -16,6 +16,8 @@ import { ROUTES } from '../../utils/constants';
 import { buildEntityQueryRoute } from '../../utils/routes';
 import { DataStore } from '../../store/DataStore';
 
+export type IntegrationEntity = 'decoders' | 'rules' | 'kvdbs';
+
 export interface IntegrationCellProps {
   /** Integration name for this row. Renders as plain text (no popover) when empty. */
   name: string;
@@ -36,9 +38,16 @@ export interface IntegrationCellProps {
    */
   integrationId?: string;
   space?: string;
+  /**
+   * Entity this cell is being rendered on top of (e.g. "rules" on the Rules
+   * page). When given, the matching "Go to integration X" menu item is omitted —
+   * jumping to the page you're already on is never useful. Optional so pages
+   * with no single host entity (e.g. Detectors) keep rendering all three items.
+   */
+  currentEntity?: IntegrationEntity;
 }
 
-const ENTITY_LABELS: Record<'decoders' | 'rules' | 'kvdbs', string> = {
+const ENTITY_LABELS: Record<IntegrationEntity, string> = {
   decoders: 'decoders',
   rules: 'rules',
   kvdbs: 'KVDBs',
@@ -52,29 +61,30 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
   history: historyOverride,
   integrationId,
   space,
+  currentEntity,
 }) => {
   const routerHistory = useHistory();
   const history = historyOverride ?? routerHistory;
   const [isOpen, setIsOpen] = useState(false);
-  const [relatedFlags, setRelatedFlags] = useState<
-    { decoders: boolean; rules: boolean; kvdbs: boolean } | undefined
-  >(undefined);
+  const [relatedCounts, setRelatedCounts] = useState<Record<IntegrationEntity, number> | undefined>(
+    undefined
+  );
 
   useEffect(() => {
-    if (!isOpen || !integrationId || !space || relatedFlags) return;
+    if (!isOpen || !integrationId || !space || relatedCounts) return;
     let cancelled = false;
     DataStore.integrations.getIntegration(integrationId, space).then((integration) => {
       if (cancelled) return;
-      setRelatedFlags({
-        decoders: !!integration?.document.decoders?.length,
-        rules: !!integration?.document.rules?.length,
-        kvdbs: !!integration?.document.kvdbs?.length,
+      setRelatedCounts({
+        decoders: integration?.document.decoders?.length ?? 0,
+        rules: integration?.document.rules?.length ?? 0,
+        kvdbs: integration?.document.kvdbs?.length ?? 0,
       });
     });
     return () => {
       cancelled = true;
     };
-  }, [isOpen, integrationId, space, relatedFlags]);
+  }, [isOpen, integrationId, space, relatedCounts]);
 
   if (!name) {
     return <>{name}</>;
@@ -91,11 +101,20 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
   // integrationId/space were given), every CTA stays disabled rather than
   // optimistically enabled, so a slow connection can't leave a clickable window
   // before the "has no items" result comes back.
-  const isChecking = Boolean(integrationId && space && !relatedFlags);
+  const isChecking = Boolean(integrationId && space && !relatedCounts);
 
-  const buildMenuItem = (key: 'decoders' | 'rules' | 'kvdbs', route: string) => {
-    const label = `Go to integration ${ENTITY_LABELS[key]}`;
-    const hasRelatedItems = isChecking ? false : relatedFlags?.[key] ?? true;
+  const ROUTE_BY_ENTITY: Record<IntegrationEntity, string> = {
+    decoders: ROUTES.DECODERS,
+    rules: ROUTES.RULES,
+    kvdbs: ROUTES.KVDBS,
+  };
+
+  const buildMenuItem = (key: IntegrationEntity, route: string) => {
+    const count = relatedCounts?.[key];
+    const label = `Go to integration ${ENTITY_LABELS[key]}${
+      count === undefined ? '' : ` (${count})`
+    }`;
+    const hasRelatedItems = isChecking ? false : count === undefined ? true : count > 0;
     const item = (
       <EuiContextMenuItem key={key} disabled={!hasRelatedItems} onClick={() => navigateTo(route)}>
         {label}
@@ -114,10 +133,24 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
     );
   };
 
+  const detailsItem =
+    integrationId && space ? (
+      <EuiContextMenuItem
+        key="details"
+        onClick={() => {
+          closePopover();
+          history.push(`${ROUTES.INTEGRATIONS}/${integrationId}?space=${space}`);
+        }}
+      >
+        Go to integration details
+      </EuiContextMenuItem>
+    ) : null;
+
   const items = [
-    buildMenuItem('decoders', ROUTES.DECODERS),
-    buildMenuItem('rules', ROUTES.RULES),
-    buildMenuItem('kvdbs', ROUTES.KVDBS),
+    ...(detailsItem ? [detailsItem] : []),
+    ...(['decoders', 'rules', 'kvdbs'] as const)
+      .filter((key) => key !== currentEntity)
+      .map((key) => buildMenuItem(key, ROUTE_BY_ENTITY[key])),
   ];
 
   return (
@@ -133,7 +166,7 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
       panelPaddingSize="none"
       anchorPosition="downLeft"
     >
-      <EuiContextMenuPanel key={relatedFlags ? 'loaded' : 'loading'} items={items} size="s" />
+      <EuiContextMenuPanel key={relatedCounts ? 'loaded' : 'loading'} items={items} size="s" />
     </EuiPopover>
   );
 };

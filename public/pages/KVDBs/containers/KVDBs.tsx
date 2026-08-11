@@ -60,7 +60,10 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'enabled', 'integration', 'page'] }, history);
+  const urlFilters = useUrlFilterParams(
+    { params: ['query', 'enabled', 'integration', 'page'] },
+    history
+  );
   const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
@@ -79,7 +82,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    clearParamsOnChange: ['page'],
+    clearParamsOnChange: ['page', 'integration'],
     history,
   });
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
@@ -143,9 +146,13 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getFreeText(searchQuery)]);
 
-  const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
-    { notifications, enabled: true, space: spaceFilter, relatedField: 'kvdbs' }
-  );
+  const { options: integrationOptions, loading: integrationOptionsLoading } =
+    useIntegrationSelector({
+      notifications,
+      enabled: true,
+      space: spaceFilter,
+      relatedField: 'kvdbs',
+    });
 
   const selectedStatuses = useMemo(() => getOrSelectedValues(searchQuery, 'status'), [searchQuery]);
   const selectedIntegrations = useMemo(
@@ -344,6 +351,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             integrationId={item.integration?.id}
             history={history}
             space={spaceFilter}
+            currentEntity="kvdbs"
           />
         ),
       },
@@ -479,7 +487,10 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                   schema: true,
                 }}
                 schema={KVDBS_SEARCH_SCHEMA}
-                filters={buildStatusIntegrationFilters(integrationOptions, integrationOptionsLoading)}
+                filters={buildStatusIntegrationFilters(
+                  integrationOptions,
+                  integrationOptionsLoading
+                )}
                 onChange={onSearchChange}
               />
             </EuiFlexItem>

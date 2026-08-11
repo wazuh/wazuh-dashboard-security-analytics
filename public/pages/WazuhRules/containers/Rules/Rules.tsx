@@ -86,7 +86,10 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const [allRules, setAllRules] = useState<RuleTableItem[]>([]);
   const [totalRules, setTotalRules] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'enabled', 'integration', 'page'] }, history);
+  const urlFilters = useUrlFilterParams(
+    { params: ['query', 'enabled', 'integration', 'page'] },
+    history
+  );
   // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
   // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
   // matching the pattern already used by Detectors. `appliedQueryText`/
@@ -113,7 +116,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    clearParamsOnChange: ['page'],
+    clearParamsOnChange: ['page', 'integration'],
     history,
   });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -190,9 +193,13 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
 
-  const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
-    { notifications, enabled: true, space: spaceFilter, relatedField: 'rules' }
-  );
+  const { options: integrationOptions, loading: integrationOptionsLoading } =
+    useIntegrationSelector({
+      notifications,
+      enabled: true,
+      space: spaceFilter,
+      relatedField: 'rules',
+    });
 
   const loadRules = useCallback(async () => {
     setLoading(true);
@@ -317,6 +324,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             integrationId={row.integration?.document?.id}
             history={history}
             space={spaceFilter}
+            currentEntity="rules"
           />
         ),
       },
@@ -495,7 +503,10 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                   incremental: true,
                   compressed: true,
                 }}
-                filters={buildStatusIntegrationFilters(integrationOptions, integrationOptionsLoading)}
+                filters={buildStatusIntegrationFilters(
+                  integrationOptions,
+                  integrationOptionsLoading
+                )}
                 onChange={({ query }) => query && setSearchQuery(query)}
               />
             </EuiFlexItem>

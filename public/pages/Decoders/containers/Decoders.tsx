@@ -65,7 +65,10 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'enabled', 'integration', 'page'] }, history);
+  const urlFilters = useUrlFilterParams(
+    { params: ['query', 'enabled', 'integration', 'page'] },
+    history
+  );
   // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
   // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
   // matching the pattern already used by Detectors. `appliedQueryText`/
@@ -92,7 +95,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    clearParamsOnChange: ['page'],
+    clearParamsOnChange: ['page', 'integration'],
     history,
   });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -172,9 +175,13 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
 
-  const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
-    { notifications, enabled: true, space: spaceFilter, relatedField: 'decoders' }
-  );
+  const { options: integrationOptions, loading: integrationOptionsLoading } =
+    useIntegrationSelector({
+      notifications,
+      enabled: true,
+      space: spaceFilter,
+      relatedField: 'decoders',
+    });
 
   const loadDecoders = useCallback(async () => {
     setLoading(true);
@@ -285,6 +292,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
             integrationId={item.integrationRefs?.[0]?.id}
             history={history}
             space={spaceFilter}
+            currentEntity="decoders"
           />
         ),
       },
@@ -465,7 +473,10 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                   incremental: true,
                   compressed: true,
                 }}
-                filters={buildStatusIntegrationFilters(integrationOptions, integrationOptionsLoading)}
+                filters={buildStatusIntegrationFilters(
+                  integrationOptions,
+                  integrationOptionsLoading
+                )}
                 onChange={({ query }) => query && setSearchQuery(query)}
               />
             </EuiFlexItem>

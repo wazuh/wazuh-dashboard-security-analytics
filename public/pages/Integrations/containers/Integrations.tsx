@@ -632,6 +632,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             columns={getIntegrationsTableColumns({
               showDetails: showIntegrationDetails,
               setItemForAction,
+              history,
             })}
             pagination={{
               initialPageSize: 25,

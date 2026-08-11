@@ -24,6 +24,7 @@ const renderWithFakeHistory = (name: string) => {
   render(<IntegrationCell name={name} history={{ push }} />);
   return {
     getPushedPath: () => push.mock.calls[0]?.[0],
+    push,
   };
 };
 
@@ -54,7 +55,7 @@ describe('IntegrationCell', () => {
     expect(getPushedPath()).toBe(`${ROUTES.KVDBS}?integration=aws`);
   });
 
-  it('carries this row\'s space along so the target table lands there too', () => {
+  it("carries this row's space along so the target table lands there too", () => {
     const push = jest.fn();
     render(<IntegrationCell name="aws" history={{ push }} space="custom" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
@@ -68,7 +69,7 @@ describe('IntegrationCell', () => {
     expect(DataStore.integrations.getIntegration).not.toHaveBeenCalled();
   });
 
-  it('disables a CTA and explains why when the integration has no items of that type', async () => {
+  it('shows the item count in the label and disables the CTA with a tooltip when the count is zero', async () => {
     (DataStore.integrations.getIntegration as jest.Mock).mockResolvedValue({
       id: 'int-1',
       document: { rules: ['r1'], kvdbs: ['k1'] },
@@ -83,15 +84,20 @@ describe('IntegrationCell', () => {
       expect(DataStore.integrations.getIntegration).toHaveBeenCalledWith('int-1', 'standard')
     );
 
-    expect(screen.getByText('Go to integration decoders').closest('button')).toBeDisabled();
-    fireEvent.click(screen.getByText('Go to integration decoders'));
+    // Zero count: shown, not hidden, disabled, with count in the label.
+    expect(screen.getByText('Go to integration decoders (0)').closest('button')).toBeDisabled();
+    fireEvent.click(screen.getByText('Go to integration decoders (0)'));
     expect(push).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByText('Go to integration rules'));
+    // Non-zero counts: shown, enabled, with count in the label.
+    expect(screen.getByText('Go to integration rules (1)').closest('button')).not.toBeDisabled();
+    fireEvent.click(screen.getByText('Go to integration rules (1)'));
     expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws&space=standard`);
+
+    expect(screen.getByText('Go to integration KVDBs (1)').closest('button')).not.toBeDisabled();
   });
 
-  it('keeps every CTA disabled while the check is still pending, on a slow connection', async () => {
+  it('keeps every CTA disabled and count-less while the check is still pending, on a slow connection', async () => {
     let resolveCheck: (value: any) => void = () => {};
     (DataStore.integrations.getIntegration as jest.Mock).mockReturnValue(
       new Promise((resolve) => {
@@ -113,7 +119,60 @@ describe('IntegrationCell', () => {
 
     resolveCheck({ id: 'int-1', document: { rules: ['r1'] } });
     await waitFor(() =>
-      expect(screen.getByText('Go to integration rules').closest('button')).not.toBeDisabled()
+      expect(screen.getByText('Go to integration rules (1)').closest('button')).not.toBeDisabled()
     );
+  });
+
+  it('omits the current-entity item when currentEntity is given, but keeps the others (incl. zero counts)', async () => {
+    (DataStore.integrations.getIntegration as jest.Mock).mockResolvedValue({
+      id: 'int-1',
+      document: { rules: ['r1'] },
+    });
+    const push = jest.fn();
+    render(
+      <IntegrationCell
+        name="aws"
+        history={{ push }}
+        integrationId="int-1"
+        space="standard"
+        currentEntity="rules"
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+    await waitFor(() =>
+      expect(DataStore.integrations.getIntegration).toHaveBeenCalledWith('int-1', 'standard')
+    );
+
+    expect(screen.queryByText(/Go to integration rules/)).not.toBeInTheDocument();
+    expect(screen.getByText('Go to integration decoders (0)')).toBeInTheDocument();
+    expect(screen.getByText('Go to integration KVDBs (0)')).toBeInTheDocument();
+  });
+
+  it('renders all three entity items when currentEntity is omitted (e.g. Detectors)', () => {
+    renderWithFakeHistory('aws');
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+    expect(screen.getByText('Go to integration decoders')).toBeInTheDocument();
+    expect(screen.getByText('Go to integration rules')).toBeInTheDocument();
+    expect(screen.getByText('Go to integration KVDBs')).toBeInTheDocument();
+  });
+
+  it('renders "Go to integration details" as the first item and navigates to the integration details URL', () => {
+    const push = jest.fn();
+    render(
+      <IntegrationCell name="aws" history={{ push }} integrationId="int-1" space="standard" />
+    );
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+
+    const detailsItem = screen.getByText('Go to integration details');
+    expect(detailsItem).toBeInTheDocument();
+    fireEvent.click(detailsItem);
+    expect(push).toHaveBeenCalledWith(`${ROUTES.INTEGRATIONS}/int-1?space=standard`);
+  });
+
+  it('omits "Go to integration details" when integrationId or space is missing', () => {
+    renderWithFakeHistory('aws');
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+    expect(screen.queryByText('Go to integration details')).not.toBeInTheDocument();
   });
 });
