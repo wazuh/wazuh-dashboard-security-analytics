@@ -66,16 +66,16 @@ describe('useUrlFilterParams', () => {
 
   it('restores values and page from the URL on mount', () => {
     const { stateRef } = setup(
-      { params: ['query', 'status', 'integration', 'page'] },
-      '?query=aws&status=enabled&integration=aws&page=3&space=standard'
+      { params: ['query', 'enabled', 'integration', 'page'] },
+      '?query=aws&enabled=true&integration=aws&page=3&space=standard'
     );
 
-    expect(stateRef.current?.values).toEqual({ query: 'aws', status: 'enabled', integration: 'aws' });
+    expect(stateRef.current?.values).toEqual({ query: 'aws', enabled: 'true', integration: 'aws' });
     expect(stateRef.current?.page).toBe(3);
   });
 
   it('writes only the patched key and preserves siblings after debounce', () => {
-    const { stateRef } = setup({ params: ['query', 'status', 'page'] }, '?status=enabled&space=standard');
+    const { stateRef } = setup({ params: ['query', 'enabled', 'page'] }, '?enabled=true&space=standard');
 
     act(() => {
       stateRef.current?.setParams({ query: 'aws' });
@@ -85,7 +85,7 @@ describe('useUrlFilterParams', () => {
     });
 
     expect(stateRef.current?.values.query).toBe('aws');
-    expect(stateRef.current?.values.status).toBe('enabled');
+    expect(stateRef.current?.values.enabled).toBe('true');
   });
 
   it('reflects a debounced param change in local state immediately, before the URL write fires', () => {
@@ -102,17 +102,17 @@ describe('useUrlFilterParams', () => {
   });
 
   it('resets page to 1 when a resetPageOn param changes', () => {
-    const { stateRef } = setup({ params: ['query', 'status', 'page'] }, '?page=3');
+    const { stateRef } = setup({ params: ['query', 'enabled', 'page'] }, '?page=3');
 
     act(() => {
-      stateRef.current?.setParams({ status: 'enabled' });
+      stateRef.current?.setParams({ enabled: 'true' });
     });
 
     expect(stateRef.current?.page).toBe(1);
   });
 
   it('does not apply the page param for tables that opt out of it', () => {
-    const { stateRef } = setup({ params: ['query', 'status'] }, '?page=5');
+    const { stateRef } = setup({ params: ['query', 'enabled'] }, '?page=5');
 
     expect(stateRef.current?.page).toBe(1);
 
@@ -132,12 +132,12 @@ describe('useUrlFilterParams', () => {
   });
 
   it('clears a param via clearParam', () => {
-    const { stateRef } = setup({ params: ['status'] }, '?status=enabled');
+    const { stateRef } = setup({ params: ['enabled'] }, '?enabled=true');
 
     act(() => {
-      stateRef.current?.clearParam('status');
+      stateRef.current?.clearParam('enabled');
     });
 
-    expect(stateRef.current?.values.status).toBe('');
+    expect(stateRef.current?.values.enabled).toBe('');
   });
 });

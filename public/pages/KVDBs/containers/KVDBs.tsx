@@ -44,8 +44,8 @@ import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
 import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
 import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
 import {
-  buildQueryFromValues,
-  decodeMultiValue,
+  buildStatusIntegrationQueryFromUrl,
+  encodeEnabledValues,
   encodeMultiValue,
   getFreeText,
   getOrSelectedValues,
@@ -60,21 +60,17 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] }, history);
+  const urlFilters = useUrlFilterParams({ params: ['query', 'enabled', 'integration', 'page'] }, history);
   const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
   // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
-  // matching the pattern already used by Detectors. Neither `status` nor
-  // `integration` are real KVDB document fields, so both get stripped back out
+  // matching the pattern already used by Detectors. Neither `enabled` (unprefixed)
+  // nor `integration` are real KVDB document fields, so both get stripped back out
   // and resolved to explicit filters in buildQuery below.
-  const buildQueryFromUrl = () =>
-    buildQueryFromValues(urlFilters.values.query, [
-      { field: 'status', values: decodeMultiValue(urlFilters.values.status) },
-      { field: 'integration', values: decodeMultiValue(urlFilters.values.integration) },
-    ]);
+  const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
   const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
@@ -98,20 +94,29 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
   }, []);
 
+  // Wazuh: set before a local write to urlFilters so the resync effect below
+  // doesn't rebuild `searchQuery` from a URL snapshot that can race with it.
+  const skipNextUrlSync = useRef(false);
+
   // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
   // integration KVDBs" while already on KVDBs) updates the URL without remounting
   // this component, so the search bar must resync from the URL-owned value instead
   // of relying on its mount-time initializer.
   const isFirstQuerySyncRender = useRef(true);
   useEffect(() => {
-    setSearchQuery(buildQueryFromUrl());
     if (isFirstQuerySyncRender.current) {
       isFirstQuerySyncRender.current = false;
+      setSearchQuery(buildQueryFromUrl());
       return;
     }
+    if (skipNextUrlSync.current) {
+      skipNextUrlSync.current = false;
+      return;
+    }
+    setSearchQuery(buildQueryFromUrl());
     urlFilters.setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlFilters.values.query, urlFilters.values.status, urlFilters.values.integration]);
+  }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
 
   const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
     { notifications, enabled: true, space: spaceFilter, relatedField: 'kvdbs' }
@@ -123,7 +128,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     [searchQuery]
   );
 
-  // Wazuh: `status`/`integration` are UI-only filter fields (see the schema
+  // Wazuh: `enabled`/`integration` are UI-only filter fields (see the schema
   // comment) — strip their OR clauses out before toESQuery ever sees them.
   // `integration` is resolved server-side (see KVDBsService.searchKVDBs), matching
   // the Rules/Decoders Integration filter's single-round-trip pattern.
@@ -222,11 +227,12 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const onSearchChange = ({ query }: { query: any }) => {
     if (!query) return;
     setSearchQuery(query);
-    // 'query'/'status'/'integration' are all in resetPageOn, so this alone already
+    // 'query'/'enabled'/'integration' are all in resetPageOn, so this alone already
     // resets the page.
+    skipNextUrlSync.current = true;
     urlFilters.setParams({
       query: getFreeText(query),
-      status: encodeMultiValue(getOrSelectedValues(query, 'status')) || undefined,
+      enabled: encodeEnabledValues(getOrSelectedValues(query, 'status')) || undefined,
       integration: encodeMultiValue(getOrSelectedValues(query, 'integration')) || undefined,
     });
   };

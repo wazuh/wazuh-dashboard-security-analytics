@@ -7,14 +7,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { History } from 'history';
 
-export type FilterParamName = 'query' | 'status' | 'integration' | 'page';
+export type FilterParamName = 'query' | 'enabled' | 'integration' | 'page';
 
 export interface UrlFilterConfig {
   /** Params this table opts into. 'page' should only be included for server-paginated tables. */
   params: FilterParamName[];
   /** Params written 300ms after the last change instead of immediately. Default: ['query']. */
   debouncedParams?: FilterParamName[];
-  /** Params whose change resets 'page' back to 1. Default: ['query', 'status', 'integration']. */
+  /** Params whose change resets 'page' back to 1. Default: ['query', 'enabled', 'integration']. */
   resetPageOn?: FilterParamName[];
 }
 
@@ -28,7 +28,7 @@ export interface UrlFilterState {
 
 const DEBOUNCE_MS = 300;
 const DEFAULT_DEBOUNCED_PARAMS: FilterParamName[] = ['query'];
-const DEFAULT_RESET_PAGE_ON: FilterParamName[] = ['query', 'status', 'integration'];
+const DEFAULT_RESET_PAGE_ON: FilterParamName[] = ['query', 'enabled', 'integration'];
 
 const readValues = (search: string, params: FilterParamName[]): Record<FilterParamName, string> => {
   const parsed = new URLSearchParams(search);

@@ -44,8 +44,10 @@ import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
 import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
 import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
 import {
-  buildQueryFromValues,
+  buildStatusIntegrationQueryFromUrl,
+  decodeEnabledValues,
   decodeMultiValue,
+  encodeEnabledValues,
   encodeMultiValue,
   getFreeText,
   getOrSelectedValues,
@@ -63,21 +65,17 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const urlFilters = useUrlFilterParams({ params: ['query', 'status', 'integration', 'page'] }, history);
+  const urlFilters = useUrlFilterParams({ params: ['query', 'enabled', 'integration', 'page'] }, history);
   // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
   // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
   // matching the pattern already used by Detectors. `appliedQueryText`/
   // `appliedStatus`/`appliedIntegrationNames` are what actually drives the fetch:
   // free text debounces like before, filter checkboxes apply immediately.
-  const buildQueryFromUrl = () =>
-    buildQueryFromValues(urlFilters.values.query, [
-      { field: 'status', values: decodeMultiValue(urlFilters.values.status) },
-      { field: 'integration', values: decodeMultiValue(urlFilters.values.integration) },
-    ]);
+  const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
   const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
   const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
   const [appliedStatus, setAppliedStatus] = useState<'enabled' | 'disabled' | undefined>(() => {
-    const statuses = decodeMultiValue(urlFilters.values.status);
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
     return statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined;
   });
   const [appliedIntegrationNames, setAppliedIntegrationNames] = useState<string[]>(() =>
@@ -114,6 +112,10 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.DECODERS]);
   }, []);
 
+  // Wazuh: set before a local write to urlFilters so the resync effect below
+  // doesn't rebuild `searchQuery` from a URL snapshot that can race with it.
+  const skipNextUrlSync = useRef(false);
+
   const isFirstSearchRender = useRef(true);
   useEffect(() => {
     if (isFirstSearchRender.current) {
@@ -124,6 +126,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       const freeText = getFreeText(searchQuery);
       setAppliedQueryText(freeText);
       // 'query' is in resetPageOn, so this alone already resets the page.
+      skipNextUrlSync.current = true;
       urlFilters.setParams({ query: freeText });
     }, 300);
 
@@ -143,9 +146,10 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
     );
     setAppliedIntegrationNames(selectedIntegrations);
-    // 'status'/'integration' are also in resetPageOn — same reasoning as above.
+    // 'enabled'/'integration' are also in resetPageOn — same reasoning as above.
+    skipNextUrlSync.current = true;
     urlFilters.setParams({
-      status: selectedStatuses.length ? encodeMultiValue(selectedStatuses) : undefined,
+      enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
       integration: selectedIntegrations.length ? encodeMultiValue(selectedIntegrations) : undefined,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -156,13 +160,17 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   // remounting this component, so the search bar must resync from the URL-owned
   // value instead of relying on its mount-time initializer.
   useEffect(() => {
+    if (skipNextUrlSync.current) {
+      skipNextUrlSync.current = false;
+      return;
+    }
     setSearchQuery(buildQueryFromUrl());
     setAppliedQueryText(urlFilters.values.query);
-    const statuses = decodeMultiValue(urlFilters.values.status);
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
     setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
     setAppliedIntegrationNames(decodeMultiValue(urlFilters.values.integration));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlFilters.values.query, urlFilters.values.status, urlFilters.values.integration]);
+  }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
 
   const { options: integrationOptions, loading: integrationOptionsLoading } = useIntegrationSelector(
     { notifications, enabled: true, space: spaceFilter, relatedField: 'decoders' }

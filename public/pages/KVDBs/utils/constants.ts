@@ -10,7 +10,7 @@ export const KVDBS_SORT_FIELD = 'document.metadata.title';
 // useIntegrationKVDBs.ts and KVDBs.tsx).
 
 export const KVDBS_SEARCH_SCHEMA = {
-  strict: true,
+  strict: false,
   fields: {
     'document.metadata.author': {
       type: 'string',
@@ -30,12 +30,10 @@ export const KVDBS_SEARCH_SCHEMA = {
     'document.metadata.title': {
       type: 'string',
     },
-    // Wazuh: neither `status` nor `integration` are real KVDB document fields —
-    // both are stripped out and resolved to explicit filters (a term on
-    // document.enabled, and a document.id terms clause from a name->ids lookup)
-    // client-side before the query reaches EuiSearchBar's toESQuery (see
-    // KVDBs.tsx buildQuery). Declared here only so the strict schema accepts the
-    // field_value_selection filters' OR clauses.
+    // Wazuh: `status`/`integration` aren't indexed under these exact names —
+    // status maps to document.enabled, integration is resolved via a separate
+    // lookup (see KVDBsService.searchKVDBs). Declared here only for the
+    // EuiSearchBar filter UI; KVDBs.tsx buildQuery strips them before toESQuery.
     status: {
       type: 'string',
     },

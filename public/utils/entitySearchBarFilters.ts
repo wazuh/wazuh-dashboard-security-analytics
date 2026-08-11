@@ -33,7 +33,7 @@ export const getOrSelectedValues = (query: Query, field: string): string[] => {
 // URL-owned state (mount, or a same-route CTA navigation).
 export const buildQueryFromValues = (
   text: string,
-  fieldValues: Array<{ field: string; values: string[] }>
+  fieldValues: Array<{ field: string; values: unknown[] }>
 ): Query => {
   let query = EuiSearchBar.Query.parse(text ?? '');
   fieldValues.forEach(({ field, values }) => {
@@ -43,6 +43,30 @@ export const buildQueryFromValues = (
   });
   return query;
 };
+
+// Wazuh: the Status filter's clause values are 'enabled'/'disabled', not the
+// bareword tokens 'true'/'false' — EUI's query grammar auto-casts unquoted
+// true/false to real booleans on re-parse, which desyncs the filter popover's
+// own checkbox/badge state from the query. These convert only at the URL
+// boundary, where 'enabled=true,false' reads clearer than 'enabled=enabled,disabled'.
+export const encodeEnabledValues = (values: string[]): string =>
+  encodeMultiValue(values.map((v) => (v === 'enabled' ? 'true' : 'false')));
+
+export const decodeEnabledValues = (param: string): string[] =>
+  decodeMultiValue(param).map((v) => (v === 'true' ? 'enabled' : 'disabled'));
+
+// Wazuh: rebuild the Status/Integration portion of the EuiSearchBar's Query from
+// urlFilters.values — shared by Rules/Decoders/KVDBs, whose only difference is the
+// free-text placeholder shown in the box.
+export const buildStatusIntegrationQueryFromUrl = (values: {
+  query: string;
+  enabled: string;
+  integration: string;
+}): Query =>
+  buildQueryFromValues(values.query, [
+    { field: 'status', values: decodeEnabledValues(values.enabled) },
+    { field: 'integration', values: decodeMultiValue(values.integration) },
+  ]);
 
 // Wazuh: `Query.text` re-prints the WHOLE ast — including `field:(value)` filter
 // clauses — back into query syntax, it is NOT just what the user typed in the free
