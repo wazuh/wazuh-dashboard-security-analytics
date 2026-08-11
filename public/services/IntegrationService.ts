@@ -49,10 +49,13 @@ export default class IntegrationService {
     let query;
 
     if (id) {
-      // Only id provided - search by id only
-      query = {
-        terms: { _id: [id] },
-      };
+      // Wazuh: `id` is document.id (shared across a promoted integration's
+      // per-space copies), not the OpenSearch _id — must AND in spaceFilter to
+      // disambiguate, not drop it.
+      const idClause = { term: { 'document.id': id } };
+      query = spaceFilter
+        ? { bool: { must: [idClause, { term: { 'space.name': spaceFilter } }] } }
+        : idClause;
     } else {
       // Only spaceFilter provided - search by space
       query = {
