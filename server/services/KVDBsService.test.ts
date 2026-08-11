@@ -54,7 +54,9 @@ describe('KVDBsService.searchKVDBs — Integration filter', () => {
     );
     expect(kvdbsCall).toBeDefined();
     const kvdbsBody = JSON.parse(kvdbsCall![1].body);
-    expect(kvdbsBody.query.bool.filter).toEqual([{ terms: { 'document.id': ['kvdb-1', 'kvdb-2'] } }]);
+    expect(kvdbsBody.query.bool.filter).toEqual([
+      { terms: { 'document.id': ['kvdb-1', 'kvdb-2'] } },
+    ]);
     expect(kvdbsBody.query.bool.must).toEqual([{ match_all: {} }]);
   });
 

@@ -75,7 +75,10 @@ describe('useUrlFilterParams', () => {
   });
 
   it('writes only the patched key and preserves siblings after debounce', () => {
-    const { stateRef } = setup({ params: ['query', 'enabled', 'page'] }, '?enabled=true&space=standard');
+    const { stateRef } = setup(
+      { params: ['query', 'enabled', 'page'] },
+      '?enabled=true&space=standard'
+    );
 
     act(() => {
       stateRef.current?.setParams({ query: 'aws' });

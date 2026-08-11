@@ -157,7 +157,6 @@ export class KVDBsService extends MDSEnabledClientService {
     }
   };
 
-
   createKVDB = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest,

@@ -49,7 +49,9 @@ export default class WazuhRulesService {
     opts?: { status?: EntityStatus; integrationIds?: string[] }
   ) {
     // When an explicit space is provided it takes precedence over the prePackaged binary model
-    const spaceTerm = { term: { 'space.name': space ?? this.getSpaceFromPrePackaged(prePackaged) } };
+    const spaceTerm = {
+      term: { 'space.name': space ?? this.getSpaceFromPrePackaged(prePackaged) },
+    };
     const hasExtraFilters = Boolean(opts?.status) || Boolean(opts?.integrationIds?.length);
 
     // Skip the bool.must/filter wrapping entirely when no filter is selected.

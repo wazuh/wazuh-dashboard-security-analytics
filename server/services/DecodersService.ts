@@ -259,7 +259,16 @@ export class DecodersService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source, searchText, status, integrationNames } = body;
+      const {
+        from = 0,
+        size = 25,
+        sort,
+        query,
+        _source,
+        searchText,
+        status,
+        integrationNames,
+      } = body;
 
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);

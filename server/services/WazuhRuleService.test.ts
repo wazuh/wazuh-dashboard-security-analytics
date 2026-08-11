@@ -23,8 +23,7 @@ describe('WazuhRulesService.getRules — status/integration filters', () => {
 
   const emptySearchHits = { hits: { hits: [] } };
 
-  const makeRequest = (body: any, query: any = { prePackaged: true }) =>
-    ({ query, body } as any);
+  const makeRequest = (body: any, query: any = { prePackaged: true }) => ({ query, body } as any);
 
   it('emits a byte-identical query shape when no status/integration filter is selected', async () => {
     const { osDriver, callAsCurrentUser } = buildClient(() => emptySearchHits);
@@ -84,7 +83,9 @@ describe('WazuhRulesService.getRules — status/integration filters', () => {
     const integrationSearchCall = callAsCurrentUser.mock.calls.find(
       (call) =>
         call[1]?.index === 'wazuh-threatintel-integrations' &&
-        call[1]?.body?.query?.bool?.must?.some((clause: any) => clause.terms?.['document.metadata.title'])
+        call[1]?.body?.query?.bool?.must?.some(
+          (clause: any) => clause.terms?.['document.metadata.title']
+        )
     );
     expect(integrationSearchCall).toBeDefined();
     expect(integrationSearchCall![1].body.query.bool.must).toEqual(

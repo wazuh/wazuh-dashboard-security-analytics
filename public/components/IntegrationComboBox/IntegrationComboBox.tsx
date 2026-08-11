@@ -69,12 +69,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
 
   return (
     <>
-      <EuiCompressedFormRow
-        label={label}
-        isInvalid={isInvalid}
-        error={error}
-        fullWidth={fullWidth}
-      >
+      <EuiCompressedFormRow label={label} isInvalid={isInvalid} error={error} fullWidth={fullWidth}>
         {notifications ? (
           <EuiFlexGroup
             gutterSize="s"

@@ -23,14 +23,8 @@ interface UseSpaceSelectorOptions {
 export const useSpaceSelector = (
   options: UseSpaceSelectorOptions = {}
 ): { component: React.ReactComponentElement; spaceFilter: Space } => {
-  const {
-    isDisabled,
-    isLoading,
-    documentationUrl,
-    onSpaceChange,
-    history,
-    clearParamsOnChange,
-  } = options;
+  const { isDisabled, isLoading, documentationUrl, onSpaceChange, history, clearParamsOnChange } =
+    options;
   const [spaceFilter, setSpaceFilter] = useSpaceFilter(history);
   const [isChanging, setIsChanging] = useState(false);
   const trackPending = isLoading !== undefined;

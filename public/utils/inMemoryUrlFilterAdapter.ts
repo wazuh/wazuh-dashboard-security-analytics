@@ -63,7 +63,11 @@ export const buildQueryTextWithStatus = (
         .filter(Boolean)
     : [];
   const token =
-    values.length > 1 ? `${field}:(${values.join(' or ')})` : values.length === 1 ? `${field}:${values[0]}` : '';
+    values.length > 1
+      ? `${field}:(${values.join(' or ')})`
+      : values.length === 1
+      ? `${field}:${values[0]}`
+      : '';
   return [query, token].filter(Boolean).join(' ').trim();
 };
 

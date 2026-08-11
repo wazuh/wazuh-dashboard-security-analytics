@@ -41,9 +41,7 @@ describe('DecodersService.searchDecoders — status/integration filters', () => 
     );
     expect(decodersSearchCall).toBeDefined();
     const filterClause = decodersSearchCall![1].body.query.bool.filter;
-    expect(filterClause).toEqual(
-      expect.arrayContaining([{ term: { 'document.enabled': false } }])
-    );
+    expect(filterClause).toEqual(expect.arrayContaining([{ term: { 'document.enabled': false } }]));
   });
 
   it('resolves integrationNames to decoder ids via an exact terms match, space-scoped', async () => {
@@ -67,7 +65,9 @@ describe('DecodersService.searchDecoders — status/integration filters', () => 
     const integrationSearchCall = callAsCurrentUser.mock.calls.find(
       (call) =>
         call[1]?.index === 'wazuh-threatintel-integrations' &&
-        call[1]?.body?.query?.bool?.must?.some((clause: any) => clause.terms?.['document.metadata.title'])
+        call[1]?.body?.query?.bool?.must?.some(
+          (clause: any) => clause.terms?.['document.metadata.title']
+        )
     );
     expect(integrationSearchCall).toBeDefined();
     expect(integrationSearchCall![1].body.query.bool.must).toEqual(
@@ -99,7 +99,9 @@ describe('DecodersService.searchDecoders — status/integration filters', () => 
     const integrationSearchCall = callAsCurrentUser.mock.calls.find(
       (call) =>
         call[1]?.index === 'wazuh-threatintel-integrations' &&
-        call[1]?.body?.query?.bool?.must?.some((clause: any) => clause.terms?.['document.metadata.title'])
+        call[1]?.body?.query?.bool?.must?.some(
+          (clause: any) => clause.terms?.['document.metadata.title']
+        )
     );
     expect(integrationSearchCall).toBeDefined();
     expect(integrationSearchCall![1].body.query.bool.must).toEqual(
