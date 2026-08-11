@@ -2772,7 +2772,54 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         <div
                                           className="euiTableCellContent euiTableCellContent--overflowingContent"
                                         >
-                                          detector_type
+                                          <IntegrationCell
+                                            className=""
+                                            key=".0"
+                                            name="detector_type"
+                                          >
+                                            <EuiPopover
+                                              anchorPosition="downLeft"
+                                              button={
+                                                <EuiLink
+                                                  data-test-subj="integrationCellLink"
+                                                  onClick={[Function]}
+                                                >
+                                                  detector_type
+                                                </EuiLink>
+                                              }
+                                              closePopover={[Function]}
+                                              display="inlineBlock"
+                                              hasArrow={true}
+                                              id="integrationCellPopover-detector_type"
+                                              isOpen={false}
+                                              ownFocus={true}
+                                              panelPaddingSize="none"
+                                            >
+                                              <div
+                                                className="euiPopover euiPopover--anchorDownLeft"
+                                                id="integrationCellPopover-detector_type"
+                                              >
+                                                <div
+                                                  className="euiPopover__anchor"
+                                                >
+                                                  <EuiLink
+                                                    data-test-subj="integrationCellLink"
+                                                    onClick={[Function]}
+                                                  >
+                                                    <button
+                                                      className="euiLink euiLink--primary"
+                                                      data-test-subj="integrationCellLink"
+                                                      disabled={false}
+                                                      onClick={[Function]}
+                                                      type="button"
+                                                    >
+                                                      detector_type
+                                                    </button>
+                                                  </EuiLink>
+                                                </div>
+                                              </div>
+                                            </EuiPopover>
+                                          </IntegrationCell>
                                         </div>
                                       </td>
                                     </EuiTableRowCell>
