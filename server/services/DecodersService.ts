@@ -147,7 +147,7 @@ export class DecodersService {
   }
 
   private async fetchIntegrationMap(client: any, decoderIds: string[]) {
-    const integrations = new Map<string, string[]>();
+    const integrations = new Map<string, Array<{ id: string; title: string }>>();
 
     if (!decoderIds.length) {
       return integrations;
@@ -163,12 +163,13 @@ export class DecodersService {
               'document.decoders': decoderIds,
             },
           },
-          _source: ['document.metadata.title', 'document.decoders'],
+          _source: ['document.id', 'document.metadata.title', 'document.decoders'],
         },
       });
 
       const hits = integrationResponse?.hits?.hits ?? [];
       hits.forEach((hit: any) => {
+        const id = hit?._source?.document?.id;
         const title = hit?._source?.document?.metadata?.title;
         const decoderRefs = hit?._source?.document?.decoders;
         const decoderList = Array.isArray(decoderRefs)
@@ -180,8 +181,8 @@ export class DecodersService {
           if (!integrations.has(decoderId)) {
             integrations.set(decoderId, []);
           }
-          if (title && !integrations.get(decoderId)!.includes(title)) {
-            integrations.get(decoderId)!.push(title);
+          if (id && title && !integrations.get(decoderId)!.some((ref) => ref.id === id)) {
+            integrations.get(decoderId)!.push({ id, title });
           }
         });
       });
@@ -341,11 +342,15 @@ export class DecodersService {
       const hits = searchResponse?.hits?.hits ?? [];
       const decoderIds = hits.map((hit: any) => hit._source?.document?.id ?? hit._id);
       const integrationMap = await this.fetchIntegrationMap(client, decoderIds);
-      const items: DecoderItem[] = hits.map((hit: any) => ({
-        id: hit._id,
-        ...hit._source,
-        integrations: integrationMap.get(hit._source?.document?.id ?? hit._id) ?? [],
-      }));
+      const items: DecoderItem[] = hits.map((hit: any) => {
+        const refs = integrationMap.get(hit._source?.document?.id ?? hit._id) ?? [];
+        return {
+          id: hit._id,
+          ...hit._source,
+          integrations: refs.map((ref) => ref.title),
+          integrationRefs: refs,
+        };
+      });
       const total =
         typeof searchResponse?.hits?.total === 'number'
           ? searchResponse.hits.total
@@ -404,10 +409,12 @@ export class DecodersService {
 
       const docId = hit._source?.document?.id ?? hit._id;
       const integrationMap = await this.fetchIntegrationMap(client, [docId]);
+      const refs = integrationMap.get(docId) ?? [];
       const item: DecoderItem = {
         id: hit._id,
         ...hit._source,
-        integrations: integrationMap.get(docId) ?? [],
+        integrations: refs.map((ref) => ref.title),
+        integrationRefs: refs,
       };
 
       return response.custom({

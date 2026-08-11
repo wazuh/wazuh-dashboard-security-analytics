@@ -27,6 +27,8 @@ export interface DecoderSource {
 export interface DecoderItem extends DecoderSource {
   id: string;
   integrations?: string[];
+  /** Same integrations as `integrations`, with their id — for a direct lookup by id. */
+  integrationRefs?: Array<{ id: string; title: string }>;
 }
 
 export interface SearchDecodersResponse {

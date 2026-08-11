@@ -4,16 +4,21 @@
  */
 
 import React from 'react';
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import { IntegrationCell } from './IntegrationCell';
 import { ROUTES } from '../../utils/constants';
+import { DataStore } from '../../store/DataStore';
 
-// Wazuh: a hand-rolled fake `history.push`, passed via IntegrationCell's optional
-// `history` override, instead of relying on <MemoryRouter> + useHistory(). See
-// useUrlFilterParams.ts for why: react-router's hooks resolve through
-// React.useContext, which test/setup.jest.ts globally mocks for the unrelated
-// SecurityAnalyticsContext pattern, breaking useHistory() (but not prop-drilling)
-// in every test in this suite.
+jest.mock('../../store/DataStore', () => ({
+  DataStore: {
+    integrations: {
+      getIntegration: jest.fn(),
+    },
+  },
+}));
+
+// Wazuh: fake `history.push` via the `history` override — see useUrlFilterParams.ts
+// for why useHistory() itself is unusable under this suite's global mocks.
 const renderWithFakeHistory = (name: string) => {
   const push = jest.fn();
   render(<IntegrationCell name={name} history={{ push }} />);
@@ -47,5 +52,34 @@ describe('IntegrationCell', () => {
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     fireEvent.click(screen.getByText('Go to integration KVDBs'));
     expect(getPushedPath()).toBe(`${ROUTES.KVDBS}?integration=aws`);
+  });
+
+  it('does not check related items when integrationId/space are omitted', () => {
+    renderWithFakeHistory('aws');
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+    expect(DataStore.integrations.getIntegration).not.toHaveBeenCalled();
+  });
+
+  it('disables a CTA and explains why when the integration has no items of that type', async () => {
+    (DataStore.integrations.getIntegration as jest.Mock).mockResolvedValue({
+      id: 'int-1',
+      document: { rules: ['r1'], kvdbs: ['k1'] },
+    });
+    const push = jest.fn();
+    render(
+      <IntegrationCell name="aws" history={{ push }} integrationId="int-1" space="standard" />
+    );
+
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+    await waitFor(() =>
+      expect(DataStore.integrations.getIntegration).toHaveBeenCalledWith('int-1', 'standard')
+    );
+
+    expect(screen.getByText('Go to integration decoders').closest('button')).toBeDisabled();
+    fireEvent.click(screen.getByText('Go to integration decoders'));
+    expect(push).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('Go to integration rules'));
+    expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws`);
   });
 });

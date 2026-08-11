@@ -279,8 +279,13 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       {
         field: 'integrations',
         name: 'Integration',
-        render: (integrations: string[]) => (
-          <IntegrationCell name={integrations?.[0] || ''} history={history} />
+        render: (integrations: string[], item: DecoderItem) => (
+          <IntegrationCell
+            name={integrations?.[0] || ''}
+            integrationId={item.integrationRefs?.[0]?.id}
+            history={history}
+            space={spaceFilter}
+          />
         ),
       },
       {
@@ -451,6 +456,9 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
               <EuiSearchBar
+                // Wazuh: remount once Integration options load, or the filter badge
+                // can stick at "0 selected" until the popover is opened once.
+                key={integrationOptionsLoading ? 'loading' : 'loaded'}
                 query={searchQuery}
                 box={{
                   placeholder: 'Search decoders',

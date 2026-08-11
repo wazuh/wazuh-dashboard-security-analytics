@@ -302,7 +302,14 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         field: 'integration.title',
         name: 'Integration',
         dataType: 'string',
-        render: (value: string) => <IntegrationCell name={value || ''} history={history} />,
+        render: (value: string, item: KVDBItem) => (
+          <IntegrationCell
+            name={value || ''}
+            integrationId={item.integration?.id}
+            history={history}
+            space={spaceFilter}
+          />
+        ),
       },
       {
         field: 'document.metadata.author',
@@ -425,6 +432,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
               <EuiSearchBar
+                // Wazuh: remount once Integration options load, or the filter badge
+                // can stick at "0 selected" until the popover is opened once.
+                key={integrationOptionsLoading ? 'loading' : 'loaded'}
                 query={searchQuery}
                 box={{
                   placeholder: 'Search KVDBs',

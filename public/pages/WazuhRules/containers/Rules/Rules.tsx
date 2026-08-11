@@ -314,7 +314,9 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         render: (_: any, row: RuleTableItem) => (
           <IntegrationCell
             name={row.integration?.document?.metadata?.title || ''}
+            integrationId={row.integration?.document?.id}
             history={history}
+            space={spaceFilter}
           />
         ),
       },
@@ -484,6 +486,9 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
               <EuiSearchBar
+                // Wazuh: remount once Integration options load, or the filter badge
+                // can stick at "0 selected" until the popover is opened once.
+                key={integrationOptionsLoading ? 'loading' : 'loaded'}
                 query={searchQuery}
                 box={{
                   placeholder: 'Search rules',
