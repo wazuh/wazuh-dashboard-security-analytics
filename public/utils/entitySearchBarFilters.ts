@@ -33,7 +33,7 @@ export const getOrSelectedValues = (query: Query, field: string): string[] => {
 // Wazuh: build a Query carrying the given free text plus OR clauses for each
 // field/values pair — used to hydrate the EuiSearchBar's displayed query from the
 // URL-owned state (mount, or a same-route CTA navigation).
-export const buildQueryFromValues = (
+const buildQueryFromValues = (
   text: string,
   fieldValues: Array<{ field: string; values: unknown[] }>
 ): Query => {

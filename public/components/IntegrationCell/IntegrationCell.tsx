@@ -137,5 +137,3 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
     </EuiPopover>
   );
 };
-
-export default IntegrationCell;
