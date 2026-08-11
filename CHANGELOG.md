@@ -30,6 +30,7 @@
 | [#164](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/164) [#347](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/347) | Rules table and details now display the real integration title. |
 | [#178](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/178) | Updated nav menu group label to "Security analytics" to match Wazuh Dashboard capitalization style. |
 | [#353](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/353) | Removed getLogTypeLabel usage across Security analytics |
+| [#430](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/430) | Unify search, Status/Integration filters and URL-persisted list state across Rules, Decoders, KVDBs, Integrations, Filters and Detectors; add a clickable Integration column CTA to jump to related Decoders/Rules/KVDBs and Detectors |
 
 ### Removed
 
@@ -52,7 +53,6 @@
 | [#322](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/322) | Fixed integration documentation field being truncated in the details view |
 | [#398](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/398) | Fixed duplicate submissions by adding a loading state to create, edit and delete buttons |
 | [#401](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/401) | Fixed inconsistent error handling in operations with integrations, filters, decoders, kvdbs, detectors, rules and promotion to show the server error message |
-| [#430](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/430) | Unify search, Status/Integration filters and URL-persisted list state across Rules, Decoders, KVDBs, Integrations, Filters and Detectors; add a clickable Integration column CTA to jump to related Decoders/Rules/KVDBs and Detectors |
 
 ## Prior versions
 
