@@ -32,6 +32,13 @@ describe('splitStatusFromQueryText', () => {
       status: 'true',
     });
   });
+
+  it('extracts a multiSelect "or" group without leaking it into the free text', () => {
+    expect(splitStatusFromQueryText('status:(enabled or disabled) aws')).toEqual({
+      query: 'aws',
+      status: 'enabled,disabled',
+    });
+  });
 });
 
 describe('buildQueryTextWithStatus', () => {
@@ -49,6 +56,12 @@ describe('buildQueryTextWithStatus', () => {
 
   it('supports a custom field name', () => {
     expect(buildQueryTextWithStatus('aws', 'true', 'enabled')).toBe('aws enabled:true');
+  });
+
+  it('builds an "or" group from a comma-joined multi-value status', () => {
+    expect(buildQueryTextWithStatus('aws', 'enabled,disabled')).toBe(
+      'aws status:(enabled or disabled)'
+    );
   });
 });
 

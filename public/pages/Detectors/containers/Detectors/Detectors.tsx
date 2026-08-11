@@ -410,6 +410,10 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             name: capitalizeFirstLetter(status),
           })),
           multiSelect: 'or',
+          // Wazuh: EUI's default 'eq' operator matches by substring ("Active" is
+          // contained in "Inactive"), not equality — 'exact' is required so
+          // selecting one status option doesn't also match the other.
+          operator: 'exact',
         } as FieldValueSelectionFilterConfigType,
         {
           type: 'field_value_selection',
@@ -418,6 +422,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
           compressed: true,
           options: getLogTypeFilterOptions(),
           multiSelect: 'or',
+          operator: 'exact',
         } as FieldValueSelectionFilterConfigType,
         // Wazuh: Added new filter for space
         {
@@ -427,6 +432,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
           compressed: true,
           options: spaceOptions,
           multiSelect: 'or',
+          operator: 'exact',
         } as FieldValueSelectionFilterConfigType,
         // End Wazuh
       ],

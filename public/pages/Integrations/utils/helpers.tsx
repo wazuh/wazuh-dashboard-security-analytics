@@ -179,16 +179,6 @@ export const getIntegrationsTableSearchConfig = (options?: {
     schema: true,
     compressed: true,
   },
-  // Wazuh: `box.schema: true` derives valid field names from `columns` — 'status'
-  // isn't a column (only the real 'enabled' boolean is), so without this explicit
-  // schema the search bar rejects `status:enabled` as an unknown field.
-  schema: {
-    strict: false,
-    fields: {
-      category: { type: 'string' },
-      status: { type: 'string' },
-    },
-  },
   filters: [
     {
       type: 'field_value_selection',
@@ -196,6 +186,9 @@ export const getIntegrationsTableSearchConfig = (options?: {
       name: 'Category',
       compressed: true,
       multiSelect: 'or',
+      // Wazuh: EUI's default 'eq' operator matches by substring, not equality —
+      // 'exact' avoids one option's value silently matching another's.
+      operator: 'exact',
       options: getIntegrationCategoryFilterOptions(false),
     },
     {
@@ -204,6 +197,7 @@ export const getIntegrationsTableSearchConfig = (options?: {
       name: 'Status',
       compressed: true,
       multiSelect: 'or',
+      operator: 'exact',
       options: [
         { value: 'enabled', name: 'Enabled' },
         { value: 'disabled', name: 'Disabled' },

@@ -84,6 +84,9 @@ export const buildStatusIntegrationFilters = (
       name: 'Status',
       compressed: true,
       multiSelect: 'or',
+      // Wazuh: EUI's default 'eq' operator matches by substring, not equality —
+      // 'exact' avoids one option's value silently matching another's.
+      operator: 'exact',
       options: [
         { value: 'enabled', name: 'Enabled' },
         { value: 'disabled', name: 'Disabled' },
@@ -95,6 +98,7 @@ export const buildStatusIntegrationFilters = (
       name: 'Integration',
       compressed: true,
       multiSelect: 'or',
+      operator: 'exact',
       loading: integrationOptionsLoading,
       options: integrationOptions.map((option) => ({
         value: option.value,

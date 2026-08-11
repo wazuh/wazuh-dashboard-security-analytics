@@ -432,6 +432,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       "detectorName": "detector_name",
                       "lastUpdatedTime": 1,
                       "logType": "detector_type",
+                      "rawSpace": "custom",
                       "rulesCount": 2,
                       "space": "Custom",
                       "status": "Active",
@@ -495,6 +496,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         "field": "status",
                         "multiSelect": "or",
                         "name": "Status",
+                        "operator": "exact",
                         "options": Array [
                           Object {
                             "name": "Active",
@@ -508,6 +510,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         "field": "logType",
                         "multiSelect": "or",
                         "name": "Integration",
+                        "operator": "exact",
                         "options": Array [],
                         "type": "field_value_selection",
                       },
@@ -516,6 +519,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         "field": "space",
                         "multiSelect": "or",
                         "name": "Space",
+                        "operator": "exact",
                         "options": Array [
                           Object {
                             "name": "Custom",
@@ -655,6 +659,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "field": "status",
                           "multiSelect": "or",
                           "name": "Status",
+                          "operator": "exact",
                           "options": Array [
                             Object {
                               "name": "Active",
@@ -668,6 +673,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "field": "logType",
                           "multiSelect": "or",
                           "name": "Integration",
+                          "operator": "exact",
                           "options": Array [],
                           "type": "field_value_selection",
                         },
@@ -676,6 +682,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "field": "space",
                           "multiSelect": "or",
                           "name": "Space",
+                          "operator": "exact",
                           "options": Array [
                             Object {
                               "name": "Custom",
@@ -957,6 +964,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     "field": "status",
                                     "multiSelect": "or",
                                     "name": "Status",
+                                    "operator": "exact",
                                     "options": Array [
                                       Object {
                                         "name": "Active",
@@ -970,6 +978,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     "field": "logType",
                                     "multiSelect": "or",
                                     "name": "Integration",
+                                    "operator": "exact",
                                     "options": Array [],
                                     "type": "field_value_selection",
                                   },
@@ -978,6 +987,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     "field": "space",
                                     "multiSelect": "or",
                                     "name": "Space",
+                                    "operator": "exact",
                                     "options": Array [
                                       Object {
                                         "name": "Custom",
@@ -1020,6 +1030,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         "field": "status",
                                         "multiSelect": "or",
                                         "name": "Status",
+                                        "operator": "exact",
                                         "options": Array [
                                           Object {
                                             "name": "Active",
@@ -1159,6 +1170,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         "field": "logType",
                                         "multiSelect": "or",
                                         "name": "Integration",
+                                        "operator": "exact",
                                         "options": Array [],
                                         "type": "field_value_selection",
                                       }
@@ -1293,6 +1305,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         "field": "space",
                                         "multiSelect": "or",
                                         "name": "Space",
+                                        "operator": "exact",
                                         "options": Array [
                                           Object {
                                             "name": "Custom",
@@ -1873,6 +1886,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "detectorName": "detector_name",
                           "lastUpdatedTime": 1,
                           "logType": "detector_type",
+                          "rawSpace": "custom",
                           "rulesCount": 2,
                           "space": "Custom",
                           "status": "Active",
@@ -2776,6 +2790,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                             className=""
                                             key=".0"
                                             name="detector_type"
+                                            space="custom"
                                           >
                                             <EuiPopover
                                               anchorPosition="downLeft"

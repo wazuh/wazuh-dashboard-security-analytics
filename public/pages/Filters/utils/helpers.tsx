@@ -115,13 +115,7 @@ export const getFiltersTableSearchConfig = (
   return {
     box: {
       placeholder: 'Search filters',
-      schema: {
-        strict: false,
-        fields: {
-          type: { type: 'string' },
-          status: { type: 'string' },
-        },
-      },
+      schema: true,
       compressed: true,
     },
     filters: [
@@ -131,6 +125,9 @@ export const getFiltersTableSearchConfig = (
         name: 'Type',
         compressed: true,
         multiSelect: 'or',
+        // Wazuh: EUI's default 'eq' operator matches by substring, not equality —
+        // 'exact' avoids one option's value silently matching another's.
+        operator: 'exact',
         options: FILTER_TYPE_OPTIONS.map((option) => ({ value: option.value, name: option.text })),
       },
       {
@@ -139,6 +136,7 @@ export const getFiltersTableSearchConfig = (
         name: 'Status',
         compressed: true,
         multiSelect: 'or',
+        operator: 'exact',
         options: [
           { value: 'enabled', name: 'Enabled' },
           { value: 'disabled', name: 'Disabled' },
