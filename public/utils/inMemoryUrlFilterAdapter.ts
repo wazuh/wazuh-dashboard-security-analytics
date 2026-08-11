@@ -17,12 +17,9 @@ export interface InMemoryUrlFilterValues {
 const buildStatusTokenRegex = (field: string) => new RegExp(`(?:^|\\s)${field}:(\\S+)`, 'i');
 
 // Wazuh: EuiSearchBar's free-text `query.text` embeds structured field clauses
-// (e.g. "aws status:enabled" or "aws enabled:true", depending on the page's own
-// filter field name) when box.schema is enabled. Split it back into the plain
-// free-text part and the status value, so both can be persisted as separate URL
-// params (`query`, `status`) like the server-paginated tables. `field` defaults to
-// 'status' (Detectors) — Filters/Integrations pass 'enabled' (their existing
-// boolean filter field).
+// (e.g. "aws status:enabled") when box.schema is enabled. Split it back into the
+// plain free-text part and the status value, so both can be persisted as separate
+// URL params (`query`, `status`) like the server-paginated tables.
 export const splitStatusFromQueryText = (
   text: string,
   field: string = 'status'

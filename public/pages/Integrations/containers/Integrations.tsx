@@ -108,7 +108,14 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
   const onTabChange = (tab: OverviewTabId) => {
     const path = tab === OVERVIEW_TAB.FILTERS ? ROUTES.FILTERS : ROUTES.INTEGRATIONS;
-    history.replace(path + history.location.search);
+    // Wazuh: Integrations and Filters each have their own independent meaning for
+    // 'query'/'status' (e.g. status filters a different `enabled` field per tab) —
+    // carrying them over on tab switch leaked one tab's filter into the other's.
+    const params = new URLSearchParams(history.location.search);
+    params.delete('query');
+    params.delete('status');
+    const search = params.toString();
+    history.replace(path + (search ? `?${search}` : ''));
   };
   const loadIntegrations = useCallback(async () => {
     setLoading(true);
@@ -632,13 +639,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             search={{
               ...getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] }),
               defaultQuery: EuiSearchBar.Query.parse(
-                buildQueryTextWithStatus(urlFilters.query, urlFilters.status, 'enabled')
+                buildQueryTextWithStatus(urlFilters.query, urlFilters.status)
               ),
               onChange: ({ query }: { query: any }) => {
-                const { query: freeText, status } = splitStatusFromQueryText(
-                  query?.text ?? '',
-                  'enabled'
-                );
+                const { query: freeText, status } = splitStatusFromQueryText(query?.text ?? '');
                 writeInMemoryUrlFilterValues(history, { query: freeText, status });
                 return true;
               },

@@ -43,6 +43,15 @@ export interface IntegrationTableItem {
   kvdbs: number;
   rules: number;
   enabled?: boolean;
+  /**
+   * String mirror of `enabled` used only by the Status filter, matching the
+   * 'status'/'enabled'|'disabled' pattern used by Rules/Decoders/KVDBs —
+   * EuiInMemoryTable's `field_value_selection` filter mishandles literal boolean
+   * option values (the query round-trips through text, where EUI's grammar
+   * doesn't know 'enabled' is boolean-typed absent a declared schema, desyncing
+   * the filter's own badge/checkbox state from a real `true`/`false` clause).
+   */
+  status: 'enabled' | 'disabled';
 }
 
 export const mapPolicyToIntegrationTableItems = (
@@ -66,6 +75,7 @@ export const mapPolicyToIntegrationTableItems = (
       kvdbs: source.document.kvdbsCount,
       rules: source.document.rulesCount,
       enabled: source.document.enabled,
+      status: source.document.enabled ? 'enabled' : 'disabled',
     }));
 };
 
@@ -122,11 +132,16 @@ export const getIntegrationsTableColumns = ({
     render: (kvdbs: number) => kvdbs ?? 0,
   },
   {
-    field: 'enabled',
+    // Wazuh: reads `status` (not `enabled`) so EuiInMemoryTable's own filter
+    // execution — which resolves a field's value via the table's `columns`, not
+    // just the search bar's schema — can actually match rows for the Status
+    // filter below; a field absent from `columns` never gets execution-time
+    // resolution even though its schema/filter-popover config looks correct.
+    field: 'status',
     name: 'Status',
     sortable: true,
-    render: (enabled: boolean) => (
-      <EnabledHealth enabled={enabled} data-test-subj="integration_status" />
+    render: (status: 'enabled' | 'disabled') => (
+      <EnabledHealth enabled={status === 'enabled'} data-test-subj="integration_status" />
     ),
   },
   {
@@ -164,6 +179,16 @@ export const getIntegrationsTableSearchConfig = (options?: {
     schema: true,
     compressed: true,
   },
+  // Wazuh: `box.schema: true` derives valid field names from `columns` — 'status'
+  // isn't a column (only the real 'enabled' boolean is), so without this explicit
+  // schema the search bar rejects `status:enabled` as an unknown field.
+  schema: {
+    strict: false,
+    fields: {
+      category: { type: 'string' },
+      status: { type: 'string' },
+    },
+  },
   filters: [
     {
       type: 'field_value_selection',
@@ -173,18 +198,15 @@ export const getIntegrationsTableSearchConfig = (options?: {
       multiSelect: 'or',
       options: getIntegrationCategoryFilterOptions(false),
     },
-    // Wazuh: Status dropdown parity with the other entity tables (spec: "Status
-    // dropdown parity"). Client-side field filter, consistent with this table's
-    // existing EuiInMemoryTable approach (Category filter above).
     {
       type: 'field_value_selection',
-      field: 'enabled',
+      field: 'status',
       name: 'Status',
       compressed: true,
-      multiSelect: false,
+      multiSelect: 'or',
       options: [
-        { value: true, name: 'Enabled' },
-        { value: false, name: 'Disabled' },
+        { value: 'enabled', name: 'Enabled' },
+        { value: 'disabled', name: 'Disabled' },
       ],
     },
   ],

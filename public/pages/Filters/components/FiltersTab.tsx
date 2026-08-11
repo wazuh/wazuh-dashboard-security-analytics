@@ -227,13 +227,10 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
         search={{
           ...getFiltersTableSearchConfig(items, { toolsRight: [actionsButton] }),
           defaultQuery: EuiSearchBar.Query.parse(
-            buildQueryTextWithStatus(urlFilters.query, urlFilters.status, 'enabled')
+            buildQueryTextWithStatus(urlFilters.query, urlFilters.status)
           ),
           onChange: ({ query }: { query: any }) => {
-            const { query: freeText, status } = splitStatusFromQueryText(
-              query?.text ?? '',
-              'enabled'
-            );
+            const { query: freeText, status } = splitStatusFromQueryText(query?.text ?? '');
             writeInMemoryUrlFilterValues(history, { query: freeText, status });
             return true;
           },

@@ -7,6 +7,7 @@ import React from 'react';
 import { EuiLink } from '@elastic/eui';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { FilterItem } from '../../../../types';
+import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { FiltersAllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { FILTER_TYPE_OPTIONS } from './constants';
@@ -16,16 +17,29 @@ export interface FilterTableItem {
   name: string;
   type: string;
   enabled: boolean;
+  /**
+   * String mirror of `enabled` used only by the Status filter, matching the
+   * 'status'/'enabled'|'disabled' pattern used by Rules/Decoders/KVDBs —
+   * EuiInMemoryTable's `field_value_selection` filter mishandles literal boolean
+   * option values (the query round-trips through text, where EUI's grammar
+   * doesn't know 'enabled' is boolean-typed absent a declared schema, desyncing
+   * the filter's own badge/checkbox state from a real `true`/`false` clause).
+   */
+  status: 'enabled' | 'disabled';
   spaceName: string;
 }
 
-export const toFilterTableItem = (item: FilterItem): FilterTableItem => ({
-  id: item.id,
-  name: item.document?.metadata?.title ?? item.document?.name ?? '',
-  type: item.document?.type ?? '',
-  enabled: item.document?.enabled ?? false,
-  spaceName: item.space?.name ?? '',
-});
+export const toFilterTableItem = (item: FilterItem): FilterTableItem => {
+  const enabled = item.document?.enabled ?? false;
+  return {
+    id: item.id,
+    name: item.document?.metadata?.title ?? item.document?.name ?? '',
+    type: item.document?.type ?? '',
+    enabled,
+    status: enabled ? 'enabled' : 'disabled',
+    spaceName: item.space?.name ?? '',
+  };
+};
 
 export const getFiltersTableColumns = (
   spaceFilter: string,
@@ -47,10 +61,17 @@ export const getFiltersTableColumns = (
     sortable: true,
   },
   {
-    field: 'enabled',
-    name: 'Enabled',
+    // Wazuh: reads `status` (not `enabled`) so EuiInMemoryTable's own filter
+    // execution — which resolves a field's value via the table's `columns`, not
+    // just the search bar's schema — can actually match rows for the Status
+    // filter below; a field absent from `columns` never gets execution-time
+    // resolution even though its schema/filter-popover config looks correct.
+    field: 'status',
+    name: 'Status',
     sortable: true,
-    render: (enabled: boolean) => (enabled ? 'Yes' : 'No'),
+    render: (status: 'enabled' | 'disabled') => (
+      <EnabledHealth enabled={status === 'enabled'} data-test-subj="filter_status" />
+    ),
   },
   {
     name: 'Actions',
@@ -94,7 +115,13 @@ export const getFiltersTableSearchConfig = (
   return {
     box: {
       placeholder: 'Search filters',
-      schema: true,
+      schema: {
+        strict: false,
+        fields: {
+          type: { type: 'string' },
+          status: { type: 'string' },
+        },
+      },
       compressed: true,
     },
     filters: [
@@ -106,18 +133,15 @@ export const getFiltersTableSearchConfig = (
         multiSelect: 'or',
         options: FILTER_TYPE_OPTIONS.map((option) => ({ value: option.value, name: option.text })),
       },
-      // Wazuh: Status dropdown parity with the other entity tables (spec: "Status
-      // dropdown parity"). Labels normalized to Enabled/Disabled, consistent with
-      // Rules/Decoders/Integrations, instead of a bespoke Yes/No wording.
       {
         type: 'field_value_selection',
-        field: 'enabled',
+        field: 'status',
         name: 'Status',
         compressed: true,
-        multiSelect: false,
+        multiSelect: 'or',
         options: [
-          { value: true, name: 'Enabled' },
-          { value: false, name: 'Disabled' },
+          { value: 'enabled', name: 'Enabled' },
+          { value: 'disabled', name: 'Disabled' },
         ],
       },
     ],
