@@ -17,4 +17,14 @@ describe('buildEntityQueryRoute', () => {
   it('returns the bare route with an empty integration param when the name is empty', () => {
     expect(buildEntityQueryRoute('/kvdbs', '')).toBe('/kvdbs?integration=');
   });
+
+  it('appends the space param when given, so the target table lands in the same space', () => {
+    expect(buildEntityQueryRoute('/rules', 'aws', 'custom')).toBe(
+      '/rules?integration=aws&space=custom'
+    );
+  });
+
+  it('omits the space param when not given', () => {
+    expect(buildEntityQueryRoute('/rules', 'aws')).toBe('/rules?integration=aws');
+  });
 });

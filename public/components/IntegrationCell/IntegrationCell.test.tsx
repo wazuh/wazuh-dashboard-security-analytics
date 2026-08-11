@@ -54,6 +54,14 @@ describe('IntegrationCell', () => {
     expect(getPushedPath()).toBe(`${ROUTES.KVDBS}?integration=aws`);
   });
 
+  it('carries this row\'s space along so the target table lands there too', () => {
+    const push = jest.fn();
+    render(<IntegrationCell name="aws" history={{ push }} space="custom" />);
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+    fireEvent.click(screen.getByText('Go to integration rules'));
+    expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws&space=custom`);
+  });
+
   it('does not check related items when integrationId/space are omitted', () => {
     renderWithFakeHistory('aws');
     fireEvent.click(screen.getByTestId('integrationCellLink'));
@@ -80,6 +88,32 @@ describe('IntegrationCell', () => {
     expect(push).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByText('Go to integration rules'));
-    expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws`);
+    expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws&space=standard`);
+  });
+
+  it('keeps every CTA disabled while the check is still pending, on a slow connection', async () => {
+    let resolveCheck: (value: any) => void = () => {};
+    (DataStore.integrations.getIntegration as jest.Mock).mockReturnValue(
+      new Promise((resolve) => {
+        resolveCheck = resolve;
+      })
+    );
+    const push = jest.fn();
+    render(
+      <IntegrationCell name="aws" history={{ push }} integrationId="int-1" space="standard" />
+    );
+
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+
+    expect(screen.getByText('Go to integration decoders').closest('button')).toBeDisabled();
+    expect(screen.getByText('Go to integration rules').closest('button')).toBeDisabled();
+    expect(screen.getByText('Go to integration KVDBs').closest('button')).toBeDisabled();
+    fireEvent.click(screen.getByText('Go to integration rules'));
+    expect(push).not.toHaveBeenCalled();
+
+    resolveCheck({ id: 'int-1', document: { rules: ['r1'] } });
+    await waitFor(() =>
+      expect(screen.getByText('Go to integration rules').closest('button')).not.toBeDisabled()
+    );
   });
 });

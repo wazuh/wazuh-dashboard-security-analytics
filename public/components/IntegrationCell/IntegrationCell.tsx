@@ -84,12 +84,18 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
 
   const navigateTo = (route: string) => {
     closePopover();
-    history.push(buildEntityQueryRoute(route, name));
+    history.push(buildEntityQueryRoute(route, name, space));
   };
+
+  // Wazuh: while the check is pending (only when one is actually happening — i.e.
+  // integrationId/space were given), every CTA stays disabled rather than
+  // optimistically enabled, so a slow connection can't leave a clickable window
+  // before the "has no items" result comes back.
+  const isChecking = Boolean(integrationId && space && !relatedFlags);
 
   const buildMenuItem = (key: 'decoders' | 'rules' | 'kvdbs', route: string) => {
     const label = `Go to integration ${ENTITY_LABELS[key]}`;
-    const hasRelatedItems = relatedFlags?.[key] ?? true;
+    const hasRelatedItems = isChecking ? false : relatedFlags?.[key] ?? true;
     const item = (
       <EuiContextMenuItem key={key} disabled={!hasRelatedItems} onClick={() => navigateTo(route)}>
         {label}
@@ -97,7 +103,12 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
     );
     if (hasRelatedItems) return item;
     return (
-      <EuiToolTip key={key} position="right" content={`${name} has no ${ENTITY_LABELS[key]}`}>
+      <EuiToolTip
+        key={key}
+        display="block"
+        position="right"
+        content={isChecking ? 'Checking…' : `${name} has no ${ENTITY_LABELS[key]}`}
+      >
         {item}
       </EuiToolTip>
     );

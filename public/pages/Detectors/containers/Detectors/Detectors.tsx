@@ -37,7 +37,7 @@ import {
 } from '../../../../utils/helpers';
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DetectorsService } from '../../../../services';
-import { DetectorHit } from '../../../../../server/models/interfaces';
+import { DetectorHit, DetectorHitWithSpace } from '../../../../../server/models/interfaces';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
@@ -125,6 +125,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             rulesCount: rulesCount,
             status: detector._source.enabled ? 'Active' : 'Inactive',
             space: getDetectorSourceLabel(detector._source.source), // Wazuh: retrieve space from source
+            rawSpace: (detector._source.source || '').toLowerCase(),
           };
         });
         this.setState({ detectorHits: detectors });
@@ -275,9 +276,17 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         name: 'Integration', // replace log type to integration by Wazuh
         sortable: true,
         dataType: 'string',
-        render: (logType: string) => (
-          <IntegrationCell name={formatRuleType(logType)} history={this.props.history} />
-        ),
+        render: (logType: string, item: DetectorHit) => {
+          const row = item as DetectorHitWithSpace & { rawSpace?: string; integrationId?: string };
+          return (
+            <IntegrationCell
+              name={formatRuleType(logType)}
+              history={this.props.history}
+              integrationId={row.integrationId}
+              space={row.rawSpace}
+            />
+          );
+        },
       },
       {
         field: 'space',
