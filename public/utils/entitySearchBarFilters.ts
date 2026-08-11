@@ -4,6 +4,8 @@
  */
 
 import { EuiSearchBar } from '@elastic/eui';
+import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
+import { IntegrationOption } from '../components/IntegrationComboBox/useIntegrationSelector';
 
 type Query = ReturnType<typeof EuiSearchBar.Query.parse>;
 
@@ -67,6 +69,39 @@ export const buildStatusIntegrationQueryFromUrl = (values: {
     { field: 'status', values: decodeEnabledValues(values.enabled) },
     { field: 'integration', values: decodeMultiValue(values.integration) },
   ]);
+
+// Wazuh: the Status/Integration `field_value_selection` EuiSearchBar filter config,
+// shared by Rules/Decoders/KVDBs — identical across all three except the
+// Integration options themselves.
+export const buildStatusIntegrationFilters = (
+  integrationOptions: IntegrationOption[],
+  integrationOptionsLoading: boolean
+): FieldValueSelectionFilterConfigType[] =>
+  [
+    {
+      type: 'field_value_selection',
+      field: 'status',
+      name: 'Status',
+      compressed: true,
+      multiSelect: 'or',
+      options: [
+        { value: 'enabled', name: 'Enabled' },
+        { value: 'disabled', name: 'Disabled' },
+      ],
+    },
+    {
+      type: 'field_value_selection',
+      field: 'integration',
+      name: 'Integration',
+      compressed: true,
+      multiSelect: 'or',
+      loading: integrationOptionsLoading,
+      options: integrationOptions.map((option) => ({
+        value: option.value,
+        name: option.label,
+      })),
+    },
+  ] as FieldValueSelectionFilterConfigType[];
 
 // Wazuh: `Query.text` re-prints the WHOLE ast — including `field:(value)` filter
 // clauses — back into query syntax, it is NOT just what the user typed in the free

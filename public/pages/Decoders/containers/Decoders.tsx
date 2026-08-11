@@ -23,7 +23,6 @@ import {
   EuiContextMenuItem,
   EuiConfirmModal,
 } from '@elastic/eui';
-import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
@@ -44,6 +43,7 @@ import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
 import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
 import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
 import {
+  buildStatusIntegrationFilters,
   buildStatusIntegrationQueryFromUrl,
   decodeEnabledValues,
   decodeMultiValue,
@@ -465,33 +465,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                   incremental: true,
                   compressed: true,
                 }}
-                filters={
-                  [
-                    {
-                      type: 'field_value_selection',
-                      field: 'status',
-                      name: 'Status',
-                      compressed: true,
-                      multiSelect: 'or',
-                      options: [
-                        { value: 'enabled', name: 'Enabled' },
-                        { value: 'disabled', name: 'Disabled' },
-                      ],
-                    },
-                    {
-                      type: 'field_value_selection',
-                      field: 'integration',
-                      name: 'Integration',
-                      compressed: true,
-                      multiSelect: 'or',
-                      loading: integrationOptionsLoading,
-                      options: integrationOptions.map((option) => ({
-                        value: option.value,
-                        name: option.label,
-                      })),
-                    },
-                  ] as FieldValueSelectionFilterConfigType[]
-                }
+                filters={buildStatusIntegrationFilters(integrationOptions, integrationOptionsLoading)}
                 onChange={({ query }) => query && setSearchQuery(query)}
               />
             </EuiFlexItem>

@@ -20,6 +20,7 @@ import {
   escapeWildcard,
   extractErrorMessage,
   mergeIdsClause,
+  resolveIdsByIntegrationMatch,
 } from '../utils/helpers';
 
 const SPACE_FIELD_CANDIDATES = [
@@ -217,30 +218,12 @@ export class DecodersService {
       must.push({ term: { 'space.name': space } });
     }
 
-    try {
-      const response = await client('search', {
-        index: CONTENT_INDICES.INTEGRATIONS,
-        body: {
-          size: 10000,
-          query: { bool: { must } },
-          _source: ['document.decoders'],
-        },
-      });
-
-      const decoderIds = new Set<string>();
-      (response?.hits?.hits || []).forEach((hit: any) => {
-        (hit._source?.document?.decoders || []).forEach((decoderId: string) =>
-          decoderIds.add(decoderId)
-        );
-      });
-      return Array.from(decoderIds);
-    } catch (error: any) {
-      console.warn(
-        'Security Analytics - DecodersService - fetchDecoderIdsByIntegrationName:',
-        extractErrorMessage(error)
-      );
-      return [];
-    }
+    return resolveIdsByIntegrationMatch(
+      client,
+      must,
+      'decoders',
+      'DecodersService - fetchDecoderIdsByIntegrationName'
+    );
   }
 
   // Wazuh: resolve an Integration dropdown selection (one or more, multiSelect 'or')
@@ -258,30 +241,12 @@ export class DecodersService {
       must.push({ term: { 'space.name': space } });
     }
 
-    try {
-      const response = await client('search', {
-        index: CONTENT_INDICES.INTEGRATIONS,
-        body: {
-          size: 10000,
-          query: { bool: { must } },
-          _source: ['document.decoders'],
-        },
-      });
-
-      const decoderIds = new Set<string>();
-      (response?.hits?.hits || []).forEach((hit: any) => {
-        (hit._source?.document?.decoders || []).forEach((decoderId: string) =>
-          decoderIds.add(decoderId)
-        );
-      });
-      return Array.from(decoderIds);
-    } catch (error: any) {
-      console.warn(
-        'Security Analytics - DecodersService - fetchDecoderIdsByExactIntegrationName:',
-        extractErrorMessage(error)
-      );
-      return [];
-    }
+    return resolveIdsByIntegrationMatch(
+      client,
+      must,
+      'decoders',
+      'DecodersService - fetchDecoderIdsByExactIntegrationName'
+    );
   }
 
   searchDecoders = async (

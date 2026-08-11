@@ -5,6 +5,7 @@
 
 import { Props, schema } from '@osd/config-schema';
 import YAML from 'yaml';
+import { CONTENT_INDICES } from './constants';
 
 export function createQueryValidationSchema(fieldSchemaObj?: Props) {
   return schema.object({
@@ -34,6 +35,38 @@ export const mergeIdsClause = (query: any, field: string, ids: string[]): any =>
   }
 
   return { bool: { should: [query, idsClause], minimum_should_match: 1 } };
+};
+
+// Wazuh: resolve an integration-name match (wildcard search-by-text or exact
+// multiSelect) to the ids of one related entity type (document.rules/decoders/
+// kvdbs), shared by WazuhRuleService and DecodersService. `must` is the caller's
+// already-built match+space bool clauses; `relatedField` picks which array to
+// collect ids from.
+export const resolveIdsByIntegrationMatch = async (
+  client: any,
+  must: any[],
+  relatedField: 'rules' | 'decoders' | 'kvdbs',
+  errorContext: string
+): Promise<string[]> => {
+  try {
+    const response = await client('search', {
+      index: CONTENT_INDICES.INTEGRATIONS,
+      body: {
+        size: 10000,
+        query: { bool: { must } },
+        _source: [`document.${relatedField}`],
+      },
+    });
+
+    const ids = new Set<string>();
+    (response?.hits?.hits || []).forEach((hit: any) => {
+      (hit._source?.document?.[relatedField] || []).forEach((id: string) => ids.add(id));
+    });
+    return Array.from(ids);
+  } catch (error: any) {
+    console.warn(`Security Analytics - ${errorContext}:`, extractErrorMessage(error));
+    return [];
+  }
 };
 
 export type EntityStatus = 'enabled' | 'disabled';

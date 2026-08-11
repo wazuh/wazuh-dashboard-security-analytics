@@ -23,7 +23,6 @@ import {
 } from '@elastic/eui';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
-import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
@@ -44,6 +43,7 @@ import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
 import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
 import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
 import {
+  buildStatusIntegrationFilters,
   buildStatusIntegrationQueryFromUrl,
   encodeEnabledValues,
   encodeMultiValue,
@@ -443,33 +443,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                   schema: true,
                 }}
                 schema={KVDBS_SEARCH_SCHEMA}
-                filters={
-                  [
-                    {
-                      type: 'field_value_selection',
-                      field: 'status',
-                      name: 'Status',
-                      compressed: true,
-                      multiSelect: 'or',
-                      options: [
-                        { value: 'enabled', name: 'Enabled' },
-                        { value: 'disabled', name: 'Disabled' },
-                      ],
-                    },
-                    {
-                      type: 'field_value_selection',
-                      field: 'integration',
-                      name: 'Integration',
-                      compressed: true,
-                      multiSelect: 'or',
-                      loading: integrationOptionsLoading,
-                      options: integrationOptions.map((option) => ({
-                        value: option.value,
-                        name: option.label,
-                      })),
-                    },
-                  ] as FieldValueSelectionFilterConfigType[]
-                }
+                filters={buildStatusIntegrationFilters(integrationOptions, integrationOptionsLoading)}
                 onChange={onSearchChange}
               />
             </EuiFlexItem>

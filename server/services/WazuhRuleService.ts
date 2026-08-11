@@ -24,6 +24,7 @@ import {
   escapeWildcard,
   extractErrorMessage,
   mergeIdsClause,
+  resolveIdsByIntegrationMatch,
 } from '../utils/helpers';
 import { ServerResponse } from '../models/types';
 import { load } from 'js-yaml';
@@ -177,42 +178,22 @@ export default class WazuhRulesService {
     const trimmed = searchText?.trim();
     if (!trimmed) return [];
 
-    try {
-      const response = await client('search', {
-        index: CONTENT_INDICES.INTEGRATIONS,
-        body: {
-          size: 10000,
-          query: {
-            bool: {
-              must: [
-                {
-                  wildcard: {
-                    'document.metadata.title': {
-                      value: `*${escapeWildcard(trimmed)}*`,
-                      case_insensitive: true,
-                    },
-                  },
-                },
-                { term: { 'space.name': space } },
-              ],
+    return resolveIdsByIntegrationMatch(
+      client,
+      [
+        {
+          wildcard: {
+            'document.metadata.title': {
+              value: `*${escapeWildcard(trimmed)}*`,
+              case_insensitive: true,
             },
           },
-          _source: ['document.rules'],
         },
-      });
-
-      const ruleIds = new Set<string>();
-      (response?.hits?.hits || []).forEach((hit: any) => {
-        (hit._source?.document?.rules || []).forEach((ruleId: string) => ruleIds.add(ruleId));
-      });
-      return Array.from(ruleIds);
-    } catch (error: any) {
-      console.warn(
-        'Security Analytics - WazuhRulesService - fetchRuleIdsByIntegrationName:',
-        extractErrorMessage(error)
-      );
-      return [];
-    }
+        { term: { 'space.name': space } },
+      ],
+      'rules',
+      'WazuhRulesService - fetchRuleIdsByIntegrationName'
+    );
   }
 
   // Wazuh: unlike fetchRuleIdsByIntegrationName's wildcard search-by-text, this is an
@@ -226,35 +207,12 @@ export default class WazuhRulesService {
     const trimmed = (integrationNames ?? []).map((name) => name.trim()).filter(Boolean);
     if (!trimmed.length) return [];
 
-    try {
-      const response = await client('search', {
-        index: CONTENT_INDICES.INTEGRATIONS,
-        body: {
-          size: 10000,
-          query: {
-            bool: {
-              must: [
-                { terms: { 'document.metadata.title': trimmed } },
-                { term: { 'space.name': space } },
-              ],
-            },
-          },
-          _source: ['document.rules'],
-        },
-      });
-
-      const ruleIds = new Set<string>();
-      (response?.hits?.hits || []).forEach((hit: any) => {
-        (hit._source?.document?.rules || []).forEach((ruleId: string) => ruleIds.add(ruleId));
-      });
-      return Array.from(ruleIds);
-    } catch (error: any) {
-      console.warn(
-        'Security Analytics - WazuhRulesService - fetchRuleIdsByExactIntegrationName:',
-        extractErrorMessage(error)
-      );
-      return [];
-    }
+    return resolveIdsByIntegrationMatch(
+      client,
+      [{ terms: { 'document.metadata.title': trimmed } }, { term: { 'space.name': space } }],
+      'rules',
+      'WazuhRulesService - fetchRuleIdsByExactIntegrationName'
+    );
   }
 
   getRules = async (
