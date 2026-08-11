@@ -80,9 +80,28 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     // in-memory table, per the no-goal boundary). Guarded: `history` is optional
     // in some existing test mocks that don't pass RouteComponentProps.
     this.urlFilters = readInMemoryUrlFilterValues(props.history?.location?.search ?? '');
+
+    // Wazuh: '=' (exact) inside an OR-group matches what the logType filter itself
+    // produces on a checkbox click — a plain 'logType:value' token would use the
+    // default contains-match operator, reintroducing the substring-match bug
+    // fixed earlier for these filters. `space` is deliberately not applied here
+    // (server-side-only, in the count query).
+    const search = props.history?.location?.search ?? '';
+    this.pendingIntegrationParam = new URLSearchParams(search).get('integration') ?? undefined;
+    if (this.pendingIntegrationParam) {
+      const value = /\s/.test(this.pendingIntegrationParam)
+        ? `"${this.pendingIntegrationParam}"`
+        : this.pendingIntegrationParam;
+      const token = `logType=(${value})`;
+      this.urlFilters = {
+        ...this.urlFilters,
+        query: [this.urlFilters.query, token].filter(Boolean).join(' ').trim(),
+      };
+    }
   }
 
   private urlFilters: { query: string; status: string };
+  private pendingIntegrationParam: string | undefined;
 
   private onSearchChange = ({ query }: { query: any }) => {
     const { query: freeText, status } = splitStatusFromQueryText(query?.text ?? '', 'status');
@@ -94,6 +113,19 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
 
   async componentDidMount() {
     setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS]);
+    if (this.pendingIntegrationParam && this.props.history) {
+      writeInMemoryUrlFilterValues(this.props.history, {
+        query: this.urlFilters.query,
+        status: this.urlFilters.status,
+      });
+      // Wazuh: drop the one-shot `integration` param now that its clause has
+      // been folded into `query` — leaving it would re-seed/duplicate the
+      // token on every remount.
+      const params = new URLSearchParams(this.props.history.location.search);
+      params.delete('integration');
+      this.props.history.replace({ ...this.props.history.location, search: params.toString() });
+      this.pendingIntegrationParam = undefined;
+    }
     await this.getDetectors();
   }
 
@@ -284,6 +316,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               history={this.props.history}
               integrationId={row.integrationId}
               space={row.rawSpace}
+              currentEntity="detectors"
             />
           );
         },

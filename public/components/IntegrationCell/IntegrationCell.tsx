@@ -16,7 +16,7 @@ import { ROUTES } from '../../utils/constants';
 import { buildEntityQueryRoute } from '../../utils/routes';
 import { DataStore } from '../../store/DataStore';
 
-export type IntegrationEntity = 'decoders' | 'rules' | 'kvdbs';
+export type IntegrationEntity = 'decoders' | 'rules' | 'kvdbs' | 'detectors';
 
 export interface IntegrationCellProps {
   /** Integration name for this row. Renders as plain text (no popover) when empty. */
@@ -51,6 +51,7 @@ const ENTITY_LABELS: Record<IntegrationEntity, string> = {
   decoders: 'decoders',
   rules: 'rules',
   kvdbs: 'KVDBs',
+  detectors: 'detectors',
 };
 
 // Wazuh: clickable Integration column cell. Opens a popover with a jump-to-entity
@@ -73,18 +74,22 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
   useEffect(() => {
     if (!isOpen || !integrationId || !space || relatedCounts) return;
     let cancelled = false;
-    DataStore.integrations.getIntegration(integrationId, space).then((integration) => {
+    Promise.all([
+      DataStore.integrations.getIntegration(integrationId, space),
+      DataStore.detectors.countByIntegration(name, space),
+    ]).then(([integration, detectorsCount]) => {
       if (cancelled) return;
       setRelatedCounts({
         decoders: integration?.document.decoders?.length ?? 0,
         rules: integration?.document.rules?.length ?? 0,
         kvdbs: integration?.document.kvdbs?.length ?? 0,
+        detectors: detectorsCount,
       });
     });
     return () => {
       cancelled = true;
     };
-  }, [isOpen, integrationId, space, relatedCounts]);
+  }, [isOpen, integrationId, space, name, relatedCounts]);
 
   if (!name) {
     return <>{name}</>;
@@ -107,6 +112,7 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
     decoders: ROUTES.DECODERS,
     rules: ROUTES.RULES,
     kvdbs: ROUTES.KVDBS,
+    detectors: ROUTES.DETECTORS,
   };
 
   const buildMenuItem = (key: IntegrationEntity, route: string) => {
@@ -148,7 +154,7 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
 
   const items = [
     ...(detailsItem ? [detailsItem] : []),
-    ...(['decoders', 'rules', 'kvdbs'] as const)
+    ...(['decoders', 'rules', 'kvdbs', 'detectors'] as const)
       .filter((key) => key !== currentEntity)
       .map((key) => buildMenuItem(key, ROUTE_BY_ENTITY[key])),
   ];

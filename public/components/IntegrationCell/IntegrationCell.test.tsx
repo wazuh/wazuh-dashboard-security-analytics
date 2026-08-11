@@ -14,6 +14,9 @@ jest.mock('../../store/DataStore', () => ({
     integrations: {
       getIntegration: jest.fn(),
     },
+    detectors: {
+      countByIntegration: jest.fn(),
+    },
   },
 }));
 
@@ -29,6 +32,14 @@ const renderWithFakeHistory = (name: string) => {
 };
 
 describe('IntegrationCell', () => {
+  beforeEach(() => {
+    (DataStore.detectors.countByIntegration as jest.Mock).mockResolvedValue(0);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders plain text with no popover when name is empty', () => {
     render(<IntegrationCell name="" />);
     expect(screen.queryByTestId('integrationCellLink')).not.toBeInTheDocument();
@@ -67,6 +78,7 @@ describe('IntegrationCell', () => {
     renderWithFakeHistory('aws');
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     expect(DataStore.integrations.getIntegration).not.toHaveBeenCalled();
+    expect(DataStore.detectors.countByIntegration).not.toHaveBeenCalled();
   });
 
   it('shows the item count in the label and disables the CTA with a tooltip when the count is zero', async () => {
@@ -74,6 +86,7 @@ describe('IntegrationCell', () => {
       id: 'int-1',
       document: { rules: ['r1'], kvdbs: ['k1'] },
     });
+    (DataStore.detectors.countByIntegration as jest.Mock).mockResolvedValue(2);
     const push = jest.fn();
     render(
       <IntegrationCell name="aws" history={{ push }} integrationId="int-1" space="standard" />
@@ -83,6 +96,7 @@ describe('IntegrationCell', () => {
     await waitFor(() =>
       expect(DataStore.integrations.getIntegration).toHaveBeenCalledWith('int-1', 'standard')
     );
+    expect(DataStore.detectors.countByIntegration).toHaveBeenCalledWith('aws', 'standard');
 
     // Zero count: shown, not hidden, disabled, with count in the label.
     expect(screen.getByText('Go to integration decoders (0)').closest('button')).toBeDisabled();
@@ -95,6 +109,25 @@ describe('IntegrationCell', () => {
     expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws&space=standard`);
 
     expect(screen.getByText('Go to integration KVDBs (1)').closest('button')).not.toBeDisabled();
+
+    // Detectors count comes from the server-side count call, not the integration document.
+    expect(
+      screen.getByText('Go to integration detectors (2)').closest('button')
+    ).not.toBeDisabled();
+  });
+
+  it('disables the Detectors item with a "has no detectors" tooltip when the count is zero', async () => {
+    (DataStore.integrations.getIntegration as jest.Mock).mockResolvedValue({
+      id: 'int-1',
+      document: {},
+    });
+    (DataStore.detectors.countByIntegration as jest.Mock).mockResolvedValue(0);
+    render(<IntegrationCell name="aws" integrationId="int-1" space="standard" />);
+
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+    await waitFor(() =>
+      expect(screen.getByText('Go to integration detectors (0)').closest('button')).toBeDisabled()
+    );
   });
 
   it('keeps every CTA disabled and count-less while the check is still pending, on a slow connection', async () => {
@@ -114,6 +147,7 @@ describe('IntegrationCell', () => {
     expect(screen.getByText('Go to integration decoders').closest('button')).toBeDisabled();
     expect(screen.getByText('Go to integration rules').closest('button')).toBeDisabled();
     expect(screen.getByText('Go to integration KVDBs').closest('button')).toBeDisabled();
+    expect(screen.getByText('Go to integration detectors').closest('button')).toBeDisabled();
     fireEvent.click(screen.getByText('Go to integration rules'));
     expect(push).not.toHaveBeenCalled();
 
@@ -147,14 +181,40 @@ describe('IntegrationCell', () => {
     expect(screen.queryByText(/Go to integration rules/)).not.toBeInTheDocument();
     expect(screen.getByText('Go to integration decoders (0)')).toBeInTheDocument();
     expect(screen.getByText('Go to integration KVDBs (0)')).toBeInTheDocument();
+    expect(screen.getByText('Go to integration detectors (0)')).toBeInTheDocument();
   });
 
-  it('renders all three entity items when currentEntity is omitted (e.g. Detectors)', () => {
+  it('hides the Detectors item when currentEntity="detectors" (rendered on the Detectors page)', async () => {
+    (DataStore.integrations.getIntegration as jest.Mock).mockResolvedValue({
+      id: 'int-1',
+      document: { rules: ['r1'] },
+    });
+    (DataStore.detectors.countByIntegration as jest.Mock).mockResolvedValue(3);
+    render(
+      <IntegrationCell
+        name="aws"
+        integrationId="int-1"
+        space="standard"
+        currentEntity="detectors"
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('integrationCellLink'));
+    await waitFor(() =>
+      expect(DataStore.integrations.getIntegration).toHaveBeenCalledWith('int-1', 'standard')
+    );
+
+    expect(screen.queryByText(/Go to integration detectors/)).not.toBeInTheDocument();
+    expect(screen.getByText('Go to integration rules (1)')).toBeInTheDocument();
+  });
+
+  it('renders all four entity items when currentEntity is omitted', () => {
     renderWithFakeHistory('aws');
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     expect(screen.getByText('Go to integration decoders')).toBeInTheDocument();
     expect(screen.getByText('Go to integration rules')).toBeInTheDocument();
     expect(screen.getByText('Go to integration KVDBs')).toBeInTheDocument();
+    expect(screen.getByText('Go to integration detectors')).toBeInTheDocument();
   });
 
   it('renders "Go to integration details" as the first item and navigates to the integration details URL', () => {

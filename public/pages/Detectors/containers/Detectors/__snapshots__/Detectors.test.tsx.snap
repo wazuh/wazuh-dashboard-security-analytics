@@ -4,6 +4,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
 <Detectors
   detectorService={
     DetectorService {
+      "countDetectorsByIntegration": [Function],
       "createDetector": [Function],
       "dataSourceEnabled": undefined,
       "deleteDetector": [Function],
@@ -2788,6 +2789,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         >
                                           <IntegrationCell
                                             className=""
+                                            currentEntity="detectors"
                                             key=".0"
                                             name="detector_type"
                                             space="custom"

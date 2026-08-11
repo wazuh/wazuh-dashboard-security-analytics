@@ -52,7 +52,7 @@
 | [#322](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/322) | Fixed integration documentation field being truncated in the details view |
 | [#398](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/398) | Fixed duplicate submissions by adding a loading state to create, edit and delete buttons |
 | [#401](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/401) | Fixed inconsistent error handling in operations with integrations, filters, decoders, kvdbs, detectors, rules and promotion to show the server error message |
-| [#430](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/430) | Unify search, Status/Integration filters and URL-persisted list state across Rules, Decoders, KVDBs, Integrations, Filters and Detectors; add a clickable Integration column CTA to jump to related Decoders/Rules/KVDBs |
+| [#430](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/430) | Unify search, Status/Integration filters and URL-persisted list state across Rules, Decoders, KVDBs, Integrations, Filters and Detectors; add a clickable Integration column CTA to jump to related Decoders/Rules/KVDBs and Detectors |
 
 ## Prior versions
 
