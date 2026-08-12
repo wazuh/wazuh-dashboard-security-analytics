@@ -56,14 +56,16 @@ const triggerSearchChange = async (wrapper: any, payload: { query?: any; error?:
 };
 
 describe('<Decoders /> search bar strict schema', () => {
-  it('declares a strict schema on box and passes ENTITY_SEARCH_SCHEMA', async () => {
+  it('declares ENTITY_SEARCH_SCHEMA on box.schema (EuiSearchBar has no top-level schema prop)', async () => {
     const wrapper = await mountDecoders();
     const searchBar = wrapper.find('EuiSearchBar').first();
-    expect(searchBar.prop('box')).toMatchObject({ schema: true });
-    expect(searchBar.prop('schema')).toEqual({
-      strict: true,
-      fields: { status: { type: 'string' }, integration: { type: 'string' } },
+    expect(searchBar.prop('box')).toMatchObject({
+      schema: {
+        strict: true,
+        fields: { status: { type: 'string' }, integration: { type: 'string' } },
+      },
     });
+    expect(searchBar.prop('schema')).toBeUndefined();
   });
 
   it('renders a warning callout above the table (table stays visible) when the search bar reports a parse error', async () => {

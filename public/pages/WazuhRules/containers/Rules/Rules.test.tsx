@@ -58,14 +58,16 @@ const triggerSearchChange = async (wrapper: any, payload: { query?: any; error?:
 };
 
 describe('<Rules /> search bar strict schema', () => {
-  it('declares a strict schema on box and passes ENTITY_SEARCH_SCHEMA (status/integration only)', async () => {
+  it('declares ENTITY_SEARCH_SCHEMA on box.schema (status/integration only; EuiSearchBar has no top-level schema prop)', async () => {
     const wrapper = await mountRules();
     const searchBar = wrapper.find('EuiSearchBar').first();
-    expect(searchBar.prop('box')).toMatchObject({ schema: true });
-    expect(searchBar.prop('schema')).toEqual({
-      strict: true,
-      fields: { status: { type: 'string' }, integration: { type: 'string' } },
+    expect(searchBar.prop('box')).toMatchObject({
+      schema: {
+        strict: true,
+        fields: { status: { type: 'string' }, integration: { type: 'string' } },
+      },
     });
+    expect(searchBar.prop('schema')).toBeUndefined();
   });
 
   it('renders a warning callout above the table (table stays visible) on an unrecognized field, including invented fields like level/category', async () => {

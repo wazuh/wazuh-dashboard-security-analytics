@@ -140,8 +140,12 @@ export const buildStatusIntegrationFilters = (
 
 // Wazuh: strict schema so unrecognized field names (e.g. `pepo:pepe`) raise a
 // parse error instead of being silently dropped. Only status/integration are
-// declared — the fields Rules/Decoders actually parse. No `validate()`:
-// unrecognized values (e.g. `status:pepo`) stay a server-side no-match.
+// declared — the only fields Rules/Decoders/KVDBs actually filter by. A field
+// that exists on the document (e.g. `author`, `document.id`) but isn't wired
+// to a real filter deliberately errors the same as a made-up one: declaring
+// it "valid but inert" just hides the same silent-drop bug this schema fixes.
+// No `validate()`: unrecognized values (e.g. `status:pepo`) stay a
+// server-side no-match.
 export const ENTITY_SEARCH_SCHEMA = {
   strict: true,
   fields: {
@@ -149,12 +153,6 @@ export const ENTITY_SEARCH_SCHEMA = {
     integration: { type: 'string' },
   },
 };
-
-// Wazuh: lets KVDBs add its own declared fields on top of the shared schema.
-export const buildEntitySearchSchema = (extraFields: Record<string, { type: string }> = {}) => ({
-  strict: true,
-  fields: { ...ENTITY_SEARCH_SCHEMA.fields, ...extraFields },
-});
 
 // Wazuh: `Query.text` re-prints the WHOLE ast — including `field:(value)` filter
 // clauses — back into query syntax, it is NOT just what the user typed in the free

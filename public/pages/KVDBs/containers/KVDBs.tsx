@@ -44,7 +44,7 @@ import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
 import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
 import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
 import {
-  buildEntitySearchSchema,
+  ENTITY_SEARCH_SCHEMA,
   buildStatusIntegrationFilters,
   buildStatusIntegrationQueryFromUrl,
   encodeEnabledValues,
@@ -52,20 +52,6 @@ import {
   getFreeText,
   getOrSelectedValues,
 } from '../../../utils/entitySearchBarFilters';
-
-// Wazuh: KVDBs' own declared search fields on top of the shared
-// status/integration schema — see buildEntitySearchSchema. Most produce no
-// actual filter clause (buildQuery below only reads appliedQueryText's free
-// text via toESQuery), but they must stay declared so a saved/bookmarked
-// query using them doesn't newly trip the strict-schema parse error.
-const KVDBS_EXTRA_SEARCH_FIELDS = {
-  'document.metadata.author': { type: 'string' },
-  'document.metadata.date': { type: 'string' },
-  'document.enabled': { type: 'string' },
-  'document.id': { type: 'string' },
-  'document.metadata.references': { type: 'string' },
-  'document.metadata.title': { type: 'string' },
-};
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -520,7 +506,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                   placeholder: 'Search KVDBs',
                   incremental: true,
                   compressed: true,
-                  schema: buildEntitySearchSchema(KVDBS_EXTRA_SEARCH_FIELDS),
+                  schema: ENTITY_SEARCH_SCHEMA,
                 }}
                 filters={buildStatusIntegrationFilters(
                   integrationOptions,

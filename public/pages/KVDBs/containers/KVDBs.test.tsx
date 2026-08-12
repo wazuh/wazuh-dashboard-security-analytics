@@ -56,19 +56,16 @@ const triggerSearchChange = async (wrapper: any, payload: { query?: any; error?:
 };
 
 describe('<KVDBs /> search bar strict schema', () => {
-  it('declares a strict schema on box and preserves the pre-existing document.* fields', async () => {
+  it('declares the shared ENTITY_SEARCH_SCHEMA on box.schema (status/integration only, no KVDBs-specific fields; EuiSearchBar has no top-level schema prop)', async () => {
     const wrapper = await mountKVDBs();
     const searchBar = wrapper.find('EuiSearchBar').first();
-    expect(searchBar.prop('box')).toMatchObject({ schema: true });
-    expect(searchBar.prop('schema')).toMatchObject({
-      strict: true,
-      fields: expect.objectContaining({
-        status: { type: 'string' },
-        integration: { type: 'string' },
-        'document.metadata.title': { type: 'string' },
-        'document.id': { type: 'string' },
-      }),
+    expect(searchBar.prop('box')).toMatchObject({
+      schema: {
+        strict: true,
+        fields: { status: { type: 'string' }, integration: { type: 'string' } },
+      },
     });
+    expect(searchBar.prop('schema')).toBeUndefined();
   });
 
   it('renders a warning callout above the table (table stays visible) on an unrecognized field', async () => {
