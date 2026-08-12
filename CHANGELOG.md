@@ -16,6 +16,7 @@
 | [#350](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/350) [#375](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/375) | Added `opensearch_security_analytics.disabledSettings` configuration to hide specific settings in the UI about Index discarded/unclassified events |
 | [#362](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/362) | Added date formatter that respects the dateFormat advanced setting |
 | [#381](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/381) | Added a callout to promote pending changes between spaces |
+| [#430](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/430) | Unify search, Status/Integration filters and URL-persisted list state across Rules, Decoders, KVDBs, Integrations, Filters and Detectors; add a clickable Integration column CTA to jump to related Decoders/Rules/KVDBs and Detectors |
 
 ### Changed
 
@@ -30,7 +31,6 @@
 | [#164](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/164) [#347](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/347) | Rules table and details now display the real integration title. |
 | [#178](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/178) | Updated nav menu group label to "Security analytics" to match Wazuh Dashboard capitalization style. |
 | [#353](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/353) | Removed getLogTypeLabel usage across Security analytics |
-| [#430](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/430) | Unify search, Status/Integration filters and URL-persisted list state across Rules, Decoders, KVDBs, Integrations, Filters and Detectors; add a clickable Integration column CTA to jump to related Decoders/Rules/KVDBs and Detectors |
 
 ### Removed
 
