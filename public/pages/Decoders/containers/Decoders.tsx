@@ -400,7 +400,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     return (
       <>
         <EuiCallOut
-          color="danger"
+          color="warning"
           title={`Invalid search: ${searchError.message}`}
           data-test-subj="entitySearchErrorCallOut"
         />
@@ -531,9 +531,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                   placeholder: 'Search decoders',
                   incremental: true,
                   compressed: true,
-                  schema: true,
+                  schema: ENTITY_SEARCH_SCHEMA,
                 }}
-                schema={ENTITY_SEARCH_SCHEMA}
                 filters={buildStatusIntegrationFilters(
                   integrationOptions,
                   integrationOptionsLoading

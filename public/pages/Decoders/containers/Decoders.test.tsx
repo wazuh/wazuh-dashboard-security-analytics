@@ -66,7 +66,7 @@ describe('<Decoders /> search bar strict schema', () => {
     });
   });
 
-  it('renders a danger callout above the table (table stays visible) when the search bar reports a parse error', async () => {
+  it('renders a warning callout above the table (table stays visible) when the search bar reports a parse error', async () => {
     const wrapper = await mountDecoders();
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
     expect(wrapper.find('EuiBasicTable').length).toBeGreaterThan(0);

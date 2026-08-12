@@ -92,7 +92,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
   const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
   // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
-  // field name) so a danger callout can render above the table without
+  // field name) so a warning callout can render above the table without
   // losing the previously applied query/results (see onSearchChange/
   // renderError below).
   const [searchError, setSearchError] = useState<any>(null);
@@ -307,7 +307,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     return (
       <>
         <EuiCallOut
-          color="danger"
+          color="warning"
           title={`Invalid search: ${searchError.message}`}
           data-test-subj="entitySearchErrorCallOut"
         />
@@ -520,9 +520,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                   placeholder: 'Search KVDBs',
                   incremental: true,
                   compressed: true,
-                  schema: true,
+                  schema: buildEntitySearchSchema(KVDBS_EXTRA_SEARCH_FIELDS),
                 }}
-                schema={buildEntitySearchSchema(KVDBS_EXTRA_SEARCH_FIELDS)}
                 filters={buildStatusIntegrationFilters(
                   integrationOptions,
                   integrationOptionsLoading

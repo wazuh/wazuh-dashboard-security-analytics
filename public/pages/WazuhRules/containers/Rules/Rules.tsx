@@ -100,7 +100,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
   const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
   // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
-  // field name) so a danger callout can render above the table without
+  // field name) so a warning callout can render above the table without
   // losing the previously applied query/results (see onSearchChange/
   // renderError below).
   const [searchError, setSearchError] = useState<any>(null);
@@ -311,7 +311,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     return (
       <>
         <EuiCallOut
-          color="danger"
+          color="warning"
           title={`Invalid search: ${searchError.message}`}
           data-test-subj="entitySearchErrorCallOut"
         />
@@ -532,9 +532,8 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                   placeholder: 'Search rules',
                   incremental: true,
                   compressed: true,
-                  schema: true,
+                  schema: ENTITY_SEARCH_SCHEMA,
                 }}
-                schema={ENTITY_SEARCH_SCHEMA}
                 filters={buildStatusIntegrationFilters(
                   integrationOptions,
                   integrationOptionsLoading

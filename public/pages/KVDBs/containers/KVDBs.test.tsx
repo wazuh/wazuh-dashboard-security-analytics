@@ -71,7 +71,7 @@ describe('<KVDBs /> search bar strict schema', () => {
     });
   });
 
-  it('renders a danger callout above the table (table stays visible) on an unrecognized field', async () => {
+  it('renders a warning callout above the table (table stays visible) on an unrecognized field', async () => {
     const wrapper = await mountKVDBs();
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
     expect(wrapper.find('EuiBasicTable').length).toBeGreaterThan(0);

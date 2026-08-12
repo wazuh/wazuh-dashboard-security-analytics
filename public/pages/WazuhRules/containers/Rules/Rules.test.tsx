@@ -68,7 +68,7 @@ describe('<Rules /> search bar strict schema', () => {
     });
   });
 
-  it('renders a danger callout above the table (table stays visible) on an unrecognized field, including invented fields like level/category', async () => {
+  it('renders a warning callout above the table (table stays visible) on an unrecognized field, including invented fields like level/category', async () => {
     const wrapper = await mountRules();
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
     expect(wrapper.find('EuiBasicTable').length).toBeGreaterThan(0);
