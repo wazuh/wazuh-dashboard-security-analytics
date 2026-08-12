@@ -2798,48 +2798,168 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                             name="detector_type"
                                             space="custom"
                                           >
-                                            <EuiPopover
-                                              anchorPosition="downLeft"
-                                              button={
-                                                <EuiLink
-                                                  data-test-subj="integrationCellLink"
-                                                  onClick={[Function]}
-                                                >
-                                                  detector_type
-                                                </EuiLink>
+                                            <RedirectAppLinks
+                                              application={
+                                                Object {
+                                                  "applications$": BehaviorSubject {
+                                                    "_isScalar": false,
+                                                    "_value": Array [],
+                                                    "closed": false,
+                                                    "hasError": false,
+                                                    "isStopped": false,
+                                                    "observers": Array [],
+                                                    "thrownError": null,
+                                                  },
+                                                  "capabilities": Object {
+                                                    "catalogue": Object {},
+                                                    "management": Object {},
+                                                    "navLinks": Object {},
+                                                    "workspaces": Object {},
+                                                  },
+                                                  "currentAppId$": Observable {
+                                                    "_isScalar": false,
+                                                    "source": Subject {
+                                                      "_isScalar": false,
+                                                      "closed": false,
+                                                      "hasError": false,
+                                                      "isStopped": false,
+                                                      "observers": Array [
+                                                        Subscriber {
+                                                          "_parentOrParents": null,
+                                                          "_subscriptions": Array [
+                                                            SubjectSubscription {
+                                                              "_parentOrParents": [Circular],
+                                                              "_subscriptions": null,
+                                                              "closed": false,
+                                                              "subject": [Circular],
+                                                              "subscriber": [Circular],
+                                                            },
+                                                          ],
+                                                          "closed": false,
+                                                          "destination": SafeSubscriber {
+                                                            "_complete": undefined,
+                                                            "_context": [Circular],
+                                                            "_error": undefined,
+                                                            "_next": [Function],
+                                                            "_parentOrParents": null,
+                                                            "_parentSubscriber": [Circular],
+                                                            "_subscriptions": null,
+                                                            "closed": false,
+                                                            "destination": Object {
+                                                              "closed": true,
+                                                              "complete": [Function],
+                                                              "error": [Function],
+                                                              "next": [Function],
+                                                            },
+                                                            "isStopped": false,
+                                                            "syncErrorThrowable": false,
+                                                            "syncErrorThrown": false,
+                                                            "syncErrorValue": null,
+                                                          },
+                                                          "isStopped": false,
+                                                          "syncErrorThrowable": true,
+                                                          "syncErrorThrown": false,
+                                                          "syncErrorValue": null,
+                                                        },
+                                                      ],
+                                                      "thrownError": null,
+                                                    },
+                                                  },
+                                                  "getUrlForApp": [MockFunction] {
+                                                    "calls": Array [
+                                                      Array [
+                                                        "decoders",
+                                                        Object {
+                                                          "path": "#/decoders?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                      Array [
+                                                        "rules",
+                                                        Object {
+                                                          "path": "#/rules?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                      Array [
+                                                        "kvdbs",
+                                                        Object {
+                                                          "path": "#/kvdbs?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                    ],
+                                                    "results": Array [
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                    ],
+                                                  },
+                                                  "navigateToApp": [MockFunction],
+                                                  "navigateToUrl": [MockFunction],
+                                                  "registerMountContext": [MockFunction],
+                                                  "setAppBadgeControls": [MockFunction],
+                                                  "setAppBottomControls": [MockFunction],
+                                                  "setAppCenterControls": [MockFunction],
+                                                  "setAppDescriptionControls": [MockFunction],
+                                                  "setAppLeftControls": [MockFunction],
+                                                  "setAppRightControls": [MockFunction],
+                                                }
                                               }
-                                              closePopover={[Function]}
-                                              display="inlineBlock"
-                                              hasArrow={true}
-                                              id="integrationCellPopover-detector_type"
-                                              isOpen={false}
-                                              ownFocus={true}
-                                              panelPaddingSize="none"
                                             >
                                               <div
-                                                className="euiPopover euiPopover--anchorDownLeft"
-                                                id="integrationCellPopover-detector_type"
+                                                className="osdRedirectCrossAppLinks"
                                               >
-                                                <div
-                                                  className="euiPopover__anchor"
-                                                >
-                                                  <EuiLink
-                                                    data-test-subj="integrationCellLink"
-                                                    onClick={[Function]}
-                                                  >
-                                                    <button
-                                                      className="euiLink euiLink--primary"
+                                                <EuiPopover
+                                                  anchorPosition="downLeft"
+                                                  button={
+                                                    <EuiLink
                                                       data-test-subj="integrationCellLink"
-                                                      disabled={false}
                                                       onClick={[Function]}
-                                                      type="button"
                                                     >
                                                       detector_type
-                                                    </button>
-                                                  </EuiLink>
-                                                </div>
+                                                    </EuiLink>
+                                                  }
+                                                  closePopover={[Function]}
+                                                  display="inlineBlock"
+                                                  hasArrow={true}
+                                                  id="integrationCellPopover-detector_type"
+                                                  isOpen={false}
+                                                  ownFocus={true}
+                                                  panelPaddingSize="none"
+                                                >
+                                                  <div
+                                                    className="euiPopover euiPopover--anchorDownLeft"
+                                                    id="integrationCellPopover-detector_type"
+                                                  >
+                                                    <div
+                                                      className="euiPopover__anchor"
+                                                    >
+                                                      <EuiLink
+                                                        data-test-subj="integrationCellLink"
+                                                        onClick={[Function]}
+                                                      >
+                                                        <button
+                                                          className="euiLink euiLink--primary"
+                                                          data-test-subj="integrationCellLink"
+                                                          disabled={false}
+                                                          onClick={[Function]}
+                                                          type="button"
+                                                        >
+                                                          detector_type
+                                                        </button>
+                                                      </EuiLink>
+                                                    </div>
+                                                  </div>
+                                                </EuiPopover>
                                               </div>
-                                            </EuiPopover>
+                                            </RedirectAppLinks>
                                           </IntegrationCell>
                                         </div>
                                       </td>

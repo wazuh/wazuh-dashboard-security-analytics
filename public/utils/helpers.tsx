@@ -492,7 +492,7 @@ export function getLogTypeFilterOptionsFlat(): { value: string; name: string }[]
     }
   });
 
-  return options;
+  return options.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function getLogTypeCategoryOptions(): any[] {

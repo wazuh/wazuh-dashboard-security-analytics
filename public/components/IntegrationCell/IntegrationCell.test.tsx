@@ -8,6 +8,15 @@ import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import { IntegrationCell } from './IntegrationCell';
 import { ROUTES } from '../../utils/constants';
 import { DataStore } from '../../store/DataStore';
+import { setupCoreStart } from '../../../test/utils/helpers';
+import { getApplication } from '../../services/utils/constants';
+
+beforeAll(() => {
+  setupCoreStart();
+  (getApplication().getUrlForApp as jest.Mock).mockImplementation(
+    (appId: string, options?: { path?: string }) => `/app/${appId}${options?.path ?? ''}`
+  );
+});
 
 jest.mock('../../store/DataStore', () => ({
   DataStore: {
@@ -19,17 +28,6 @@ jest.mock('../../store/DataStore', () => ({
     },
   },
 }));
-
-// Wazuh: fake `history.push` via the `history` override — see useUrlFilterParams.ts
-// for why useHistory() itself is unusable under this suite's global mocks.
-const renderWithFakeHistory = (name: string) => {
-  const push = jest.fn();
-  render(<IntegrationCell name={name} history={{ push }} />);
-  return {
-    getPushedPath: () => push.mock.calls[0]?.[0],
-    push,
-  };
-};
 
 describe('IntegrationCell', () => {
   beforeEach(() => {
@@ -45,37 +43,44 @@ describe('IntegrationCell', () => {
     expect(screen.queryByTestId('integrationCellLink')).not.toBeInTheDocument();
   });
 
-  it('navigates to decoders with the integration name pre-filled', () => {
-    const { getPushedPath } = renderWithFakeHistory('aws');
+  it('links to decoders with the integration name pre-filled, as a real href (not history.push)', () => {
+    render(<IntegrationCell name="aws" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
-    fireEvent.click(screen.getByText('Go to integration decoders'));
-    expect(getPushedPath()).toBe(`${ROUTES.DECODERS}?integration=aws`);
+    expect(screen.getByText('Go to integration decoders').closest('a')).toHaveAttribute(
+      'href',
+      `/app/decoders#${ROUTES.DECODERS}?integration=aws`
+    );
   });
 
-  it('navigates to rules with the integration name pre-filled', () => {
-    const { getPushedPath } = renderWithFakeHistory('aws');
+  it('links to rules with the integration name pre-filled', () => {
+    render(<IntegrationCell name="aws" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
-    fireEvent.click(screen.getByText('Go to integration rules'));
-    expect(getPushedPath()).toBe(`${ROUTES.RULES}?integration=aws`);
+    expect(screen.getByText('Go to integration rules').closest('a')).toHaveAttribute(
+      'href',
+      `/app/rules#${ROUTES.RULES}?integration=aws`
+    );
   });
 
-  it('navigates to KVDBs with the integration name pre-filled', () => {
-    const { getPushedPath } = renderWithFakeHistory('aws');
+  it('links to KVDBs with the integration name pre-filled', () => {
+    render(<IntegrationCell name="aws" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
-    fireEvent.click(screen.getByText('Go to integration KVDBs'));
-    expect(getPushedPath()).toBe(`${ROUTES.KVDBS}?integration=aws`);
+    expect(screen.getByText('Go to integration KVDBs').closest('a')).toHaveAttribute(
+      'href',
+      `/app/kvdbs#${ROUTES.KVDBS}?integration=aws`
+    );
   });
 
   it("carries this row's space along so the target table lands there too", () => {
-    const push = jest.fn();
-    render(<IntegrationCell name="aws" history={{ push }} space="custom" />);
+    render(<IntegrationCell name="aws" space="custom" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
-    fireEvent.click(screen.getByText('Go to integration rules'));
-    expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws&space=custom`);
+    expect(screen.getByText('Go to integration rules').closest('a')).toHaveAttribute(
+      'href',
+      `/app/rules#${ROUTES.RULES}?integration=aws&space=custom`
+    );
   });
 
   it('does not check related items when integrationId/space are omitted', () => {
-    renderWithFakeHistory('aws');
+    render(<IntegrationCell name="aws" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     expect(DataStore.integrations.getIntegration).not.toHaveBeenCalled();
     expect(DataStore.detectors.countByIntegration).not.toHaveBeenCalled();
@@ -87,10 +92,7 @@ describe('IntegrationCell', () => {
       document: { rules: ['r1'], kvdbs: ['k1'] },
     });
     (DataStore.detectors.countByIntegration as jest.Mock).mockResolvedValue(2);
-    const push = jest.fn();
-    render(
-      <IntegrationCell name="aws" history={{ push }} integrationId="int-1" space="standard" />
-    );
+    render(<IntegrationCell name="aws" integrationId="int-1" space="standard" />);
 
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     await waitFor(() =>
@@ -98,22 +100,16 @@ describe('IntegrationCell', () => {
     );
     expect(DataStore.detectors.countByIntegration).toHaveBeenCalledWith('aws', 'standard');
 
-    // Zero count: shown, not hidden, disabled, with count in the label.
     expect(screen.getByText('Go to integration decoders (0)').closest('button')).toBeDisabled();
-    fireEvent.click(screen.getByText('Go to integration decoders (0)'));
-    expect(push).not.toHaveBeenCalled();
 
-    // Non-zero counts: shown, enabled, with count in the label.
-    expect(screen.getByText('Go to integration rules (1)').closest('button')).not.toBeDisabled();
-    fireEvent.click(screen.getByText('Go to integration rules (1)'));
-    expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws&space=standard`);
+    expect(screen.getByText('Go to integration rules (1)').closest('a')).toHaveAttribute(
+      'href',
+      `/app/rules#${ROUTES.RULES}?integration=aws&space=standard`
+    );
 
-    expect(screen.getByText('Go to integration KVDBs (1)').closest('button')).not.toBeDisabled();
+    expect(screen.getByText('Go to integration KVDBs (1)').closest('a')).not.toBeNull();
 
-    // Detectors count comes from the server-side count call, not the integration document.
-    expect(
-      screen.getByText('Go to integration detectors (2)').closest('button')
-    ).not.toBeDisabled();
+    expect(screen.getByText('Go to integration detectors (2)').closest('a')).not.toBeNull();
   });
 
   it('disables the Detectors item with a "has no detectors" tooltip when the count is zero', async () => {
@@ -137,10 +133,7 @@ describe('IntegrationCell', () => {
         resolveCheck = resolve;
       })
     );
-    const push = jest.fn();
-    render(
-      <IntegrationCell name="aws" history={{ push }} integrationId="int-1" space="standard" />
-    );
+    render(<IntegrationCell name="aws" integrationId="int-1" space="standard" />);
 
     fireEvent.click(screen.getByTestId('integrationCellLink'));
 
@@ -148,12 +141,10 @@ describe('IntegrationCell', () => {
     expect(screen.getByText('Go to integration rules').closest('button')).toBeDisabled();
     expect(screen.getByText('Go to integration KVDBs').closest('button')).toBeDisabled();
     expect(screen.getByText('Go to integration detectors').closest('button')).toBeDisabled();
-    fireEvent.click(screen.getByText('Go to integration rules'));
-    expect(push).not.toHaveBeenCalled();
 
     resolveCheck({ id: 'int-1', document: { rules: ['r1'] } });
     await waitFor(() =>
-      expect(screen.getByText('Go to integration rules (1)').closest('button')).not.toBeDisabled()
+      expect(screen.getByText('Go to integration rules (1)').closest('a')).not.toBeNull()
     );
   });
 
@@ -162,15 +153,8 @@ describe('IntegrationCell', () => {
       id: 'int-1',
       document: { rules: ['r1'] },
     });
-    const push = jest.fn();
     render(
-      <IntegrationCell
-        name="aws"
-        history={{ push }}
-        integrationId="int-1"
-        space="standard"
-        currentEntity="rules"
-      />
+      <IntegrationCell name="aws" integrationId="int-1" space="standard" currentEntity="rules" />
     );
 
     fireEvent.click(screen.getByTestId('integrationCellLink'));
@@ -209,7 +193,7 @@ describe('IntegrationCell', () => {
   });
 
   it('renders all four entity items when currentEntity is omitted', () => {
-    renderWithFakeHistory('aws');
+    render(<IntegrationCell name="aws" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     expect(screen.getByText('Go to integration decoders')).toBeInTheDocument();
     expect(screen.getByText('Go to integration rules')).toBeInTheDocument();
@@ -217,21 +201,20 @@ describe('IntegrationCell', () => {
     expect(screen.getByText('Go to integration detectors')).toBeInTheDocument();
   });
 
-  it('renders "Go to integration details" as the first item and navigates to the integration details URL', () => {
-    const push = jest.fn();
-    render(
-      <IntegrationCell name="aws" history={{ push }} integrationId="int-1" space="standard" />
-    );
+  it('renders "Go to integration details" as the first item, linking to the integration details URL', () => {
+    render(<IntegrationCell name="aws" integrationId="int-1" space="standard" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
 
     const detailsItem = screen.getByText('Go to integration details');
     expect(detailsItem).toBeInTheDocument();
-    fireEvent.click(detailsItem);
-    expect(push).toHaveBeenCalledWith(`${ROUTES.INTEGRATIONS}/int-1?space=standard`);
+    expect(detailsItem.closest('a')).toHaveAttribute(
+      'href',
+      `/app/sa-integrations#${ROUTES.INTEGRATIONS}/int-1?space=standard`
+    );
   });
 
   it('omits "Go to integration details" when integrationId or space is missing', () => {
-    renderWithFakeHistory('aws');
+    render(<IntegrationCell name="aws" />);
     fireEvent.click(screen.getByTestId('integrationCellLink'));
     expect(screen.queryByText('Go to integration details')).not.toBeInTheDocument();
   });

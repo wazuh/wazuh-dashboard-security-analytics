@@ -296,7 +296,6 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
           <IntegrationCell
             name={integrations?.[0] || ''}
             integrationId={item.integrationRefs?.[0]?.id}
-            history={history}
             space={spaceFilter}
             currentEntity="decoders"
           />

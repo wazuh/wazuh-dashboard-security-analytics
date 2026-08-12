@@ -4,7 +4,6 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import {
   EuiContextMenuItem,
   EuiContextMenuPanel,
@@ -12,24 +11,27 @@ import {
   EuiPopover,
   EuiToolTip,
 } from '@elastic/eui';
-import { ROUTES } from '../../utils/constants';
+import { RedirectAppLinks } from '../../../../../src/plugins/opensearch_dashboards_react/public';
+import {
+  DECODERS_NAV_ID,
+  DETECTION_RULE_NAV_ID,
+  DETECTORS_NAV_ID,
+  INTEGRATIONS_NAV_ID,
+  KVDBS_NAV_ID,
+  ROUTES,
+} from '../../utils/constants';
 import { buildEntityQueryRoute } from '../../utils/routes';
+import { getApplication } from '../../services/utils/constants';
 import { DataStore } from '../../store/DataStore';
+
+const buildAppUrl = (appId: string, route: string) =>
+  getApplication().getUrlForApp(appId, { path: `#${route}` });
 
 export type IntegrationEntity = 'decoders' | 'rules' | 'kvdbs' | 'detectors';
 
 export interface IntegrationCellProps {
   /** Integration name for this row. Renders as plain text (no popover) when empty. */
   name: string;
-  /**
-   * Optional history override (the same `history` prop every container in this
-   * codebase already receives via RouteComponentProps). Falls back to
-   * `useHistory()` when omitted. See useUrlFilterParams.ts for why: react-router's
-   * hooks are implemented via `React.useContext`, which `test/setup.jest.ts`
-   * globally mocks for the unrelated SecurityAnalyticsContext pattern — plain
-   * prop-drilling bypasses that mock and is unaffected.
-   */
-  history?: Pick<ReturnType<typeof useHistory>, 'push'>;
   /**
    * This row's integration id and space — when both are given, disables (with an
    * explanatory tooltip) any "Go to integration X" CTA whose entity type this
@@ -59,13 +61,10 @@ const ENTITY_LABELS: Record<IntegrationEntity, string> = {
 // existing space-scoped search-by-name behavior via buildEntityQueryRoute.
 export const IntegrationCell: React.FC<IntegrationCellProps> = ({
   name,
-  history: historyOverride,
   integrationId,
   space,
   currentEntity,
 }) => {
-  const routerHistory = useHistory();
-  const history = historyOverride ?? routerHistory;
   const [isOpen, setIsOpen] = useState(false);
   const [relatedCounts, setRelatedCounts] = useState<Record<IntegrationEntity, number> | undefined>(
     undefined
@@ -97,16 +96,14 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
 
   const closePopover = () => setIsOpen(false);
 
-  const navigateTo = (route: string) => {
-    closePopover();
-    history.push(buildEntityQueryRoute(route, name, space));
-  };
-
-  // Wazuh: while the check is pending (only when one is actually happening — i.e.
-  // integrationId/space were given), every CTA stays disabled rather than
-  // optimistically enabled, so a slow connection can't leave a clickable window
-  // before the "has no items" result comes back.
   const isChecking = Boolean(integrationId && space && !relatedCounts);
+
+  const NAV_ID_BY_ENTITY: Record<IntegrationEntity, string> = {
+    decoders: DECODERS_NAV_ID,
+    rules: DETECTION_RULE_NAV_ID,
+    kvdbs: KVDBS_NAV_ID,
+    detectors: DETECTORS_NAV_ID,
+  };
 
   const ROUTE_BY_ENTITY: Record<IntegrationEntity, string> = {
     decoders: ROUTES.DECODERS,
@@ -122,7 +119,12 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
     }`;
     const hasRelatedItems = isChecking ? false : count === undefined ? true : count > 0;
     const item = (
-      <EuiContextMenuItem key={key} disabled={!hasRelatedItems} onClick={() => navigateTo(route)}>
+      <EuiContextMenuItem
+        key={key}
+        disabled={!hasRelatedItems}
+        href={buildAppUrl(NAV_ID_BY_ENTITY[key], buildEntityQueryRoute(route, name, space))}
+        onClick={closePopover}
+      >
         {label}
       </EuiContextMenuItem>
     );
@@ -143,10 +145,11 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
     integrationId && space ? (
       <EuiContextMenuItem
         key="details"
-        onClick={() => {
-          closePopover();
-          history.push(`${ROUTES.INTEGRATIONS}/${integrationId}?space=${space}`);
-        }}
+        href={buildAppUrl(
+          INTEGRATIONS_NAV_ID,
+          `${ROUTES.INTEGRATIONS}/${integrationId}?space=${space}`
+        )}
+        onClick={closePopover}
       >
         Go to integration details
       </EuiContextMenuItem>
@@ -160,19 +163,21 @@ export const IntegrationCell: React.FC<IntegrationCellProps> = ({
   ];
 
   return (
-    <EuiPopover
-      id={`integrationCellPopover-${name}`}
-      button={
-        <EuiLink onClick={() => setIsOpen((prev) => !prev)} data-test-subj="integrationCellLink">
-          {name}
-        </EuiLink>
-      }
-      isOpen={isOpen}
-      closePopover={closePopover}
-      panelPaddingSize="none"
-      anchorPosition="downLeft"
-    >
-      <EuiContextMenuPanel key={relatedCounts ? 'loaded' : 'loading'} items={items} size="s" />
-    </EuiPopover>
+    <RedirectAppLinks application={getApplication()}>
+      <EuiPopover
+        id={`integrationCellPopover-${name}`}
+        button={
+          <EuiLink onClick={() => setIsOpen((prev) => !prev)} data-test-subj="integrationCellLink">
+            {name}
+          </EuiLink>
+        }
+        isOpen={isOpen}
+        closePopover={closePopover}
+        panelPaddingSize="none"
+        anchorPosition="downLeft"
+      >
+        <EuiContextMenuPanel key={relatedCounts ? 'loaded' : 'loading'} items={items} size="s" />
+      </EuiPopover>
+    </RedirectAppLinks>
   );
 };

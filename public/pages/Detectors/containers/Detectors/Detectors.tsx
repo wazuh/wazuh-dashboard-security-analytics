@@ -317,7 +317,6 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
           return (
             <IntegrationCell
               name={formatRuleType(integration)}
-              history={this.props.history}
               integrationId={row.integrationId}
               space={row.rawSpace}
               currentEntity="detectors"

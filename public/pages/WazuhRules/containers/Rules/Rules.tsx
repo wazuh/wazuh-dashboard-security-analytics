@@ -352,7 +352,6 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
           <IntegrationCell
             name={row.integration?.document?.metadata?.title || ''}
             integrationId={row.integration?.document?.id}
-            history={history}
             space={spaceFilter}
             currentEntity="rules"
           />

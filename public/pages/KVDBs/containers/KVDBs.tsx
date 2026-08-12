@@ -371,7 +371,6 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           <IntegrationCell
             name={value || ''}
             integrationId={item.integration?.id}
-            history={history}
             space={spaceFilter}
             currentEntity="kvdbs"
           />
