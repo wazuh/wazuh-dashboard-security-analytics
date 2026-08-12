@@ -10,6 +10,7 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
+  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
@@ -49,6 +50,7 @@ import {
   decodeMultiValue,
   encodeEnabledValues,
   encodeMultiValue,
+  ENTITY_SEARCH_SCHEMA,
   getFreeText,
   getOrSelectedValues,
 } from '../../../utils/entitySearchBarFilters';
@@ -76,6 +78,10 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   // free text debounces like before, filter checkboxes apply immediately.
   const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
   const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
+  // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
+  // field name) so the table can be replaced by a callout without losing the
+  // previously applied query/results (see onSearchChange/renderError below).
+  const [searchError, setSearchError] = useState<any>(null);
   const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
   const [appliedStatus, setAppliedStatus] = useState<'enabled' | 'disabled' | undefined>(() => {
     const statuses = decodeEnabledValues(urlFilters.values.enabled);
@@ -380,6 +386,59 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     </EuiContextMenuItem>,
   ];
 
+  // Wazuh: EuiSearchBar only emits `query` when parsing succeeds — on a
+  // strict-schema parse error `query` is undefined, so `searchQuery` (and thus
+  // the previously loaded decoders) is left untouched; only the callout shows.
+  const onSearchChange = ({ query, error }: { query: any; error: any }) => {
+    setSearchError(error ?? null);
+    if (!query) return;
+    setSearchQuery(query);
+  };
+
+  const renderError = () => {
+    if (!searchError) return undefined;
+    return (
+      <>
+        <EuiCallOut
+          color="danger"
+          title={`Invalid search: ${searchError.message}`}
+          data-test-subj="entitySearchErrorCallOut"
+        />
+        <EuiSpacer size="l" />
+      </>
+    );
+  };
+
+  // Wazuh: the callout renders ABOVE the table, it does not replace it — the
+  // last successfully loaded decoders stay visible while a parse error shows.
+  const renderTable = () => (
+    <EuiBasicTable
+      items={decoders}
+      columns={columns}
+      loading={loading || isDeleting}
+      pagination={{
+        pageIndex,
+        pageSize,
+        totalItemCount: total,
+        pageSizeOptions: [10, 25, 50],
+      }}
+      sorting={{ sort: { field: sortField, direction: sortDirection } }}
+      onChange={onTableChange}
+      itemId="id"
+      selection={{
+        selectable: () => true,
+        onSelectionChange: setSelectedItems,
+      }}
+    />
+  );
+
+  const content = (
+    <>
+      {renderError()}
+      {renderTable()}
+    </>
+  );
+
   const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
 
   const actionsButton = (
@@ -472,12 +531,14 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                   placeholder: 'Search decoders',
                   incremental: true,
                   compressed: true,
+                  schema: true,
                 }}
+                schema={ENTITY_SEARCH_SCHEMA}
                 filters={buildStatusIntegrationFilters(
                   integrationOptions,
                   integrationOptionsLoading
                 )}
-                onChange={({ query }) => query && setSearchQuery(query)}
+                onChange={onSearchChange}
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
@@ -491,24 +552,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="m" />
-          <EuiBasicTable
-            items={decoders}
-            columns={columns}
-            loading={loading || isDeleting}
-            pagination={{
-              pageIndex,
-              pageSize,
-              totalItemCount: total,
-              pageSizeOptions: [10, 25, 50],
-            }}
-            sorting={{ sort: { field: sortField, direction: sortDirection } }}
-            onChange={onTableChange}
-            itemId="id"
-            selection={{
-              selectable: () => true,
-              onSelectionChange: setSelectedItems,
-            }}
-          />
+          {content}
         </EuiPanel>
       </EuiFlexItem>
     </EuiFlexGroup>
