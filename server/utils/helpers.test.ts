@@ -160,4 +160,22 @@ describe('applyEntityFilters', () => {
     const result = applyEntityFilters(query, { status: 'bogus' as any });
     expect(result.bool.filter).toEqual([{ bool: { must_not: { match_all: {} } } }]);
   });
+
+  it('adds a levels terms clause to bool.filter when levels is provided (Rules-only Severity filter)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { levels: ['critical', 'high'] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.level': ['critical', 'high'] } }]);
+  });
+
+  it('does not add a levels clause when levels is omitted (no filter active)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, {});
+    expect(result.bool.filter).toEqual([]);
+  });
+
+  it('adds an empty levels clause (matches nothing) when levels is an empty array — the filter IS active but resolved to no values', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { levels: [] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.level': [] } }]);
+  });
 });

@@ -225,6 +225,8 @@ export class RulesStore implements IWazuhRulesStore {
       // hard filters.
       status?: 'enabled' | 'disabled';
       integrationNames?: string[];
+      // Wazuh: Rules-only Severity filter (multiSelect 'or'), matches `document.level`.
+      levels?: string[];
     },
     space: string
   ): Promise<{ total: number; items: RuleItemInfoBase[] }> {
@@ -239,6 +241,7 @@ export class RulesStore implements IWazuhRulesStore {
     if (params.searchText !== undefined) body.searchText = params.searchText;
     if (params.status !== undefined) body.status = params.status;
     if (params.integrationNames?.length) body.integrationNames = params.integrationNames;
+    if (params.levels?.length) body.levels = params.levels;
 
     const isStandard = space === 'standard';
     const response = await this.service.getRules(isStandard, body, space);

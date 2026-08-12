@@ -79,13 +79,17 @@ const triggerSearchChange = async (wrapper: any, payload: { query?: any; error?:
 };
 
 describe('<Rules /> search bar strict schema', () => {
-  it('declares ENTITY_SEARCH_SCHEMA on box.schema (status/integration only; EuiSearchBar has no top-level schema prop)', async () => {
+  it('declares a strict schema on box.schema (status/integration/severity; EuiSearchBar has no top-level schema prop)', async () => {
     const wrapper = await mountRules();
     const searchBar = wrapper.find('EuiSearchBar').first();
     expect(searchBar.prop('box')).toMatchObject({
       schema: {
         strict: true,
-        fields: { status: { type: 'string' }, integration: { type: 'string' } },
+        fields: {
+          status: { type: 'string' },
+          integration: { type: 'string' },
+          severity: { type: 'string' },
+        },
       },
     });
     expect(searchBar.prop('schema')).toBeUndefined();

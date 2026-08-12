@@ -46,13 +46,16 @@ export default class WazuhRulesService {
     prePackaged: boolean,
     incomingQuery?: any,
     space?: string,
-    opts?: { status?: EntityStatus; integrationIds?: string[] }
+    opts?: { status?: EntityStatus; integrationIds?: string[]; levels?: string[] }
   ) {
     // When an explicit space is provided it takes precedence over the prePackaged binary model
     const spaceTerm = {
       term: { 'space.name': space ?? this.getSpaceFromPrePackaged(prePackaged) },
     };
-    const hasExtraFilters = Boolean(opts?.status) || Boolean(opts?.integrationIds?.length);
+    const hasExtraFilters =
+      Boolean(opts?.status) ||
+      Boolean(opts?.integrationIds?.length) ||
+      Boolean(opts?.levels?.length);
 
     // Skip the bool.must/filter wrapping entirely when no filter is selected.
     if (!hasExtraFilters) {
@@ -67,6 +70,7 @@ export default class WazuhRulesService {
     const composed = applyEntityFilters(baseQuery, {
       status: opts?.status,
       integrationIds: opts?.integrationIds,
+      levels: opts?.levels,
     });
     composed.bool.filter.unshift(spaceTerm);
     return composed;
@@ -237,6 +241,7 @@ export default class WazuhRulesService {
         searchText,
         status,
         integrationNames,
+        levels,
       } = (request.body as any) ?? {};
       const client = this.getClient(request);
       const resolvedSpace = space ?? this.getSpaceFromPrePackaged(prePackaged);
@@ -257,6 +262,7 @@ export default class WazuhRulesService {
         query: this.buildQuery(prePackaged, mergedQuery, space, {
           status,
           integrationIds: hasIntegrationFilter ? exactIntegrationRuleIds : undefined,
+          levels,
         }),
       };
       if (sort) searchBody.sort = sort;

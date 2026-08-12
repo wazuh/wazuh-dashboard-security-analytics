@@ -95,4 +95,23 @@ describe('WazuhRulesService.getRules — status/integration filters', () => {
       ])
     );
   });
+
+  it('injects the levels filter into bool.filter when levels is provided (Rules-only Severity filter)', async () => {
+    const { osDriver, callAsCurrentUser } = buildClient(() => emptySearchHits);
+    const service = new WazuhRulesService(osDriver);
+    const response = buildResponseFactory();
+
+    await service.getRules(
+      {} as any,
+      makeRequest({ query: { match_all: {} }, levels: ['critical', 'high'] }),
+      response as any
+    );
+
+    const rulesSearchCall = callAsCurrentUser.mock.calls.find(
+      (call) => call[1]?.body?.query?.bool?.filter
+    );
+    expect(rulesSearchCall![1].body.query.bool.filter).toEqual(
+      expect.arrayContaining([{ terms: { 'document.level': ['critical', 'high'] } }])
+    );
+  });
 });

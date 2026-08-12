@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { History } from 'history';
 
-export type FilterParamName = 'query' | 'enabled' | 'integration' | 'page';
+export type FilterParamName = 'query' | 'enabled' | 'integration' | 'level' | 'page';
 
 export interface UrlFilterConfig {
   /** Params this table opts into. 'page' should only be included for server-paginated tables. */

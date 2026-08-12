@@ -103,7 +103,7 @@ export const buildStatusFilter = (status?: EntityStatus): any | undefined => {
 // to `bool.filter`. No filters selected => `filter` is empty and the shape is stable.
 export const applyEntityFilters = (
   query: any,
-  opts: { status?: EntityStatus; integrationIds?: string[] }
+  opts: { status?: EntityStatus; integrationIds?: string[]; levels?: string[] }
 ): any => {
   const filter: any[] = [];
 
@@ -118,6 +118,12 @@ export const applyEntityFilters = (
   // not silently fall back to unfiltered.
   if (opts.integrationIds !== undefined) {
     filter.push({ terms: { 'document.id': opts.integrationIds } });
+  }
+
+  // Wazuh: Rules-only Severity filter (field_value_selection, multiSelect 'or') —
+  // same "undefined = inactive, empty array = zero results" convention as above.
+  if (opts.levels !== undefined) {
+    filter.push({ terms: { 'document.level': opts.levels } });
   }
 
   return { bool: { must: [query], filter } };
