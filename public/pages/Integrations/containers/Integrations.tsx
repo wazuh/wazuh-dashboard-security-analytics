@@ -18,6 +18,7 @@ import {
   EuiConfirmModal,
   EuiTab,
   EuiTabs,
+  EuiSearchBar,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { OVERVIEW_TAB, OverviewTabId } from '../utils/constants';
@@ -48,6 +49,14 @@ import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { EditPolicy } from '../components/EditPolicy';
 import { FiltersTab } from '../../Filters/components/FiltersTab';
 import { PendingPromotionCallout } from '../components/PendingPromotionCallout';
+import { RedirectAppLinks } from '../../../../../../src/plugins/opensearch_dashboards_react/public';
+import { getApplication } from '../../../services/utils/constants';
+import {
+  buildQueryTextWithStatus,
+  readInMemoryUrlFilterValues,
+  splitStatusFromQueryText,
+  writeInMemoryUrlFilterValues,
+} from '../../../utils/inMemoryUrlFilterAdapter';
 
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
@@ -85,6 +94,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [isOverviewActionsOpen, setIsOverviewActionsOpen] = useState<boolean>(false);
   const [isClearingSpace, setIsClearingSpace] = useState<boolean>(false);
   const [isDeletingSelected, setIsDeletingSelected] = useState<boolean>(false);
+  // Wazuh: query/status/category persisted in the URL (no 'page' — Integrations is an
+  // in-memory table, per the no-goal boundary).
+  const [urlFilters] = useState(() =>
+    readInMemoryUrlFilterValues(history.location.search, ['category'])
+  );
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading || isClearingSpace,
   });
@@ -98,7 +112,15 @@ export const Integrations: React.FC<IntegrationsProps> = ({
 
   const onTabChange = (tab: OverviewTabId) => {
     const path = tab === OVERVIEW_TAB.FILTERS ? ROUTES.FILTERS : ROUTES.INTEGRATIONS;
-    history.replace(path + history.location.search);
+    // Wazuh: Integrations and Filters each have their own independent meaning for
+    // 'query'/'status' (e.g. status filters a different `enabled` field per tab) —
+    // carrying them over on tab switch leaked one tab's filter into the other's.
+    const params = new URLSearchParams(history.location.search);
+    params.delete('query');
+    params.delete('status');
+    params.delete('category');
+    const search = params.toString();
+    history.replace(path + (search ? `?${search}` : ''));
   };
   const loadIntegrations = useCallback(async () => {
     setLoading(true);
@@ -609,24 +631,46 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       >
         <EuiSpacer size={'l'} />
         {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
-          <EuiInMemoryTable
-            itemId={'id'}
-            items={integrations}
-            columns={getIntegrationsTableColumns({
-              showDetails: showIntegrationDetails,
-              setItemForAction,
-            })}
-            pagination={{
-              initialPageSize: 25,
-            }}
-            search={getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] })}
-            selection={{
-              onSelectionChange: onSelectionChange,
-              initialSelected: [],
-            }}
-            isSelectable={true}
-            loading={loading}
-          />
+          <RedirectAppLinks application={getApplication()}>
+            <EuiInMemoryTable
+              itemId={'id'}
+              items={integrations}
+              columns={getIntegrationsTableColumns({
+                showDetails: showIntegrationDetails,
+                setItemForAction,
+              })}
+              pagination={{
+                initialPageSize: 25,
+              }}
+              search={{
+                ...getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] }),
+                defaultQuery: EuiSearchBar.Query.parse(
+                  buildQueryTextWithStatus(
+                    buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
+                    urlFilters.category,
+                    'category'
+                  )
+                ),
+                onChange: ({ query }: { query: any }) => {
+                  const { query: withoutStatus, status } = splitStatusFromQueryText(
+                    query?.text ?? ''
+                  );
+                  const { query: freeText, status: category } = splitStatusFromQueryText(
+                    withoutStatus,
+                    'category'
+                  );
+                  writeInMemoryUrlFilterValues(history, { query: freeText, status, category });
+                  return true;
+                },
+              }}
+              selection={{
+                onSelectionChange: onSelectionChange,
+                initialSelected: [],
+              }}
+              isSelectable={true}
+              loading={loading}
+            />
+          </RedirectAppLinks>
         ) : (
           <FiltersTab spaceFilter={spaceFilter} notifications={notifications} history={history} />
         )}

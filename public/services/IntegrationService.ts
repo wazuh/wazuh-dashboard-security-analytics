@@ -38,18 +38,24 @@ export default class IntegrationService {
   searchIntegrations = async ({
     spaceFilter,
     id,
+    _source,
   }: {
     spaceFilter?: string | null;
     id?: string;
+    /** Restrict returned document fields — omit to fetch full documents. */
+    _source?: string[];
   }): Promise<ServerResponse<SearchIntegrationsResponse>> => {
     const url = `..${API.INTEGRATION_BASE}/_search`;
     let query;
 
     if (id) {
-      // Only id provided - search by id only
-      query = {
-        terms: { _id: [id] },
-      };
+      // Wazuh: `id` is document.id (shared across a promoted integration's
+      // per-space copies), not the OpenSearch _id — must AND in spaceFilter to
+      // disambiguate, not drop it.
+      const idClause = { term: { 'document.id': id } };
+      query = spaceFilter
+        ? { bool: { must: [idClause, { term: { 'space.name': spaceFilter } }] } }
+        : idClause;
     } else {
       // Only spaceFilter provided - search by space
       query = {
@@ -63,7 +69,7 @@ export default class IntegrationService {
       };
     }
 
-    const queryString = JSON.stringify({ query });
+    const queryString = JSON.stringify({ query, ...(_source ? { _source } : {}) });
     return (await this.httpClient.post(url, {
       body: queryString,
       query: {

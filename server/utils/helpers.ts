@@ -5,6 +5,7 @@
 
 import { Props, schema } from '@osd/config-schema';
 import YAML from 'yaml';
+import { CONTENT_INDICES } from './constants';
 
 export function createQueryValidationSchema(fieldSchemaObj?: Props) {
   return schema.object({
@@ -34,6 +35,98 @@ export const mergeIdsClause = (query: any, field: string, ids: string[]): any =>
   }
 
   return { bool: { should: [query, idsClause], minimum_should_match: 1 } };
+};
+
+// Wazuh: resolve an integration-name match (wildcard search-by-text or exact
+// multiSelect) to the ids of one related entity type (document.rules/decoders/
+// kvdbs), shared by WazuhRuleService and DecodersService. `must` is the caller's
+// already-built match+space bool clauses; `relatedField` picks which array to
+// collect ids from.
+export const resolveIdsByIntegrationMatch = async (
+  client: any,
+  must: any[],
+  relatedField: 'rules' | 'decoders' | 'kvdbs',
+  errorContext: string
+): Promise<string[]> => {
+  try {
+    const response = await client('search', {
+      index: CONTENT_INDICES.INTEGRATIONS,
+      body: {
+        size: 10000,
+        query: { bool: { must } },
+        _source: [`document.${relatedField}`],
+      },
+    });
+
+    const ids = new Set<string>();
+    (response?.hits?.hits || []).forEach((hit: any) => {
+      (hit._source?.document?.[relatedField] || []).forEach((id: string) => ids.add(id));
+    });
+    return Array.from(ids);
+  } catch (error: any) {
+    console.warn(`Security Analytics - ${errorContext}:`, extractErrorMessage(error));
+    return [];
+  }
+};
+
+export type EntityStatus = 'enabled' | 'disabled';
+
+// Wazuh: build the hard status filter clause used by applyEntityFilters. Missing
+// `document.enabled` counts as enabled (mirrors `rule.enabled ?? true` at resource build time).
+export const buildStatusFilter = (status?: EntityStatus): any | undefined => {
+  if (status === 'disabled') {
+    return { term: { 'document.enabled': false } };
+  }
+  if (status === 'enabled') {
+    return {
+      bool: {
+        should: [
+          { term: { 'document.enabled': true } },
+          { bool: { must_not: { exists: { field: 'document.enabled' } } } },
+        ],
+        minimum_should_match: 1,
+      },
+    };
+  }
+  if (status) {
+    // Wazuh: an unrecognized status value is still an active filter — it must
+    // match zero entities (mirrors the integration filter's empty-ids => zero-results
+    // behavior), not silently fall back to unfiltered.
+    return { bool: { must_not: { match_all: {} } } };
+  }
+  return undefined;
+};
+
+// Wazuh: compose the incoming (untouched) search query with hard AND filters
+// (status, integration ids, ...) without diluting its `should`/`minimum_should_match`
+// semantics. The incoming query is nested under `bool.must[0]`; filters are appended
+// to `bool.filter`. No filters selected => `filter` is empty and the shape is stable.
+export const applyEntityFilters = (
+  query: any,
+  opts: { status?: EntityStatus; integrationIds?: string[]; levels?: string[] }
+): any => {
+  const filter: any[] = [];
+
+  const statusFilter = buildStatusFilter(opts.status);
+  if (statusFilter) {
+    filter.push(statusFilter);
+  }
+
+  // Wazuh: `undefined` means "no integration filter active" — an empty array means
+  // the filter IS active but resolved to zero ids (e.g. a matched integration with
+  // no associated decoders/rules), which must still filter down to zero results,
+  // not silently fall back to unfiltered.
+  if (opts.integrationIds !== undefined) {
+    filter.push({ terms: { 'document.id': opts.integrationIds } });
+  }
+
+  // Wazuh: Rules-only Severity filter (field_value_selection, multiSelect 'or') —
+  // same "undefined = inactive, empty array = zero results" convention as above.
+  if (opts.levels !== undefined) {
+    filter.push({ terms: { 'document.level': opts.levels } });
+  }
+
+  return { bool: { must: [query], filter } };
 };
 
 // This function recieves the crude yaml resource and optional extra params (e.g: integration for kvdbs or space for filters).

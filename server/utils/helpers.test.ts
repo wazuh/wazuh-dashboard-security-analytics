@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { escapeWildcard, mergeIdsClause } from './helpers';
+import { applyEntityFilters, buildStatusFilter, escapeWildcard, mergeIdsClause } from './helpers';
 
 describe('escapeWildcard', () => {
   it('escapes * and ? so they are treated as literals', () => {
@@ -59,5 +59,123 @@ describe('mergeIdsClause', () => {
         minimum_should_match: 1,
       },
     });
+  });
+});
+
+describe('buildStatusFilter', () => {
+  it('matches zero entities for an unrecognized status value, instead of silently skipping the filter', () => {
+    expect(buildStatusFilter('bogus' as any)).toEqual({
+      bool: { must_not: { match_all: {} } },
+    });
+  });
+
+  it('returns undefined when status is not provided', () => {
+    expect(buildStatusFilter(undefined)).toBeUndefined();
+  });
+
+  it('builds a plain term for status=disabled', () => {
+    expect(buildStatusFilter('disabled')).toEqual({
+      term: { 'document.enabled': false },
+    });
+  });
+
+  it('builds an enabled-or-missing-field clause for status=enabled', () => {
+    expect(buildStatusFilter('enabled')).toEqual({
+      bool: {
+        should: [
+          { term: { 'document.enabled': true } },
+          { bool: { must_not: { exists: { field: 'document.enabled' } } } },
+        ],
+        minimum_should_match: 1,
+      },
+    });
+  });
+});
+
+describe('applyEntityFilters', () => {
+  it('is byte-identical to the input query when no filters are selected', () => {
+    const query = { bool: { should: [{ match_all: {} }], minimum_should_match: 1 } };
+    expect(applyEntityFilters(query, {})).toEqual({
+      bool: { must: [query], filter: [] },
+    });
+  });
+
+  it('nests the original query under bool.must without mutating it', () => {
+    const query = { bool: { should: [{ wildcard: { field: { value: '*a*' } } }] } };
+    const result = applyEntityFilters(query, {});
+    expect(result.bool.must[0]).toBe(query);
+  });
+
+  it('adds a missing-field-as-enabled clause to bool.filter for status=enabled', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'enabled' });
+    expect(result.bool.filter).toEqual([
+      {
+        bool: {
+          should: [
+            { term: { 'document.enabled': true } },
+            { bool: { must_not: { exists: { field: 'document.enabled' } } } },
+          ],
+          minimum_should_match: 1,
+        },
+      },
+    ]);
+  });
+
+  it('adds a plain term clause to bool.filter for status=disabled', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'disabled' });
+    expect(result.bool.filter).toEqual([{ term: { 'document.enabled': false } }]);
+  });
+
+  it('adds an ids terms clause to bool.filter when integrationIds is provided', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { integrationIds: ['id-1', 'id-2'] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.id': ['id-1', 'id-2'] } }]);
+  });
+
+  it('combines status and integrationIds filters together, in order', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'disabled', integrationIds: ['id-1'] });
+    expect(result.bool.filter).toEqual([
+      { term: { 'document.enabled': false } },
+      { terms: { 'document.id': ['id-1'] } },
+    ]);
+  });
+
+  it('does not add an ids clause when integrationIds is omitted (no filter active)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, {});
+    expect(result.bool.filter).toEqual([]);
+  });
+
+  it('adds an empty ids clause (matches nothing) when integrationIds is an empty array — the filter IS active but resolved to no ids, e.g. a matched integration with no associated decoders/rules', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { integrationIds: [] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.id': [] } }]);
+  });
+
+  it('adds a matches-nothing clause for an unrecognized status value, instead of silently skipping the filter', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'bogus' as any });
+    expect(result.bool.filter).toEqual([{ bool: { must_not: { match_all: {} } } }]);
+  });
+
+  it('adds a levels terms clause to bool.filter when levels is provided (Rules-only Severity filter)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { levels: ['critical', 'high'] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.level': ['critical', 'high'] } }]);
+  });
+
+  it('does not add a levels clause when levels is omitted (no filter active)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, {});
+    expect(result.bool.filter).toEqual([]);
+  });
+
+  it('adds an empty levels clause (matches nothing) when levels is an empty array — the filter IS active but resolved to no values', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { levels: [] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.level': [] } }]);
   });
 });

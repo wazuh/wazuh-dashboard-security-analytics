@@ -36,6 +36,7 @@ export interface IDetectorsStore {
     calloutHandler: (callout?: ICalloutProps) => void,
     toastHandler: (toasts?: Toast[]) => void
   ) => void;
+  countByIntegration: (name: string, space: string) => Promise<number>;
 }
 
 export interface IDetectorsState {
@@ -326,5 +327,19 @@ export class DetectorsStore implements IDetectorsStore {
   ): void => {
     this.showCalloutCallback = calloutHandler;
     this.showToastCallback = toastHandler;
+  };
+
+  /**
+   * Wazuh: real Detectors count for the Integration CTA popover.
+   * Resolves 0 on any failure (missing space, request failure, thrown error) — never undefined.
+   */
+  public countByIntegration = async (name: string, space: string): Promise<number> => {
+    try {
+      const response = await this.service.countDetectorsByIntegration(name, space);
+      return response.ok ? response.response.count : 0;
+    } catch (error: any) {
+      console.error(error);
+      return 0;
+    }
   };
 }

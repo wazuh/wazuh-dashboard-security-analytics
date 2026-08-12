@@ -14,7 +14,14 @@ import {
 import { ServerResponse } from '../models/types';
 import { DecoderItem, GetDecoderResponse, SearchDecodersResponse } from '../../types';
 import { CLIENT_DECODER_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { escapeWildcard, extractErrorMessage, mergeIdsClause } from '../utils/helpers';
+import {
+  applyEntityFilters,
+  EntityStatus,
+  escapeWildcard,
+  extractErrorMessage,
+  mergeIdsClause,
+  resolveIdsByIntegrationMatch,
+} from '../utils/helpers';
 
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',
@@ -141,7 +148,7 @@ export class DecodersService {
   }
 
   private async fetchIntegrationMap(client: any, decoderIds: string[]) {
-    const integrations = new Map<string, string[]>();
+    const integrations = new Map<string, Array<{ id: string; title: string }>>();
 
     if (!decoderIds.length) {
       return integrations;
@@ -157,12 +164,13 @@ export class DecodersService {
               'document.decoders': decoderIds,
             },
           },
-          _source: ['document.metadata.title', 'document.decoders'],
+          _source: ['document.id', 'document.metadata.title', 'document.decoders'],
         },
       });
 
       const hits = integrationResponse?.hits?.hits ?? [];
       hits.forEach((hit: any) => {
+        const id = hit?._source?.document?.id;
         const title = hit?._source?.document?.metadata?.title;
         const decoderRefs = hit?._source?.document?.decoders;
         const decoderList = Array.isArray(decoderRefs)
@@ -174,8 +182,8 @@ export class DecodersService {
           if (!integrations.has(decoderId)) {
             integrations.set(decoderId, []);
           }
-          if (title && !integrations.get(decoderId)!.includes(title)) {
-            integrations.get(decoderId)!.push(title);
+          if (id && title && !integrations.get(decoderId)!.some((ref) => ref.id === id)) {
+            integrations.get(decoderId)!.push({ id, title });
           }
         });
       });
@@ -210,30 +218,35 @@ export class DecodersService {
       must.push({ term: { 'space.name': space } });
     }
 
-    try {
-      const response = await client('search', {
-        index: CONTENT_INDICES.INTEGRATIONS,
-        body: {
-          size: 10000,
-          query: { bool: { must } },
-          _source: ['document.decoders'],
-        },
-      });
+    return resolveIdsByIntegrationMatch(
+      client,
+      must,
+      'decoders',
+      'DecodersService - fetchDecoderIdsByIntegrationName'
+    );
+  }
 
-      const decoderIds = new Set<string>();
-      (response?.hits?.hits || []).forEach((hit: any) => {
-        (hit._source?.document?.decoders || []).forEach((decoderId: string) =>
-          decoderIds.add(decoderId)
-        );
-      });
-      return Array.from(decoderIds);
-    } catch (error: any) {
-      console.warn(
-        'Security Analytics - DecodersService - fetchDecoderIdsByIntegrationName:',
-        extractErrorMessage(error)
-      );
-      return [];
+  // Wazuh: resolve an Integration dropdown selection (one or more, multiSelect 'or')
+  // to decoder ids via an EXACT name match, space-scoped.
+  private async fetchDecoderIdsByExactIntegrationName(
+    client: any,
+    integrationNames: string[] | undefined,
+    space: string | undefined
+  ): Promise<string[]> {
+    const trimmed = (integrationNames ?? []).map((name) => name.trim()).filter(Boolean);
+    if (!trimmed.length) return [];
+
+    const must: any[] = [{ terms: { 'document.metadata.title': trimmed } }];
+    if (space) {
+      must.push({ term: { 'space.name': space } });
     }
+
+    return resolveIdsByIntegrationMatch(
+      client,
+      must,
+      'decoders',
+      'DecodersService - fetchDecoderIdsByExactIntegrationName'
+    );
   }
 
   searchDecoders = async (
@@ -246,7 +259,16 @@ export class DecodersService {
     try {
       const body = (request.body as any) ?? {};
       const space = (request.query as { space?: string })?.space;
-      const { from = 0, size = 25, sort, query, _source, searchText } = body;
+      const {
+        from = 0,
+        size = 25,
+        sort,
+        query,
+        _source,
+        searchText,
+        status,
+        integrationNames,
+      } = body;
 
       const client = this.getClient(request);
       const { searchFields } = await this.getSpaceFieldCaps(client);
@@ -256,6 +278,18 @@ export class DecodersService {
         space
       );
       const mergedQuery = mergeIdsClause(query, 'document.id', integrationDecoderIds);
+      const hasIntegrationFilter = Boolean(integrationNames?.length);
+      const hasExtraFilters = Boolean(status) || hasIntegrationFilter;
+      const exactIntegrationDecoderIds = hasIntegrationFilter
+        ? await this.fetchDecoderIdsByExactIntegrationName(client, integrationNames, space)
+        : [];
+      // Skip the bool.must/filter wrapping entirely when no filter is selected.
+      const filteredQuery = hasExtraFilters
+        ? applyEntityFilters(mergedQuery ?? { match_all: {} }, {
+            status: status as EntityStatus,
+            integrationIds: hasIntegrationFilter ? exactIntegrationDecoderIds : undefined,
+          })
+        : mergedQuery;
       const searchResponse = await client('search', {
         index: CONTENT_INDICES.DECODERS,
         body: {
@@ -275,18 +309,22 @@ export class DecodersService {
                   ],
                 }
               : _source,
-          query: this.applySpaceFilter(mergedQuery, space, searchFields),
+          query: this.applySpaceFilter(filteredQuery, space, searchFields),
         },
       });
 
       const hits = searchResponse?.hits?.hits ?? [];
       const decoderIds = hits.map((hit: any) => hit._source?.document?.id ?? hit._id);
       const integrationMap = await this.fetchIntegrationMap(client, decoderIds);
-      const items: DecoderItem[] = hits.map((hit: any) => ({
-        id: hit._id,
-        ...hit._source,
-        integrations: integrationMap.get(hit._source?.document?.id ?? hit._id) ?? [],
-      }));
+      const items: DecoderItem[] = hits.map((hit: any) => {
+        const refs = integrationMap.get(hit._source?.document?.id ?? hit._id) ?? [];
+        return {
+          id: hit._id,
+          ...hit._source,
+          integrations: refs.map((ref) => ref.title),
+          integrationRefs: refs,
+        };
+      });
       const total =
         typeof searchResponse?.hits?.total === 'number'
           ? searchResponse.hits.total
@@ -345,10 +383,12 @@ export class DecodersService {
 
       const docId = hit._source?.document?.id ?? hit._id;
       const integrationMap = await this.fetchIntegrationMap(client, [docId]);
+      const refs = integrationMap.get(docId) ?? [];
       const item: DecoderItem = {
         id: hit._id,
         ...hit._source,
-        integrations: integrationMap.get(docId) ?? [],
+        integrations: refs.map((ref) => ref.title),
+        integrationRefs: refs,
       };
 
       return response.custom({

@@ -7,6 +7,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
+  EuiButtonIcon,
+  EuiCallOut,
   EuiConfirmModal,
   EuiContextMenuItem,
   EuiContextMenuPanel,
@@ -18,6 +20,7 @@ import {
   EuiSmallButton,
   EuiSpacer,
   EuiText,
+  EuiToolTip,
 } from '@elastic/eui';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
@@ -27,7 +30,7 @@ import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constant
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
-import { KVDBS_PAGE_SIZE, KVDBS_SEARCH_SCHEMA, KVDBS_SORT_FIELD } from '../utils/constants';
+import { KVDBS_PAGE_SIZE, KVDBS_SORT_FIELD } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
@@ -37,6 +40,18 @@ import {
   DELETE_SELECTED_ACTION,
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
+import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
+import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
+import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
+import {
+  ENTITY_SEARCH_SCHEMA,
+  buildStatusIntegrationFilters,
+  buildStatusIntegrationQueryFromUrl,
+  encodeEnabledValues,
+  encodeMultiValue,
+  getFreeText,
+  getOrSelectedValues,
+} from '../../../utils/entitySearchBarFilters';
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -47,15 +62,35 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [pageIndex, setPageIndex] = useState(0);
+  const urlFilters = useUrlFilterParams(
+    { params: ['query', 'enabled', 'integration', 'page'] },
+    history
+  );
+  const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [searchQuery, setSearchQuery] = useState<any>(null);
+  // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
+  // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
+  // matching the pattern already used by Detectors. Neither `enabled` (unprefixed)
+  // nor `integration` are real KVDB document fields, so both get stripped back out
+  // and resolved to explicit filters in buildQuery below.
+  const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
+  const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
+  // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
+  // field name) so a warning callout can render above the table without
+  // losing the previously applied query/results (see onSearchChange/
+  // renderError below).
+  const [searchError, setSearchError] = useState<any>(null);
+  // Wazuh: the free-text portion of `searchQuery` debounces into `appliedQueryText`
+  // (matching Rules/Decoders) so buildQuery/fetchKVDBs don't fire an ES round-trip
+  // on every keystroke — only status/integration checkboxes apply immediately.
+  const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    onSpaceChange: () => setPageIndex(0),
+    clearParamsOnChange: ['page', 'integration'],
+    history,
   });
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<KVDBItem[]>([]);
@@ -73,22 +108,100 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
   }, []);
 
+  // Wazuh: set before a local write to urlFilters so the resync effect below
+  // doesn't rebuild `searchQuery` from a URL snapshot that can race with it.
+  const skipNextUrlSync = useRef(false);
+
+  // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
+  // integration KVDBs" while already on KVDBs) updates the URL without remounting
+  // this component, so the search bar must resync from the URL-owned value instead
+  // of relying on its mount-time initializer.
+  const isFirstQuerySyncRender = useRef(true);
+  useEffect(() => {
+    if (isFirstQuerySyncRender.current) {
+      isFirstQuerySyncRender.current = false;
+      setSearchQuery(buildQueryFromUrl());
+      return;
+    }
+    if (skipNextUrlSync.current) {
+      skipNextUrlSync.current = false;
+      return;
+    }
+    setSearchQuery(buildQueryFromUrl());
+    setAppliedQueryText(urlFilters.values.query);
+    urlFilters.setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
+
+  // Wazuh: debounce the free-text portion of `searchQuery` into `appliedQueryText`
+  // (used by buildQuery below) — matches Rules/Decoders. Status/integration
+  // checkboxes are read directly off `searchQuery` (selectedStatuses/
+  // selectedIntegrations below) and apply immediately, without this delay.
+  const isFirstSearchRender = useRef(true);
+  useEffect(() => {
+    if (isFirstSearchRender.current) {
+      isFirstSearchRender.current = false;
+      return;
+    }
+    const timeout = setTimeout(() => {
+      const freeText = getFreeText(searchQuery);
+      setAppliedQueryText(freeText);
+      skipNextUrlSync.current = true;
+      urlFilters.setParams({ query: freeText });
+    }, 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getFreeText(searchQuery)]);
+
+  const { options: integrationOptions, loading: integrationOptionsLoading } =
+    useIntegrationSelector({
+      notifications,
+      enabled: true,
+      space: spaceFilter,
+      relatedField: 'kvdbs',
+    });
+
+  const selectedStatuses = useMemo(() => getOrSelectedValues(searchQuery, 'status'), [searchQuery]);
+  const selectedIntegrations = useMemo(
+    () => getOrSelectedValues(searchQuery, 'integration'),
+    [searchQuery]
+  );
+
+  // Wazuh: Status/Integration checkboxes (multiSelect 'or') apply immediately,
+  // unlike the free-text debounce above — matches the Rules/Decoders pattern.
+  const isFirstFilterRender = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
+    }
+    skipNextUrlSync.current = true;
+    urlFilters.setParams({
+      enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
+      integration: selectedIntegrations.length ? encodeMultiValue(selectedIntegrations) : undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatuses.join(','), selectedIntegrations.join(',')]);
+
+  // Wazuh: built from the debounced `appliedQueryText` (not `searchQuery` directly)
+  // so typing doesn't trigger an ES round-trip on every keystroke — status/
+  // integration are read from the live `searchQuery` via selectedStatuses/
+  // selectedIntegrations above, applying immediately. Status and integration
+  // are resolved server-side (see KVDBsService.searchKVDBs, applyEntityFilters),
+  // matching the Rules/Decoders pattern — not composed into the query here.
   const buildQuery = useCallback(() => {
-    let query = searchQuery ? EuiSearchBar.Query.toESQuery(searchQuery) : { match_all: {} };
+    let query = EuiSearchBar.Query.toESQuery(EuiSearchBar.Query.parse(appliedQueryText ?? ''));
     if (!query || Object.keys(query).length === 0) {
       query = { match_all: {} };
     }
 
-    if (spaceFilter) {
-      query = {
-        bool: {
-          must: [query, { term: { 'space.name': spaceFilter } }],
-        },
-      };
-    }
+    return spaceFilter
+      ? { bool: { must: [query], filter: [{ term: { 'space.name': spaceFilter } }] } }
+      : query;
+  }, [appliedQueryText, spaceFilter]);
 
-    return query;
-  }, [searchQuery, spaceFilter]);
+  // Wazuh: both/neither selected => no status filter (matches everything).
+  const appliedStatus = selectedStatuses.length === 1 ? selectedStatuses[0] : undefined;
 
   const fetchKVDBs = useCallback(async () => {
     setLoading(true);
@@ -100,6 +213,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         size: pageSize,
         sort,
         query: buildQuery(),
+        status: appliedStatus,
+        integrationNames: selectedIntegrations.length ? selectedIntegrations : undefined,
+        space: selectedIntegrations.length ? spaceFilter : undefined,
         track_total_hits: true,
         _source: {
           includes: [
@@ -117,7 +233,16 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, sortField, sortDirection, buildQuery]);
+  }, [
+    pageIndex,
+    pageSize,
+    sortField,
+    sortDirection,
+    buildQuery,
+    appliedStatus,
+    selectedIntegrations,
+    spaceFilter,
+  ]);
 
   useEffect(() => {
     fetchKVDBs();
@@ -139,20 +264,42 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   });
 
   const onTableChange = ({ page, sort }: any) => {
-    if (page) {
-      setPageIndex(page.index);
-      setPageSize(page.size);
-    }
-
-    if (sort) {
+    // Wazuh: EuiBasicTable reports the current sort criteria on every onChange call
+    // (including plain pagination clicks), not only when it actually changes — guard
+    // on an actual change so paging doesn't get silently reset back to page 1.
+    if (sort && (sort.field !== sortField || sort.direction !== sortDirection)) {
       setSortField(sort.field || KVDBS_SORT_FIELD);
       setSortDirection(sort.direction || 'asc');
+      urlFilters.setPage(1);
+    }
+
+    if (page) {
+      urlFilters.setPage(page.index + 1);
+      setPageSize(page.size);
     }
   };
 
-  const onSearchChange = ({ query }: { query: any }) => {
+  // Wazuh: URL writes for 'query' (debounced) and 'enabled'/'integration'
+  // (immediate) happen in the effects above, reacting to this state change —
+  // matches the Rules/Decoders pattern.
+  const onSearchChange = ({ query, error }: { query: any; error: any }) => {
+    setSearchError(error ?? null);
+    if (!query) return;
     setSearchQuery(query);
-    setPageIndex(0);
+  };
+
+  const renderError = () => {
+    if (!searchError) return undefined;
+    return (
+      <>
+        <EuiCallOut
+          color="warning"
+          title={`Invalid search: ${searchError.message}`}
+          data-test-subj="entitySearchErrorCallOut"
+        />
+        <EuiSpacer size="l" />
+      </>
+    );
   };
 
   const pagination = useMemo(
@@ -220,7 +367,14 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         field: 'integration.title',
         name: 'Integration',
         dataType: 'string',
-        render: (value: string) => formatCellValue(value),
+        render: (value: string, item: KVDBItem) => (
+          <IntegrationCell
+            name={value || ''}
+            integrationId={item.integration?.id}
+            space={spaceFilter}
+            currentEntity="kvdbs"
+          />
+        ),
       },
       {
         field: 'document.metadata.author',
@@ -343,23 +497,35 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
               <EuiSearchBar
+                // Wazuh: remount once Integration options load, or the filter badge
+                // can stick at "0 selected" until the popover is opened once.
+                key={integrationOptionsLoading ? 'loading' : 'loaded'}
+                query={searchQuery}
                 box={{
                   placeholder: 'Search KVDBs',
                   incremental: true,
                   compressed: true,
-                  schema: true,
+                  schema: ENTITY_SEARCH_SCHEMA,
                 }}
-                schema={KVDBS_SEARCH_SCHEMA}
+                filters={buildStatusIntegrationFilters(
+                  integrationOptions,
+                  integrationOptionsLoading
+                )}
                 onChange={onSearchChange}
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiSmallButton iconType="refresh" onClick={fetchKVDBs}>
-                Refresh
-              </EuiSmallButton>
+              <EuiToolTip content="Refresh">
+                <EuiButtonIcon
+                  iconType="refresh"
+                  aria-label="Refresh KVDBs"
+                  onClick={() => fetchKVDBs()}
+                />
+              </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="m" />
+          {renderError()}
           <EuiBasicTable
             items={items}
             columns={columns}

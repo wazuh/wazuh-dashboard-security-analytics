@@ -19,10 +19,44 @@ import {
   UpdateKVDBPayload,
 } from '../../types';
 import { CLIENT_KVDB_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { buildYamlBody, extractErrorMessage } from '../utils/helpers';
+import { applyEntityFilters, buildYamlBody, extractErrorMessage } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 
 export class KVDBsService extends MDSEnabledClientService {
+  // Wazuh: resolve one or more integration names (multiSelect 'or') to their KVDB
+  // ids, space-scoped, via an EXACT terms match on document.metadata.title (a
+  // keyword-mapped field). Mirrors WazuhRuleService/DecodersService's equivalent
+  // resolvers — same server-side, single-round-trip pattern as the Rules/Decoders
+  // Integration filter.
+  private async resolveKVDBIdsByIntegrationNames(
+    client: any,
+    integrationNames: string[] | undefined,
+    space: string | undefined
+  ): Promise<string[]> {
+    const trimmed = (integrationNames ?? []).map((name) => name.trim()).filter(Boolean);
+    if (!trimmed.length) return [];
+
+    const must: any[] = [{ terms: { 'document.metadata.title': trimmed } }];
+    if (space) {
+      must.push({ term: { 'space.name': space } });
+    }
+
+    const searchResponse: any = await client('search', {
+      index: CONTENT_INDICES.INTEGRATIONS,
+      body: {
+        size: 10000,
+        query: { bool: { must } },
+        _source: ['document.kvdbs'],
+      },
+    });
+
+    const kvdbIds = new Set<string>();
+    (searchResponse?.hits?.hits || []).forEach((hit: any) => {
+      (hit._source?.document?.kvdbs || []).forEach((kvdbId: string) => kvdbIds.add(kvdbId));
+    });
+    return Array.from(kvdbIds);
+  }
+
   searchKVDBs = async (
     context: RequestHandlerContext,
     request: OpenSearchDashboardsRequest<unknown, unknown, KVDBSearchRequest>,
@@ -30,10 +64,26 @@ export class KVDBsService extends MDSEnabledClientService {
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<KVDBSearchResponse> | ResponseError>> => {
     try {
       const body = request.body ?? { query: { match_all: {} } };
+      const { integrationNames, space, status, ...searchBody } = body;
       const client = this.getClient(request, context);
+
+      const integrationIds = integrationNames?.length
+        ? await this.resolveKVDBIdsByIntegrationNames(client, integrationNames, space)
+        : undefined;
+
+      // Wazuh: skip the bool.must/filter wrapping entirely when no status/
+      // integration filter is active, so the emitted query matches the
+      // pre-filters shape exactly (mirrors WazuhRuleService/DecodersService).
+      // applyEntityFilters/buildStatusFilter also correctly treats a missing
+      // document.enabled as enabled, unlike a hand-built { term: { 'document.enabled' } }.
+      const query =
+        status || integrationIds
+          ? applyEntityFilters(searchBody.query ?? { match_all: {} }, { status, integrationIds })
+          : searchBody.query;
+
       const searchResponse: KVDBSearchResponse = await client('search', {
         index: CONTENT_INDICES.KVDBS,
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...searchBody, query }),
       });
 
       return response.custom({

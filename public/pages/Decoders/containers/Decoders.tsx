@@ -10,10 +10,11 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
-  EuiFieldSearch,
+  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
+  EuiSearchBar,
   EuiSpacer,
   EuiText,
   EuiToolTip,
@@ -39,6 +40,20 @@ import {
   DELETE_SELECTED_ACTION,
   useDeleteItems,
 } from '../../../hooks/useDeleteItems';
+import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
+import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
+import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
+import {
+  buildStatusIntegrationFilters,
+  buildStatusIntegrationQueryFromUrl,
+  decodeEnabledValues,
+  decodeMultiValue,
+  encodeEnabledValues,
+  encodeMultiValue,
+  ENTITY_SEARCH_SCHEMA,
+  getFreeText,
+  getOrSelectedValues,
+} from '../../../utils/entitySearchBarFilters';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -52,15 +67,42 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState('');
-  const [pageIndex, setPageIndex] = useState(0);
+  const urlFilters = useUrlFilterParams(
+    { params: ['query', 'enabled', 'integration', 'page'] },
+    history
+  );
+  // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
+  // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
+  // matching the pattern already used by Detectors. `appliedQueryText`/
+  // `appliedStatus`/`appliedIntegrationNames` are what actually drives the fetch:
+  // free text debounces like before, filter checkboxes apply immediately.
+  const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
+  const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
+  // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
+  // field name) so the table can be replaced by a callout without losing the
+  // previously applied query/results (see onSearchChange/renderError below).
+  const [searchError, setSearchError] = useState<any>(null);
+  const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
+  const [appliedStatus, setAppliedStatus] = useState<'enabled' | 'disabled' | undefined>(() => {
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    return statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined;
+  });
+  const [appliedIntegrationNames, setAppliedIntegrationNames] = useState<string[]>(() =>
+    decodeMultiValue(urlFilters.values.integration)
+  );
+  const selectedStatuses = useMemo(() => getOrSelectedValues(searchQuery, 'status'), [searchQuery]);
+  const selectedIntegrations = useMemo(
+    () => getOrSelectedValues(searchQuery, 'integration'),
+    [searchQuery]
+  );
+  const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('document.name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    onSpaceChange: () => setPageIndex(0),
+    clearParamsOnChange: ['page', 'integration'],
+    history,
   });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedDecoder, setSelectedDecoder] = useState<{
@@ -79,18 +121,77 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.DECODERS]);
   }, []);
 
+  // Wazuh: set before a local write to urlFilters so the resync effect below
+  // doesn't rebuild `searchQuery` from a URL snapshot that can race with it.
+  const skipNextUrlSync = useRef(false);
+
+  const isFirstSearchRender = useRef(true);
   useEffect(() => {
+    if (isFirstSearchRender.current) {
+      isFirstSearchRender.current = false;
+      return;
+    }
     const timeout = setTimeout(() => {
-      setAppliedSearch(searchText);
-      setPageIndex(0);
+      const freeText = getFreeText(searchQuery);
+      setAppliedQueryText(freeText);
+      // 'query' is in resetPageOn, so this alone already resets the page.
+      skipNextUrlSync.current = true;
+      urlFilters.setParams({ query: freeText });
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [searchText]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getFreeText(searchQuery)]);
+
+  // Wazuh: Status/Integration checkboxes (multiSelect 'or') apply immediately,
+  // unlike the free-text debounce above — matches the Detectors filter pattern.
+  const isFirstFilterRender = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
+    }
+    setAppliedStatus(
+      selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
+    );
+    setAppliedIntegrationNames(selectedIntegrations);
+    // 'enabled'/'integration' are also in resetPageOn — same reasoning as above.
+    skipNextUrlSync.current = true;
+    urlFilters.setParams({
+      enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
+      integration: selectedIntegrations.length ? encodeMultiValue(selectedIntegrations) : undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatuses.join(','), selectedIntegrations.join(',')]);
+
+  // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
+  // integration decoders" while already on Decoders) updates the URL without
+  // remounting this component, so the search bar must resync from the URL-owned
+  // value instead of relying on its mount-time initializer.
+  useEffect(() => {
+    if (skipNextUrlSync.current) {
+      skipNextUrlSync.current = false;
+      return;
+    }
+    setSearchQuery(buildQueryFromUrl());
+    setAppliedQueryText(urlFilters.values.query);
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
+    setAppliedIntegrationNames(decodeMultiValue(urlFilters.values.integration));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
+
+  const { options: integrationOptions, loading: integrationOptionsLoading } =
+    useIntegrationSelector({
+      notifications,
+      enabled: true,
+      space: spaceFilter,
+      relatedField: 'decoders',
+    });
 
   const loadDecoders = useCallback(async () => {
     setLoading(true);
-    const query = buildDecodersSearchQuery(appliedSearch);
+    const query = buildDecodersSearchQuery(appliedQueryText);
     const sort = sortField
       ? [
           {
@@ -107,7 +208,9 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         size: pageSize,
         sort,
         query,
-        searchText: appliedSearch,
+        searchText: appliedQueryText,
+        status: appliedStatus,
+        integrationNames: appliedIntegrationNames.length ? appliedIntegrationNames : undefined,
         _source: {
           includes: [
             'document.id',
@@ -128,7 +231,16 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     setDecoders(response.items);
     setTotal(response.total);
     setLoading(false);
-  }, [appliedSearch, pageIndex, pageSize, spaceFilter, sortField, sortDirection]);
+  }, [
+    appliedQueryText,
+    pageIndex,
+    pageSize,
+    spaceFilter,
+    sortField,
+    sortDirection,
+    appliedStatus,
+    appliedIntegrationNames,
+  ]);
 
   useEffect(() => {
     loadDecoders();
@@ -150,13 +262,17 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   });
 
   const onTableChange = ({ page, sort }: { page: any; sort?: any }) => {
-    if (page) {
-      setPageIndex(page.index);
-      setPageSize(page.size);
-    }
-    if (sort) {
+    // Wazuh: EuiBasicTable reports the current sort criteria on every onChange call
+    // (including plain pagination clicks), not only when it actually changes — guard
+    // on an actual change so paging doesn't get silently reset back to page 1.
+    if (sort && (sort.field !== sortField || sort.direction !== sortDirection)) {
       setSortField(sort.field);
       setSortDirection(sort.direction);
+      urlFilters.setPage(1);
+    }
+    if (page) {
+      urlFilters.setPage(page.index + 1);
+      setPageSize(page.size);
     }
   };
 
@@ -176,6 +292,14 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       {
         field: 'integrations',
         name: 'Integration',
+        render: (integrations: string[], item: DecoderItem) => (
+          <IntegrationCell
+            name={integrations?.[0] || ''}
+            integrationId={item.integrationRefs?.[0]?.id}
+            space={spaceFilter}
+            currentEntity="decoders"
+          />
+        ),
       },
       {
         field: 'document.metadata.author',
@@ -261,6 +385,59 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     </EuiContextMenuItem>,
   ];
 
+  // Wazuh: EuiSearchBar only emits `query` when parsing succeeds — on a
+  // strict-schema parse error `query` is undefined, so `searchQuery` (and thus
+  // the previously loaded decoders) is left untouched; only the callout shows.
+  const onSearchChange = ({ query, error }: { query: any; error: any }) => {
+    setSearchError(error ?? null);
+    if (!query) return;
+    setSearchQuery(query);
+  };
+
+  const renderError = () => {
+    if (!searchError) return undefined;
+    return (
+      <>
+        <EuiCallOut
+          color="warning"
+          title={`Invalid search: ${searchError.message}`}
+          data-test-subj="entitySearchErrorCallOut"
+        />
+        <EuiSpacer size="l" />
+      </>
+    );
+  };
+
+  // Wazuh: the callout renders ABOVE the table, it does not replace it — the
+  // last successfully loaded decoders stay visible while a parse error shows.
+  const renderTable = () => (
+    <EuiBasicTable
+      items={decoders}
+      columns={columns}
+      loading={loading || isDeleting}
+      pagination={{
+        pageIndex,
+        pageSize,
+        totalItemCount: total,
+        pageSizeOptions: [10, 25, 50],
+      }}
+      sorting={{ sort: { field: sortField, direction: sortDirection } }}
+      onChange={onTableChange}
+      itemId="id"
+      selection={{
+        selectable: () => true,
+        onSelectionChange: setSelectedItems,
+      }}
+    />
+  );
+
+  const content = (
+    <>
+      {renderError()}
+      {renderTable()}
+    </>
+  );
+
   const handlerShowActionsButton = () => setIsPopoverOpen((prevState) => !prevState);
 
   const actionsButton = (
@@ -344,13 +521,22 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         <EuiPanel>
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
-              <EuiFieldSearch
-                fullWidth
-                placeholder="Search decoders"
-                value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
-                isClearable
-                aria-label="Search decoders"
+              <EuiSearchBar
+                // Wazuh: remount once Integration options load, or the filter badge
+                // can stick at "0 selected" until the popover is opened once.
+                key={integrationOptionsLoading ? 'loading' : 'loaded'}
+                query={searchQuery}
+                box={{
+                  placeholder: 'Search decoders',
+                  incremental: true,
+                  compressed: true,
+                  schema: ENTITY_SEARCH_SCHEMA,
+                }}
+                filters={buildStatusIntegrationFilters(
+                  integrationOptions,
+                  integrationOptionsLoading
+                )}
+                onChange={onSearchChange}
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
@@ -364,24 +550,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="m" />
-          <EuiBasicTable
-            items={decoders}
-            columns={columns}
-            loading={loading || isDeleting}
-            pagination={{
-              pageIndex,
-              pageSize,
-              totalItemCount: total,
-              pageSizeOptions: [10, 25, 50],
-            }}
-            sorting={{ sort: { field: sortField, direction: sortDirection } }}
-            onChange={onTableChange}
-            itemId="id"
-            selection={{
-              selectable: () => true,
-              onSelectionChange: setSelectedItems,
-            }}
-          />
+          {content}
         </EuiPanel>
       </EuiFlexItem>
     </EuiFlexGroup>

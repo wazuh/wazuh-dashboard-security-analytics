@@ -46,6 +46,7 @@ export const API: SecurityAnalyticsApi = {
   DECODERS_BASE: `${BASE_API_PATH}/decoders`,
   POLICIES_BASE: `${BASE_API_PATH}/policies`,
   SPACES_BASE: `${BASE_API_PATH}/spaces`,
+  COUNT_DETECTORS_BY_INTEGRATION: `${BASE_API_PATH}/detectors/_count_by_integration`,
 };
 
 /**
