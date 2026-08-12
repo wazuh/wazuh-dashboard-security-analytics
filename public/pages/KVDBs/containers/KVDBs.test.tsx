@@ -6,7 +6,18 @@
 import React from 'react';
 import { act } from '@testing-library/react';
 import { mount } from 'enzyme';
+import { EuiSearchBar } from '@elastic/eui';
 import { KVDBs } from './KVDBs';
+import { setupCoreStart } from '../../../../test/utils/helpers';
+
+// Wazuh: a real parsed Query (not a plain `{}`) — `getFreeText`/the debounce
+// effect call `query.ast.getTermClauses()`, which only a genuine EuiSearchBar
+// Query provides.
+const VALID_QUERY = EuiSearchBar.Query.parse('');
+
+beforeAll(() => {
+  setupCoreStart();
+});
 
 jest.mock('../../../store/DataStore', () => ({
   DataStore: {
@@ -93,7 +104,7 @@ describe('<KVDBs /> search bar strict schema', () => {
     await triggerSearchChange(wrapper, { error: { message: 'Unable to parse query' } });
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBeGreaterThan(0);
 
-    await triggerSearchChange(wrapper, { query: {}, error: undefined });
+    await triggerSearchChange(wrapper, { query: VALID_QUERY, error: undefined });
 
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
     expect(wrapper.find('EuiBasicTable').length).toBeGreaterThan(0);
@@ -101,7 +112,7 @@ describe('<KVDBs /> search bar strict schema', () => {
 
   it('regression: a recognized field with an unrecognized value does not trigger the callout', async () => {
     const wrapper = await mountKVDBs();
-    await triggerSearchChange(wrapper, { query: {}, error: undefined });
+    await triggerSearchChange(wrapper, { query: VALID_QUERY, error: undefined });
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
   });
 });

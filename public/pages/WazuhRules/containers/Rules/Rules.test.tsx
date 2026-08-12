@@ -6,14 +6,35 @@
 import React from 'react';
 import { act } from '@testing-library/react';
 import { mount } from 'enzyme';
+import { EuiSearchBar } from '@elastic/eui';
 import { Rules } from './Rules';
+import { setupCoreStart } from '../../../../../test/utils/helpers';
+
+// Wazuh: a real parsed Query (not a plain `{}`) — `getFreeText`/the debounce
+// effect call `query.ast.getTermClauses()`, which only a genuine EuiSearchBar
+// Query provides.
+const VALID_QUERY = EuiSearchBar.Query.parse('');
+
+beforeAll(() => {
+  setupCoreStart();
+});
+
+// Wazuh: this suite's global `useContext` mock (see test/setup.jest.ts) makes
+// react-router's raw `useHistory()`/`useLocation()` resolve incorrectly — see
+// the identical note in useUrlFilterParams.ts. `useUrlParamItem` (used here
+// only for the rule-details flyout's `ruleId` URL param) calls `useHistory()`
+// directly, so it's mocked out; it isn't what these search-bar tests exercise.
+jest.mock('../../../../hooks/useUrlParamItem', () => ({
+  useUrlParamItem: () => ({ paramId: null, setParam: jest.fn(), clearParam: jest.fn() }),
+}));
 
 jest.mock('../../../../store/DataStore', () => ({
   DataStore: {
     rules: {
-      searchRules: jest
-        .fn()
-        .mockResolvedValue({ items: [{ _id: '1', _source: { enabled: true } }], total: 1 }),
+      searchRules: jest.fn().mockResolvedValue({
+        items: [{ _id: '1', _source: { enabled: true, level: 'medium' } }],
+        total: 1,
+      }),
       deleteRule: jest.fn(),
     },
     integrations: {
@@ -95,7 +116,7 @@ describe('<Rules /> search bar strict schema', () => {
     await triggerSearchChange(wrapper, { error: { message: 'Unable to parse query' } });
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBeGreaterThan(0);
 
-    await triggerSearchChange(wrapper, { query: {}, error: undefined });
+    await triggerSearchChange(wrapper, { query: VALID_QUERY, error: undefined });
 
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
     expect(wrapper.find('EuiBasicTable').length).toBeGreaterThan(0);
@@ -103,7 +124,7 @@ describe('<Rules /> search bar strict schema', () => {
 
   it('regression: a recognized field with an unrecognized value does not trigger the callout', async () => {
     const wrapper = await mountRules();
-    await triggerSearchChange(wrapper, { query: {}, error: undefined });
+    await triggerSearchChange(wrapper, { query: VALID_QUERY, error: undefined });
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
   });
 });
