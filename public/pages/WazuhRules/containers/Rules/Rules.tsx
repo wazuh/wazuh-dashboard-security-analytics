@@ -11,6 +11,7 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
+  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
@@ -52,6 +53,7 @@ import {
   decodeMultiValue,
   encodeEnabledValues,
   encodeMultiValue,
+  ENTITY_SEARCH_SCHEMA,
   getFreeText,
   getOrSelectedValues,
 } from '../../../../utils/entitySearchBarFilters';
@@ -97,6 +99,11 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   // free text debounces like before, filter checkboxes apply immediately.
   const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
   const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
+  // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
+  // field name) so a danger callout can render above the table without
+  // losing the previously applied query/results (see onSearchChange/
+  // renderError below).
+  const [searchError, setSearchError] = useState<any>(null);
   const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
   const [appliedStatus, setAppliedStatus] = useState<'enabled' | 'disabled' | undefined>(() => {
     const statuses = decodeEnabledValues(urlFilters.values.enabled);
@@ -288,6 +295,29 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const hideFlyout = (refreshRules?: boolean) => {
     clearParam();
     if (refreshRules) loadRules();
+  };
+
+  // Wazuh: EuiSearchBar only emits `query` when parsing succeeds — on a
+  // strict-schema parse error `query` is undefined, so `searchQuery` (and thus
+  // the previously loaded rules) is left untouched; only the callout shows.
+  const onSearchChange = ({ query, error }: { query: any; error: any }) => {
+    setSearchError(error ?? null);
+    if (!query) return;
+    setSearchQuery(query);
+  };
+
+  const renderError = () => {
+    if (!searchError) return undefined;
+    return (
+      <>
+        <EuiCallOut
+          color="danger"
+          title={`Invalid search: ${searchError.message}`}
+          data-test-subj="entitySearchErrorCallOut"
+        />
+        <EuiSpacer size="l" />
+      </>
+    );
   };
 
   const columns: Array<EuiBasicTableColumn<RuleTableItem>> = useMemo(
@@ -502,12 +532,14 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                   placeholder: 'Search rules',
                   incremental: true,
                   compressed: true,
+                  schema: true,
                 }}
+                schema={ENTITY_SEARCH_SCHEMA}
                 filters={buildStatusIntegrationFilters(
                   integrationOptions,
                   integrationOptionsLoading
                 )}
-                onChange={({ query }) => query && setSearchQuery(query)}
+                onChange={onSearchChange}
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
@@ -521,6 +553,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="m" />
+          {renderError()}
           <EuiBasicTable
             items={allRules}
             columns={columns}
