@@ -50,6 +50,8 @@ export interface IntegrationProps extends RouteComponentProps {
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
   const isMountedRef = useRef(true);
   const { integrationId } = useParams<{ integrationId: string }>();
+  const location = useLocation();
+  const spaceParam = new URLSearchParams(location.search).get('space') ?? undefined;
   const [selectedTabId, setSelectedTabId] = useState<string>(INTEGRATION_DETAILS_TAB.DETAILS);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
@@ -77,7 +79,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
 
   useEffect(() => {
     const getIntegrationDetails = async () => {
-      const details = await DataStore.integrations.getIntegration(integrationId);
+      const details = await DataStore.integrations.getIntegration(integrationId, spaceParam);
 
       if (!isMountedRef.current) {
         return;
@@ -100,7 +102,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     };
 
     getIntegrationDetails();
-  }, [integrationId]);
+  }, [integrationId, spaceParam]);
 
   const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
   const decoderIds = useMemo(
