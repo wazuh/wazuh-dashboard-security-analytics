@@ -88,6 +88,12 @@ export const buildStatusFilter = (status?: EntityStatus): any | undefined => {
       },
     };
   }
+  if (status) {
+    // Wazuh: an unrecognized status value is still an active filter — it must
+    // match zero entities (mirrors the integration filter's empty-ids => zero-results
+    // behavior), not silently fall back to unfiltered.
+    return { bool: { must_not: { match_all: {} } } };
+  }
   return undefined;
 };
 

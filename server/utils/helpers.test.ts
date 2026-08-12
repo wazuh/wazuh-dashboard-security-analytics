@@ -63,8 +63,10 @@ describe('mergeIdsClause', () => {
 });
 
 describe('buildStatusFilter', () => {
-  it('returns undefined for an unrecognized status value', () => {
-    expect(buildStatusFilter('bogus' as any)).toBeUndefined();
+  it('matches zero entities for an unrecognized status value, instead of silently skipping the filter', () => {
+    expect(buildStatusFilter('bogus' as any)).toEqual({
+      bool: { must_not: { match_all: {} } },
+    });
   });
 
   it('returns undefined when status is not provided', () => {
@@ -151,5 +153,11 @@ describe('applyEntityFilters', () => {
     const query = { match_all: {} };
     const result = applyEntityFilters(query, { integrationIds: [] });
     expect(result.bool.filter).toEqual([{ terms: { 'document.id': [] } }]);
+  });
+
+  it('adds a matches-nothing clause for an unrecognized status value, instead of silently skipping the filter', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'bogus' as any });
+    expect(result.bool.filter).toEqual([{ bool: { must_not: { match_all: {} } } }]);
   });
 });
