@@ -3,7 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { buildStatusIntegrationFilters } from './entitySearchBarFilters';
+import {
+  buildEntitySearchSchema,
+  buildStatusIntegrationFilters,
+  ENTITY_SEARCH_SCHEMA,
+} from './entitySearchBarFilters';
 import { IntegrationOption } from '../components/IntegrationComboBox/useIntegrationSelector';
 
 describe('buildStatusIntegrationFilters', () => {
@@ -75,5 +79,40 @@ describe('buildStatusIntegrationFilters', () => {
       { value: 'active', name: 'Active' },
       { value: 'inactive', name: 'Inactive' },
     ]);
+  });
+});
+
+describe('ENTITY_SEARCH_SCHEMA', () => {
+  it('is strict and declares exactly status/integration as string fields', () => {
+    expect(ENTITY_SEARCH_SCHEMA).toEqual({
+      strict: true,
+      fields: {
+        status: { type: 'string' },
+        integration: { type: 'string' },
+      },
+    });
+  });
+});
+
+describe('buildEntitySearchSchema', () => {
+  it('returns the base schema (strict, status/integration only) when called without extra fields', () => {
+    expect(buildEntitySearchSchema()).toEqual(ENTITY_SEARCH_SCHEMA);
+  });
+
+  it('merges extra fields while keeping strict:true and the base status/integration fields', () => {
+    const schema = buildEntitySearchSchema({
+      'document.metadata.title': { type: 'string' },
+      'document.id': { type: 'string' },
+    });
+
+    expect(schema).toEqual({
+      strict: true,
+      fields: {
+        status: { type: 'string' },
+        integration: { type: 'string' },
+        'document.metadata.title': { type: 'string' },
+        'document.id': { type: 'string' },
+      },
+    });
   });
 });

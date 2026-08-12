@@ -138,6 +138,24 @@ export const buildStatusIntegrationFilters = (
   ] as FieldValueSelectionFilterConfigType[];
 };
 
+// Wazuh: strict schema so unrecognized field names (e.g. `pepo:pepe`) raise a
+// parse error instead of being silently dropped. Only status/integration are
+// declared — the fields Rules/Decoders actually parse. No `validate()`:
+// unrecognized values (e.g. `status:pepo`) stay a server-side no-match.
+export const ENTITY_SEARCH_SCHEMA = {
+  strict: true,
+  fields: {
+    status: { type: 'string' },
+    integration: { type: 'string' },
+  },
+};
+
+// Wazuh: lets KVDBs add its own declared fields on top of the shared schema.
+export const buildEntitySearchSchema = (extraFields: Record<string, { type: string }> = {}) => ({
+  strict: true,
+  fields: { ...ENTITY_SEARCH_SCHEMA.fields, ...extraFields },
+});
+
 // Wazuh: `Query.text` re-prints the WHOLE ast — including `field:(value)` filter
 // clauses — back into query syntax, it is NOT just what the user typed in the free
 // text box. Use this instead wherever "the typed search text" (as opposed to the
