@@ -12,13 +12,17 @@
 export interface InMemoryUrlFilterValues {
   query: string;
   status: string;
+  [field: string]: string;
 }
 
 // Wazuh: a multiSelect 'or' field_value_selection filter with 2+ values renders as
 // "field:(a or b)" (with spaces inside the parens), not "field:a" — the token must
 // match the whole parenthesized group, not stop at the first whitespace.
+// Wazuh: EUI's resolveOperator serializes the default EQ operator as "field:value"
+// but the 'exact' operator (used by the Status filter on Detectors/Integrations)
+// as "field=value" — accept either delimiter so both forms are split correctly.
 const buildStatusTokenRegex = (field: string) =>
-  new RegExp(`(?:^|\\s)${field}:(\\([^)]*\\)|\\S+)`, 'i');
+  new RegExp(`(?:^|\\s)${field}[:=](\\([^)]*\\)|\\S+)`, 'i');
 
 // Wazuh: normalize a matched token ("(enabled or disabled)" or "enabled") into the
 // same comma-joined shape the server-paginated tables persist for multi-select
@@ -51,6 +55,11 @@ export const splitStatusFromQueryText = (
 // Wazuh: inverse of splitStatusFromQueryText — recombine query + status into the
 // text EuiSearchBar.Query.parse expects, to seed `search.defaultQuery` on mount.
 // `status` may be a single value or a comma-joined list (multiSelect 'or').
+// Wazuh: must emit the "=" delimiter, matching the 'exact' operator the Status
+// filter is configured with — EUI's Query.parse re-resolves this token using the
+// filter's configured operator regardless of delimiter, but keeping it consistent
+// with what EUI itself serializes (field=value for 'exact') avoids producing a
+// query string that looks inconsistent with what the search bar would generate.
 export const buildQueryTextWithStatus = (
   query: string,
   status: string,
@@ -64,21 +73,29 @@ export const buildQueryTextWithStatus = (
     : [];
   const token =
     values.length > 1
-      ? `${field}:(${values.join(' or ')})`
+      ? `${field}=(${values.join(' or ')})`
       : values.length === 1
-      ? `${field}:${values[0]}`
+      ? `${field}=${values[0]}`
       : '';
   return [query, token].filter(Boolean).join(' ').trim();
 };
 
-// Wazuh: read query/status directly from a `history.location.search` string,
-// without needing react-router hooks/context.
-export const readInMemoryUrlFilterValues = (search: string): InMemoryUrlFilterValues => {
+// Wazuh: read query/status (plus any additional named fields, e.g. 'category',
+// 'space') directly from a `history.location.search` string, without needing
+// react-router hooks/context.
+export const readInMemoryUrlFilterValues = (
+  search: string,
+  extraFields: string[] = []
+): InMemoryUrlFilterValues => {
   const params = new URLSearchParams(search);
-  return {
+  const values: InMemoryUrlFilterValues = {
     query: params.get('query') ?? '',
     status: params.get('status') ?? '',
   };
+  extraFields.forEach((field) => {
+    values[field] = params.get(field) ?? '';
+  });
+  return values;
 };
 
 // Wazuh: write query/status into `history`, preserving every other param (e.g.

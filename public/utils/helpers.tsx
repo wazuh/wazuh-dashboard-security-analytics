@@ -466,6 +466,35 @@ export function getLogTypeFilterOptions() {
   return options;
 }
 
+// Wazuh: flat variant of getLogTypeFilterOptions() — plain `{ value, name }` options
+// with no category grouping/indentation, matching the shape
+// buildStatusIntegrationFilters()'s default Integration options use for
+// Rules/Decoders/KVDBs, so the Detectors Integration filter popover renders as a
+// flat list of names instead of a grouped/indented one. Only used by Detectors'
+// Integration filter — getLogTypeFilterOptions() above is left untouched for its
+// other consumers (e.g. Correlations), which still want the grouped display.
+export function getLogTypeFilterOptionsFlat(): { value: string; name: string }[] {
+  const options: { value: string; name: string }[] = [];
+  const seenValues = new Set<string>();
+  formatToLogTypeOptions(logTypesByCategories).forEach((categoryData) => {
+    const logTypes = categoryData.options;
+
+    for (let i = 0; i < logTypes.length; i++) {
+      const entry = logTypes[i];
+      if (seenValues.has(entry.value)) {
+        continue;
+      }
+      seenValues.add(entry.value);
+      options.push({
+        value: entry.value,
+        name: getLogTypeLabel(entry.label),
+      });
+    }
+  });
+
+  return options;
+}
+
 export function getLogTypeCategoryOptions(): any[] {
   return logTypeCategoryDescription.map(({ name, description }) => ({
     value: name,

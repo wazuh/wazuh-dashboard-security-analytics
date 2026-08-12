@@ -92,9 +92,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [isOverviewActionsOpen, setIsOverviewActionsOpen] = useState<boolean>(false);
   const [isClearingSpace, setIsClearingSpace] = useState<boolean>(false);
   const [isDeletingSelected, setIsDeletingSelected] = useState<boolean>(false);
-  // Wazuh: query/status persisted in the URL (no 'page' — Integrations is an
+  // Wazuh: query/status/category persisted in the URL (no 'page' — Integrations is an
   // in-memory table, per the no-goal boundary).
-  const [urlFilters] = useState(() => readInMemoryUrlFilterValues(history.location.search));
+  const [urlFilters] = useState(() =>
+    readInMemoryUrlFilterValues(history.location.search, ['category'])
+  );
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading || isClearingSpace,
   });
@@ -114,6 +116,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     const params = new URLSearchParams(history.location.search);
     params.delete('query');
     params.delete('status');
+    params.delete('category');
     const search = params.toString();
     history.replace(path + (search ? `?${search}` : ''));
   };
@@ -640,11 +643,21 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             search={{
               ...getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] }),
               defaultQuery: EuiSearchBar.Query.parse(
-                buildQueryTextWithStatus(urlFilters.query, urlFilters.status)
+                buildQueryTextWithStatus(
+                  buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
+                  urlFilters.category,
+                  'category'
+                )
               ),
               onChange: ({ query }: { query: any }) => {
-                const { query: freeText, status } = splitStatusFromQueryText(query?.text ?? '');
-                writeInMemoryUrlFilterValues(history, { query: freeText, status });
+                const { query: withoutStatus, status } = splitStatusFromQueryText(
+                  query?.text ?? ''
+                );
+                const { query: freeText, status: category } = splitStatusFromQueryText(
+                  withoutStatus,
+                  'category'
+                );
+                writeInMemoryUrlFilterValues(history, { query: freeText, status, category });
                 return true;
               },
             }}

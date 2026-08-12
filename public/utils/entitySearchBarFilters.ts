@@ -4,7 +4,10 @@
  */
 
 import { EuiSearchBar } from '@elastic/eui';
-import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
+import {
+  FieldValueOptionType,
+  FieldValueSelectionFilterConfigType,
+} from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { IntegrationOption } from '../components/IntegrationComboBox/useIntegrationSelector';
 
 type Query = ReturnType<typeof EuiSearchBar.Query.parse>;
@@ -70,14 +73,42 @@ export const buildStatusIntegrationQueryFromUrl = (values: {
     { field: 'integration', values: decodeMultiValue(values.integration) },
   ]);
 
+// Wazuh: overrides letting non-Rules/Decoders/KVDBs consumers (e.g. Detectors)
+// reuse this helper for their own Integration filter without inheriting the
+// Enabled/Disabled Status semantics — see StatusIntegrationFilterOverrides.
+export interface StatusIntegrationFilterOverrides {
+  /** Field the Integration filter targets. Default: 'integration' (used by Rules/Decoders/KVDBs/Detectors). */
+  integrationField?: string;
+  /** Status filter options. Default: Enabled/Disabled. */
+  statusOptions?: FieldValueOptionType[];
+  /**
+   * Ready-made Integration options; supersedes `integrationOptions` entirely.
+   * Needed for consumers (e.g. Detectors' `getLogTypeFilterOptionsFlat()`) whose
+   * options are not the `{ value, label }` IntegrationOption shape.
+   */
+  integrationFilterOptions?: FieldValueOptionType[];
+}
+
 // Wazuh: the Status/Integration `field_value_selection` EuiSearchBar filter config,
 // shared by Rules/Decoders/KVDBs — identical across all three except the
-// Integration options themselves.
+// Integration options themselves. `overrides` lets other consumers (e.g.
+// Detectors) reuse the Integration half with a different field name/options
+// without pulling in the Enabled/Disabled Status semantics.
 export const buildStatusIntegrationFilters = (
   integrationOptions: IntegrationOption[],
-  integrationOptionsLoading: boolean
-): FieldValueSelectionFilterConfigType[] =>
-  [
+  integrationOptionsLoading: boolean,
+  overrides: StatusIntegrationFilterOverrides = {}
+): FieldValueSelectionFilterConfigType[] => {
+  const {
+    integrationField = 'integration',
+    statusOptions = [
+      { value: 'enabled', name: 'Enabled' },
+      { value: 'disabled', name: 'Disabled' },
+    ],
+    integrationFilterOptions,
+  } = overrides;
+
+  return [
     {
       type: 'field_value_selection',
       field: 'status',
@@ -87,25 +118,25 @@ export const buildStatusIntegrationFilters = (
       // Wazuh: EUI's default 'eq' operator matches by substring, not equality —
       // 'exact' avoids one option's value silently matching another's.
       operator: 'exact',
-      options: [
-        { value: 'enabled', name: 'Enabled' },
-        { value: 'disabled', name: 'Disabled' },
-      ],
+      options: statusOptions,
     },
     {
       type: 'field_value_selection',
-      field: 'integration',
+      field: integrationField,
       name: 'Integration',
       compressed: true,
       multiSelect: 'or',
       operator: 'exact',
       loading: integrationOptionsLoading,
-      options: integrationOptions.map((option) => ({
-        value: option.value,
-        name: option.label,
-      })),
+      options:
+        integrationFilterOptions ??
+        integrationOptions.map((option) => ({
+          value: option.value,
+          name: option.label,
+        })),
     },
   ] as FieldValueSelectionFilterConfigType[];
+};
 
 // Wazuh: `Query.text` re-prints the WHOLE ast — including `field:(value)` filter
 // clauses — back into query syntax, it is NOT just what the user typed in the free

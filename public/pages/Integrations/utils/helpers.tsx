@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { EuiLink, EuiPanel } from '@elastic/eui';
+import { EuiLink, EuiPanel, EuiToolTip } from '@elastic/eui';
 import { History } from 'history';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { Integration } from '../../../../types';
@@ -94,19 +94,47 @@ const ROUTE_BY_ENTITY: Record<'rules' | 'decoders' | 'kvdbs', string> = {
   kvdbs: ROUTES.KVDBS,
 };
 
+const ENTITY_LABEL: Record<'rules' | 'decoders' | 'kvdbs', string> = {
+  rules: 'rules',
+  decoders: 'decoders',
+  kvdbs: 'KVDBs',
+};
+
+// Wazuh: per-entity, per-state tooltip copy for the Rules/Decoders/KVDBs count
+// columns — mirrors the "X has no Y" phrasing used elsewhere in the Integrations
+// pages (e.g. IntegrationDecoders/IntegrationKVDBs/IntegrationDetectionRules).
+export type CountTooltipContent = (args: {
+  count: number;
+  item: IntegrationTableItem;
+  entity: 'rules' | 'decoders' | 'kvdbs';
+}) => React.ReactNode;
+
+export const defaultCountTooltipContent: CountTooltipContent = ({ count, item, entity }) => {
+  const label = ENTITY_LABEL[entity];
+  return count > 0
+    ? `View the ${count} ${label} of ${item.title}`
+    : `${item.title} has no ${label}`;
+};
+
 // Wazuh: shared renderer for the Rules/Decoders/KVDBs count columns — links each
 // count to that entity's page pre-filtered by this integration, using the row's
 // own space (not the page's active space filter) so promoted/parent-space rows
 // still land in the space they actually belong to. Zero counts stay a disabled
-// (not clickable, not plain text) EuiLink — there's nothing to jump to.
+// (not clickable, not plain text) EuiLink — there's nothing to jump to. When
+// `tooltipContent` is provided, the link is wrapped in an EuiToolTip anchored on
+// a neutral <span> host — a disabled EuiLink renders a disabled <button>, which
+// never emits hover/focus events, so the tooltip cannot anchor directly on it.
 const renderCount =
-  (entity: 'rules' | 'decoders' | 'kvdbs', history: Pick<History, 'push'>) =>
+  (
+    entity: 'rules' | 'decoders' | 'kvdbs',
+    history: Pick<History, 'push'>,
+    tooltipContent?: CountTooltipContent
+  ) =>
   (value: number, item: IntegrationTableItem) => {
     const n = value ?? 0;
-    if (!hasRelatedEntity(item, entity)) {
-      return <EuiLink disabled>{n}</EuiLink>;
-    }
-    return (
+    const link = !hasRelatedEntity(item, entity) ? (
+      <EuiLink disabled>{n}</EuiLink>
+    ) : (
       <EuiLink
         onClick={() =>
           history.push(buildEntityQueryRoute(ROUTE_BY_ENTITY[entity], item.title, item.space))
@@ -114,6 +142,16 @@ const renderCount =
       >
         {n}
       </EuiLink>
+    );
+
+    if (!tooltipContent) {
+      return link;
+    }
+
+    return (
+      <EuiToolTip content={tooltipContent({ count: n, item, entity })}>
+        <span>{link}</span>
+      </EuiToolTip>
     );
   };
 
@@ -150,19 +188,19 @@ export const getIntegrationsTableColumns = ({
     field: 'rules',
     name: 'Rules',
     sortable: false,
-    render: renderCount('rules', history),
+    render: renderCount('rules', history, defaultCountTooltipContent),
   },
   {
     field: 'decoders',
     name: 'Decoders',
     sortable: false,
-    render: renderCount('decoders', history),
+    render: renderCount('decoders', history, defaultCountTooltipContent),
   },
   {
     field: 'kvdbs',
     name: 'KVDBs',
     sortable: false,
-    render: renderCount('kvdbs', history),
+    render: renderCount('kvdbs', history, defaultCountTooltipContent),
   },
   {
     // Wazuh: reads `status` (not `enabled`) so EuiInMemoryTable's own filter

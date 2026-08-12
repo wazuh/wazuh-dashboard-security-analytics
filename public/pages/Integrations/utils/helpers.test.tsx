@@ -64,4 +64,46 @@ describe('getIntegrationsTableColumns — entity count columns', () => {
     fireEvent.click(screen.getByText('2'));
     expect(push).toHaveBeenCalledWith(`${ROUTES.KVDBS}?integration=aws&space=promoted-space`);
   });
+
+  it('wraps a non-zero count in a tooltip that names the entity, and clicking still navigates unchanged', async () => {
+    const push = jest.fn();
+    const item = buildItem({ rules: 3 });
+    renderCountColumn('rules', item, { push });
+
+    const link = screen.getByText('3');
+    fireEvent.mouseOver(link);
+    expect(await screen.findByRole('tooltip', { hidden: true })).toHaveTextContent('rules');
+    fireEvent.click(link);
+    expect(push).toHaveBeenCalledWith(`${ROUTES.RULES}?integration=aws&space=custom-space`);
+  });
+
+  it('wraps a zero count in a tooltip explaining there is nothing to open, and the link stays disabled', async () => {
+    const push = jest.fn();
+    const item = buildItem({ decoders: 0 });
+    renderCountColumn('decoders', item, { push });
+
+    const link = screen.getByText('0');
+    fireEvent.mouseOver(link);
+    expect(await screen.findByRole('tooltip', { hidden: true })).toHaveTextContent('decoders');
+    fireEvent.click(link);
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('gives Rules, Decoders and KVDBs their own distinct tooltip copy for the same count', async () => {
+    const push = jest.fn();
+    const item = buildItem({ rules: 1, decoders: 1, kvdbs: 1 });
+
+    const rulesRender = renderCountColumn('rules', item, { push });
+    fireEvent.mouseOver(screen.getByText('1'));
+    const rulesTooltip = await screen.findByRole('tooltip', { hidden: true });
+    expect(rulesTooltip).toHaveTextContent('rules');
+    fireEvent.mouseOut(screen.getByText('1'));
+    rulesRender.unmount();
+
+    renderCountColumn('kvdbs', item, { push });
+    const kvdbLinks = screen.getAllByText('1');
+    fireEvent.mouseOver(kvdbLinks[kvdbLinks.length - 1]);
+    const kvdbsTooltip = await screen.findByRole('tooltip', { hidden: true });
+    expect(kvdbsTooltip).toHaveTextContent('KVDBs');
+  });
 });

@@ -212,7 +212,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     },
                     Object {
                       "dataType": "string",
-                      "field": "logType",
+                      "field": "integration",
                       "name": "Integration",
                       "render": [Function],
                       "sortable": true,
@@ -431,8 +431,8 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         "type": "detector",
                       },
                       "detectorName": "detector_name",
+                      "integration": "detector_type",
                       "lastUpdatedTime": 1,
-                      "logType": "detector_type",
                       "rawSpace": "custom",
                       "rulesCount": 2,
                       "space": "Custom",
@@ -508,7 +508,8 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       },
                       Object {
                         "compressed": true,
-                        "field": "logType",
+                        "field": "integration",
+                        "loading": false,
                         "multiSelect": "or",
                         "name": "Integration",
                         "operator": "exact",
@@ -614,11 +615,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
                             "detectorName": Object {
                               "type": "string",
                             },
+                            "integration": Object {
+                              "type": "string",
+                            },
                             "lastUpdatedTime": Object {
                               "type": "date",
-                            },
-                            "logType": Object {
-                              "type": "string",
                             },
                             "rulesCount": Object {
                               "type": "number",
@@ -671,7 +672,8 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         },
                         Object {
                           "compressed": true,
-                          "field": "logType",
+                          "field": "integration",
+                          "loading": false,
                           "multiSelect": "or",
                           "name": "Integration",
                           "operator": "exact",
@@ -976,7 +978,8 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                   },
                                   Object {
                                     "compressed": true,
-                                    "field": "logType",
+                                    "field": "integration",
+                                    "loading": false,
                                     "multiSelect": "or",
                                     "name": "Integration",
                                     "operator": "exact",
@@ -1168,7 +1171,8 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     config={
                                       Object {
                                         "compressed": true,
-                                        "field": "logType",
+                                        "field": "integration",
+                                        "loading": false,
                                         "multiSelect": "or",
                                         "name": "Integration",
                                         "operator": "exact",
@@ -1666,7 +1670,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         },
                         Object {
                           "dataType": "string",
-                          "field": "logType",
+                          "field": "integration",
                           "name": "Integration",
                           "render": [Function],
                           "sortable": true,
@@ -1885,8 +1889,8 @@ exports[`<Detectors /> spec renders the component 1`] = `
                             "type": "detector",
                           },
                           "detectorName": "detector_name",
+                          "integration": "detector_type",
                           "lastUpdatedTime": 1,
-                          "logType": "detector_type",
                           "rawSpace": "custom",
                           "rulesCount": 2,
                           "space": "Custom",
@@ -2034,7 +2038,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                           Object {
                                             "isSortAscending": undefined,
                                             "isSorted": false,
-                                            "key": "_data_s_logType_2",
+                                            "key": "_data_s_integration_2",
                                             "name": "Integration",
                                             "onSort": [Function],
                                           },
@@ -2348,16 +2352,16 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                   </EuiTableHeaderCell>
                                   <EuiTableHeaderCell
                                     align="left"
-                                    data-test-subj="tableHeaderCell_logType_2"
+                                    data-test-subj="tableHeaderCell_integration_2"
                                     isSorted={false}
-                                    key="_data_h_logType_2"
+                                    key="_data_h_integration_2"
                                     onSort={[Function]}
                                   >
                                     <th
                                       aria-live="polite"
                                       aria-sort="none"
                                       className="euiTableHeaderCell"
-                                      data-test-subj="tableHeaderCell_logType_2"
+                                      data-test-subj="tableHeaderCell_integration_2"
                                       role="columnheader"
                                       scope="col"
                                       style={
@@ -2761,7 +2765,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     </EuiTableRowCell>
                                     <EuiTableRowCell
                                       align="left"
-                                      key="_data_column_logType_detector_id_1_2"
+                                      key="_data_column_integration_detector_id_1_2"
                                       mobileOptions={
                                         Object {
                                           "header": "Integration",
