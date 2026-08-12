@@ -49,6 +49,8 @@ import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { EditPolicy } from '../components/EditPolicy';
 import { FiltersTab } from '../../Filters/components/FiltersTab';
 import { PendingPromotionCallout } from '../components/PendingPromotionCallout';
+import { RedirectAppLinks } from '../../../../../../src/plugins/opensearch_dashboards_react/public';
+import { getApplication } from '../../../services/utils/constants';
 import {
   buildQueryTextWithStatus,
   readInMemoryUrlFilterValues,
@@ -629,45 +631,46 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       >
         <EuiSpacer size={'l'} />
         {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
-          <EuiInMemoryTable
-            itemId={'id'}
-            items={integrations}
-            columns={getIntegrationsTableColumns({
-              showDetails: showIntegrationDetails,
-              setItemForAction,
-              history,
-            })}
-            pagination={{
-              initialPageSize: 25,
-            }}
-            search={{
-              ...getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] }),
-              defaultQuery: EuiSearchBar.Query.parse(
-                buildQueryTextWithStatus(
-                  buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
-                  urlFilters.category,
-                  'category'
-                )
-              ),
-              onChange: ({ query }: { query: any }) => {
-                const { query: withoutStatus, status } = splitStatusFromQueryText(
-                  query?.text ?? ''
-                );
-                const { query: freeText, status: category } = splitStatusFromQueryText(
-                  withoutStatus,
-                  'category'
-                );
-                writeInMemoryUrlFilterValues(history, { query: freeText, status, category });
-                return true;
-              },
-            }}
-            selection={{
-              onSelectionChange: onSelectionChange,
-              initialSelected: [],
-            }}
-            isSelectable={true}
-            loading={loading}
-          />
+          <RedirectAppLinks application={getApplication()}>
+            <EuiInMemoryTable
+              itemId={'id'}
+              items={integrations}
+              columns={getIntegrationsTableColumns({
+                showDetails: showIntegrationDetails,
+                setItemForAction,
+              })}
+              pagination={{
+                initialPageSize: 25,
+              }}
+              search={{
+                ...getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] }),
+                defaultQuery: EuiSearchBar.Query.parse(
+                  buildQueryTextWithStatus(
+                    buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
+                    urlFilters.category,
+                    'category'
+                  )
+                ),
+                onChange: ({ query }: { query: any }) => {
+                  const { query: withoutStatus, status } = splitStatusFromQueryText(
+                    query?.text ?? ''
+                  );
+                  const { query: freeText, status: category } = splitStatusFromQueryText(
+                    withoutStatus,
+                    'category'
+                  );
+                  writeInMemoryUrlFilterValues(history, { query: freeText, status, category });
+                  return true;
+                },
+              }}
+              selection={{
+                onSelectionChange: onSelectionChange,
+                initialSelected: [],
+              }}
+              isSelectable={true}
+              loading={loading}
+            />
+          </RedirectAppLinks>
         ) : (
           <FiltersTab spaceFilter={spaceFilter} notifications={notifications} history={history} />
         )}

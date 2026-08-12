@@ -20,12 +20,9 @@ import {
   KVDBS_NAV_ID,
   ROUTES,
 } from '../../utils/constants';
-import { buildEntityQueryRoute } from '../../utils/routes';
+import { buildAppUrl, buildEntityQueryRoute } from '../../utils/routes';
 import { getApplication } from '../../services/utils/constants';
 import { DataStore } from '../../store/DataStore';
-
-const buildAppUrl = (appId: string, route: string) =>
-  getApplication().getUrlForApp(appId, { path: `#${route}` });
 
 export type IntegrationEntity = 'decoders' | 'rules' | 'kvdbs' | 'detectors';
 

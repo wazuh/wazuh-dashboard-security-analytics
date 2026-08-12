@@ -5,16 +5,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel, EuiToolTip } from '@elastic/eui';
-import { History } from 'history';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { startCase } from 'lodash';
-import { DEFAULT_EMPTY_DATA, integrationCategories, ROUTES } from '../../../utils/constants';
+import {
+  DECODERS_NAV_ID,
+  DETECTION_RULE_NAV_ID,
+  DEFAULT_EMPTY_DATA,
+  integrationCategories,
+  KVDBS_NAV_ID,
+  ROUTES,
+} from '../../../utils/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
 import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
-import { buildEntityQueryRoute } from '../../../utils/routes';
+import { buildAppUrl, buildEntityQueryRoute } from '../../../utils/routes';
 import { Search } from '@elastic/eui/src/components/basic_table';
 
 import moment from 'moment';
@@ -94,6 +100,12 @@ const ROUTE_BY_ENTITY: Record<'rules' | 'decoders' | 'kvdbs', string> = {
   kvdbs: ROUTES.KVDBS,
 };
 
+const NAV_ID_BY_ENTITY: Record<'rules' | 'decoders' | 'kvdbs', string> = {
+  rules: DETECTION_RULE_NAV_ID,
+  decoders: DECODERS_NAV_ID,
+  kvdbs: KVDBS_NAV_ID,
+};
+
 const ENTITY_LABEL: Record<'rules' | 'decoders' | 'kvdbs', string> = {
   rules: 'rules',
   decoders: 'decoders',
@@ -125,20 +137,17 @@ export const defaultCountTooltipContent: CountTooltipContent = ({ count, item, e
 // a neutral <span> host — a disabled EuiLink renders a disabled <button>, which
 // never emits hover/focus events, so the tooltip cannot anchor directly on it.
 const renderCount =
-  (
-    entity: 'rules' | 'decoders' | 'kvdbs',
-    history: Pick<History, 'push'>,
-    tooltipContent?: CountTooltipContent
-  ) =>
+  (entity: 'rules' | 'decoders' | 'kvdbs', tooltipContent?: CountTooltipContent) =>
   (value: number, item: IntegrationTableItem) => {
     const n = value ?? 0;
     const link = !hasRelatedEntity(item, entity) ? (
       <EuiLink disabled>{n}</EuiLink>
     ) : (
       <EuiLink
-        onClick={() =>
-          history.push(buildEntityQueryRoute(ROUTE_BY_ENTITY[entity], item.title, item.space))
-        }
+        href={buildAppUrl(
+          NAV_ID_BY_ENTITY[entity],
+          buildEntityQueryRoute(ROUTE_BY_ENTITY[entity], item.title, item.space)
+        )}
       >
         {n}
       </EuiLink>
@@ -158,11 +167,9 @@ const renderCount =
 export const getIntegrationsTableColumns = ({
   showDetails,
   setItemForAction,
-  history,
 }: {
   showDetails: (id: string) => void;
   setItemForAction: (options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null) => void;
-  history: Pick<History, 'push'>;
 }) => [
   {
     field: 'title',
@@ -188,19 +195,19 @@ export const getIntegrationsTableColumns = ({
     field: 'rules',
     name: 'Rules',
     sortable: false,
-    render: renderCount('rules', history, defaultCountTooltipContent),
+    render: renderCount('rules', defaultCountTooltipContent),
   },
   {
     field: 'decoders',
     name: 'Decoders',
     sortable: false,
-    render: renderCount('decoders', history, defaultCountTooltipContent),
+    render: renderCount('decoders', defaultCountTooltipContent),
   },
   {
     field: 'kvdbs',
     name: 'KVDBs',
     sortable: false,
-    render: renderCount('kvdbs', history, defaultCountTooltipContent),
+    render: renderCount('kvdbs', defaultCountTooltipContent),
   },
   {
     // Wazuh: reads `status` (not `enabled`) so EuiInMemoryTable's own filter
