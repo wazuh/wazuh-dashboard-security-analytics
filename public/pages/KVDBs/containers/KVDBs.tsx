@@ -8,6 +8,7 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
+  EuiCallOut,
   EuiConfirmModal,
   EuiContextMenuItem,
   EuiContextMenuPanel,
@@ -29,7 +30,7 @@ import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constant
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
-import { KVDBS_PAGE_SIZE, KVDBS_SEARCH_SCHEMA, KVDBS_SORT_FIELD } from '../utils/constants';
+import { KVDBS_PAGE_SIZE, KVDBS_SORT_FIELD } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
@@ -43,6 +44,7 @@ import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
 import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
 import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
 import {
+  buildEntitySearchSchema,
   buildStatusIntegrationFilters,
   buildStatusIntegrationQueryFromUrl,
   encodeEnabledValues,
@@ -50,6 +52,20 @@ import {
   getFreeText,
   getOrSelectedValues,
 } from '../../../utils/entitySearchBarFilters';
+
+// Wazuh: KVDBs' own declared search fields on top of the shared
+// status/integration schema — see buildEntitySearchSchema. Most produce no
+// actual filter clause (buildQuery below only reads appliedQueryText's free
+// text via toESQuery), but they must stay declared so a saved/bookmarked
+// query using them doesn't newly trip the strict-schema parse error.
+const KVDBS_EXTRA_SEARCH_FIELDS = {
+  'document.metadata.author': { type: 'string' },
+  'document.metadata.date': { type: 'string' },
+  'document.enabled': { type: 'string' },
+  'document.id': { type: 'string' },
+  'document.metadata.references': { type: 'string' },
+  'document.metadata.title': { type: 'string' },
+};
 
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -75,6 +91,11 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   // and resolved to explicit filters in buildQuery below.
   const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
   const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
+  // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
+  // field name) so a danger callout can render above the table without
+  // losing the previously applied query/results (see onSearchChange/
+  // renderError below).
+  const [searchError, setSearchError] = useState<any>(null);
   // Wazuh: the free-text portion of `searchQuery` debounces into `appliedQueryText`
   // (matching Rules/Decoders) so buildQuery/fetchKVDBs don't fire an ES round-trip
   // on every keystroke — only status/integration checkboxes apply immediately.
@@ -275,9 +296,24 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   // Wazuh: URL writes for 'query' (debounced) and 'enabled'/'integration'
   // (immediate) happen in the effects above, reacting to this state change —
   // matches the Rules/Decoders pattern.
-  const onSearchChange = ({ query }: { query: any }) => {
+  const onSearchChange = ({ query, error }: { query: any; error: any }) => {
+    setSearchError(error ?? null);
     if (!query) return;
     setSearchQuery(query);
+  };
+
+  const renderError = () => {
+    if (!searchError) return undefined;
+    return (
+      <>
+        <EuiCallOut
+          color="danger"
+          title={`Invalid search: ${searchError.message}`}
+          data-test-subj="entitySearchErrorCallOut"
+        />
+        <EuiSpacer size="l" />
+      </>
+    );
   };
 
   const pagination = useMemo(
@@ -486,7 +522,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                   compressed: true,
                   schema: true,
                 }}
-                schema={KVDBS_SEARCH_SCHEMA}
+                schema={buildEntitySearchSchema(KVDBS_EXTRA_SEARCH_FIELDS)}
                 filters={buildStatusIntegrationFilters(
                   integrationOptions,
                   integrationOptionsLoading
@@ -505,6 +541,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="m" />
+          {renderError()}
           <EuiBasicTable
             items={items}
             columns={columns}
