@@ -4,6 +4,7 @@
  */
 
 import { EuiSearchBar } from '@elastic/eui';
+import { startCase } from 'lodash';
 import {
   FieldValueOptionType,
   FieldValueSelectionFilterConfigType,
@@ -128,12 +129,15 @@ export const buildStatusIntegrationFilters = (
       multiSelect: 'or',
       operator: 'exact',
       loading: integrationOptionsLoading,
+      // Wazuh: user-friendly display name (e.g. `cisco-meraki` -> `Cisco Meraki`),
       options:
         integrationFilterOptions ??
-        integrationOptions.map((option) => ({
-          value: option.value,
-          name: option.label,
-        })),
+        integrationOptions
+          .map((option) => ({
+            value: option.value,
+            name: startCase(option.label),
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
     },
   ] as FieldValueSelectionFilterConfigType[];
 };
