@@ -15,9 +15,10 @@ import DetectorMock from '../../test/mocks/Detectors/containers/Detectors/Detect
 
 describe('Detectors store specs', () => {
   Object.assign(services, {
-    detectorService: {
+    detectorsService: {
       getRules: () => Promise.resolve(detectorResponseMock),
       deleteRule: () => Promise.resolve(true),
+      countDetectorsByIntegration: () => Promise.resolve({ ok: true, response: { count: 0 } }),
     },
   });
 
@@ -100,5 +101,38 @@ describe('Detectors store specs', () => {
     );
     const pending = await DataStore.detectors.resolvePendingCreationRequest();
     expect(pending.ok).toBe(false);
+  });
+
+  describe('countByIntegration', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('resolves the count on ok:true', async () => {
+      jest
+        .spyOn(DataStore.detectors.service, 'countDetectorsByIntegration')
+        .mockResolvedValue({ ok: true, response: { count: 5 } } as any);
+
+      const count = await DataStore.detectors.countByIntegration('aws', 'standard');
+      expect(count).toBe(5);
+    });
+
+    it('resolves 0 on ok:false', async () => {
+      jest
+        .spyOn(DataStore.detectors.service, 'countDetectorsByIntegration')
+        .mockResolvedValue({ ok: false, error: 'boom' } as any);
+
+      const count = await DataStore.detectors.countByIntegration('aws', 'standard');
+      expect(count).toBe(0);
+    });
+
+    it('resolves 0 when the service throws', async () => {
+      jest
+        .spyOn(DataStore.detectors.service, 'countDetectorsByIntegration')
+        .mockRejectedValue(new Error('network error'));
+
+      const count = await DataStore.detectors.countByIntegration('aws', 'standard');
+      expect(count).toBe(0);
+    });
   });
 });

@@ -4,15 +4,23 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { EuiLink, EuiPanel } from '@elastic/eui';
+import { EuiLink, EuiPanel, EuiToolTip } from '@elastic/eui';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { startCase } from 'lodash';
-import { DEFAULT_EMPTY_DATA, integrationCategories } from '../../../utils/constants';
+import {
+  DECODERS_NAV_ID,
+  DETECTION_RULE_NAV_ID,
+  DEFAULT_EMPTY_DATA,
+  integrationCategories,
+  KVDBS_NAV_ID,
+  ROUTES,
+} from '../../../utils/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
 import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
+import { buildAppUrl, buildEntityQueryRoute } from '../../../utils/routes';
 import { Search } from '@elastic/eui/src/components/basic_table';
 
 import moment from 'moment';
@@ -43,6 +51,15 @@ export interface IntegrationTableItem {
   kvdbs: number;
   rules: number;
   enabled?: boolean;
+  /**
+   * String mirror of `enabled` used only by the Status filter, matching the
+   * 'status'/'enabled'|'disabled' pattern used by Rules/Decoders/KVDBs —
+   * EuiInMemoryTable's `field_value_selection` filter mishandles literal boolean
+   * option values (the query round-trips through text, where EUI's grammar
+   * doesn't know 'enabled' is boolean-typed absent a declared schema, desyncing
+   * the filter's own badge/checkbox state from a real `true`/`false` clause).
+   */
+  status: 'enabled' | 'disabled';
 }
 
 export const mapPolicyToIntegrationTableItems = (
@@ -66,6 +83,7 @@ export const mapPolicyToIntegrationTableItems = (
       kvdbs: source.document.kvdbsCount,
       rules: source.document.rulesCount,
       enabled: source.document.enabled,
+      status: source.document.enabled ? 'enabled' : 'disabled',
     }));
 };
 
@@ -75,6 +93,76 @@ export const hasRelatedEntity = (
 ): boolean => {
   return item[entity] > 0;
 };
+
+const ROUTE_BY_ENTITY: Record<'rules' | 'decoders' | 'kvdbs', string> = {
+  rules: ROUTES.RULES,
+  decoders: ROUTES.DECODERS,
+  kvdbs: ROUTES.KVDBS,
+};
+
+const NAV_ID_BY_ENTITY: Record<'rules' | 'decoders' | 'kvdbs', string> = {
+  rules: DETECTION_RULE_NAV_ID,
+  decoders: DECODERS_NAV_ID,
+  kvdbs: KVDBS_NAV_ID,
+};
+
+const ENTITY_LABEL: Record<'rules' | 'decoders' | 'kvdbs', string> = {
+  rules: 'rules',
+  decoders: 'decoders',
+  kvdbs: 'KVDBs',
+};
+
+// Wazuh: per-entity, per-state tooltip copy for the Rules/Decoders/KVDBs count
+// columns — mirrors the "X has no Y" phrasing used elsewhere in the Integrations
+// pages (e.g. IntegrationDecoders/IntegrationKVDBs/IntegrationDetectionRules).
+export type CountTooltipContent = (args: {
+  count: number;
+  item: IntegrationTableItem;
+  entity: 'rules' | 'decoders' | 'kvdbs';
+}) => React.ReactNode;
+
+export const defaultCountTooltipContent: CountTooltipContent = ({ count, item, entity }) => {
+  const label = ENTITY_LABEL[entity];
+  return count > 0
+    ? `View the ${count} ${label} of ${item.title}`
+    : `${item.title} has no ${label}`;
+};
+
+// Wazuh: shared renderer for the Rules/Decoders/KVDBs count columns — links each
+// count to that entity's page pre-filtered by this integration, using the row's
+// own space (not the page's active space filter) so promoted/parent-space rows
+// still land in the space they actually belong to. Zero counts stay a disabled
+// (not clickable, not plain text) EuiLink — there's nothing to jump to. When
+// `tooltipContent` is provided, the link is wrapped in an EuiToolTip anchored on
+// a neutral <span> host — a disabled EuiLink renders a disabled <button>, which
+// never emits hover/focus events, so the tooltip cannot anchor directly on it.
+const renderCount =
+  (entity: 'rules' | 'decoders' | 'kvdbs', tooltipContent?: CountTooltipContent) =>
+  (value: number, item: IntegrationTableItem) => {
+    const n = value ?? 0;
+    const link = !hasRelatedEntity(item, entity) ? (
+      <EuiLink disabled>{n}</EuiLink>
+    ) : (
+      <EuiLink
+        href={buildAppUrl(
+          NAV_ID_BY_ENTITY[entity],
+          buildEntityQueryRoute(ROUTE_BY_ENTITY[entity], item.title, item.space)
+        )}
+      >
+        {n}
+      </EuiLink>
+    );
+
+    if (!tooltipContent) {
+      return link;
+    }
+
+    return (
+      <EuiToolTip content={tooltipContent({ count: n, item, entity })}>
+        <span>{link}</span>
+      </EuiToolTip>
+    );
+  };
 
 export const getIntegrationsTableColumns = ({
   showDetails,
@@ -107,19 +195,32 @@ export const getIntegrationsTableColumns = ({
     field: 'rules',
     name: 'Rules',
     sortable: false,
-    render: (rules: number) => rules ?? 0,
+    render: renderCount('rules', defaultCountTooltipContent),
   },
   {
     field: 'decoders',
     name: 'Decoders',
     sortable: false,
-    render: (decoders: number) => decoders ?? 0,
+    render: renderCount('decoders', defaultCountTooltipContent),
   },
   {
     field: 'kvdbs',
     name: 'KVDBs',
     sortable: false,
-    render: (kvdbs: number) => kvdbs ?? 0,
+    render: renderCount('kvdbs', defaultCountTooltipContent),
+  },
+  {
+    // Wazuh: reads `status` (not `enabled`) so EuiInMemoryTable's own filter
+    // execution — which resolves a field's value via the table's `columns`, not
+    // just the search bar's schema — can actually match rows for the Status
+    // filter below; a field absent from `columns` never gets execution-time
+    // resolution even though its schema/filter-popover config looks correct.
+    field: 'status',
+    name: 'Status',
+    sortable: true,
+    render: (status: 'enabled' | 'disabled') => (
+      <EnabledHealth enabled={status === 'enabled'} data-test-subj="integration_status" />
+    ),
   },
   {
     field: 'enabled',
@@ -171,7 +272,22 @@ export const getIntegrationsTableSearchConfig = (options?: {
       name: 'Category',
       compressed: true,
       multiSelect: 'or',
+      // Wazuh: EUI's default 'eq' operator matches by substring, not equality —
+      // 'exact' avoids one option's value silently matching another's.
+      operator: 'exact',
       options: getIntegrationCategoryFilterOptions(false),
+    },
+    {
+      type: 'field_value_selection',
+      field: 'status',
+      name: 'Status',
+      compressed: true,
+      multiSelect: 'or',
+      operator: 'exact',
+      options: [
+        { value: 'enabled', name: 'Enabled' },
+        { value: 'disabled', name: 'Disabled' },
+      ],
     },
   ],
   toolsRight: options?.toolsRight,

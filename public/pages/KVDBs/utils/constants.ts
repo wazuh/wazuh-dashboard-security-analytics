@@ -6,51 +6,7 @@
 export const KVDBS_PAGE_SIZE = 25;
 export const KVDBS_SORT_FIELD = 'document.metadata.title';
 
-const KEYWORD_SEARCH_FIELDS = ['document.metadata.title', 'document.metadata.author'];
-
-const escapeWildcard = (str: string) => str.replace(/[*?]/g, '\\$&');
-
-export const buildKVDBsSearchQuery = (searchText: string) => {
-  const trimmed = searchText.trim();
-  if (!trimmed) {
-    return { match_all: {} };
-  }
-
-  return {
-    bool: {
-      should: KEYWORD_SEARCH_FIELDS.map((field) => ({
-        wildcard: {
-          [field]: {
-            value: `*${escapeWildcard(trimmed)}*`,
-            case_insensitive: true,
-          },
-        },
-      })),
-      minimum_should_match: 1,
-    },
-  };
-};
-
-export const KVDBS_SEARCH_SCHEMA = {
-  strict: true,
-  fields: {
-    'document.metadata.author': {
-      type: 'string',
-    },
-    'document.metadata.date': {
-      type: 'date',
-    },
-    'document.enabled': {
-      type: 'boolean',
-    },
-    'document.id': {
-      type: 'string',
-    },
-    'document.metadata.references': {
-      type: 'string',
-    },
-    'document.metadata.title': {
-      type: 'string',
-    },
-  },
-};
+// Wazuh: KVDBs search goes through EuiSearchBar/toESQuery (see
+// useIntegrationKVDBs.ts and KVDBs.tsx). The strict search schema
+// (ENTITY_SEARCH_SCHEMA) lives in entitySearchBarFilters.ts, shared as-is
+// with Rules/Decoders — no KVDBs-specific extra fields.

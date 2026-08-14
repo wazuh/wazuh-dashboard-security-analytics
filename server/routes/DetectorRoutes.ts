@@ -36,6 +36,19 @@ export function setupDetectorRoutes(services: NodeServices, router: IRouter) {
     detectorsService.getDetector
   );
 
+  router.get(
+    {
+      path: API.COUNT_DETECTORS_BY_INTEGRATION,
+      validate: {
+        query: createQueryValidationSchema({
+          integration: schema.string(),
+          space: schema.string(),
+        }),
+      },
+    },
+    detectorsService.countDetectorsByIntegration
+  );
+
   router.post(
     {
       path: `${API.SEARCH_DETECTORS}`,

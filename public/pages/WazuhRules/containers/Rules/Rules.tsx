@@ -11,10 +11,11 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
-  EuiFieldSearch,
+  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
+  EuiSearchBar,
   EuiSpacer,
   EuiText,
   EuiToolTip,
@@ -24,6 +25,7 @@ import {
   EuiContextMenuItem,
   EuiConfirmModal,
 } from '@elastic/eui';
+import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DataStore } from '../../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
@@ -33,6 +35,7 @@ import { setBreadcrumbs } from '../../../../utils/helpers';
 import { buildRulesSearchQuery } from '../../utils/constants';
 import { RuleTableItem } from '../../utils/helpers';
 import { getSeverityColor, getSeverityLabel } from '../../../Correlations/utils/constants';
+import { ruleSeverity } from '../../../Rules/utils/constants';
 import { RuleViewerFlyout } from '../../components/RuleViewerFlyout/RuleViewerFlyout';
 import { SpaceTypes } from '../../../../../common/constants';
 import { useSpaceSelector } from '../../../../hooks/useSpaceSelector';
@@ -42,8 +45,39 @@ import {
   useDeleteItems,
 } from '../../../../hooks/useDeleteItems';
 import { useUrlParamItem } from '../../../../hooks/useUrlParamItem';
+import { useUrlFilterParams } from '../../../../hooks/useUrlFilterParams';
+import { useIntegrationSelector } from '../../../../components/IntegrationComboBox/useIntegrationSelector';
+import { IntegrationCell } from '../../../../components/IntegrationCell/IntegrationCell';
+import {
+  buildStatusIntegrationFilters,
+  buildStatusIntegrationQueryFromUrl,
+  decodeEnabledValues,
+  decodeMultiValue,
+  encodeEnabledValues,
+  encodeMultiValue,
+  getFreeText,
+  getOrSelectedValues,
+} from '../../../../utils/entitySearchBarFilters';
 
 const DEFAULT_PAGE_SIZE = 25;
+
+// Wazuh: Rules-only Severity filter — a `field_value_selection` EuiSearchBar
+// filter (multiSelect 'or') on `severity`, matching `document.level` server-side.
+// Not part of the shared ENTITY_SEARCH_SCHEMA/buildStatusIntegrationFilters used
+// by Decoders/KVDBs, since only Rules has a level/severity to filter by.
+const RULES_SEARCH_SCHEMA = {
+  strict: true,
+  fields: {
+    status: { type: 'string' },
+    integration: { type: 'string' },
+    severity: { type: 'string' },
+  },
+};
+
+const SEVERITY_FILTER_OPTIONS = ruleSeverity.map((severity) => ({
+  value: severity.value,
+  name: severity.name,
+}));
 
 const SORT_FIELD_TO_OS: Record<string, string | undefined> = {
   title: 'document.metadata.title',
@@ -73,15 +107,57 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const [allRules, setAllRules] = useState<RuleTableItem[]>([]);
   const [totalRules, setTotalRules] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState('');
-  const [pageIndex, setPageIndex] = useState(0);
+  const urlFilters = useUrlFilterParams(
+    {
+      params: ['query', 'enabled', 'integration', 'level', 'page'],
+      resetPageOn: ['query', 'enabled', 'integration', 'level'],
+    },
+    history
+  );
+  // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
+  // Status/Integration/Severity `field_value_selection` (multiSelect: 'or') filter
+  // clauses, matching the pattern already used by Detectors. `appliedQueryText`/
+  // `appliedStatus`/`appliedIntegrationNames`/`appliedLevels` are what actually
+  // drives the fetch: free text debounces like before, filter checkboxes apply
+  // immediately.
+  const buildQueryFromUrl = () => {
+    let query = buildStatusIntegrationQueryFromUrl(urlFilters.values);
+    decodeMultiValue(urlFilters.values.level).forEach((value) => {
+      query = query.addOrFieldValue('severity', value, true, 'eq');
+    });
+    return query;
+  };
+  const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
+  // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
+  // field name) so a warning callout can render above the table without
+  // losing the previously applied query/results (see onSearchChange/
+  // renderError below).
+  const [searchError, setSearchError] = useState<any>(null);
+  const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
+  const [appliedStatus, setAppliedStatus] = useState<'enabled' | 'disabled' | undefined>(() => {
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    return statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined;
+  });
+  const [appliedIntegrationNames, setAppliedIntegrationNames] = useState<string[]>(() =>
+    decodeMultiValue(urlFilters.values.integration)
+  );
+  const [appliedLevels, setAppliedLevels] = useState<string[]>(() =>
+    decodeMultiValue(urlFilters.values.level)
+  );
+  const selectedStatuses = useMemo(() => getOrSelectedValues(searchQuery, 'status'), [searchQuery]);
+  const selectedIntegrations = useMemo(
+    () => getOrSelectedValues(searchQuery, 'integration'),
+    [searchQuery]
+  );
+  const selectedLevels = useMemo(() => getOrSelectedValues(searchQuery, 'severity'), [searchQuery]);
+  const pageIndex = urlFilters.page - 1;
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { component: spaceSelector, spaceFilter } = useSpaceSelector({
     isLoading: loading,
-    onSpaceChange: () => setPageIndex(0),
+    clearParamsOnChange: ['page', 'integration'],
+    history,
   });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<RuleTableItem[]>([]);
@@ -98,17 +174,84 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.RULES]);
   }, []);
 
+  // Wazuh: set before a local write to urlFilters so the resync effect below
+  // doesn't rebuild `searchQuery` from a URL snapshot that can race with it.
+  const skipNextUrlSync = useRef(false);
+
+  const isFirstSearchRender = useRef(true);
   useEffect(() => {
+    if (isFirstSearchRender.current) {
+      isFirstSearchRender.current = false;
+      return;
+    }
     const timeout = setTimeout(() => {
-      setAppliedSearch(searchText);
-      setPageIndex(0);
+      const freeText = getFreeText(searchQuery);
+      setAppliedQueryText(freeText);
+      // 'query' is in resetPageOn, so this alone already resets the page.
+      skipNextUrlSync.current = true;
+      urlFilters.setParams({ query: freeText });
     }, 300);
     return () => clearTimeout(timeout);
-  }, [searchText]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getFreeText(searchQuery)]);
+
+  // Wazuh: Status/Integration checkboxes (multiSelect 'or') apply immediately,
+  // unlike the free-text debounce above — matches the Detectors filter pattern.
+  const isFirstFilterRender = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
+    }
+    setAppliedStatus(
+      selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
+    );
+    setAppliedIntegrationNames(selectedIntegrations);
+    setAppliedLevels(selectedLevels);
+    // 'enabled'/'integration'/'level' are also in resetPageOn — same reasoning as above.
+    skipNextUrlSync.current = true;
+    urlFilters.setParams({
+      enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
+      integration: selectedIntegrations.length ? encodeMultiValue(selectedIntegrations) : undefined,
+      level: selectedLevels.length ? encodeMultiValue(selectedLevels) : undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatuses.join(','), selectedIntegrations.join(','), selectedLevels.join(',')]);
+
+  // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
+  // integration rules" while already on Rules) updates the URL without remounting
+  // this component, so the search bar must resync from the URL-owned value instead
+  // of relying on its mount-time initializer.
+  useEffect(() => {
+    if (skipNextUrlSync.current) {
+      skipNextUrlSync.current = false;
+      return;
+    }
+    setSearchQuery(buildQueryFromUrl());
+    setAppliedQueryText(urlFilters.values.query);
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
+    setAppliedIntegrationNames(decodeMultiValue(urlFilters.values.integration));
+    setAppliedLevels(decodeMultiValue(urlFilters.values.level));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    urlFilters.values.query,
+    urlFilters.values.enabled,
+    urlFilters.values.integration,
+    urlFilters.values.level,
+  ]);
+
+  const { options: integrationOptions, loading: integrationOptionsLoading } =
+    useIntegrationSelector({
+      notifications,
+      enabled: true,
+      space: spaceFilter,
+      relatedField: 'rules',
+    });
 
   const loadRules = useCallback(async () => {
     setLoading(true);
-    const query = buildRulesSearchQuery(appliedSearch);
+    const query = buildRulesSearchQuery(appliedQueryText);
     const osField = SORT_FIELD_TO_OS[sortField];
     const sort = osField ? [{ [osField]: { order: sortDirection } }] : undefined;
     const response = await DataStore.rules.searchRules(
@@ -117,7 +260,10 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         from: pageIndex * pageSize,
         size: pageSize,
         sort,
-        searchText: appliedSearch,
+        searchText: appliedQueryText,
+        status: appliedStatus,
+        integrationNames: appliedIntegrationNames.length ? appliedIntegrationNames : undefined,
+        levels: appliedLevels.length ? appliedLevels : undefined,
         _source: {
           includes: [
             'document.id',
@@ -140,7 +286,17 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     setTotalRules(response.total);
     setSelectedItems([]);
     setLoading(false);
-  }, [appliedSearch, spaceFilter, pageIndex, pageSize, sortField, sortDirection]);
+  }, [
+    appliedQueryText,
+    spaceFilter,
+    pageIndex,
+    pageSize,
+    sortField,
+    sortDirection,
+    appliedStatus,
+    appliedIntegrationNames,
+    appliedLevels,
+  ]);
 
   useEffect(() => {
     loadRules();
@@ -165,13 +321,16 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   });
 
   const onTableChange = ({ page, sort }: { page?: any; sort?: any }) => {
-    if (sort) {
+    // Wazuh: EuiBasicTable reports the current sort criteria on every onChange call
+    // (including plain pagination clicks), not only when it actually changes — guard
+    // on an actual change so paging doesn't get silently reset back to page 1.
+    if (sort && (sort.field !== sortField || sort.direction !== sortDirection)) {
       setSortField(sort.field);
       setSortDirection(sort.direction);
-      setPageIndex(0);
+      urlFilters.setPage(1);
     }
     if (page) {
-      setPageIndex(page.index);
+      urlFilters.setPage(page.index + 1);
       setPageSize(page.size);
     }
   };
@@ -179,6 +338,29 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const hideFlyout = (refreshRules?: boolean) => {
     clearParam();
     if (refreshRules) loadRules();
+  };
+
+  // Wazuh: EuiSearchBar only emits `query` when parsing succeeds — on a
+  // strict-schema parse error `query` is undefined, so `searchQuery` (and thus
+  // the previously loaded rules) is left untouched; only the callout shows.
+  const onSearchChange = ({ query, error }: { query: any; error: any }) => {
+    setSearchError(error ?? null);
+    if (!query) return;
+    setSearchQuery(query);
+  };
+
+  const renderError = () => {
+    if (!searchError) return undefined;
+    return (
+      <>
+        <EuiCallOut
+          color="warning"
+          title={`Invalid search: ${searchError.message}`}
+          data-test-subj="entitySearchErrorCallOut"
+        />
+        <EuiSpacer size="l" />
+      </>
+    );
   };
 
   const columns: Array<EuiBasicTableColumn<RuleTableItem>> = useMemo(
@@ -209,9 +391,14 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         name: 'Integration',
         sortable: false,
         width: '11%',
-        render: (_: any, row: RuleTableItem) => {
-          return row.integration?.document?.metadata?.title || '-';
-        },
+        render: (_: any, row: RuleTableItem) => (
+          <IntegrationCell
+            name={row.integration?.document?.metadata?.title || ''}
+            integrationId={row.integration?.document?.id}
+            space={spaceFilter}
+            currentEntity="rules"
+          />
+        ),
       },
       {
         field: 'description',
@@ -378,13 +565,32 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         <EuiPanel>
           <EuiFlexGroup alignItems="center" gutterSize="m">
             <EuiFlexItem>
-              <EuiFieldSearch
-                fullWidth
-                placeholder="Search rules"
-                value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
-                isClearable
-                aria-label="Search rules"
+              <EuiSearchBar
+                // Wazuh: remount once Integration options load, or the filter badge
+                // can stick at "0 selected" until the popover is opened once.
+                key={integrationOptionsLoading ? 'loading' : 'loaded'}
+                query={searchQuery}
+                box={{
+                  placeholder: 'Search rules',
+                  incremental: true,
+                  compressed: true,
+                  schema: RULES_SEARCH_SCHEMA,
+                }}
+                filters={
+                  [
+                    ...buildStatusIntegrationFilters(integrationOptions, integrationOptionsLoading),
+                    {
+                      type: 'field_value_selection',
+                      field: 'severity',
+                      name: 'Severity',
+                      compressed: true,
+                      multiSelect: 'or',
+                      operator: 'exact',
+                      options: SEVERITY_FILTER_OPTIONS,
+                    },
+                  ] as FieldValueSelectionFilterConfigType[]
+                }
+                onChange={onSearchChange}
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
@@ -398,6 +604,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size="m" />
+          {renderError()}
           <EuiBasicTable
             items={allRules}
             columns={columns}
