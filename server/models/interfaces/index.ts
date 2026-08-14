@@ -57,6 +57,7 @@ export interface SecurityAnalyticsApi {
   readonly THREAT_INTEL_BASE: string;
   readonly DECODERS_BASE: string;
   readonly SPACES_BASE: string;
+  readonly COUNT_DETECTORS_BY_INTEGRATION: string;
 }
 
 export interface NodeServices {

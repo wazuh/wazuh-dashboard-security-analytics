@@ -22,6 +22,7 @@ import {
   EuiText,
   EuiButtonIcon,
   EuiToolTip,
+  EuiSearchBar,
 } from '@elastic/eui';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
@@ -30,18 +31,26 @@ import {
   capitalizeFirstLetter,
   errorNotificationToast,
   formatRuleType,
-  getLogTypeFilterOptions,
+  getLogTypeFilterOptionsFlat,
   renderTime,
   setBreadcrumbs,
 } from '../../../../utils/helpers';
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DetectorsService } from '../../../../services';
-import { DetectorHit } from '../../../../../server/models/interfaces';
+import { DetectorHit, DetectorHitWithSpace } from '../../../../../server/models/interfaces';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { IntegrationCell } from '../../../../components/IntegrationCell/IntegrationCell';
 import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource'; // Wazuh: import functions to handle detector source and space
+import {
+  buildQueryTextWithStatus,
+  readInMemoryUrlFilterValues,
+  splitStatusFromQueryText,
+  writeInMemoryUrlFilterValues,
+} from '../../../../utils/inMemoryUrlFilterAdapter';
+import { buildStatusIntegrationFilters } from '../../../../utils/entitySearchBarFilters';
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -68,10 +77,59 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       isDeleteModalVisible: false,
       isPopoverOpen: false,
     };
+    // Wazuh: query/status/space persisted in the URL (no 'page' — Detectors is an
+    // in-memory table, per the no-goal boundary). Guarded: `history` is optional
+    // in some existing test mocks that don't pass RouteComponentProps.
+    this.urlFilters = readInMemoryUrlFilterValues(props.history?.location?.search ?? '', ['space']);
+
+    // Wazuh: '=' (exact) inside an OR-group matches what the integration filter itself
+    // produces on a checkbox click — a plain 'integration:value' token would use the
+    // default contains-match operator, reintroducing the substring-match bug
+    // fixed earlier for these filters. The `space` note below is about the one-shot
+    // `integration` param folding only: `space` is deliberately not applied there
+    // (server-side-only, in the count query).
+    const search = props.history?.location?.search ?? '';
+    this.pendingIntegrationParam = new URLSearchParams(search).get('integration') ?? undefined;
+    if (this.pendingIntegrationParam) {
+      const value = /\s/.test(this.pendingIntegrationParam)
+        ? `"${this.pendingIntegrationParam}"`
+        : this.pendingIntegrationParam;
+      const token = `integration=(${value})`;
+      this.urlFilters = {
+        ...this.urlFilters,
+        query: [this.urlFilters.query, token].filter(Boolean).join(' ').trim(),
+      };
+    }
   }
+
+  private urlFilters: { query: string; status: string; space: string };
+  private pendingIntegrationParam: string | undefined;
+
+  private onSearchChange = ({ query }: { query: any }) => {
+    const { query: withoutStatus, status } = splitStatusFromQueryText(query?.text ?? '', 'status');
+    const { query: freeText, status: space } = splitStatusFromQueryText(withoutStatus, 'space');
+    if (this.props.history) {
+      writeInMemoryUrlFilterValues(this.props.history, { query: freeText, status, space });
+    }
+    return true;
+  };
 
   async componentDidMount() {
     setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS]);
+    if (this.pendingIntegrationParam && this.props.history) {
+      writeInMemoryUrlFilterValues(this.props.history, {
+        query: this.urlFilters.query,
+        status: this.urlFilters.status,
+        space: this.urlFilters.space,
+      });
+      // Wazuh: drop the one-shot `integration` param now that its clause has
+      // been folded into `query` — leaving it would re-seed/duplicate the
+      // token on every remount.
+      const params = new URLSearchParams(this.props.history.location.search);
+      params.delete('integration');
+      this.props.history.replace({ ...this.props.history.location, search: params.toString() });
+      this.pendingIntegrationParam = undefined;
+    }
     await this.getDetectors();
   }
 
@@ -99,10 +157,11 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             ...detector,
             detectorName: detector._source.name,
             lastUpdatedTime: detector._source.last_update_time,
-            logType: detector._source.detector_type,
+            integration: detector._source.detector_type,
             rulesCount: rulesCount,
             status: detector._source.enabled ? 'Active' : 'Inactive',
             space: getDetectorSourceLabel(detector._source.source), // Wazuh: retrieve space from source
+            rawSpace: (detector._source.source || '').toLowerCase(),
           };
         });
         this.setState({ detectorHits: detectors });
@@ -249,11 +308,21 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         ),
       },
       {
-        field: 'logType',
+        field: 'integration',
         name: 'Integration', // replace log type to integration by Wazuh
         sortable: true,
         dataType: 'string',
-        render: (logType: string) => formatRuleType(logType),
+        render: (integration: string, item: DetectorHit) => {
+          const row = item as DetectorHitWithSpace & { rawSpace?: string; integrationId?: string };
+          return (
+            <IntegrationCell
+              name={formatRuleType(integration)}
+              integrationId={row.integrationId}
+              space={row.rawSpace}
+              currentEntity="detectors"
+            />
+          );
+        },
       },
       {
         field: 'space',
@@ -377,15 +446,21 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             name: capitalizeFirstLetter(status),
           })),
           multiSelect: 'or',
+          // Wazuh: EUI's default 'eq' operator matches by substring ("Active" is
+          // contained in "Inactive"), not equality — 'exact' is required so
+          // selecting one status option doesn't also match the other.
+          operator: 'exact',
         } as FieldValueSelectionFilterConfigType,
-        {
-          type: 'field_value_selection',
-          field: 'logType',
-          name: 'Integration', // replace log type to integration by Wazuh
-          compressed: true,
-          options: getLogTypeFilterOptions(),
-          multiSelect: 'or',
-        } as FieldValueSelectionFilterConfigType,
+        // Wazuh: reuse the shared Rules/Decoders/KVDBs Integration filter builder
+        // (default `integration` field) — only the Integration half is used
+        // (index 1); Detectors' own Status filter above stays inline/data-derived
+        // and must not pick up the helper's Enabled/Disabled semantics.
+        // Wazuh: use the flat `{ value, name }` option variant (not the grouped
+        // getLogTypeFilterOptions()) so this popover renders as a plain list of
+        // names, matching Rules/Decoders/KVDBs exactly.
+        buildStatusIntegrationFilters([], false, {
+          integrationFilterOptions: getLogTypeFilterOptionsFlat(),
+        })[1],
         // Wazuh: Added new filter for space
         {
           type: 'field_value_selection',
@@ -394,9 +469,19 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
           compressed: true,
           options: spaceOptions,
           multiSelect: 'or',
+          operator: 'exact',
         } as FieldValueSelectionFilterConfigType,
         // End Wazuh
       ],
+      // Wazuh: persist query/status/space in the URL (see this.urlFilters / onSearchChange).
+      defaultQuery: EuiSearchBar.Query.parse(
+        buildQueryTextWithStatus(
+          buildQueryTextWithStatus(this.urlFilters.query, this.urlFilters.status, 'status'),
+          this.urlFilters.space,
+          'space'
+        )
+      ),
+      onChange: this.onSearchChange,
     };
 
     const sorting: { sort: { field: string; direction: Direction } } = {
