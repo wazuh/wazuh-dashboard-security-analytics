@@ -294,6 +294,7 @@ function formatValidationErrors<T extends object>(
 // concurrent calls are multiplexed by request id.
 let worker: Worker | null = null;
 let nextRequestId = 0;
+let latestRequestId = -1;
 const pendingRequests = new Map<number, (response: ValidateResponse) => void>();
 
 function getWorker(): Worker {
@@ -316,8 +317,16 @@ export function validateWithJsonSchemaAsync<T extends object>(
   options?: ValidateOptions
 ): Promise<FormikErrors<T>> {
   const id = nextRequestId++;
+  latestRequestId = id;
   return new Promise((resolve) => {
     pendingRequests.set(id, (response) => {
+      // A stale response must never resolve as "valid" — that would let an
+      // out-of-order response overwrite the current (correct) error state.
+      // Leaving the promise pending forever means Formik simply never applies
+      // this superseded call's result.
+      if (id !== latestRequestId) {
+        return;
+      }
       if (response.valid) {
         resolve({});
       } else {

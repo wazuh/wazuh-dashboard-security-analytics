@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import Ajv, { ValidateFunction } from 'ajv';
+import Ajv, { ErrorObject, ValidateFunction } from 'ajv';
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 
@@ -32,9 +32,22 @@ export interface ValidateResponse {
 // Exported separately from the self.onmessage wiring below so it can be unit
 // tested directly, without a real Worker/self context.
 export function handleValidateRequest({ id, schema, data }: ValidateRequest): ValidateResponse {
-  const validate = getValidator(schema);
-  const valid = validate(data);
-  return { id, valid, errors: valid ? null : validate.errors ?? null };
+  try {
+    const validate = getValidator(schema);
+    const valid = validate(data);
+    return { id, valid, errors: valid ? null : validate.errors ?? null };
+  } catch (error) {
+    const errors: ErrorObject[] = [
+      {
+        instancePath: '',
+        schemaPath: '',
+        keyword: 'exception',
+        params: {},
+        message: String(error),
+      },
+    ];
+    return { id, valid: false, errors };
+  }
 }
 
 const ctx: Worker = self as any;
