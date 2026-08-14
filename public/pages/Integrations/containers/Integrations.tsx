@@ -394,7 +394,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       <EuiContextMenuItem
         key="create"
         icon="plusInCircle"
-        href={`#${ROUTES.INTEGRATIONS_CREATE}`}
+        onClick={() => {
+          history.push(ROUTES.INTEGRATIONS_CREATE);
+          setIsPopoverOpen(false);
+        }}
         disabled={isCreateActionDisabled}
         toolTipContent={
           isCreateActionDisabled
