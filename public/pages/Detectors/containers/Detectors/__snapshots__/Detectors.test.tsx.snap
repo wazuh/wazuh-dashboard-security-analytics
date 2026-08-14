@@ -4,6 +4,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
 <Detectors
   detectorService={
     DetectorService {
+      "countDetectorsByIntegration": [Function],
       "createDetector": [Function],
       "dataSourceEnabled": undefined,
       "deleteDetector": [Function],
@@ -211,7 +212,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     },
                     Object {
                       "dataType": "string",
-                      "field": "logType",
+                      "field": "integration",
                       "name": "Integration",
                       "render": [Function],
                       "sortable": true,
@@ -430,8 +431,9 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         "type": "detector",
                       },
                       "detectorName": "detector_name",
+                      "integration": "detector_type",
                       "lastUpdatedTime": 1,
-                      "logType": "detector_type",
+                      "rawSpace": "custom",
                       "rulesCount": 2,
                       "space": "Custom",
                       "status": "Active",
@@ -472,12 +474,30 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       "placeholder": "Search threat detectors",
                       "schema": true,
                     },
+                    "defaultQuery": Query {
+                      "ast": _AST {
+                        "_clauses": Array [],
+                        "_indexedClauses": Object {
+                          "field": Object {},
+                          "group": Array [],
+                          "is": Object {},
+                          "term": Array [],
+                        },
+                      },
+                      "syntax": Object {
+                        "parse": [Function],
+                        "print": [Function],
+                        "printClause": [Function],
+                      },
+                      "text": "",
+                    },
                     "filters": Array [
                       Object {
                         "compressed": true,
                         "field": "status",
                         "multiSelect": "or",
                         "name": "Status",
+                        "operator": "exact",
                         "options": Array [
                           Object {
                             "name": "Active",
@@ -488,9 +508,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       },
                       Object {
                         "compressed": true,
-                        "field": "logType",
+                        "field": "integration",
+                        "loading": false,
                         "multiSelect": "or",
                         "name": "Integration",
+                        "operator": "exact",
                         "options": Array [],
                         "type": "field_value_selection",
                       },
@@ -499,6 +521,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         "field": "space",
                         "multiSelect": "or",
                         "name": "Space",
+                        "operator": "exact",
                         "options": Array [
                           Object {
                             "name": "Custom",
@@ -508,6 +531,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         "type": "field_value_selection",
                       },
                     ],
+                    "onChange": [Function],
                     "toolsLeft": Array [
                       <EuiToolTip
                         delay="regular"
@@ -591,11 +615,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
                             "detectorName": Object {
                               "type": "string",
                             },
+                            "integration": Object {
+                              "type": "string",
+                            },
                             "lastUpdatedTime": Object {
                               "type": "date",
-                            },
-                            "logType": Object {
-                              "type": "string",
                             },
                             "rulesCount": Object {
                               "type": "number",
@@ -611,6 +635,25 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         },
                       }
                     }
+                    defaultQuery={
+                      Query {
+                        "ast": _AST {
+                          "_clauses": Array [],
+                          "_indexedClauses": Object {
+                            "field": Object {},
+                            "group": Array [],
+                            "is": Object {},
+                            "term": Array [],
+                          },
+                        },
+                        "syntax": Object {
+                          "parse": [Function],
+                          "print": [Function],
+                          "printClause": [Function],
+                        },
+                        "text": "",
+                      }
+                    }
                     filters={
                       Array [
                         Object {
@@ -618,6 +661,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "field": "status",
                           "multiSelect": "or",
                           "name": "Status",
+                          "operator": "exact",
                           "options": Array [
                             Object {
                               "name": "Active",
@@ -628,9 +672,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         },
                         Object {
                           "compressed": true,
-                          "field": "logType",
+                          "field": "integration",
+                          "loading": false,
                           "multiSelect": "or",
                           "name": "Integration",
+                          "operator": "exact",
                           "options": Array [],
                           "type": "field_value_selection",
                         },
@@ -639,6 +685,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "field": "space",
                           "multiSelect": "or",
                           "name": "Space",
+                          "operator": "exact",
                           "options": Array [
                             Object {
                               "name": "Custom",
@@ -920,6 +967,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     "field": "status",
                                     "multiSelect": "or",
                                     "name": "Status",
+                                    "operator": "exact",
                                     "options": Array [
                                       Object {
                                         "name": "Active",
@@ -930,9 +978,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                   },
                                   Object {
                                     "compressed": true,
-                                    "field": "logType",
+                                    "field": "integration",
+                                    "loading": false,
                                     "multiSelect": "or",
                                     "name": "Integration",
+                                    "operator": "exact",
                                     "options": Array [],
                                     "type": "field_value_selection",
                                   },
@@ -941,6 +991,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     "field": "space",
                                     "multiSelect": "or",
                                     "name": "Space",
+                                    "operator": "exact",
                                     "options": Array [
                                       Object {
                                         "name": "Custom",
@@ -983,6 +1034,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         "field": "status",
                                         "multiSelect": "or",
                                         "name": "Status",
+                                        "operator": "exact",
                                         "options": Array [
                                           Object {
                                             "name": "Active",
@@ -1119,9 +1171,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     config={
                                       Object {
                                         "compressed": true,
-                                        "field": "logType",
+                                        "field": "integration",
+                                        "loading": false,
                                         "multiSelect": "or",
                                         "name": "Integration",
+                                        "operator": "exact",
                                         "options": Array [],
                                         "type": "field_value_selection",
                                       }
@@ -1256,6 +1310,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         "field": "space",
                                         "multiSelect": "or",
                                         "name": "Space",
+                                        "operator": "exact",
                                         "options": Array [
                                           Object {
                                             "name": "Custom",
@@ -1615,7 +1670,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         },
                         Object {
                           "dataType": "string",
-                          "field": "logType",
+                          "field": "integration",
                           "name": "Integration",
                           "render": [Function],
                           "sortable": true,
@@ -1834,8 +1889,9 @@ exports[`<Detectors /> spec renders the component 1`] = `
                             "type": "detector",
                           },
                           "detectorName": "detector_name",
+                          "integration": "detector_type",
                           "lastUpdatedTime": 1,
-                          "logType": "detector_type",
+                          "rawSpace": "custom",
                           "rulesCount": 2,
                           "space": "Custom",
                           "status": "Active",
@@ -1982,7 +2038,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                           Object {
                                             "isSortAscending": undefined,
                                             "isSorted": false,
-                                            "key": "_data_s_logType_2",
+                                            "key": "_data_s_integration_2",
                                             "name": "Integration",
                                             "onSort": [Function],
                                           },
@@ -2296,16 +2352,16 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                   </EuiTableHeaderCell>
                                   <EuiTableHeaderCell
                                     align="left"
-                                    data-test-subj="tableHeaderCell_logType_2"
+                                    data-test-subj="tableHeaderCell_integration_2"
                                     isSorted={false}
-                                    key="_data_h_logType_2"
+                                    key="_data_h_integration_2"
                                     onSort={[Function]}
                                   >
                                     <th
                                       aria-live="polite"
                                       aria-sort="none"
                                       className="euiTableHeaderCell"
-                                      data-test-subj="tableHeaderCell_logType_2"
+                                      data-test-subj="tableHeaderCell_integration_2"
                                       role="columnheader"
                                       scope="col"
                                       style={
@@ -2709,7 +2765,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     </EuiTableRowCell>
                                     <EuiTableRowCell
                                       align="left"
-                                      key="_data_column_logType_detector_id_1_2"
+                                      key="_data_column_integration_detector_id_1_2"
                                       mobileOptions={
                                         Object {
                                           "header": "Integration",
@@ -2735,7 +2791,176 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         <div
                                           className="euiTableCellContent euiTableCellContent--overflowingContent"
                                         >
-                                          detector_type
+                                          <IntegrationCell
+                                            className=""
+                                            currentEntity="detectors"
+                                            key=".0"
+                                            name="detector_type"
+                                            space="custom"
+                                          >
+                                            <RedirectAppLinks
+                                              application={
+                                                Object {
+                                                  "applications$": BehaviorSubject {
+                                                    "_isScalar": false,
+                                                    "_value": Array [],
+                                                    "closed": false,
+                                                    "hasError": false,
+                                                    "isStopped": false,
+                                                    "observers": Array [],
+                                                    "thrownError": null,
+                                                  },
+                                                  "capabilities": Object {
+                                                    "catalogue": Object {},
+                                                    "management": Object {},
+                                                    "navLinks": Object {},
+                                                    "workspaces": Object {},
+                                                  },
+                                                  "currentAppId$": Observable {
+                                                    "_isScalar": false,
+                                                    "source": Subject {
+                                                      "_isScalar": false,
+                                                      "closed": false,
+                                                      "hasError": false,
+                                                      "isStopped": false,
+                                                      "observers": Array [
+                                                        Subscriber {
+                                                          "_parentOrParents": null,
+                                                          "_subscriptions": Array [
+                                                            SubjectSubscription {
+                                                              "_parentOrParents": [Circular],
+                                                              "_subscriptions": null,
+                                                              "closed": false,
+                                                              "subject": [Circular],
+                                                              "subscriber": [Circular],
+                                                            },
+                                                          ],
+                                                          "closed": false,
+                                                          "destination": SafeSubscriber {
+                                                            "_complete": undefined,
+                                                            "_context": [Circular],
+                                                            "_error": undefined,
+                                                            "_next": [Function],
+                                                            "_parentOrParents": null,
+                                                            "_parentSubscriber": [Circular],
+                                                            "_subscriptions": null,
+                                                            "closed": false,
+                                                            "destination": Object {
+                                                              "closed": true,
+                                                              "complete": [Function],
+                                                              "error": [Function],
+                                                              "next": [Function],
+                                                            },
+                                                            "isStopped": false,
+                                                            "syncErrorThrowable": false,
+                                                            "syncErrorThrown": false,
+                                                            "syncErrorValue": null,
+                                                          },
+                                                          "isStopped": false,
+                                                          "syncErrorThrowable": true,
+                                                          "syncErrorThrown": false,
+                                                          "syncErrorValue": null,
+                                                        },
+                                                      ],
+                                                      "thrownError": null,
+                                                    },
+                                                  },
+                                                  "getUrlForApp": [MockFunction] {
+                                                    "calls": Array [
+                                                      Array [
+                                                        "decoders",
+                                                        Object {
+                                                          "path": "#/decoders?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                      Array [
+                                                        "rules",
+                                                        Object {
+                                                          "path": "#/rules?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                      Array [
+                                                        "kvdbs",
+                                                        Object {
+                                                          "path": "#/kvdbs?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                    ],
+                                                    "results": Array [
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                    ],
+                                                  },
+                                                  "navigateToApp": [MockFunction],
+                                                  "navigateToUrl": [MockFunction],
+                                                  "registerMountContext": [MockFunction],
+                                                  "setAppBadgeControls": [MockFunction],
+                                                  "setAppBottomControls": [MockFunction],
+                                                  "setAppCenterControls": [MockFunction],
+                                                  "setAppDescriptionControls": [MockFunction],
+                                                  "setAppLeftControls": [MockFunction],
+                                                  "setAppRightControls": [MockFunction],
+                                                }
+                                              }
+                                            >
+                                              <div
+                                                className="osdRedirectCrossAppLinks"
+                                              >
+                                                <EuiPopover
+                                                  anchorPosition="downLeft"
+                                                  button={
+                                                    <EuiLink
+                                                      data-test-subj="integrationCellLink"
+                                                      onClick={[Function]}
+                                                    >
+                                                      detector_type
+                                                    </EuiLink>
+                                                  }
+                                                  closePopover={[Function]}
+                                                  display="inlineBlock"
+                                                  hasArrow={true}
+                                                  id="integrationCellPopover-detector_type"
+                                                  isOpen={false}
+                                                  ownFocus={true}
+                                                  panelPaddingSize="none"
+                                                >
+                                                  <div
+                                                    className="euiPopover euiPopover--anchorDownLeft"
+                                                    id="integrationCellPopover-detector_type"
+                                                  >
+                                                    <div
+                                                      className="euiPopover__anchor"
+                                                    >
+                                                      <EuiLink
+                                                        data-test-subj="integrationCellLink"
+                                                        onClick={[Function]}
+                                                      >
+                                                        <button
+                                                          className="euiLink euiLink--primary"
+                                                          data-test-subj="integrationCellLink"
+                                                          disabled={false}
+                                                          onClick={[Function]}
+                                                          type="button"
+                                                        >
+                                                          detector_type
+                                                        </button>
+                                                      </EuiLink>
+                                                    </div>
+                                                  </div>
+                                                </EuiPopover>
+                                              </div>
+                                            </RedirectAppLinks>
+                                          </IntegrationCell>
                                         </div>
                                       </td>
                                     </EuiTableRowCell>

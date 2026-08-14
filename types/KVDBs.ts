@@ -51,6 +51,10 @@ export interface KVDBSearchRequest {
   query?: Record<string, unknown>;
   _source?: Record<string, unknown> | string[] | boolean;
   track_total_hits?: boolean;
+  /** Resolved server-side (exact name match, multiSelect 'or') into a document.id filter. */
+  integrationNames?: string[];
+  space?: string;
+  status?: 'enabled' | 'disabled';
 }
 
 export interface CreateKVDBPayload {

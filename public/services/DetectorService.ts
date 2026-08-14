@@ -107,4 +107,21 @@ export default class DetectorsService implements IDetectorService {
 
     return response;
   };
+
+  // Wazuh: real Detectors count for the Integration CTA popover.
+  countDetectorsByIntegration = async (
+    integration: string,
+    space: string
+  ): Promise<ServerResponse<{ count: number }>> => {
+    const url = `..${API.COUNT_DETECTORS_BY_INTEGRATION}`;
+    const response = (await this.httpClient.get(url, {
+      query: {
+        integration,
+        space,
+        dataSourceId: dataSourceInfo.activeDataSource.id,
+      },
+    })) as ServerResponse<{ count: number }>;
+
+    return response;
+  };
 }
