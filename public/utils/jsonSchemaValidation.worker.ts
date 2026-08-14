@@ -5,7 +5,12 @@
 
 import Ajv, { ErrorObject, ValidateFunction } from 'ajv';
 
-const ajv = new Ajv({ allErrors: true, strict: false });
+// inlineRefs: false — some large decoder/rule schemas reference a huge,
+// ref-free definition (e.g. the full ECS field list) from multiple places.
+// Ajv's default (true) inlines such refs wherever they're used regardless of
+// size, duplicating that generated code and blowing the JS call stack during
+// compilation. Compiling it once as a shared function avoids that.
+const ajv = new Ajv({ allErrors: true, strict: false, inlineRefs: false });
 
 // postMessage clones the schema, so a WeakMap keyed by object identity never hits.
 // Ajv's own getSchema(id) lookup is keyed by the schema's $id instead, which stays
