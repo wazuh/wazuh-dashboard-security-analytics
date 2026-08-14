@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Form, Formik } from 'formik';
 import YAML from 'yaml';
@@ -220,20 +220,30 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     [action, createDecoder, updateDecoder]
   );
 
+  const validationSeq = useRef(0);
+
+  // A superseded validation call must never resolve as "valid" — that would
+  // let an out-of-order result overwrite the current (correct) error state.
+  // Returning a promise that never resolves means Formik simply never
+  // applies this call's result.
+  const NEVER_RESOLVES = new Promise<never>(() => {});
+
   const validateForm = useCallback(
-    (values: { rawDecoder: string }) => {
+    async (values: { rawDecoder: string }) => {
       // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
+      const seq = ++validationSeq.current;
       let decoder: object;
       try {
         decoder = YAML.parse(values.rawDecoder);
       } catch (e) {
         const msg = e instanceof Error ? e.message.split('\n')[0] : 'Invalid YAML syntax';
-        return { rawDecoder: msg };
+        return seq === validationSeq.current ? { rawDecoder: msg } : NEVER_RESOLVES;
       }
       const skippedFields = action === 'create' ? ['id'] : [];
-      return validateWithJsonSchemaAsync(decoderSchema, decoder, {
+      const result = await validateWithJsonSchemaAsync(decoderSchema, decoder, {
         skipRequired: skippedFields,
       });
+      return seq === validationSeq.current ? result : NEVER_RESOLVES;
     },
     [action]
   );
