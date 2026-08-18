@@ -92,6 +92,8 @@ export const ROUTES = Object.freeze({
   KVDBS_CREATE: '/create-kvdb',
   KVDBS_EDIT: '/edit-kvdb',
   LOG_TEST: '/log-test',
+  // PROTOTYPE — throwaway UX-review prototype route
+  UX_PROTOTYPE: '/ux-prototype',
 
   get LANDING_PAGE(): string {
     return this.INTEGRATIONS;

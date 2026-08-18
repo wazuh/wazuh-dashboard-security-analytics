@@ -63,6 +63,9 @@ import UpdateFieldMappings from '../Detectors/components/UpdateFieldMappings/Upd
 // import { ImportRule } from '../Rules/containers/ImportRule/ImportRule';
 // import { DuplicateRule } from '../Rules/containers/DuplicateRule/DuplicateRule';
 import { Rules, CreateRule, EditRule } from '../WazuhRules';
+// PROTOTYPE — throwaway
+import { PrototypeApp } from '../UxPrototype/PrototypeApp';
+import { PrototypeSideNav } from '../UxPrototype/PrototypeSideNav';
 import Callout, { ICalloutProps } from './components/Callout';
 import { DataStore } from '../../store/DataStore';
 // Wazuh: hide Correlations and Correlation rules routes.
@@ -629,6 +632,8 @@ export default class Main extends Component<MainProps, MainState> {
     } = this.state;
     const sideNav: EuiSideNavItemType<{ style: any }>[] = this.getSideNavItems();
     const isDecodersRoute = !!pathname.match(new RegExp(`^${ROUTES.DECODERS}`));
+    // PROTOTYPE — throwaway
+    const isUxPrototype = !!pathname.match(new RegExp(`^${ROUTES.UX_PROTOTYPE}`));
     const showDataSourceMenu = multiDataSourceEnabled && !isDecodersRoute;
     const shouldBlockForDataSource = dataSourceLoading && !isDecodersRoute;
     const dataSourceContextValue: DataSourceContextType = {
@@ -668,7 +673,16 @@ export default class Main extends Component<MainProps, MainState> {
                                 {!HIDDEN_NAV_ROUTES.some((route) => pathname.match(route)) &&
                                   !core.chrome.navGroup.getNavGroupEnabled() && (
                                     <EuiPageSideBar style={{ minWidth: 200 }}>
-                                      <EuiSideNav style={{ width: 200 }} items={sideNav} />
+                                      {/* PROTOTYPE — throwaway */}
+                                      {isUxPrototype ? (
+                                        <PrototypeSideNav
+                                          history={history}
+                                          pathname={pathname}
+                                          search={this.props.location.search}
+                                        />
+                                      ) : (
+                                        <EuiSideNav style={{ width: 200 }} items={sideNav} />
+                                      )}
                                     </EuiPageSideBar>
                                   )}
                                 <EuiPageBody>
@@ -1201,6 +1215,13 @@ export default class Main extends Component<MainProps, MainState> {
                                       path={ROUTES.KVDBS}
                                       render={(props: RouteComponentProps) => (
                                         <KVDBs {...props} notifications={core?.notifications} />
+                                      )}
+                                    />
+                                    {/* PROTOTYPE — throwaway */}
+                                    <Route
+                                      path={ROUTES.UX_PROTOTYPE}
+                                      render={(props: RouteComponentProps) => (
+                                        <PrototypeApp {...props} setActionMenu={setActionMenu} />
                                       )}
                                     />
                                     <Route
