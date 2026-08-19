@@ -31,6 +31,7 @@
 | [#164](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/164) [#347](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/347) | Rules table and details now display the real integration title. |
 | [#178](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/178) | Updated nav menu group label to "Security analytics" to match Wazuh Dashboard capitalization style. |
 | [#353](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/353) | Removed getLogTypeLabel usage across Security analytics |
+| [#447](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/447) | Unified the user-facing terminology: one label per concept for the row actions (`View`, `Delete`), the rule severity (`Rule level`) and the creation/modification timestamps (`Created`, `Modified`), and documented the vocabulary in `TERMINOLOGY.md` |
 
 ### Removed
 

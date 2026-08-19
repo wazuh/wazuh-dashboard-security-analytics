@@ -374,7 +374,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       },
       {
         field: 'level',
-        name: 'Severity',
+        name: 'Rule level',
         sortable: true,
         width: '120px',
         render: (level: string) => {
@@ -582,7 +582,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                     {
                       type: 'field_value_selection',
                       field: 'severity',
-                      name: 'Severity',
+                      name: 'Rule level',
                       compressed: true,
                       multiSelect: 'or',
                       operator: 'exact',

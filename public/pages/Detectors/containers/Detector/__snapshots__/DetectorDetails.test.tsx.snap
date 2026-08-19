@@ -1837,7 +1837,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                         fullWidth={true}
                         hasChildLabel={true}
                         hasEmptyLabelSpace={false}
-                        label="Created at"
+                        label="Created"
                         labelType="label"
                       >
                         <div
@@ -1857,7 +1857,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                 className="euiFormLabel euiFormRow__label"
                                 htmlFor="some_html_id"
                               >
-                                Created at
+                                Created
                               </label>
                             </EuiFormLabel>
                           </div>
@@ -1865,7 +1865,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             className="euiFormRow__fieldWrapper"
                           >
                             <EuiText
-                              data-test-subj="text-details-group-content-created-at"
+                              data-test-subj="text-details-group-content-created"
                               id="some_html_id"
                               onBlur={[Function]}
                               onFocus={[Function]}
@@ -1873,7 +1873,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             >
                               <div
                                 className="euiText euiText--small"
-                                data-test-subj="text-details-group-content-created-at"
+                                data-test-subj="text-details-group-content-created"
                                 id="some_html_id"
                                 onBlur={[Function]}
                                 onFocus={[Function]}
@@ -1899,7 +1899,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                         fullWidth={true}
                         hasChildLabel={true}
                         hasEmptyLabelSpace={false}
-                        label="Last updated time"
+                        label="Modified"
                         labelType="label"
                       >
                         <div
@@ -1919,7 +1919,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                 className="euiFormLabel euiFormRow__label"
                                 htmlFor="some_html_id"
                               >
-                                Last updated time
+                                Modified
                               </label>
                             </EuiFormLabel>
                           </div>
@@ -1927,7 +1927,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             className="euiFormRow__fieldWrapper"
                           >
                             <EuiText
-                              data-test-subj="text-details-group-content-last-updated-time"
+                              data-test-subj="text-details-group-content-modified"
                               id="some_html_id"
                               onBlur={[Function]}
                               onFocus={[Function]}
@@ -1935,7 +1935,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             >
                               <div
                                 className="euiText euiText--small"
-                                data-test-subj="text-details-group-content-last-updated-time"
+                                data-test-subj="text-details-group-content-modified"
                                 id="some_html_id"
                                 onBlur={[Function]}
                                 onFocus={[Function]}

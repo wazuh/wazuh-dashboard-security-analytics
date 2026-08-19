@@ -58,7 +58,12 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     return () => clearTimeout(t);
   }, [searchText]);
 
-  const { items: rules, total, loading: loadingRules, refresh } = useIntegrationRules({
+  const {
+    items: rules,
+    total,
+    loading: loadingRules,
+    refresh,
+  } = useIntegrationRules({
     ruleIds,
     space,
     enabled,
@@ -89,7 +94,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
       },
       {
         field: 'level',
-        name: 'Severity',
+        name: 'Rule level',
         sortable: true,
         width: '120px',
         render: (level: string) => {
@@ -197,7 +202,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
               </EuiFlexItem>
               <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
                 <EuiComboBox
-                  placeholder="Severity"
+                  placeholder="Rule level"
                   options={severityOptions}
                   selectedOptions={selectedSeverityOptions}
                   onChange={(opts) => {

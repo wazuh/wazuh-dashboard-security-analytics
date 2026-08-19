@@ -340,7 +340,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
       {
         field: 'lastUpdatedTime',
-        name: 'Last updated time',
+        name: 'Modified',
         sortable: true,
         dataType: 'date',
         render: (last_update_time: number) => renderTime(last_update_time) || DEFAULT_EMPTY_DATA,

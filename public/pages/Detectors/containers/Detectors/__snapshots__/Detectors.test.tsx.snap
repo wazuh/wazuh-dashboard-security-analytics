@@ -234,7 +234,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     Object {
                       "dataType": "date",
                       "field": "lastUpdatedTime",
-                      "name": "Last updated time",
+                      "name": "Modified",
                       "render": [Function],
                       "sortable": true,
                     },
@@ -1692,7 +1692,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         Object {
                           "dataType": "date",
                           "field": "lastUpdatedTime",
-                          "name": "Last updated time",
+                          "name": "Modified",
                           "render": [Function],
                           "sortable": true,
                         },
@@ -2060,7 +2060,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                             "isSortAscending": undefined,
                                             "isSorted": false,
                                             "key": "_data_s_lastUpdatedTime_5",
-                                            "name": "Last updated time",
+                                            "name": "Modified",
                                             "onSort": [Function],
                                           },
                                         ]
@@ -2565,15 +2565,15 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                 values={
                                                   Object {
                                                     "description": undefined,
-                                                    "innerText": "Last updated time",
+                                                    "innerText": "Modified",
                                                   }
                                                 }
                                               >
                                                 <span
                                                   className="euiTableCellContent__text"
-                                                  title="Last updated time"
+                                                  title="Modified"
                                                 >
-                                                  Last updated time
+                                                  Modified
                                                 </span>
                                               </EuiI18n>
                                             </EuiInnerText>
@@ -3037,7 +3037,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                       key="_data_column_lastUpdatedTime_detector_id_1_5"
                                       mobileOptions={
                                         Object {
-                                          "header": "Last updated time",
+                                          "header": "Modified",
                                           "render": undefined,
                                         }
                                       }
@@ -3055,7 +3055,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         <div
                                           className="euiTableRowCell__mobileHeader euiTableRowCell--hideForDesktop"
                                         >
-                                          Last updated time
+                                          Modified
                                         </div>
                                         <div
                                           className="euiTableCellContent euiTableCellContent--overflowingContent"

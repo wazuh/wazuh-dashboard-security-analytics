@@ -57,10 +57,10 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   onClose,
 }) => {
   const [selectedView, setSelectedView] = useState(viewOptions[0].id);
-  const fetchDecoder = useCallback(() => DataStore.decoders.getDecoder(decoderId, space), [
-    decoderId,
-    space,
-  ]);
+  const fetchDecoder = useCallback(
+    () => DataStore.decoders.getDecoder(decoderId, space),
+    [decoderId, space]
+  );
   const { data: decoder, loading, error } = useLazyFetch(fetchDecoder, 'Decoder not found.');
 
   const decoderJson = useMemo(() => {
@@ -88,7 +88,7 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
     { label: 'ID', value: decoder?.document?.id },
     { label: 'Author', value: decoder?.document?.metadata?.author },
     { label: 'Description', value: decoder?.document?.metadata?.description },
-    { label: 'Date', value: decoder?.document?.metadata?.date, type: 'date' },
+    { label: 'Created', value: decoder?.document?.metadata?.date, type: 'date' },
     { label: 'Modified', value: decoder?.document?.metadata?.modified, type: 'date' },
     { label: 'Documentation', value: decoder?.document?.metadata?.documentation },
     { label: 'References', value: decoder?.document?.metadata?.references, type: 'url' },
