@@ -23,6 +23,8 @@ import { OS_NOTIFICATION_PLUGIN } from './utils/constants';
 import { dataSourceInfo } from './services/utils/constants';
 import { History } from 'history';
 import { getBrowserServices } from './services/utils/constants';
+import { HowItWorksFlyout } from './components/HowItWorksFlyout';
+import { registerHelpMenu } from './utils/helpMenu';
 
 export function renderApp(
   coreStart: CoreStart,
@@ -35,6 +37,7 @@ export function renderApp(
   const services = getBrowserServices();
   const metrics = new MetricsContext(services.metricsService);
   const root = createRoot(params.element);
+  const unregisterHelpMenu = registerHelpMenu(coreStart.chrome);
 
   DataStore.logTypes
     .getLogTypes()
@@ -94,6 +97,7 @@ export function renderApp(
                         dataSourceManagement={dataSourceManagement}
                         setActionMenu={params.setHeaderActionMenu}
                       />
+                      <HowItWorksFlyout />
                     </CoreServicesContext.Provider>
                   </SecurityAnalyticsContext.Provider>
                 </DarkModeContext.Provider>
@@ -117,5 +121,8 @@ export function renderApp(
       console.error(error.message ?? error);
     });
 
-  return () => root.unmount();
+  return () => {
+    unregisterHelpMenu();
+    root.unmount();
+  };
 }

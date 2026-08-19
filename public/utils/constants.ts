@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { webDocumentationLink } from '../../common/services/web_documentation';
 import { SimpleSavedObject } from 'opensearch-dashboards/public';
 import { Detector, LogType, ServerResponse } from '../../types';
 import { DetectorInput, PeriodSchedule } from '../../models/interfaces';
@@ -22,6 +23,8 @@ export const PLUGIN_NAME = 'opensearch_security_analytics_dashboards';
 export const OS_NOTIFICATION_PLUGIN = 'opensearch-notifications';
 
 export const DEFAULT_EMPTY_DATA = '-';
+
+export const SECURITY_ANALYTICS_DOCUMENTATION_URL = webDocumentationLink('index.html');
 export const OVERVIEW_NAV_ID = `sa_overview`;
 export const GET_STARTED_NAV_ID = `get_started`;
 export const THREAT_ALERTS_NAV_ID = `threat_alerts`;

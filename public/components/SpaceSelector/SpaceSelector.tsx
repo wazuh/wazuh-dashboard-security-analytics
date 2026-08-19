@@ -14,9 +14,9 @@ import {
   EuiSpacer,
   EuiText,
 } from "@elastic/eui";
+import { SECURITY_ANALYTICS_DOCUMENTATION_URL } from "../../utils/constants";
 import {
   SPACES_LIFECYCLE_SUMMARY,
-  SPACES_PROMOTION_SUMMARY,
   SPACE_SELECTOR_LABEL,
   SpaceTypes,
 } from "../../../common/constants";
@@ -33,8 +33,7 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
   selectedSpace,
   onSpaceChange,
   isDisabled = false,
-  // Wazuh: placeholder until the documentation routes are settled.
-  documentationUrl = '#',
+  documentationUrl = SECURITY_ANALYTICS_DOCUMENTATION_URL,
   allowedSpaces,
 }) => {
   const visibleSpaceTypes = allowedSpaces
@@ -84,7 +83,6 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
             <EuiSpacer size="s" />
             <EuiText size="xs" color="subdued">
               <p>{SPACES_LIFECYCLE_SUMMARY}</p>
-              <p>{SPACES_PROMOTION_SUMMARY}</p>
             </EuiText>
             <EuiSpacer size="s" />
             {visibleSpaceTypes.map((spaceType) => (
@@ -100,7 +98,7 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
             <p>
               <EuiLink href={documentationUrl} target="_blank" external>
                 <EuiText size="s" className="eui-displayInline">
-                  Learn more in the documentation
+                  Read the full documentation
                 </EuiText>
               </EuiLink>
             </p>

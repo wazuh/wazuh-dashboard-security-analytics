@@ -14,6 +14,8 @@ export const WAZUH_VERSION = wazuh.version;
 
 export const PLUGIN_VERSION_SHORT = WAZUH_VERSION.split('.').splice(0, 2).join('.');
 
+export const DOCUMENTATION_WEB_BASE_URL = 'https://documentation.wazuh.com';
+
 export enum ThreatIntelIocSourceType {
   S3_CUSTOM = 'S3_CUSTOM',
   IOC_UPLOAD = 'IOC_UPLOAD',
