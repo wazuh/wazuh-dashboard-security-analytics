@@ -10,6 +10,7 @@ import {
   EuiBottomBar,
   EuiButton,
   EuiButtonEmpty,
+  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiCompressedFormRow,
@@ -43,7 +44,7 @@ import { YamlRuleEditorComponent } from './components/YamlRuleEditorComponent/Ya
 import { mapFormToRule, mapRuleToForm } from './mappers';
 import { DetectionVisualEditor } from '../../../Rules/components/RuleEditor/DetectionVisualEditor';
 import { MitreVisualEditor } from './components/MitreVisualEditor/MitreVisualEditor';
-import { MITRE_SECTIONS } from '../../utils/mitre';
+import { parseMitreYmlWithErrors } from '../../utils/mitre';
 import { ComplianceVisualEditor } from './components/ComplianceVisualEditor/ComplianceVisualEditor';
 import { getSeverityLabel } from '../../../Correlations/utils/constants';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
@@ -169,14 +170,9 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
           errors.tags = `Tags must start with '${TAGS_PREFIX}'`;
         }
 
-        const mitreErrors: Partial<Record<keyof typeof values.mitre, string>> = {};
-        for (const section of MITRE_SECTIONS) {
-          if (values.mitre[section.field].some((e) => !e.id || !e.name)) {
-            mitreErrors[section.field] = 'Both ID and name are required for each entry.';
-          }
-        }
-        if (Object.keys(mitreErrors).length > 0) {
-          errors.mitre = mitreErrors as FormikErrors<RuleEditorFormModel>['mitre'];
+        const mitreErrors = parseMitreYmlWithErrors(values.mitre).errors;
+        if (mitreErrors.length) {
+          errors.mitre = mitreErrors.join(' ');
         }
 
         return errors;
@@ -193,6 +189,9 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
       }}
     >
       {(props) => {
+        // Derived, not stored: the raw YAML in `values.mitre` is the single source of truth.
+        const mitreErrors = parseMitreYmlWithErrors(props.values.mitre).errors;
+
         const onIntegrationCreateSuccess = (newOption: {
           id: string;
           value: string;
@@ -543,15 +542,15 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
 
                   <EuiAccordion
                     id="mitre-attack"
-                    initialIsOpen={MITRE_SECTIONS.some(
-                      (s) => props.values.mitre[s.field]?.length > 0
-                    )}
+                    initialIsOpen={!!props.values.mitre}
                     buttonContent={
                       <>
                         MITRE ATT&CK <i>- optional</i>
                         <EuiText size="xs" color={props.errors.mitre ? 'danger' : 'subdued'}>
-                          {props.errors.mitre
-                            ? 'Some entries are incomplete. Both ID and name are required.'
+                          {mitreErrors.length
+                            ? `The MITRE ATT&CK block has ${mitreErrors.length} problem${
+                                mitreErrors.length > 1 ? 's' : ''
+                              }. Expand to see the details.`
                             : 'Map this rule to MITRE ATT&CK tactics, techniques and subtechniques.'}
                         </EuiText>
                       </>
@@ -559,9 +558,26 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     paddingSize="l"
                   >
                     <EuiSpacer size="s" />
+                    {!!mitreErrors.length && (
+                      <>
+                        <EuiCallOut
+                          size="s"
+                          color="danger"
+                          title="Fix the MITRE ATT&CK block in the YAML editor, or replace it using the fields below."
+                          data-test-subj="mitre_structural_errors"
+                        >
+                          <ul>
+                            {mitreErrors.map((error, i) => (
+                              <li key={i}>{error}</li>
+                            ))}
+                          </ul>
+                        </EuiCallOut>
+                        <EuiSpacer size="s" />
+                      </>
+                    )}
                     <MitreVisualEditor
-                      mitre={props.values.mitre}
-                      onChange={(state) => props.setFieldValue('mitre', state)}
+                      mitreYml={props.values.mitre}
+                      onChange={(yml) => props.setFieldValue('mitre', yml)}
                     />
                   </EuiAccordion>
 
