@@ -184,7 +184,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
                     <EuiIcon type={'popout'} />
                   </EuiSmallButton>
                 )}
-                <EuiSpacer size="xl" />
+                <EuiSpacer size="m" />
               </EuiFlexItem>
             )}
           </EuiFlexGroup>

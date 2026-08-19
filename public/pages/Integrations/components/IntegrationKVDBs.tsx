@@ -148,6 +148,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, spa
                     <EuiIcon type={'popout'} />
                   </EuiSmallButton>
                 )}
+                <EuiSpacer size="m" />
               </EuiFlexItem>
             )}
           </EuiFlexGroup>

@@ -167,6 +167,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
                     <EuiIcon type={'popout'} />
                   </EuiSmallButton>
                 )}
+                <EuiSpacer size="m" />
               </EuiFlexItem>
             )}
           </EuiFlexGroup>
