@@ -59,6 +59,10 @@ import {
   getOrSelectedValues,
 } from '../../../../utils/entitySearchBarFilters';
 
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A rule defines the conditions under which the engine generates a finding, evaluated on fields the decoders already normalized. Each rule belongs to an integration and is promoted with it.';
+
 const DEFAULT_PAGE_SIZE = 25;
 
 // Wazuh: Rules-only Severity filter — a `field_value_selection` EuiSearchBar
@@ -547,12 +551,15 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader>
+        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
           <EuiFlexItem>
-            <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
+            <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween">
               <EuiFlexItem>
                 <EuiText size="s">
                   <h1>Rules</h1>
+                </EuiText>
+                <EuiText size="s" color="subdued">
+                  {PAGE_DESCRIPTION}
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>

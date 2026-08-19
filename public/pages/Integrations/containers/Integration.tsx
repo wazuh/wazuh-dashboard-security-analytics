@@ -14,6 +14,7 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiHealth,
+  EuiLink,
   EuiLoadingSpinner,
   EuiPanel,
   EuiSpacer,
@@ -21,6 +22,7 @@ import {
   EuiTabs,
   EuiText,
   EuiTitle,
+  EuiToolTip,
   EuiPopover,
   EuiContextMenuPanel,
   EuiContextMenuItem,
@@ -46,6 +48,10 @@ import { formatIntegrationMetadataDate } from '../utils/helpers';
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
 }
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const INTEGRATION_DESCRIPTION =
+  'An integration groups the decoders, rules and KVDBs that add support for one log source.';
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
   const isMountedRef = useRef(true);
@@ -110,6 +116,26 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     [integrationDetails]
   );
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
+
+  // Wazuh: the count opens its child tab; zero stays a disabled link, as in the list.
+  const renderCountLink = (count: number, tabId: string, entityLabel: string) => {
+    const tabLabel = integrationDetailsTabs.find((tab) => tab.id === tabId)?.name ?? '';
+    const link =
+      count > 0 ? (
+        <EuiLink onClick={() => setSelectedTabId(tabId)}>{count}</EuiLink>
+      ) : (
+        <EuiLink disabled>{count}</EuiLink>
+      );
+
+    // <span> host: a disabled EuiLink emits no hover events, so the tooltip needs one.
+    return (
+      <EuiToolTip
+        content={count > 0 ? `Go to the ${tabLabel} tab` : `This integration has no ${entityLabel}`}
+      >
+        <span>{link}</span>
+      </EuiToolTip>
+    );
+  };
 
   const renderTabContent = () => {
     switch (selectedTabId) {
@@ -380,8 +406,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           },
         ]}
         appRightControls={[{ renderComponent: actionsButton }]}
+        appDescriptionControls={[{ description: INTEGRATION_DESCRIPTION }]}
       >
-        <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
+        <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween">
           <EuiFlexItem>
             <EuiFlexGroup alignItems="center" responsive={false} wrap>
               <EuiFlexItem grow={false}>
@@ -395,6 +422,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
                 </EuiHealth>
               </EuiFlexItem>
             </EuiFlexGroup>
+            <EuiText size="s" color="subdued">
+              {INTEGRATION_DESCRIPTION}
+            </EuiText>
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
@@ -425,7 +455,8 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             <EuiDescriptionList
               listItems={[
                 {
-                  title: 'Date',
+                  // Wazuh: canonical label per TERMINOLOGY.md
+                  title: 'Created',
                   description: formatIntegrationMetadataDate(
                     integrationDetails.document.metadata?.date
                   ),
@@ -460,7 +491,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               listItems={[
                 {
                   title: 'Rules',
-                  description: integrationDetails.detectionRulesCount,
+                  description: renderCountLink(
+                    integrationDetails.detectionRulesCount,
+                    INTEGRATION_DETAILS_TAB.DETECTION_RULES,
+                    'rules'
+                  ),
                 },
               ]}
             />
@@ -470,7 +505,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               listItems={[
                 {
                   title: 'Decoders',
-                  description: integrationDetails.decodersCount,
+                  description: renderCountLink(
+                    integrationDetails.decodersCount,
+                    INTEGRATION_DETAILS_TAB.DECODERS,
+                    'decoders'
+                  ),
                 },
               ]}
             />
@@ -480,7 +519,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
               listItems={[
                 {
                   title: 'KVDBs',
-                  description: integrationDetails.kvdbsCount,
+                  description: renderCountLink(
+                    integrationDetails.kvdbsCount,
+                    INTEGRATION_DETAILS_TAB.KVDBS,
+                    'KVDBs'
+                  ),
                 },
               ]}
             />

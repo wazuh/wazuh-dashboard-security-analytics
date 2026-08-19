@@ -40,6 +40,13 @@ exports[`<Detectors /> spec renders the component 1`] = `
       className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--directionColumn euiFlexGroup--responsive"
     >
       <PageHeader
+        appDescriptionControls={
+          Array [
+            Object {
+              "description": "A detector connects rules to a data source and runs continuously to produce findings. It uses rules already active in a single space, either Custom or Standard.",
+            },
+          ]
+        }
         appRightControls={
           Array [
             Object {
@@ -61,9 +68,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
           <div
             className="euiFlexItem"
           >
-            <EuiFlexGroup>
+            <EuiFlexGroup
+              alignItems="flexStart"
+            >
               <div
-                className="euiFlexGroup euiFlexGroup--gutterLarge euiFlexGroup--directionRow euiFlexGroup--responsive"
+                className="euiFlexGroup euiFlexGroup--gutterLarge euiFlexGroup--alignItemsFlexStart euiFlexGroup--directionRow euiFlexGroup--responsive"
               >
                 <EuiFlexItem>
                   <div
@@ -78,6 +87,25 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         <h1>
                           Detectors
                         </h1>
+                      </div>
+                    </EuiText>
+                    <EuiText
+                      color="subdued"
+                      size="s"
+                    >
+                      <div
+                        className="euiText euiText--small"
+                      >
+                        <EuiTextColor
+                          color="subdued"
+                          component="div"
+                        >
+                          <div
+                            className="euiTextColor euiTextColor--subdued"
+                          >
+                            A detector connects rules to a data source and runs continuously to produce findings. It uses rules already active in a single space, either Custom or Standard.
+                          </div>
+                        </EuiTextColor>
                       </div>
                     </EuiText>
                   </div>

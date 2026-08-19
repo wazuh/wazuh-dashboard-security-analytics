@@ -66,6 +66,10 @@ interface DetectorsState {
   isPopoverOpen: boolean;
 }
 
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A detector connects rules to a data source and runs continuously to produce findings. It uses rules already active in a single space, either Custom or Standard.';
+
 export default class Detectors extends Component<DetectorsProps, DetectorsState> {
   constructor(props: DetectorsProps) {
     super(props);
@@ -496,13 +500,17 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
           appRightControls={actions.map((action) => ({
             renderComponent: action,
           }))}
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
         >
           <EuiFlexItem>
-            <EuiFlexGroup>
+            <EuiFlexGroup alignItems="flexStart">
               <EuiFlexItem>
                 <EuiText size="s">
                   {/* Wazuh modification: Changed page title to "Detectors" */}
                   <h1>Detectors</h1>
+                </EuiText>
+                <EuiText size="s" color="subdued">
+                  {PAGE_DESCRIPTION}
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem>

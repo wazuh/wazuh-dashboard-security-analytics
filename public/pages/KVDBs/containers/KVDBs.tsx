@@ -57,6 +57,10 @@ interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
 }
 
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A KVDB is a lookup table that content in its integration can query to enrich or check events, for example mapping IP addresses to threat categories.';
+
 export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const isMountedRef = useRef(true);
   const [items, setItems] = useState<KVDBItem[]>([]);
@@ -459,11 +463,14 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader>
-          <EuiFlexGroup gutterSize="s" justifyContent="spaceBetween" alignItems="center">
+        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
+          <EuiFlexGroup gutterSize="s" justifyContent="spaceBetween" alignItems="flexStart">
             <EuiFlexItem>
               <EuiText size="s">
                 <h1>KVDBs</h1>
+              </EuiText>
+              <EuiText size="s" color="subdued">
+                {PAGE_DESCRIPTION}
               </EuiText>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
@@ -491,7 +498,6 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           </EuiFlexGroup>
         </PageHeader>
       </EuiFlexItem>
-      <EuiSpacer size="xs" />
       <EuiFlexItem>
         <EuiPanel>
           <EuiFlexGroup alignItems="center" gutterSize="m">

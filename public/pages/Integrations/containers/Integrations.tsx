@@ -62,6 +62,15 @@ export interface IntegrationsProps extends RouteComponentProps, DataSourceProps 
   notifications: NotificationsStart;
 }
 
+// Wazuh: one description per tab, rendered inside the tab panel; in the page header it
+// would sit above the space policy card and read as describing that.
+const TAB_DESCRIPTIONS: Record<string, string> = {
+  [OVERVIEW_TAB.INTEGRATIONS]:
+    'An integration groups the decoders, rules and KVDBs that add support for one log source.',
+  [OVERVIEW_TAB.FILTERS]:
+    'A filter checks conditions on an event without modifying it and discards the events that do not pass. Filters apply to the whole space, not to a single integration.',
+};
+
 const DELETE_SELECTED_ACTION = 'delete_selected' as const;
 const CLEAR_SPACE_ACTION = 'clear_space' as const;
 
@@ -109,6 +118,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   // This trusts the changes in the history location causes a rerender in the componnet
   const selectedTab =
     history.location.pathname === ROUTES.FILTERS ? OVERVIEW_TAB.FILTERS : OVERVIEW_TAB.INTEGRATIONS;
+  const pageDescription = TAB_DESCRIPTIONS[selectedTab];
 
   const onTabChange = (tab: OverviewTabId) => {
     const path = tab === OVERVIEW_TAB.FILTERS ? ROUTES.FILTERS : ROUTES.INTEGRATIONS;
@@ -585,7 +595,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         </EuiConfirmModal>
       )}
 
-      <PageHeader appRightControls={[{ renderComponent: createIntegrationAction }]}>
+      <PageHeader
+        appRightControls={[{ renderComponent: createIntegrationAction }]}
+        appDescriptionControls={[{ description: pageDescription }]}
+      >
         <EuiFlexItem>
           <EuiFlexGroup alignItems="center" justifyContent={'spaceBetween'}>
             <EuiFlexItem>
@@ -632,7 +645,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           </EuiTabs>
         }
       >
-        <EuiSpacer size={'l'} />
+        <EuiSpacer size={'s'} />
+        <EuiText size="s" color="subdued">
+          {pageDescription}
+        </EuiText>
+        <EuiSpacer size={'m'} />
         {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
           <RedirectAppLinks application={getApplication()}>
             <EuiInMemoryTable

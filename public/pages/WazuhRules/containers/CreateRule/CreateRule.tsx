@@ -28,7 +28,7 @@ export const CreateRule: React.FC<CreateRuleProps> = ({ history, services, notif
       title="Create rule"
       subtitleData={{
         description:
-          'Create a rule for detectors to identify threat scenarios for different log sources.',
+          'Create a rule for detectors to identify threat scenarios for different log sources. New rules are created in the Draft space.',
         links: {
           label: 'Learn more in the Sigma rules specification',
           href: 'https://sigmahq.github.io/sigma-specification/Sigma_specification.html',

@@ -82,6 +82,11 @@ type KVDBFormPageProps = {
 export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const kvdbId = props.match.params.id;
+  // Wazuh: creation always targets Draft; this form has no space in scope on edit.
+  const pageDescription =
+    action === KVDB_ACTION.CREATE
+      ? 'Create a new KVDB, a lookup table the content in its integration can query to enrich or check events. New KVDBs are created in the Draft space.'
+      : 'Edit the KVDB to update its configuration.';
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState<EditorType>('visual');
   const [rawKvdb, setRawKvdb] = useState<string | undefined>(undefined);
@@ -306,14 +311,12 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
           {(formikProps) => (
             <Form>
               <EuiPanel style={{ paddingBottom: '60px' }}>
-                <PageHeader appDescriptionControls={false}>
+                <PageHeader appDescriptionControls={[{ description: pageDescription }]}>
                   <EuiText size="s">
                     <h1>{actionLabels[action]} KVDB</h1>
                   </EuiText>
                   <EuiText size="s" color="subdued">
-                    {action === KVDB_ACTION.CREATE
-                      ? 'Create a new KVDB.'
-                      : 'Edit the KVDB to update its configuration.'}
+                    {pageDescription}
                   </EuiText>
                   <EuiSpacer />
                 </PageHeader>

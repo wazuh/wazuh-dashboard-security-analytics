@@ -55,6 +55,10 @@ import {
   getOrSelectedValues,
 } from '../../../utils/entitySearchBarFilters';
 
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A decoder defines how a raw log event is parsed into normalized fields. Each decoder belongs to an integration.';
+
 const DEFAULT_PAGE_SIZE = 25;
 
 interface DecodersProps {
@@ -503,12 +507,15 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader>
+        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
           <EuiFlexItem>
-            <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
+            <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween">
               <EuiFlexItem>
                 <EuiText size="s">
                   <h1>Decoders</h1>
+                </EuiText>
+                <EuiText size="s" color="subdued">
+                  {PAGE_DESCRIPTION}
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>

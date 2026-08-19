@@ -65,6 +65,16 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const idDecoder = props.match.params.id;
   const spaceDecoder = new URLSearchParams(props.location?.search).get('space') ?? '';
+  // Wazuh: creation always targets Draft; on edit the space comes from the URL.
+  const pageDescription =
+    action === 'create'
+      ? 'Create a new decoder to normalize logs from your selected integration. New decoders are created in the Draft space.'
+      : 'Edit the decoder to update the normalization of logs from your selected integration.' +
+        (spaceDecoder
+          ? ` This decoder is in the ${
+              spaceDecoder.charAt(0).toUpperCase() + spaceDecoder.slice(1)
+            } space.`
+          : '');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState('yaml');
   const [integrationType, setIntegrationType] = useState<string>('');
@@ -276,15 +286,13 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           {(props) => (
             <Form>
               <EuiPanel className={'rule-editor-form'} style={{ paddingBottom: '60px' }}>
-                <PageHeader appDescriptionControls={false}>
+                <PageHeader appDescriptionControls={[{ description: pageDescription }]}>
                   <EuiText size="s">
-                    <h1>{actionLabels[action]}</h1>
+                    <h1>{actionLabels[action]} decoder</h1>
                   </EuiText>
 
                   <EuiText size="s" color="subdued">
-                    {action === 'create'
-                      ? 'Create a new decoder to normalize logs from your selected integration.'
-                      : 'Edit the decoder to update the normalization of logs from your selected integration.'}
+                    {pageDescription}
                   </EuiText>
 
                   <EuiSpacer size="m" />

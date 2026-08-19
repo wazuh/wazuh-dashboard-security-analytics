@@ -15,7 +15,8 @@ import {
   EuiText,
 } from "@elastic/eui";
 import {
-  PLUGIN_VERSION_SHORT,
+  SPACES_LIFECYCLE_SUMMARY,
+  SPACES_PROMOTION_SUMMARY,
   SPACE_SELECTOR_LABEL,
   SpaceTypes,
 } from "../../../common/constants";
@@ -32,7 +33,8 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
   selectedSpace,
   onSpaceChange,
   isDisabled = false,
-  documentationUrl = `https://documentation.wazuh.com/${PLUGIN_VERSION_SHORT}/user-manual/kvdbs/spaces.html`,
+  // Wazuh: placeholder until the documentation routes are settled.
+  documentationUrl = '#',
   allowedSpaces,
 }) => {
   const visibleSpaceTypes = allowedSpaces
@@ -78,6 +80,11 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
           <div style={{ width: "300px" }}>
             <EuiText size="s">
               <strong>Spaces</strong>
+            </EuiText>
+            <EuiSpacer size="s" />
+            <EuiText size="xs" color="subdued">
+              <p>{SPACES_LIFECYCLE_SUMMARY}</p>
+              <p>{SPACES_PROMOTION_SUMMARY}</p>
             </EuiText>
             <EuiSpacer size="s" />
             {visibleSpaceTypes.map((spaceType) => (

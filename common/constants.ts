@@ -27,7 +27,7 @@ export const SpaceTypes = {
     }),
     value: 'draft',
     description: i18n.translate('securityAnalytics.spaceTypes.draftDescription', {
-      defaultMessage: 'Staging area for creating or editing resources before testing.',
+      defaultMessage: 'Working area where content is created and edited. Not active in the engine.',
     }),
   },
   TEST: {
@@ -36,7 +36,7 @@ export const SpaceTypes = {
     }),
     value: 'test',
     description: i18n.translate('securityAnalytics.spaceTypes.testDescription', {
-      defaultMessage: 'Controlled environment for validation before production.',
+      defaultMessage: 'Validation area where content is loaded into the engine for testing.',
     }),
   },
   CUSTOM: {
@@ -45,7 +45,7 @@ export const SpaceTypes = {
     }),
     value: 'custom',
     description: i18n.translate('securityAnalytics.spaceTypes.customDescription', {
-      defaultMessage: 'Independent space for custom or modified content.',
+      defaultMessage: 'Production area. Content is active and applied to all incoming events.',
     }),
   },
   STANDARD: {
@@ -54,10 +54,28 @@ export const SpaceTypes = {
     }),
     value: 'standard',
     description: i18n.translate('securityAnalytics.spaceTypes.standardDescription', {
-      defaultMessage: 'Wazuh CTI provided resources.',
+      defaultMessage:
+        'Read-only. Contains the built-in integrations, decoders, and rules shipped with Wazuh.',
     }),
   },
 } as const;
+
+// Wazuh: prose, not a numbered list; the selector filters spaces per page.
+export const SPACES_LIFECYCLE_SUMMARY = i18n.translate(
+  'securityAnalytics.spaceTypes.lifecycleSummary',
+  {
+    defaultMessage:
+      'Three spaces are the stages of the content lifecycle: Draft, Test and Custom. The fourth, Standard, is read-only content shipped by Wazuh.',
+  }
+);
+
+export const SPACES_PROMOTION_SUMMARY = i18n.translate(
+  'securityAnalytics.spaceTypes.promotionSummary',
+  {
+    defaultMessage:
+      'Content is promoted sequentially from Draft to Test, and from Test to Custom, after passing the required validation steps.',
+  }
+);
 
 export const SPACE_SELECTOR_LABEL = i18n.translate('securityAnalytics.spaceSelector.label', {
   defaultMessage: 'Space:',

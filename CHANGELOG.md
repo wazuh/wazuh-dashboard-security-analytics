@@ -32,6 +32,7 @@
 | [#178](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/178) | Updated nav menu group label to "Security analytics" to match Wazuh Dashboard capitalization style. |
 | [#353](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/353) | Removed getLogTypeLabel usage across Security analytics |
 | [#447](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/447) | Unified the user-facing terminology: one label per concept for the row actions (`View`, `Delete`), the rule severity (`Rule level`) and the creation/modification timestamps (`Created`, `Modified`), and documented the vocabulary in `TERMINOLOGY.md` |
+| [#447](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/447) | Added an explanation of what each entity is for: a one-line description on the Decoders, KVDBs, Rules, Detectors, Log test, Integrations and Filters lists, the entity name and target space on the create and edit forms, counts that open their child tab on the integration detail page, and the stage order and Standard's role in the spaces popover |
 
 ### Removed
 
