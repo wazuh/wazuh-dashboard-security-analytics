@@ -14,21 +14,27 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
-import { MitreEntry, MitreState, MITRE_SECTIONS } from '../../../../utils/mitre';
+import {
+  MitreEntry,
+  MitreState,
+  MITRE_SECTIONS,
+  parseMitreYml,
+  dumpMitreYml,
+} from '../../../../utils/mitre';
 
 export interface MitreVisualEditorProps {
-  mitre: MitreState;
-  onChange: (state: MitreState) => void;
+  mitreYml: string;
+  onChange: (yml: string) => void;
 }
 
-export const MitreVisualEditor: React.FC<MitreVisualEditorProps> = ({ mitre, onChange }) => {
-  const [state, setState] = useState<MitreState>(mitre);
+export const MitreVisualEditor: React.FC<MitreVisualEditorProps> = ({ mitreYml, onChange }) => {
+  const [state, setState] = useState<MitreState>(() => parseMitreYml(mitreYml));
 
   const isEntryInvalid = (entry: MitreEntry) => !!entry.id !== !!entry.name;
 
   const update = (newState: MitreState) => {
     setState(newState);
-    onChange(newState);
+    onChange(dumpMitreYml(newState));
   };
 
   const handleChange = (
