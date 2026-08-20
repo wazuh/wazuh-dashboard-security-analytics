@@ -44,7 +44,7 @@
 
 | Issue | Comment |
 | ----- | ------- |
-| [#9](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/9) | Fixed YAML Editor when creating or editing detection rules |
+| [#9](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/9) [#446](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/446) | Fixed YAML Editor when creating or editing detection rules |
 | [#44](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/44) | Fixed detection rule editor causing blank screen |
 | [#315](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/315) | Fixed rule JSON viewer showing the detection field as a YAML string instead of a structured object |
 | [#116](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/116) | Fixed data source didn't include data stream aliases for detector creation |
