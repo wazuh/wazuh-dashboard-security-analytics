@@ -103,7 +103,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('document.name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
     isLoading: loading,
     clearParamsOnChange: ['page', 'integration'],
     history,
@@ -414,11 +418,25 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
 
   // Wazuh: the callout renders ABOVE the table, it does not replace it — the
   // last successfully loaded decoders stay visible while a parse error shows.
+  const hasFilters = !!appliedQueryText || !!appliedStatus || appliedIntegrationNames.length > 0;
+
   const renderTable = () => (
     <EuiBasicTable
       items={decoders}
       columns={columns}
       loading={loading || isDeleting}
+      noItemsMessage={
+        loading ? (
+          'Loading...'
+        ) : (
+          <ListEmptyPrompt
+            entity="decoders"
+            hasFilters={hasFilters}
+            space={spaceFilter}
+            onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+          />
+        )
+      }
       pagination={{
         pageIndex,
         pageSize,

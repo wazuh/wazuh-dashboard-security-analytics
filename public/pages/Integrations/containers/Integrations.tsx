@@ -37,7 +37,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { PolicyInfoCard } from '../components/PolicyInfoCard';
 import {
   actionIsAllowedOnSpace,
@@ -45,6 +45,7 @@ import {
   getSpacesAllowAction,
 } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { EditPolicy } from '../components/EditPolicy';
 import { FiltersTab } from '../../Filters/components/FiltersTab';
@@ -108,7 +109,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [urlFilters] = useState(() =>
     readInMemoryUrlFilterValues(history.location.search, ['category'])
   );
-  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
     isLoading: loading || isClearingSpace,
   });
   const [policyRefresh, setPolicyRefresh] = useState(0);
@@ -689,6 +694,16 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               }}
               isSelectable={true}
               loading={loading}
+              message={
+                loading ? undefined : (
+                  <ListEmptyPrompt
+                    entity="integrations"
+                    hasFilters={integrations.length > 0}
+                    space={spaceFilter}
+                    onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+                  />
+                )
+              }
             />
           </RedirectAppLinks>
         ) : (

@@ -29,6 +29,7 @@ import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
 import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 
 export interface IntegrationDetectionRulesProps {
   ruleIds: string[];
@@ -219,7 +220,19 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
               items={rules}
               columns={columns}
               loading={loadingRules}
-              noItemsMessage={loadingRules ? 'Loading...' : 'No rules found.'}
+              noItemsMessage={
+                loadingRules ? (
+                  'Loading...'
+                ) : (
+                  <ListEmptyPrompt
+                    entity="rules"
+                    hasFilters={!!appliedSearch}
+                    searchOnly
+                    noContentTitle="This integration has no rules"
+                    emptyBody={null}
+                  />
+                )
+              }
               pagination={{
                 pageIndex,
                 pageSize,

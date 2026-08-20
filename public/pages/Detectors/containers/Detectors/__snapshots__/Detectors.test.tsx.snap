@@ -470,26 +470,20 @@ exports[`<Detectors /> spec renders the component 1`] = `
                 }
                 loading={false}
                 message={
-                  <EuiEmptyPrompt
+                  <ListEmptyPrompt
                     actions={
                       Array [
                         undefined,
                       ]
                     }
-                    body={
-                      <EuiText
-                        size="s"
-                      >
-                        <p>
-                          There are no existing detectors.
-                        </p>
-                      </EuiText>
+                    emptyBody={
+                      <p>
+                        Create one to start generating findings from your log data.
+                      </p>
                     }
-                    style={
-                      Object {
-                        "maxWidth": "45em",
-                      }
-                    }
+                    entity="detectors"
+                    hasFilters={true}
+                    noContentTitle="No detectors yet"
                   />
                 }
                 pagination={true}
@@ -1928,26 +1922,20 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     }
                     loading={false}
                     noItemsMessage={
-                      <EuiEmptyPrompt
+                      <ListEmptyPrompt
                         actions={
                           Array [
                             undefined,
                           ]
                         }
-                        body={
-                          <EuiText
-                            size="s"
-                          >
-                            <p>
-                              There are no existing detectors.
-                            </p>
-                          </EuiText>
+                        emptyBody={
+                          <p>
+                            Create one to start generating findings from your log data.
+                          </p>
                         }
-                        style={
-                          Object {
-                            "maxWidth": "45em",
-                          }
-                        }
+                        entity="detectors"
+                        hasFilters={true}
+                        noContentTitle="No detectors yet"
                       />
                     }
                     onChange={[Function]}

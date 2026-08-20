@@ -22,7 +22,11 @@ interface UseSpaceSelectorOptions {
 
 export const useSpaceSelector = (
   options: UseSpaceSelectorOptions = {}
-): { component: React.ReactComponentElement; spaceFilter: Space } => {
+): {
+  component: React.ReactComponentElement;
+  spaceFilter: Space;
+  setSpace: (id: string) => void;
+} => {
   const { isDisabled, isLoading, documentationUrl, onSpaceChange, history, clearParamsOnChange } =
     options;
   const [spaceFilter, setSpaceFilter] = useSpaceFilter(history);
@@ -63,5 +67,7 @@ export const useSpaceSelector = (
     />
   );
 
-  return { component, spaceFilter };
+  // Wazuh: setSpace is handleSpaceChange, so callers outside the selector (an empty
+  // state pointing at Standard) reuse its single history write.
+  return { component, spaceFilter, setSpace: handleSpaceChange };
 };

@@ -25,6 +25,7 @@ import { KVDBItem, Space } from '../../../../types';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 
 export interface IntegrationKVDBsProps {
   kvdbIds: string[];
@@ -49,7 +50,12 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, spa
     return () => clearTimeout(t);
   }, [searchText]);
 
-  const { items: kvdbs, total, loading, refresh } = useIntegrationKVDBs({
+  const {
+    items: kvdbs,
+    total,
+    loading,
+    refresh,
+  } = useIntegrationKVDBs({
     kvdbIds,
     space,
     enabled,
@@ -170,7 +176,19 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, spa
               items={kvdbs}
               columns={columns}
               loading={loading}
-              noItemsMessage={loading ? 'Loading...' : 'No KVDBs found.'}
+              noItemsMessage={
+                loading ? (
+                  'Loading...'
+                ) : (
+                  <ListEmptyPrompt
+                    entity="KVDBs"
+                    hasFilters={!!appliedSearch}
+                    searchOnly
+                    noContentTitle="This integration has no KVDBs"
+                    emptyBody={null}
+                  />
+                )
+              }
               pagination={{
                 pageIndex,
                 pageSize,

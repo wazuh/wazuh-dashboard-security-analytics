@@ -111,3 +111,13 @@ export const getNextSpace = (space: PromoteSpaces) => {
   }
   return UserSpacesOrder[currentIndex + 1];
 };
+
+// Wazuh: the space content is promoted from, so a space that cannot create content can
+// still say where its content comes from.
+export const getPreviousSpace = (space: PromoteSpaces) => {
+  const currentIndex = UserSpacesOrder.indexOf(space);
+  if (currentIndex <= 0) {
+    return null;
+  }
+  return UserSpacesOrder[currentIndex - 1];
+};

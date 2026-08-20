@@ -91,7 +91,11 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   // on every keystroke — only status/integration checkboxes apply immediately.
   const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
-  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
     isLoading: loading,
     clearParamsOnChange: ['page', 'integration'],
     history,
@@ -170,6 +174,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     () => getOrSelectedValues(searchQuery, 'integration'),
     [searchQuery]
   );
+
+  const hasFilters =
+    !!appliedQueryText || selectedStatuses.length > 0 || selectedIntegrations.length > 0;
 
   // Wazuh: Status/Integration checkboxes (multiSelect 'or') apply immediately,
   // unlike the free-text debounce above — matches the Rules/Decoders pattern.
@@ -540,7 +547,18 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             sorting={sorting}
             onChange={onTableChange}
             itemId={(item) => item.document?.id || item.id}
-            noItemsMessage="No KVDBs to display"
+            noItemsMessage={
+              loading ? (
+                'Loading...'
+              ) : (
+                <ListEmptyPrompt
+                  entity="KVDBs"
+                  hasFilters={hasFilters}
+                  space={spaceFilter}
+                  onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+                />
+              )
+            }
             selection={{
               selectable: () => true,
               onSelectionChange: setSelectedItems,

@@ -158,7 +158,11 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
     isLoading: loading,
     clearParamsOnChange: ['page', 'integration'],
     history,
@@ -453,6 +457,12 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     [history, spaceFilter]
   );
 
+  const hasFilters =
+    !!appliedQueryText ||
+    !!appliedStatus ||
+    appliedIntegrationNames.length > 0 ||
+    appliedLevels.length > 0;
+
   const isDraftSpace = spaceFilter === SpaceTypes.DRAFT.value;
 
   const panels = [
@@ -625,6 +635,18 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             sorting={{ sort: { field: sortField, direction: sortDirection } }}
             onChange={onTableChange}
             itemId="ruleId"
+            noItemsMessage={
+              loading ? (
+                'Loading...'
+              ) : (
+                <ListEmptyPrompt
+                  entity="rules"
+                  hasFilters={hasFilters}
+                  space={spaceFilter}
+                  onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+                />
+              )
+            }
             selection={{
               selectable: () => true,
               onSelectionChange: setSelectedItems,

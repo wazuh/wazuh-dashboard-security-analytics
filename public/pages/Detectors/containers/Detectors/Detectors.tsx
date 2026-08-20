@@ -10,7 +10,6 @@ import {
   EuiSmallButton,
   EuiContextMenuItem,
   EuiContextMenuPanel,
-  EuiEmptyPrompt,
   EuiFlexGroup,
   EuiFlexItem,
   EuiHealth,
@@ -51,6 +50,7 @@ import {
   writeInMemoryUrlFilterValues,
 } from '../../../../utils/inMemoryUrlFilterAdapter';
 import { buildStatusIntegrationFilters } from '../../../../utils/entitySearchBarFilters';
+import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -541,15 +541,15 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               search={search}
               loading={loadingDetectors}
               message={
-                <EuiEmptyPrompt
-                  style={{ maxWidth: '45em' }}
-                  body={
-                    <EuiText size="s">
-                      <p>There are no existing detectors.</p>
-                    </EuiText>
-                  }
-                  actions={[actions[3]]}
-                />
+                loadingDetectors ? undefined : (
+                  <ListEmptyPrompt
+                    entity="detectors"
+                    hasFilters={detectorHits.length > 0}
+                    noContentTitle="No detectors yet"
+                    emptyBody={<p>Create one to start generating findings from your log data.</p>}
+                    actions={[actions[3]]}
+                  />
+                )
               }
             />
           </EuiPanel>
