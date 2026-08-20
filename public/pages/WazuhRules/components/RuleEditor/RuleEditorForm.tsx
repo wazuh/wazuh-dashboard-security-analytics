@@ -87,7 +87,11 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   validateOnMount,
   subtitleData,
 }) => {
-  const [selectedEditorType, setSelectedEditorType] = useState('visual');
+  // A block the visual editor cannot show opens in the YAML editor instead, so simply
+  // opening a rule never discards it.
+  const [selectedEditorType, setSelectedEditorType] = useState(
+    parseMitreYmlWithErrors(initialValue.mitre).errors.length ? 'yaml' : 'visual'
+  );
   const [isDetectionInvalid, setIsDetectionInvalid] = useState(false);
   const [integrationId, setIntegrationId] = useState('');
 
@@ -188,11 +192,6 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
       }}
     >
       {(props) => {
-        // Derived, not stored: the raw YAML in `values.mitre` is the single source of truth.
-        // The messages themselves name YAML paths, so they are only shown in the YAML
-        // editor; here it is enough to say the data is invalid and where to look.
-        const hasMitreErrors = parseMitreYmlWithErrors(props.values.mitre).errors.length > 0;
-
         const onIntegrationCreateSuccess = (newOption: {
           id: string;
           value: string;
@@ -232,7 +231,17 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                 legend="This is editor type selector"
                 options={editorTypes}
                 idSelected={selectedEditorType}
-                onChange={(id) => setSelectedEditorType(id)}
+                onChange={(id) => {
+                  // The visual editor can only hold valid data, so switching to it clears
+                  // a block it cannot show rather than leaving the two editors disagreeing.
+                  if (
+                    id === 'visual' &&
+                    parseMitreYmlWithErrors(props.values.mitre).errors.length
+                  ) {
+                    props.setFieldValue('mitre', '');
+                  }
+                  setSelectedEditorType(id);
+                }}
               />
 
               <EuiSpacer size="xl" />
@@ -548,8 +557,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                       <>
                         MITRE ATT&CK <i>- optional</i>
                         <EuiText size="xs" color={props.errors.mitre ? 'danger' : 'subdued'}>
-                          {hasMitreErrors
-                            ? 'This MITRE ATT&CK data is not valid, so it cannot all be shown here. Check the YAML editor for the details, or fill in the fields below to replace it.'
+                          {props.errors.mitre
+                            ? 'Some entries are incomplete. Both ID and name are required.'
                             : 'Map this rule to MITRE ATT&CK tactics, techniques and subtechniques.'}
                         </EuiText>
                       </>
