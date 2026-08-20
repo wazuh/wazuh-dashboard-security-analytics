@@ -26,13 +26,14 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import {
@@ -54,6 +55,10 @@ import {
   getFreeText,
   getOrSelectedValues,
 } from '../../../utils/entitySearchBarFilters';
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A decoder defines how a raw log event is parsed and mapped to normalized fields. Each decoder belongs to an integration.';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -99,7 +104,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('document.name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
     isLoading: loading,
     clearParamsOnChange: ['page', 'integration'],
     history,
@@ -410,11 +419,25 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
 
   // Wazuh: the callout renders ABOVE the table, it does not replace it — the
   // last successfully loaded decoders stay visible while a parse error shows.
+  const hasFilters = !!appliedQueryText || !!appliedStatus || appliedIntegrationNames.length > 0;
+
   const renderTable = () => (
     <EuiBasicTable
       items={decoders}
       columns={columns}
       loading={loading || isDeleting}
+      noItemsMessage={
+        loading ? (
+          'Loading...'
+        ) : (
+          <ListEmptyPrompt
+            entity="decoders"
+            hasFilters={hasFilters}
+            space={spaceFilter}
+            onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+          />
+        )
+      }
       pagination={{
         pageIndex,
         pageSize,
@@ -503,16 +526,23 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader>
+        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
           <EuiFlexItem>
-            <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
+            <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween">
               <EuiFlexItem>
                 <EuiText size="s">
                   <h1>Decoders</h1>
                 </EuiText>
+                <EuiText size="s" color="subdued">
+                  {PAGE_DESCRIPTION}
+                </EuiText>
               </EuiFlexItem>
-              <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-              <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
+              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+                {spaceSelector}
+              </EuiFlexItem>
+              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+                {actionsButton}
+              </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
         </PageHeader>

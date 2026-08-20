@@ -48,7 +48,7 @@ export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
       {
         type: 'field_value_selection',
         field: 'severity',
-        name: 'Rule Severity',
+        name: 'Rule level',
         multiSelect: false,
         options: ruleSeverity,
       },

@@ -72,6 +72,11 @@ export const EditRule: React.FC<EditRuleProps> = ({ history, match, notification
   return (
     <RuleEditorContainer
       title="Edit rule"
+      // Wazuh: the rule is looked up in Draft only, so editing elsewhere is impossible.
+      subtitleData={{
+        description:
+          'Edit the rule to change how the engine identifies this threat scenario. Rules can only be edited in the draft space.',
+      }}
       mode={'edit'}
       rule={rule}
       history={history}

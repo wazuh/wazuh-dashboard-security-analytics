@@ -28,8 +28,9 @@ import {
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DataStore } from '../../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../../types';
-import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
+import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../../utils/constants';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import { buildRulesSearchQuery } from '../../utils/constants';
@@ -58,6 +59,10 @@ import {
   getFreeText,
   getOrSelectedValues,
 } from '../../../../utils/entitySearchBarFilters';
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A rule defines the conditions under which the Wazuh engine generates a security finding, evaluated on the fields the decoders already normalized. Each rule belongs to an integration and is promoted with it.';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -154,7 +159,11 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState<string>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
     isLoading: loading,
     clearParamsOnChange: ['page', 'integration'],
     history,
@@ -374,7 +383,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       },
       {
         field: 'level',
-        name: 'Severity',
+        name: 'Rule level',
         sortable: true,
         width: '120px',
         render: (level: string) => {
@@ -448,6 +457,12 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     ],
     [history, spaceFilter]
   );
+
+  const hasFilters =
+    !!appliedQueryText ||
+    !!appliedStatus ||
+    appliedIntegrationNames.length > 0 ||
+    appliedLevels.length > 0;
 
   const isDraftSpace = spaceFilter === SpaceTypes.DRAFT.value;
 
@@ -547,16 +562,23 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader>
+        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
           <EuiFlexItem>
-            <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
+            <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween">
               <EuiFlexItem>
                 <EuiText size="s">
                   <h1>Rules</h1>
                 </EuiText>
+                <EuiText size="s" color="subdued">
+                  {PAGE_DESCRIPTION}
+                </EuiText>
               </EuiFlexItem>
-              <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-              <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
+              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+                {spaceSelector}
+              </EuiFlexItem>
+              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+                {actionsButton}
+              </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
         </PageHeader>
@@ -582,7 +604,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                     {
                       type: 'field_value_selection',
                       field: 'severity',
-                      name: 'Severity',
+                      name: 'Rule level',
                       compressed: true,
                       multiSelect: 'or',
                       operator: 'exact',
@@ -618,6 +640,18 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             sorting={{ sort: { field: sortField, direction: sortDirection } }}
             onChange={onTableChange}
             itemId="ruleId"
+            noItemsMessage={
+              loading ? (
+                'Loading...'
+              ) : (
+                <ListEmptyPrompt
+                  entity="rules"
+                  hasFilters={hasFilters}
+                  space={spaceFilter}
+                  onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+                />
+              )
+            }
             selection={{
               selectable: () => true,
               onSelectionChange: setSelectedItems,

@@ -56,7 +56,7 @@ export const DetectorRulesView: React.FC<DetectorRulesViewProps> = (props) => {
   const actions = props.isEditable
     ? [
         <EuiToolTip
-          content={isStandardDetector ? 'Only Custom detectors can be edited.' : undefined}
+          content={isStandardDetector ? 'Only custom detectors can be edited.' : undefined}
         >
           <EuiSmallButton
             onClick={() => props.onEditClicked(enabledRuleItems, allRuleItems)}

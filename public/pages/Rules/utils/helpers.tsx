@@ -55,7 +55,7 @@ export const getRulesTableColumns = (
     },
     level: {
       field: 'level',
-      name: 'Rule Severity',
+      name: 'Rule level',
       sortable: true,
       width: '10%',
       truncateText: true,
@@ -113,7 +113,7 @@ export const getRulesTableSearchConfig = (): Search => {
       {
         type: 'field_value_selection',
         field: 'level',
-        name: 'Rule severity',
+        name: 'Rule level',
         compressed: true,
         multiSelect: 'or',
         options: ruleSeverity,

@@ -72,7 +72,7 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
     { label: 'ID', value: ruleData.id },
     { label: 'Author', value: ruleData.metadata?.author },
     { label: 'Description', value: ruleData.metadata?.description },
-    { label: 'Date', value: ruleData.metadata?.date, type: 'date' },
+    { label: 'Created', value: ruleData.metadata?.date, type: 'date' },
     { label: 'Modified', value: ruleData.metadata?.modified, type: 'date' },
     { label: 'Rule level', value: getSeverityBadge(ruleData.level), type: 'raw' },
     { label: 'Rule status', value: ruleData.status },

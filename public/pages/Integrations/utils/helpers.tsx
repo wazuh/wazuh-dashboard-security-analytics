@@ -226,8 +226,8 @@ export const getIntegrationsTableColumns = ({
     name: 'Actions',
     actions: [
       {
-        name: 'Details',
-        description: 'Show details',
+        name: 'View',
+        description: 'View integration details',
         type: 'icon',
         icon: 'inspect',
         onClick: (item) => {
@@ -235,8 +235,8 @@ export const getIntegrationsTableColumns = ({
         },
       },
       {
-        name: 'Remove',
-        description: 'Remove integration',
+        name: 'Delete',
+        description: 'Delete integration',
         type: 'icon',
         icon: 'trash',
         color: 'danger',

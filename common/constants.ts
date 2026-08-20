@@ -14,6 +14,8 @@ export const WAZUH_VERSION = wazuh.version;
 
 export const PLUGIN_VERSION_SHORT = WAZUH_VERSION.split('.').splice(0, 2).join('.');
 
+export const DOCUMENTATION_WEB_BASE_URL = 'https://documentation.wazuh.com';
+
 export enum ThreatIntelIocSourceType {
   S3_CUSTOM = 'S3_CUSTOM',
   IOC_UPLOAD = 'IOC_UPLOAD',
@@ -27,7 +29,8 @@ export const SpaceTypes = {
     }),
     value: 'draft',
     description: i18n.translate('securityAnalytics.spaceTypes.draftDescription', {
-      defaultMessage: 'Staging area for creating or editing resources before testing.',
+      defaultMessage:
+        'Environment where integrations, decoders, rules and KVDBs are created and modified. Not active in the engine.',
     }),
   },
   TEST: {
@@ -36,7 +39,8 @@ export const SpaceTypes = {
     }),
     value: 'test',
     description: i18n.translate('securityAnalytics.spaceTypes.testDescription', {
-      defaultMessage: 'Controlled environment for validation before production.',
+      defaultMessage:
+        'Validation environment used to test integrations, decoders, rules and KVDBs in the engine.',
     }),
   },
   CUSTOM: {
@@ -45,7 +49,8 @@ export const SpaceTypes = {
     }),
     value: 'custom',
     description: i18n.translate('securityAnalytics.spaceTypes.customDescription', {
-      defaultMessage: 'Independent space for custom or modified content.',
+      defaultMessage:
+        'Production environment holding the user-defined content that is active and applied to all incoming events.',
     }),
   },
   STANDARD: {
@@ -54,7 +59,8 @@ export const SpaceTypes = {
     }),
     value: 'standard',
     description: i18n.translate('securityAnalytics.spaceTypes.standardDescription', {
-      defaultMessage: 'Wazuh CTI provided resources.',
+      defaultMessage:
+        'Read-only space holding the default integrations, decoders and rules shipped with Wazuh.',
     }),
   },
 } as const;

@@ -41,7 +41,7 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
   const { name, detector_type, inputs, schedule } = detector;
   const detectorSchedule = parseSchedule(schedule);
   const isStandardDetector = isStandardSource(detector.source);
-  // Wazuh: format Created at / Last updated time with formatUIDate so they honor the
+  // Wazuh: format Created / Modified with formatUIDate so they honor the
   // `dateFormat`/`dateFormat:tz` settings. Upstream used the hardcoded
   // `moment(...).format('YYYY-MM-DDTHH:mm')`.
   const createdAt = enabled_time ? formatUIDate(enabled_time) : undefined;
@@ -60,7 +60,7 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
         isEditable
           ? [
               <EuiToolTip
-                content={isStandardDetector ? 'Only Custom detectors can be edited.' : undefined}
+                content={isStandardDetector ? 'Only custom detectors can be edited.' : undefined}
               >
                 <EuiSmallButton
                   onClick={onEditClicked}
@@ -115,9 +115,9 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
       ])}
       {createTextDetailsGroup([
         { label: 'Rules', content: totalSelected }, // Wazuh: rename 'Detection rules' to 'Rules'
-        { label: 'Created at', content: createdAt || DEFAULT_EMPTY_DATA },
+        { label: 'Created', content: createdAt || DEFAULT_EMPTY_DATA },
         {
-          label: 'Last updated time',
+          label: 'Modified',
           content: lastUpdated || DEFAULT_EMPTY_DATA,
         },
       ])}

@@ -134,10 +134,10 @@ Object {
                               >
                                 <span
                                   class="euiFilterButton__textShift"
-                                  data-text="Rule Severity"
-                                  title="Rule Severity"
+                                  data-text="Rule level"
+                                  title="Rule level"
                                 >
-                                  Rule Severity
+                                  Rule level
                                 </span>
                               </span>
                             </span>
@@ -248,9 +248,9 @@ Object {
                             >
                               <span
                                 class="euiTableCellContent__text"
-                                title="Rule severity"
+                                title="Rule level"
                               >
-                                Rule severity
+                                Rule level
                               </span>
                             </span>
                           </th>
@@ -535,10 +535,10 @@ Object {
                             >
                               <span
                                 class="euiFilterButton__textShift"
-                                data-text="Rule Severity"
-                                title="Rule Severity"
+                                data-text="Rule level"
+                                title="Rule level"
                               >
-                                Rule Severity
+                                Rule level
                               </span>
                             </span>
                           </span>
@@ -649,9 +649,9 @@ Object {
                           >
                             <span
                               class="euiTableCellContent__text"
-                              title="Rule severity"
+                              title="Rule level"
                             >
-                              Rule severity
+                              Rule level
                             </span>
                           </span>
                         </th>

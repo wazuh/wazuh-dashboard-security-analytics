@@ -49,7 +49,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
 
   const tryParseAndNotify = (value: string) => {
     if (!value || value.trim() === '') {
-      const localErrors = [`${type} cannot be empty`];
+      const localErrors = [`The ${type} cannot be empty`];
       setState((prev) => ({ ...prev, errors: localErrors }));
       onErrors?.(localErrors);
       return;

@@ -133,6 +133,10 @@ Enforced by tooling — run the linter/formatter, don't hand-format:
 - TypeScript-first; single quotes; semicolons; Prettier defaults from the parent
   checkout.
 - English everywhere (code, comments, commits, docs).
+- **User-facing copy follows [`TERMINOLOGY.md`](TERMINOLOGY.md)** — one noun per
+  concept, one verb per action. Read it before writing any label, column header,
+  button, tooltip or empty state; introducing a synonym for an existing term is a
+  regression. Wazuh-owned file, not upstream.
 
 ## Testing
 
