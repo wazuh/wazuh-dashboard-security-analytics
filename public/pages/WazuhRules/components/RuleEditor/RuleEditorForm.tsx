@@ -10,7 +10,6 @@ import {
   EuiBottomBar,
   EuiButton,
   EuiButtonEmpty,
-  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiCompressedFormRow,
@@ -190,7 +189,9 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
     >
       {(props) => {
         // Derived, not stored: the raw YAML in `values.mitre` is the single source of truth.
-        const mitreErrors = parseMitreYmlWithErrors(props.values.mitre).errors;
+        // The messages themselves name YAML paths, so they are only shown in the YAML
+        // editor; here it is enough to say the data is invalid and where to look.
+        const hasMitreErrors = parseMitreYmlWithErrors(props.values.mitre).errors.length > 0;
 
         const onIntegrationCreateSuccess = (newOption: {
           id: string;
@@ -547,10 +548,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                       <>
                         MITRE ATT&CK <i>- optional</i>
                         <EuiText size="xs" color={props.errors.mitre ? 'danger' : 'subdued'}>
-                          {mitreErrors.length
-                            ? `The MITRE ATT&CK block has ${mitreErrors.length} problem${
-                                mitreErrors.length > 1 ? 's' : ''
-                              }. Expand to see the details.`
+                          {hasMitreErrors
+                            ? 'This MITRE ATT&CK data is not valid, so it cannot all be shown here. Check the YAML editor for the details, or fill in the fields below to replace it.'
                             : 'Map this rule to MITRE ATT&CK tactics, techniques and subtechniques.'}
                         </EuiText>
                       </>
@@ -558,23 +557,6 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     paddingSize="l"
                   >
                     <EuiSpacer size="s" />
-                    {!!mitreErrors.length && (
-                      <>
-                        <EuiCallOut
-                          size="s"
-                          color="danger"
-                          title="Fix the MITRE ATT&CK block in the YAML editor, or replace it using the fields below."
-                          data-test-subj="mitre_structural_errors"
-                        >
-                          <ul>
-                            {mitreErrors.map((error, i) => (
-                              <li key={i}>{error}</li>
-                            ))}
-                          </ul>
-                        </EuiCallOut>
-                        <EuiSpacer size="s" />
-                      </>
-                    )}
                     <MitreVisualEditor
                       mitreYml={props.values.mitre}
                       onChange={(yml) => props.setFieldValue('mitre', yml)}
