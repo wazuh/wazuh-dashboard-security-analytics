@@ -12,7 +12,6 @@ import { Space } from '../../types';
 interface UseSpaceSelectorOptions {
   isDisabled?: boolean;
   isLoading?: boolean;
-  documentationUrl?: string;
   onSpaceChange?: (spaceId: string) => void;
   /** Pass the caller's own `history` prop — see the comment on useSpaceFilter. */
   history?: History;
@@ -27,8 +26,7 @@ export const useSpaceSelector = (
   spaceFilter: Space;
   setSpace: (id: string) => void;
 } => {
-  const { isDisabled, isLoading, documentationUrl, onSpaceChange, history, clearParamsOnChange } =
-    options;
+  const { isDisabled, isLoading, onSpaceChange, history, clearParamsOnChange } = options;
   const [spaceFilter, setSpaceFilter] = useSpaceFilter(history);
   const [isChanging, setIsChanging] = useState(false);
   const trackPending = isLoading !== undefined;
@@ -63,7 +61,6 @@ export const useSpaceSelector = (
       selectedSpace={spaceFilter}
       onSpaceChange={handleSpaceChange}
       isDisabled={isDisabled || isLoading || isChanging}
-      documentationUrl={documentationUrl}
     />
   );
 
