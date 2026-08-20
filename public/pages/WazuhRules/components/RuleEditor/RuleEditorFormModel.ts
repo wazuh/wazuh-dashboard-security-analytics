@@ -4,7 +4,6 @@
  */
 
 import { ruleStatus } from '../../../Rules/utils/constants';
-import { MitreState, EMPTY_MITRE } from '../../utils/mitre';
 
 export interface RuleEditorFormModel {
   id: string;
@@ -15,7 +14,7 @@ export interface RuleEditorFormModel {
   detection: string;
   level: string;
   falsePositives: string[];
-  mitre: MitreState;
+  mitre: string;
   compliance: string;
   enabled: boolean;
   metadata: {
@@ -37,7 +36,7 @@ export const ruleEditorStateDefaultValue: RuleEditorFormModel = {
   detection: '',
   level: '',
   falsePositives: [],
-  mitre: EMPTY_MITRE,
+  mitre: '',
   compliance: '',
   enabled: true,
   metadata: {

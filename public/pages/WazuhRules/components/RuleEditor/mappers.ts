@@ -6,7 +6,6 @@
 import { Rule } from '../../../../../types';
 import { getLogTypeFromLogSource } from '../../utils/helpers';
 import { RuleEditorFormModel, ruleEditorStateDefaultValue } from './RuleEditorFormModel';
-import { parseMitreYml, dumpMitreYml } from '../../utils/mitre';
 
 export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
   const logSource = { ...(formState.log_source ?? {}) };
@@ -40,7 +39,7 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
       documentation,
       supports,
     },
-    mitre: dumpMitreYml(formState.mitre),
+    mitre: formState.mitre,
     compliance: formState.compliance,
     enabled: formState.enabled,
   };
@@ -69,7 +68,7 @@ export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
     falsePositives: rule.false_positives?.length
       ? rule.false_positives.map((fp) => fp.value)
       : ruleEditorStateDefaultValue.falsePositives,
-    mitre: parseMitreYml(rule.mitre || ''),
+    mitre: rule.mitre || '',
     compliance: rule.compliance,
     enabled: rule.enabled ?? true,
     metadata: {
