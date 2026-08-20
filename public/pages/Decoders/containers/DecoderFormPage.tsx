@@ -68,7 +68,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   // Wazuh: creation always targets Draft; on edit the space comes from the URL.
   const pageDescription =
     action === 'create'
-      ? 'Create a new decoder to normalize logs from your selected integration. New decoders are created in the Draft space.'
+      ? 'Create a new decoder to normalize logs from your selected integration. New decoders are created in the draft space.'
       : 'Edit the decoder to update the normalization of logs from your selected integration.' +
         (spaceDecoder
           ? ` This decoder is in the ${

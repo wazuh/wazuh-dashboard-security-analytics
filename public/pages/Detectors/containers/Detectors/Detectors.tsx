@@ -73,7 +73,7 @@ interface DetectorsState {
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
-  'A detector connects rules to a data source and runs continuously to produce findings. It uses rules already active in a single space, either Custom or Standard.';
+  'A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.';
 
 export default class Detectors extends Component<DetectorsProps, DetectorsState> {
   constructor(props: DetectorsProps) {

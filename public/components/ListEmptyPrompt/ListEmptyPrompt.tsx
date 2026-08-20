@@ -74,7 +74,9 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
   const howToFill = canCreate
     ? 'Create one from the Actions menu'
     : previousSpace &&
-      `Promote ${entity} from the ${SpaceTypes[previousSpace.toUpperCase()].label} space`;
+      `Promote ${entity} from the ${SpaceTypes[
+        previousSpace.toUpperCase()
+      ].label.toLowerCase()} space`;
 
   return (
     <EuiEmptyPrompt

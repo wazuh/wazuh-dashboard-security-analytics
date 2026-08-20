@@ -43,7 +43,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
         appDescriptionControls={
           Array [
             Object {
-              "description": "A detector connects rules to a data source and runs continuously to produce findings. It uses rules already active in a single space, either Custom or Standard.",
+              "description": "A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.",
             },
           ]
         }
@@ -103,7 +103,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           <div
                             className="euiTextColor euiTextColor--subdued"
                           >
-                            A detector connects rules to a data source and runs continuously to produce findings. It uses rules already active in a single space, either Custom or Standard.
+                            A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.
                           </div>
                         </EuiTextColor>
                       </div>

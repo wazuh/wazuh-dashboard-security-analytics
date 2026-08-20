@@ -85,7 +85,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   // Wazuh: creation always targets Draft; this form has no space in scope on edit.
   const pageDescription =
     action === KVDB_ACTION.CREATE
-      ? 'Create a new KVDB, a lookup table the content in its integration can query to enrich or check events. New KVDBs are created in the Draft space.'
+      ? 'Create a new KVDB, a lookup table the content in its integration can query to enrich or check events. New KVDBs are created in the draft space.'
       : 'Edit the KVDB to update its configuration.';
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState<EditorType>('visual');

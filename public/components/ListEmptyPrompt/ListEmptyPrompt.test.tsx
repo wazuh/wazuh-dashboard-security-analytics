@@ -38,7 +38,7 @@ describe('ListEmptyPrompt', () => {
       <ListEmptyPrompt entity="decoders" hasFilters={false} space={SpaceTypes.CUSTOM.value} />
     );
 
-    getByText(`Promote decoders from the ${SpaceTypes.TEST.label} space.`);
+    getByText(`Promote decoders from the ${SpaceTypes.TEST.label.toLowerCase()} space.`);
     expect(queryByText(/Actions menu/)).toBeNull();
   });
 

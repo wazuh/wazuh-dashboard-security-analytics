@@ -62,7 +62,7 @@ import {
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
-  'A rule defines the conditions under which the engine generates a finding, evaluated on fields the decoders already normalized. Each rule belongs to an integration and is promoted with it.';
+  'A rule defines the conditions under which the Wazuh engine generates a security finding, evaluated on the fields the decoders already normalized. Each rule belongs to an integration and is promoted with it.';
 
 const DEFAULT_PAGE_SIZE = 25;
 

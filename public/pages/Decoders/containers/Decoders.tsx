@@ -58,7 +58,7 @@ import {
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
-  'A decoder defines how a raw log event is parsed into normalized fields. Each decoder belongs to an integration.';
+  'A decoder defines how a raw log event is parsed and mapped to normalized fields. Each decoder belongs to an integration.';
 
 const DEFAULT_PAGE_SIZE = 25;
 

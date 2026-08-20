@@ -65,7 +65,7 @@ interface KVDBsProps extends RouteComponentProps {
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
-  'A KVDB is a lookup table that content in its integration can query to enrich or check events, for example mapping IP addresses to threat categories.';
+  'A KVDB is a lookup table that decoder or rule logic can reference to enrich events, for example mapping IP addresses to threat categories.';
 
 export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const isMountedRef = useRef(true);

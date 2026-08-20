@@ -14,14 +14,10 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
-import {
-  SPACES_LIFECYCLE_SUMMARY,
-  SPACES_PROMOTION_SUMMARY,
-  SpaceTypes,
-} from '../../../common/constants';
+import { SpaceTypes } from '../../../common/constants';
 import { SECURITY_ANALYTICS_DOCUMENTATION_URL } from '../../utils/constants';
 
-export const HOW_IT_WORKS_TITLE = 'How Security Analytics works';
+export const HOW_IT_WORKS_TITLE = 'How security analytics works';
 
 // Wazuh: the help menu registers a plain callback outside React, so the open state lives
 // here and the flyout subscribes to it.
@@ -39,26 +35,44 @@ export const openHowItWorksFlyout = () => setOpen(true);
 const ENTITIES = [
   {
     term: 'Integrations',
-    detail:
-      'An integration groups the decoders, rules and KVDBs that add support for one log source. Each of those belongs to exactly one integration and travels with it when the space is promoted.',
+    detail: (
+      <>
+        The top-level unit of security analytics. It groups the <em>decoders</em>, <em>rules</em>{' '}
+        and <em>KVDBs</em> that add support for one log source or use case. Each of those belongs to
+        exactly one integration and travels with it when the space is promoted.
+      </>
+    ),
   },
   {
     term: 'Decoders',
-    detail: 'A decoder defines how a raw log event is parsed into normalized fields.',
+    detail: <>A decoder defines how a raw log event is parsed and mapped to normalized fields.</>,
   },
   {
     term: 'Rules',
-    detail:
-      'A rule defines the conditions under which the engine generates a finding, evaluated on the fields the decoders already normalized.',
+    detail: (
+      <>
+        A rule defines the conditions under which the Wazuh engine generates a security finding,
+        evaluated on the fields the <em>decoders</em> already normalized.
+      </>
+    ),
   },
   {
     term: 'KVDBs',
-    detail:
-      'A KVDB is a lookup table that content in its integration can query to enrich or check events.',
+    detail: (
+      <>
+        A KVDB is a lookup table that <em>decoder</em> or <em>rule</em> logic can reference to
+        enrich events.
+      </>
+    ),
   },
   {
     term: 'Detectors',
-    detail: 'A detector connects rules to a data source and runs continuously to produce findings.',
+    detail: (
+      <>
+        A detector connects <em>rules</em> to a data source, an index or an alias, and runs
+        continuously to identify security findings.
+      </>
+    ),
   },
 ];
 
@@ -89,7 +103,10 @@ export const HowItWorksFlyout: React.FC = () => {
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
         <EuiText size="s">
-          <p>Security Analytics manages the full lifecycle of log normalization and detection.</p>
+          <p>
+            Security analytics provides the tools for managing the full lifecycle of log
+            normalization and event-based detection.
+          </p>
         </EuiText>
 
         <EuiSpacer size="l" />
@@ -113,8 +130,14 @@ export const HowItWorksFlyout: React.FC = () => {
         </EuiTitle>
         <EuiSpacer size="s" />
         <EuiText size="s">
-          <p>{SPACES_LIFECYCLE_SUMMARY}</p>
-          <p>{SPACES_PROMOTION_SUMMARY}</p>
+          <p>
+            Three spaces are the stages of the content lifecycle: <em>draft</em>, <em>test</em> and{' '}
+            <em>custom</em>. The fourth, <em>standard</em>, is read-only content shipped with Wazuh.
+          </p>
+          <p>
+            User-managed content is promoted sequentially from <em>draft</em> to <em>test</em>, and
+            from <em>test</em> to <em>custom</em>, after validation.
+          </p>
         </EuiText>
         <EuiSpacer size="s" />
         <EuiText size="s">

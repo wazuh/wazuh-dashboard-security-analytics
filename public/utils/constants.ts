@@ -24,7 +24,9 @@ export const OS_NOTIFICATION_PLUGIN = 'opensearch-notifications';
 
 export const DEFAULT_EMPTY_DATA = '-';
 
-export const SECURITY_ANALYTICS_DOCUMENTATION_URL = webDocumentationLink('index.html');
+export const SECURITY_ANALYTICS_DOCUMENTATION_URL = webDocumentationLink(
+  'user-manual/wazuh-dashboard/wazuh-dashboard-configurations.html#security-analytics'
+);
 
 // Wazuh: page headers top-align their columns so the description wraps under the title,
 // which would leave the controls hanging at the top of a two-line header.
