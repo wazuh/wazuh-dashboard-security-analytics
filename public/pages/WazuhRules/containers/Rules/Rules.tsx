@@ -28,8 +28,9 @@ import {
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DataStore } from '../../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../../types';
-import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
+import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../../utils/constants';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import { buildRulesSearchQuery } from '../../utils/constants';
@@ -572,8 +573,12 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                   {PAGE_DESCRIPTION}
                 </EuiText>
               </EuiFlexItem>
-              <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-              <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
+              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+                {spaceSelector}
+              </EuiFlexItem>
+              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+                {actionsButton}
+              </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
         </PageHeader>

@@ -110,9 +110,20 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     </EuiText>
                   </div>
                 </EuiFlexItem>
-                <EuiFlexItem>
+                <EuiFlexItem
+                  style={
+                    Object {
+                      "alignSelf": "center",
+                    }
+                  }
+                >
                   <div
                     className="euiFlexItem"
+                    style={
+                      Object {
+                        "alignSelf": "center",
+                      }
+                    }
                   >
                     <EuiFlexGroup
                       justifyContent="flexEnd"

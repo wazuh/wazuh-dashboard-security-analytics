@@ -26,13 +26,14 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import {
@@ -536,8 +537,12 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                   {PAGE_DESCRIPTION}
                 </EuiText>
               </EuiFlexItem>
-              <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-              <EuiFlexItem grow={false}>{actionsButton}</EuiFlexItem>
+              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+                {spaceSelector}
+              </EuiFlexItem>
+              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+                {actionsButton}
+              </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
         </PageHeader>

@@ -23,7 +23,12 @@ import {
   EuiToolTip,
   EuiSearchBar,
 } from '@elastic/eui';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_EMPTY_DATA,
+  ROUTES,
+  PAGE_HEADER_CONTROL_STYLE,
+} from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
 import { getDetectorNames } from '../../utils/helpers';
 import {
@@ -513,7 +518,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
                   {PAGE_DESCRIPTION}
                 </EuiText>
               </EuiFlexItem>
-              <EuiFlexItem>
+              <EuiFlexItem style={PAGE_HEADER_CONTROL_STYLE}>
                 <EuiFlexGroup justifyContent="flexEnd">
                   {actions.map((action, idx) => {
                     return (

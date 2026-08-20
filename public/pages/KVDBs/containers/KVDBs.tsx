@@ -26,8 +26,14 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_EMPTY_DATA,
+  ROUTES,
+  PAGE_HEADER_CONTROL_STYLE,
+} from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { KVDBS_PAGE_SIZE, KVDBS_SORT_FIELD } from '../utils/constants';
@@ -480,8 +486,10 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                 {PAGE_DESCRIPTION}
               </EuiText>
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-            <EuiFlexItem grow={false}>
+            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+              {spaceSelector}
+            </EuiFlexItem>
+            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
               <EuiPopover
                 id="kvdbsActionsPopover"
                 button={

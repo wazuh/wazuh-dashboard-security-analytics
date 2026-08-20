@@ -19,7 +19,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
@@ -216,7 +216,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
                 {PAGE_DESCRIPTION}
               </EuiText>
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>
+            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
               <SpaceSelector
                 selectedSpace={formData.space}
                 onSpaceChange={(id) => handleFormChange('space', id)}
