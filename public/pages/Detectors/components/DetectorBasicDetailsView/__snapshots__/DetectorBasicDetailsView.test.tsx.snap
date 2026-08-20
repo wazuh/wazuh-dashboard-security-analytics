@@ -310,7 +310,7 @@ Object {
                     class="euiFormLabel euiFormRow__label"
                     for="some_html_id"
                   >
-                    Created at
+                    Created
                   </label>
                 </div>
                 <div
@@ -318,7 +318,7 @@ Object {
                 >
                   <div
                     class="euiText euiText--small"
-                    data-test-subj="text-details-group-content-created-at"
+                    data-test-subj="text-details-group-content-created"
                     id="some_html_id"
                   >
                     2023-01-25T10:05
@@ -340,7 +340,7 @@ Object {
                     class="euiFormLabel euiFormRow__label"
                     for="some_html_id"
                   >
-                    Last updated time
+                    Modified
                   </label>
                 </div>
                 <div
@@ -348,7 +348,7 @@ Object {
                 >
                   <div
                     class="euiText euiText--small"
-                    data-test-subj="text-details-group-content-last-updated-time"
+                    data-test-subj="text-details-group-content-modified"
                     id="some_html_id"
                   >
                     2023-01-25T10:05
@@ -699,7 +699,7 @@ Object {
                   class="euiFormLabel euiFormRow__label"
                   for="some_html_id"
                 >
-                  Created at
+                  Created
                 </label>
               </div>
               <div
@@ -707,7 +707,7 @@ Object {
               >
                 <div
                   class="euiText euiText--small"
-                  data-test-subj="text-details-group-content-created-at"
+                  data-test-subj="text-details-group-content-created"
                   id="some_html_id"
                 >
                   2023-01-25T10:05
@@ -729,7 +729,7 @@ Object {
                   class="euiFormLabel euiFormRow__label"
                   for="some_html_id"
                 >
-                  Last updated time
+                  Modified
                 </label>
               </div>
               <div
@@ -737,7 +737,7 @@ Object {
               >
                 <div
                   class="euiText euiText--small"
-                  data-test-subj="text-details-group-content-last-updated-time"
+                  data-test-subj="text-details-group-content-modified"
                   id="some_html_id"
                 >
                   2023-01-25T10:05

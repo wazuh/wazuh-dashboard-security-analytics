@@ -37,7 +37,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { PolicyInfoCard } from '../components/PolicyInfoCard';
 import {
   actionIsAllowedOnSpace,
@@ -45,6 +45,7 @@ import {
   getSpacesAllowAction,
 } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { EditPolicy } from '../components/EditPolicy';
 import { FiltersTab } from '../../Filters/components/FiltersTab';
@@ -61,6 +62,15 @@ import {
 export interface IntegrationsProps extends RouteComponentProps, DataSourceProps {
   notifications: NotificationsStart;
 }
+
+// Wazuh: one description per tab, rendered inside the tab panel; in the page header it
+// would sit above the space policy card and read as describing that.
+const TAB_DESCRIPTIONS: Record<string, string> = {
+  [OVERVIEW_TAB.INTEGRATIONS]:
+    'An integration is the top-level unit of security analytics: it groups the decoders, rules and KVDBs that add support for one log source or use case.',
+  [OVERVIEW_TAB.FILTERS]:
+    'A filter checks conditions on an event without modifying it and discards the events that do not pass. Filters apply to the whole space, not to a single integration.',
+};
 
 const DELETE_SELECTED_ACTION = 'delete_selected' as const;
 const CLEAR_SPACE_ACTION = 'clear_space' as const;
@@ -99,7 +109,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   const [urlFilters] = useState(() =>
     readInMemoryUrlFilterValues(history.location.search, ['category'])
   );
-  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
     isLoading: loading || isClearingSpace,
   });
   const [policyRefresh, setPolicyRefresh] = useState(0);
@@ -109,6 +123,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
   // This trusts the changes in the history location causes a rerender in the componnet
   const selectedTab =
     history.location.pathname === ROUTES.FILTERS ? OVERVIEW_TAB.FILTERS : OVERVIEW_TAB.INTEGRATIONS;
+  const pageDescription = TAB_DESCRIPTIONS[selectedTab];
 
   const onTabChange = (tab: OverviewTabId) => {
     const path = tab === OVERVIEW_TAB.FILTERS ? ROUTES.FILTERS : ROUTES.INTEGRATIONS;
@@ -425,7 +440,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             : selectedItems.length === 0
             ? 'Select integrations to delete.'
             : selectedItemsWithoutRelatedEntities.length === 0
-            ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
+            ? 'Integrations with associated rules, decoders, or KVDBs cannot be deleted.'
             : selectedItemsWithRelatedEntitiesCount > 0
             ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
                 selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
@@ -585,7 +600,10 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         </EuiConfirmModal>
       )}
 
-      <PageHeader appRightControls={[{ renderComponent: createIntegrationAction }]}>
+      <PageHeader
+        appRightControls={[{ renderComponent: createIntegrationAction }]}
+        appDescriptionControls={[{ description: pageDescription }]}
+      >
         <EuiFlexItem>
           <EuiFlexGroup alignItems="center" justifyContent={'spaceBetween'}>
             <EuiFlexItem>
@@ -632,7 +650,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           </EuiTabs>
         }
       >
-        <EuiSpacer size={'l'} />
+        <EuiSpacer size={'s'} />
+        <EuiText size="s" color="subdued">
+          {pageDescription}
+        </EuiText>
+        <EuiSpacer size={'m'} />
         {selectedTab === OVERVIEW_TAB.INTEGRATIONS ? (
           <RedirectAppLinks application={getApplication()}>
             <EuiInMemoryTable
@@ -672,6 +694,16 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               }}
               isSelectable={true}
               loading={loading}
+              message={
+                loading ? undefined : (
+                  <ListEmptyPrompt
+                    entity="integrations"
+                    hasFilters={integrations.length > 0}
+                    space={spaceFilter}
+                    onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+                  />
+                )
+              }
             />
           </RedirectAppLinks>
         ) : (

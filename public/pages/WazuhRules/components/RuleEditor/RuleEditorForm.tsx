@@ -444,7 +444,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                   <EuiCompressedFormRow
                     label={
                       <EuiText size={'s'}>
-                        <strong>Rule level (severity)</strong>
+                        <strong>Rule level</strong>
                       </EuiText>
                     }
                     isInvalid={(validateOnMount || props.touched.level) && !!props.errors?.level}

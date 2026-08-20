@@ -1837,7 +1837,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                         fullWidth={true}
                         hasChildLabel={true}
                         hasEmptyLabelSpace={false}
-                        label="Created at"
+                        label="Created"
                         labelType="label"
                       >
                         <div
@@ -1857,7 +1857,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                 className="euiFormLabel euiFormRow__label"
                                 htmlFor="some_html_id"
                               >
-                                Created at
+                                Created
                               </label>
                             </EuiFormLabel>
                           </div>
@@ -1865,7 +1865,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             className="euiFormRow__fieldWrapper"
                           >
                             <EuiText
-                              data-test-subj="text-details-group-content-created-at"
+                              data-test-subj="text-details-group-content-created"
                               id="some_html_id"
                               onBlur={[Function]}
                               onFocus={[Function]}
@@ -1873,7 +1873,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             >
                               <div
                                 className="euiText euiText--small"
-                                data-test-subj="text-details-group-content-created-at"
+                                data-test-subj="text-details-group-content-created"
                                 id="some_html_id"
                                 onBlur={[Function]}
                                 onFocus={[Function]}
@@ -1899,7 +1899,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                         fullWidth={true}
                         hasChildLabel={true}
                         hasEmptyLabelSpace={false}
-                        label="Last updated time"
+                        label="Modified"
                         labelType="label"
                       >
                         <div
@@ -1919,7 +1919,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                 className="euiFormLabel euiFormRow__label"
                                 htmlFor="some_html_id"
                               >
-                                Last updated time
+                                Modified
                               </label>
                             </EuiFormLabel>
                           </div>
@@ -1927,7 +1927,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             className="euiFormRow__fieldWrapper"
                           >
                             <EuiText
-                              data-test-subj="text-details-group-content-last-updated-time"
+                              data-test-subj="text-details-group-content-modified"
                               id="some_html_id"
                               onBlur={[Function]}
                               onFocus={[Function]}
@@ -1935,7 +1935,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             >
                               <div
                                 className="euiText euiText--small"
-                                data-test-subj="text-details-group-content-last-updated-time"
+                                data-test-subj="text-details-group-content-modified"
                                 id="some_html_id"
                                 onBlur={[Function]}
                                 onFocus={[Function]}
@@ -2522,7 +2522,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                       },
                       Object {
                         "field": "level",
-                        "name": "Rule Severity",
+                        "name": "Rule level",
                         "render": [Function],
                         "sortable": true,
                         "truncateText": true,
@@ -2578,7 +2578,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                           "compressed": true,
                           "field": "level",
                           "multiSelect": "or",
-                          "name": "Rule severity",
+                          "name": "Rule level",
                           "options": Array [
                             Object {
                               "color": Object {
@@ -2668,7 +2668,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             "compressed": true,
                             "field": "level",
                             "multiSelect": "or",
-                            "name": "Rule severity",
+                            "name": "Rule level",
                             "options": Array [
                               Object {
                                 "color": Object {
@@ -2830,7 +2830,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                       "compressed": true,
                                       "field": "level",
                                       "multiSelect": "or",
-                                      "name": "Rule severity",
+                                      "name": "Rule level",
                                       "options": Array [
                                         Object {
                                           "color": Object {
@@ -2913,7 +2913,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                           "compressed": true,
                                           "field": "level",
                                           "multiSelect": "or",
-                                          "name": "Rule severity",
+                                          "name": "Rule level",
                                           "options": Array [
                                             Object {
                                               "color": Object {
@@ -2997,7 +2997,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                             onClick={[Function]}
                                             size="s"
                                           >
-                                            Rule severity
+                                            Rule level
                                           </EuiFilterButton>
                                         }
                                         closePopover={[Function]}
@@ -3072,10 +3072,10 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                                       >
                                                         <span
                                                           className="euiFilterButton__textShift"
-                                                          data-text="Rule severity"
-                                                          title="Rule severity"
+                                                          data-text="Rule level"
+                                                          title="Rule level"
                                                         >
-                                                          Rule severity
+                                                          Rule level
                                                         </span>
                                                       </span>
                                                     </span>
@@ -3115,7 +3115,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                           },
                           Object {
                             "field": "level",
-                            "name": "Rule Severity",
+                            "name": "Rule level",
                             "render": [Function],
                             "sortable": true,
                             "truncateText": true,
@@ -3213,7 +3213,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                               "isSortAscending": undefined,
                                               "isSorted": false,
                                               "key": "_data_s_level_1",
-                                              "name": "Rule Severity",
+                                              "name": "Rule level",
                                               "onSort": [Function],
                                             },
                                             Object {
@@ -3449,15 +3449,15 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                                   values={
                                                     Object {
                                                       "description": undefined,
-                                                      "innerText": "Rule Severity",
+                                                      "innerText": "Rule level",
                                                     }
                                                   }
                                                 >
                                                   <span
                                                     className="euiTableCellContent__text"
-                                                    title="Rule Severity"
+                                                    title="Rule level"
                                                   >
-                                                    Rule Severity
+                                                    Rule level
                                                   </span>
                                                 </EuiI18n>
                                               </EuiInnerText>

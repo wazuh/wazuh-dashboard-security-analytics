@@ -42,7 +42,7 @@ export const getRulesColumns = (
     },
     {
       field: 'severity',
-      name: 'Rule severity',
+      name: 'Rule level',
       width: '10%',
       sortable: true,
       render: (severity: string) => capitalizeFirstLetter(severity),

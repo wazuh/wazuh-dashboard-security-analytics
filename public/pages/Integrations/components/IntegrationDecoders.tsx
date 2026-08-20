@@ -25,6 +25,7 @@ import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
 import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 
 export interface IntegrationDecodersProps {
   decoderIds: string[];
@@ -60,7 +61,12 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     return () => clearTimeout(t);
   }, [searchText]);
 
-  const { items: decoders, total, loading, refresh } = useIntegrationDecoders({
+  const {
+    items: decoders,
+    total,
+    loading,
+    refresh,
+  } = useIntegrationDecoders({
     decoderIds,
     space,
     enabled,
@@ -167,6 +173,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
                     <EuiIcon type={'popout'} />
                   </EuiSmallButton>
                 )}
+                <EuiSpacer size="m" />
               </EuiFlexItem>
             )}
           </EuiFlexGroup>
@@ -188,7 +195,19 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
               items={decoders}
               columns={columns}
               loading={loading}
-              noItemsMessage={loading ? 'Loading...' : 'No decoders found.'}
+              noItemsMessage={
+                loading ? (
+                  'Loading...'
+                ) : (
+                  <ListEmptyPrompt
+                    entity="decoders"
+                    hasFilters={!!appliedSearch}
+                    searchOnly
+                    noContentTitle="This integration has no decoders"
+                    emptyBody={null}
+                  />
+                )
+              }
               pagination={{
                 pageIndex,
                 pageSize,
