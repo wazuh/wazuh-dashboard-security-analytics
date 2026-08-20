@@ -432,7 +432,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             </EuiFlexGroup>
           </EuiFlexItem>
         </EuiFlexGroup>
-        <EuiSpacer size="m" />
       </PageHeader>
       <EuiSpacer />
       <EuiPanel grow={false}>
