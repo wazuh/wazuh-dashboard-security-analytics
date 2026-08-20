@@ -369,7 +369,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       return [
         <EuiToolTip
           key={'Delete'}
-          content={hasStandardSelected ? 'Only Custom detectors can be deleted.' : undefined}
+          content={hasStandardSelected ? 'Only custom detectors can be deleted.' : undefined}
         >
           <EuiSmallButton
             color={'danger'}

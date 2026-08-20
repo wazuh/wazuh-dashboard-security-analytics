@@ -440,7 +440,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             : selectedItems.length === 0
             ? 'Select integrations to delete.'
             : selectedItemsWithoutRelatedEntities.length === 0
-            ? 'Integrations with associated Rules, Decoders, or KVDBs cannot be deleted.'
+            ? 'Integrations with associated rules, decoders, or KVDBs cannot be deleted.'
             : selectedItemsWithRelatedEntitiesCount > 0
             ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
                 selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'

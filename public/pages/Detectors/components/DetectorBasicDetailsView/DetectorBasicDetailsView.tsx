@@ -60,7 +60,7 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
         isEditable
           ? [
               <EuiToolTip
-                content={isStandardDetector ? 'Only Custom detectors can be edited.' : undefined}
+                content={isStandardDetector ? 'Only custom detectors can be edited.' : undefined}
               >
                 <EuiSmallButton
                   onClick={onEditClicked}

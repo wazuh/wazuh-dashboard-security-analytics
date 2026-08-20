@@ -446,7 +446,7 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
             </EuiContextMenuItem>,
             <EuiToolTip
               key={'Delete'}
-              content={isStandardDetector ? 'Only Custom detectors can be deleted.' : undefined}
+              content={isStandardDetector ? 'Only custom detectors can be deleted.' : undefined}
             >
               <EuiContextMenuItem
                 disabled={loading || isStandardDetector}

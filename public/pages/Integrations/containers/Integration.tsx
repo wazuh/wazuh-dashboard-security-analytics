@@ -51,7 +51,7 @@ export interface IntegrationProps extends RouteComponentProps {
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const INTEGRATION_DESCRIPTION =
-  'An integration groups the decoders, rules and KVDBs that add support for one log source.';
+  'An integration is the top-level unit of security analytics: it groups the decoders, rules and KVDBs that add support for one log source or use case.';
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
   const isMountedRef = useRef(true);
@@ -119,7 +119,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
 
   // Wazuh: the count opens its child tab; zero stays a disabled link, as in the list.
   const renderCountLink = (count: number, tabId: string, entityLabel: string) => {
-    const tabLabel = integrationDetailsTabs.find((tab) => tab.id === tabId)?.name ?? '';
     const link =
       count > 0 ? (
         <EuiLink onClick={() => setSelectedTabId(tabId)}>{count}</EuiLink>
@@ -130,7 +129,9 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     // <span> host: a disabled EuiLink emits no hover events, so the tooltip needs one.
     return (
       <EuiToolTip
-        content={count > 0 ? `Go to the ${tabLabel} tab` : `This integration has no ${entityLabel}`}
+        content={
+          count > 0 ? `Go to the ${entityLabel} tab` : `This integration has no ${entityLabel}`
+        }
       >
         <span>{link}</span>
       </EuiToolTip>
