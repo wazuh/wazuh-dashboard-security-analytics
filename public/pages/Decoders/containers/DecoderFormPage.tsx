@@ -101,7 +101,9 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
             BREADCRUMBS.NORMALIZATION,
             BREADCRUMBS.DECODERS,
             BREADCRUMBS.DECODERS_EDIT,
-            { text: response?.document.name },
+            // name the decoder in the trail. A breadcrumb has room for one
+            // string, and the identifier is already on screen inside the YAML.
+            { text: response?.document.metadata?.title || response?.document.name },
           ]);
         } catch (error) {
           errorNotificationToast(

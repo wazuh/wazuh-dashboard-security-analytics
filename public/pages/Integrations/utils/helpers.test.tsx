@@ -22,7 +22,10 @@ afterEach(() => {
 });
 
 const buildItem = (overrides: Partial<IntegrationTableItem> = {}): IntegrationTableItem => ({
+  // `id` is the OpenSearch `_id`, unique per space copy; `documentId` is shared across the
+  // copies of a promoted integration. They differ in every space but draft.
   id: 'int-1',
+  documentId: 'doc-1',
   title: 'aws',
   category: 'cloud',
   mode: '',
@@ -113,5 +116,24 @@ describe('getIntegrationsTableColumns — entity count columns', () => {
     fireEvent.mouseOver(kvdbLinks[kvdbLinks.length - 1]);
     const kvdbsTooltip = await screen.findByRole('tooltip', { hidden: true });
     expect(kvdbsTooltip).toHaveTextContent('KVDBs');
+  });
+});
+
+describe('getIntegrationsTableColumns — opening an integration', () => {
+  const renderTitle = (item: IntegrationTableItem, showDetails: (id: string) => void) => {
+    const columns = getIntegrationsTableColumns({ showDetails, setItemForAction: jest.fn() });
+    const column = columns.find((c) => c.field === 'title');
+    return render(<>{column!.render!(item.title, item)}</>);
+  };
+
+  it('opens it by the id shared across space copies, not by the per-copy _id', () => {
+    // A promoted integration has a different `_id` in each space, and the detail view looks
+    // it up by `document.id` plus the space, so linking by `_id` reported it as not found.
+    const showDetails = jest.fn();
+    renderTitle(buildItem({ id: 'os-id-in-custom', documentId: 'shared-doc-id' }), showDetails);
+
+    fireEvent.click(screen.getByText('aws'));
+
+    expect(showDetails).toHaveBeenCalledWith('shared-doc-id');
   });
 });

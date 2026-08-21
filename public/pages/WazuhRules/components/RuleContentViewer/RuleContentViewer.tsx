@@ -149,7 +149,14 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
                 {COMPLIANCE_FRAMEWORKS.map((framework) =>
                   complianceData[framework.key].length > 0 ? (
                     <EuiFlexItem key={framework.key}>
-                      <BadgeGroup label={framework.label} values={complianceData[framework.key]} />
+                      {/* name what the codes are. A reader saw bare numbers like
+                          6.5.10 under the framework name. Each framework calls its unit
+                          something different, and `compliance.ts` already stored that word
+                          in `columnHeader`, which nothing read. */}
+                      <BadgeGroup
+                        label={`${framework.label} ${framework.columnHeader.toLowerCase()}`}
+                        values={complianceData[framework.key]}
+                      />
                     </EuiFlexItem>
                   ) : null
                 )}

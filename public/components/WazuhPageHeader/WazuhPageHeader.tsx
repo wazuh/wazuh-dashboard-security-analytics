@@ -33,9 +33,9 @@ const DESCRIPTION_STYLE: React.CSSProperties = { maxWidth: '90ch' };
  * The page header every security analytics list page shares: one row for the title and
  * its controls, one row for the description.
  *
- * Sharing a row made the description inherit whatever width the controls left over, so
- * the longest ones wrapped while the space beside them stayed empty. Every page also
- * repeated the block by hand and had drifted apart on alignment and spacing.
+ * Sharing one row, the description took whatever width the controls left over. The long
+ * ones wrapped while the space beside them stayed empty. Six pages also repeated the
+ * block by hand and had drifted apart on alignment and spacing.
  *
  * This wraps the upstream `PageHeader` rather than changing it: the updated-UX branch
  * still hands the title and description to the platform's own header, and only the
@@ -49,7 +49,7 @@ export const WazuhPageHeader: React.FC<WazuhPageHeaderProps> = ({
 }) => (
   <PageHeader {...pageHeaderProps}>
     <EuiFlexItem>
-      <EuiFlexGroup alignItems="center" justifyContent="spaceBetween" gutterSize="m">
+      <EuiFlexGroup alignItems="center" justifyContent="spaceBetween" gutterSize="m" wrap>
         <EuiFlexItem>
           <EuiText size="s">
             <h1>{title}</h1>

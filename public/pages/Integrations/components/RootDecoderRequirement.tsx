@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAsyncAction, useAsyncActionRunOnStart, withGuardAsync } from '../utils/helpers';
 import { DataStore } from '../../../store/DataStore';
+import { AssetIdentity, formatAssetLabel } from '../../../components/AssetIdentity';
 import {
   EuiButton,
   EuiButtonEmpty,
@@ -84,14 +85,18 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
             },
           ],
           query,
-          _source: { includes: ['document.id', 'document.name'] },
+          // the title is what a reader recognises; the name is the identifier.
+          _source: { includes: ['document.id', 'document.name', 'document.metadata.title'] },
         },
         space
       );
 
       const newItems = response.items.map((item) => ({
         value: item?.document?.id,
-        label: item?.document?.name ?? item?.document?.id,
+        // `value` carries the id, so pairing the label costs nothing downstream.
+        label:
+          formatAssetLabel(item?.document?.metadata?.title, item?.document?.name) ||
+          (item?.document?.id ?? ''),
       }));
       const data = search === currentSearch ? [...(prevItems || []), ...newItems] : newItems;
 
@@ -152,7 +157,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
         <EuiFormRow label="Select decoder" fullWidth={true}>
           <EuiSelect
             fullWidth={true}
-            onChange={(e) => setSelected(event.target.value)}
+            onChange={(e) => setSelected(e.target.value)}
             loading={action.running}
             value={selected}
             options={action.data?.items}
@@ -176,9 +181,12 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
           <>
             <EuiText size="s">
               Current root decoder:{' '}
-              <EuiToolTip position="top" content={`ID: ${rootDecoderSource.document.id}`}>
-                <div>{rootDecoderSource.document.name}</div>
-              </EuiToolTip>
+              {/* The picker options pair the name with the identifier, so this line pairs
+                  them too instead of showing the identifier alone. */}
+              <AssetIdentity
+                title={rootDecoderSource.document.metadata?.title}
+                identifier={rootDecoderSource.document.name}
+              />
             </EuiText>
             <EuiSpacer size="s" />
           </>
@@ -194,7 +202,12 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
             <EuiButtonEmpty onClick={onCancel}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton fill={true} onClick={updatePolicyAction.run} isDisabled={!selected} isLoading={updatePolicyAction.running}>
+            <EuiButton
+              fill={true}
+              onClick={updatePolicyAction.run}
+              isDisabled={!selected}
+              isLoading={updatePolicyAction.running}
+            >
               Confirm
             </EuiButton>
           </EuiFlexItem>
@@ -303,12 +316,10 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
   Callout
 );
 
-export const RootDecoderRequirement: React.FC<{
-  space: UserSpace;
-  onSucess?: () => void;
-}> = withRootDecoderRequirementGuard(({ error }: { error: Error }) => {
-  return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
-});
+export const RootDecoderRequirement: React.FC<{ space: UserSpace; onSucess?: () => void }> =
+  withRootDecoderRequirementGuard(({ error }: { error: Error }) => {
+    return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
+  });
 
 export const withConditionalHOC = (
   condition: (props: any) => boolean,
@@ -325,6 +336,6 @@ export const withConditionalHOC = (
   };
 };
 
-export function isRootDecoderRequiementError(error){
+export function isRootDecoderRequiementError(error) {
   return /missing root decoder/i.test(error);
 }

@@ -113,9 +113,10 @@ exports[`<Detectors /> spec renders the component 1`] = `
                 alignItems="center"
                 gutterSize="m"
                 justifyContent="spaceBetween"
+                wrap={true}
               >
                 <div
-                  className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--alignItemsCenter euiFlexGroup--justifyContentSpaceBetween euiFlexGroup--directionRow euiFlexGroup--responsive"
+                  className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--alignItemsCenter euiFlexGroup--justifyContentSpaceBetween euiFlexGroup--directionRow euiFlexGroup--responsive euiFlexGroup--wrap"
                 >
                   <EuiFlexItem>
                     <div
