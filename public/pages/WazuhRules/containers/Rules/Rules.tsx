@@ -38,7 +38,8 @@ import { RuleTableItem } from '../../utils/helpers';
 import { getSeverityColor, getSeverityLabel } from '../../../Correlations/utils/constants';
 import { ruleSeverity } from '../../../Rules/utils/constants';
 import { RuleViewerFlyout } from '../../components/RuleViewerFlyout/RuleViewerFlyout';
-import { SpaceTypes } from '../../../../../common/constants';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../../common/constants';
+import { actionIsAllowedOnSpace } from '../../../../../common/helpers';
 import { useSpaceSelector } from '../../../../hooks/useSpaceSelector';
 import {
   DELETE_ACTION,
@@ -441,7 +442,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             type: 'icon',
             icon: 'pencil',
             onClick: (item: RuleTableItem) => history.push(`${ROUTES.RULES_EDIT}/${item.ruleId}`),
-            available: () => spaceFilter === SpaceTypes.DRAFT.value,
+            available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT),
           },
           {
             name: 'Delete',
@@ -450,7 +451,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             icon: 'trash',
             onClick: (item: RuleTableItem) =>
               setItemForAction({ action: DELETE_ACTION, id: item.ruleId }),
-            available: () => spaceFilter === SpaceTypes.DRAFT.value,
+            available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
         ],
       },
