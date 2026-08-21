@@ -60,7 +60,9 @@ export const SpaceTypes = {
     value: 'standard',
     description: i18n.translate('securityAnalytics.spaceTypes.standardDescription', {
       defaultMessage:
-        'Read-only space holding the default integrations, decoders and rules shipped with Wazuh.',
+        // Wazuh: not read-only. Its content cannot be created, edited or deleted, but
+        // integrations can be disabled and their policy adjusted.
+        'Space holding the default integrations, decoders and rules shipped with Wazuh. Its content cannot be edited or deleted, though integrations can be disabled.',
     }),
   },
 } as const;
