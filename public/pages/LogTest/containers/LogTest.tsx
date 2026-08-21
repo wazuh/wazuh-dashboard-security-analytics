@@ -19,7 +19,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
@@ -29,6 +29,10 @@ import { IntegrationOption } from '../../../components/IntegrationComboBox';
 import { MetadataEntry, buildMetadataObject } from '../utils';
 import { getApplication } from '../../../services/utils/constants';
 import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'Log test runs a sample event through the content loaded in a space, so you can confirm it is parsed and matched as expected.';
 
 const LOG_TEST_SPACE_OPTIONS = [
   SpaceTypes.TEST.value,
@@ -202,14 +206,17 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
   return (
     <EuiFlexGroup direction="column" gutterSize="m">
       <EuiFlexItem grow={false}>
-        <PageHeader>
-          <EuiFlexGroup alignItems="center" justifyContent="spaceBetween" gutterSize="m">
+        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
+          <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween" gutterSize="m">
             <EuiFlexItem>
               <EuiText size="s">
-                <h1>Log Test</h1>
+                <h1>Log test</h1>
+              </EuiText>
+              <EuiText size="s" color="subdued">
+                {PAGE_DESCRIPTION}
               </EuiText>
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>
+            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
               <SpaceSelector
                 selectedSpace={formData.space}
                 onSpaceChange={(id) => handleFormChange('space', id)}
@@ -220,8 +227,6 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
           </EuiFlexGroup>
         </PageHeader>
       </EuiFlexItem>
-
-      <EuiSpacer size="m" />
 
       <EuiFlexItem>
         <EuiPanel>

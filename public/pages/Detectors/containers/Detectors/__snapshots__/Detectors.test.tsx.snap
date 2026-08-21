@@ -40,6 +40,13 @@ exports[`<Detectors /> spec renders the component 1`] = `
       className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--directionColumn euiFlexGroup--responsive"
     >
       <PageHeader
+        appDescriptionControls={
+          Array [
+            Object {
+              "description": "A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.",
+            },
+          ]
+        }
         appRightControls={
           Array [
             Object {
@@ -61,9 +68,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
           <div
             className="euiFlexItem"
           >
-            <EuiFlexGroup>
+            <EuiFlexGroup
+              alignItems="flexStart"
+            >
               <div
-                className="euiFlexGroup euiFlexGroup--gutterLarge euiFlexGroup--directionRow euiFlexGroup--responsive"
+                className="euiFlexGroup euiFlexGroup--gutterLarge euiFlexGroup--alignItemsFlexStart euiFlexGroup--directionRow euiFlexGroup--responsive"
               >
                 <EuiFlexItem>
                   <div
@@ -80,11 +89,41 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         </h1>
                       </div>
                     </EuiText>
+                    <EuiText
+                      color="subdued"
+                      size="s"
+                    >
+                      <div
+                        className="euiText euiText--small"
+                      >
+                        <EuiTextColor
+                          color="subdued"
+                          component="div"
+                        >
+                          <div
+                            className="euiTextColor euiTextColor--subdued"
+                          >
+                            A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.
+                          </div>
+                        </EuiTextColor>
+                      </div>
+                    </EuiText>
                   </div>
                 </EuiFlexItem>
-                <EuiFlexItem>
+                <EuiFlexItem
+                  style={
+                    Object {
+                      "alignSelf": "center",
+                    }
+                  }
+                >
                   <div
                     className="euiFlexItem"
+                    style={
+                      Object {
+                        "alignSelf": "center",
+                      }
+                    }
                   >
                     <EuiFlexGroup
                       justifyContent="flexEnd"
@@ -234,7 +273,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     Object {
                       "dataType": "date",
                       "field": "lastUpdatedTime",
-                      "name": "Last updated time",
+                      "name": "Modified",
                       "render": [Function],
                       "sortable": true,
                     },
@@ -442,26 +481,20 @@ exports[`<Detectors /> spec renders the component 1`] = `
                 }
                 loading={false}
                 message={
-                  <EuiEmptyPrompt
+                  <ListEmptyPrompt
                     actions={
                       Array [
                         undefined,
                       ]
                     }
-                    body={
-                      <EuiText
-                        size="s"
-                      >
-                        <p>
-                          There are no existing detectors.
-                        </p>
-                      </EuiText>
+                    emptyBody={
+                      <p>
+                        Create one to start generating findings from your log data.
+                      </p>
                     }
-                    style={
-                      Object {
-                        "maxWidth": "45em",
-                      }
-                    }
+                    entity="detectors"
+                    hasFilters={true}
+                    noContentTitle="No detectors yet"
                   />
                 }
                 pagination={true}
@@ -1692,7 +1725,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         Object {
                           "dataType": "date",
                           "field": "lastUpdatedTime",
-                          "name": "Last updated time",
+                          "name": "Modified",
                           "render": [Function],
                           "sortable": true,
                         },
@@ -1900,26 +1933,20 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     }
                     loading={false}
                     noItemsMessage={
-                      <EuiEmptyPrompt
+                      <ListEmptyPrompt
                         actions={
                           Array [
                             undefined,
                           ]
                         }
-                        body={
-                          <EuiText
-                            size="s"
-                          >
-                            <p>
-                              There are no existing detectors.
-                            </p>
-                          </EuiText>
+                        emptyBody={
+                          <p>
+                            Create one to start generating findings from your log data.
+                          </p>
                         }
-                        style={
-                          Object {
-                            "maxWidth": "45em",
-                          }
-                        }
+                        entity="detectors"
+                        hasFilters={true}
+                        noContentTitle="No detectors yet"
                       />
                     }
                     onChange={[Function]}
@@ -2060,7 +2087,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                             "isSortAscending": undefined,
                                             "isSorted": false,
                                             "key": "_data_s_lastUpdatedTime_5",
-                                            "name": "Last updated time",
+                                            "name": "Modified",
                                             "onSort": [Function],
                                           },
                                         ]
@@ -2565,15 +2592,15 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                 values={
                                                   Object {
                                                     "description": undefined,
-                                                    "innerText": "Last updated time",
+                                                    "innerText": "Modified",
                                                   }
                                                 }
                                               >
                                                 <span
                                                   className="euiTableCellContent__text"
-                                                  title="Last updated time"
+                                                  title="Modified"
                                                 >
-                                                  Last updated time
+                                                  Modified
                                                 </span>
                                               </EuiI18n>
                                             </EuiInnerText>
@@ -3037,7 +3064,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                       key="_data_column_lastUpdatedTime_detector_id_1_5"
                                       mobileOptions={
                                         Object {
-                                          "header": "Last updated time",
+                                          "header": "Modified",
                                           "render": undefined,
                                         }
                                       }
@@ -3055,7 +3082,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         <div
                                           className="euiTableRowCell__mobileHeader euiTableRowCell--hideForDesktop"
                                         >
-                                          Last updated time
+                                          Modified
                                         </div>
                                         <div
                                           className="euiTableCellContent euiTableCellContent--overflowingContent"

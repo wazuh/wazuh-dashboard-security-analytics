@@ -29,6 +29,7 @@ import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
 import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 
 export interface IntegrationDetectionRulesProps {
   ruleIds: string[];
@@ -58,7 +59,12 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     return () => clearTimeout(t);
   }, [searchText]);
 
-  const { items: rules, total, loading: loadingRules, refresh } = useIntegrationRules({
+  const {
+    items: rules,
+    total,
+    loading: loadingRules,
+    refresh,
+  } = useIntegrationRules({
     ruleIds,
     space,
     enabled,
@@ -89,7 +95,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
       },
       {
         field: 'level',
-        name: 'Severity',
+        name: 'Rule level',
         sortable: true,
         width: '120px',
         render: (level: string) => {
@@ -179,7 +185,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
                     <EuiIcon type={'popout'} />
                   </EuiSmallButton>
                 )}
-                <EuiSpacer size="xl" />
+                <EuiSpacer size="m" />
               </EuiFlexItem>
             )}
           </EuiFlexGroup>
@@ -197,7 +203,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
               </EuiFlexItem>
               <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
                 <EuiComboBox
-                  placeholder="Severity"
+                  placeholder="Rule level"
                   options={severityOptions}
                   selectedOptions={selectedSeverityOptions}
                   onChange={(opts) => {
@@ -214,7 +220,19 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
               items={rules}
               columns={columns}
               loading={loadingRules}
-              noItemsMessage={loadingRules ? 'Loading...' : 'No rules found.'}
+              noItemsMessage={
+                loadingRules ? (
+                  'Loading...'
+                ) : (
+                  <ListEmptyPrompt
+                    entity="rules"
+                    hasFilters={!!appliedSearch}
+                    searchOnly
+                    noContentTitle="This integration has no rules"
+                    emptyBody={null}
+                  />
+                )
+              }
               pagination={{
                 pageIndex,
                 pageSize,
