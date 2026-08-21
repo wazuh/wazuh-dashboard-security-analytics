@@ -40,27 +40,27 @@ const AssetTraceItem: React.FC<{ trace: LogTestAssetTrace; index: number }> = ({
     <EuiAccordion
       id={`asset-trace-${index}`}
       buttonContent={
-        <EuiFlexGroup alignItems='center' gutterSize='s'>
+        <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>
             <EuiBadge color={trace.success ? 'success' : 'danger'}>
               {trace.success ? 'Success' : 'Failed'}
             </EuiBadge>
           </EuiFlexItem>
           <EuiFlexItem>
-            <EuiText size='s'>
+            <EuiText size="s">
               <code>{trace.asset}</code>
             </EuiText>
           </EuiFlexItem>
         </EuiFlexGroup>
       }
-      paddingSize='s'
+      paddingSize="s"
     >
       {trace.traces && trace.traces.length > 0 ? (
-        <EuiCodeBlock language='text' paddingSize='s' fontSize='s' isCopyable>
+        <EuiCodeBlock language="text" paddingSize="s" fontSize="s" isCopyable>
           {trace.traces.join('\n')}
         </EuiCodeBlock>
       ) : (
-        <EuiText size='s' color='subdued'>
+        <EuiText size="s" color="subdued">
           No trace details available
         </EuiText>
       )}
@@ -84,19 +84,14 @@ const ValidationErrorItem: React.FC<{
       id={`validation-error-${index}`}
       initialIsOpen={false}
       buttonContent={
-        <EuiText size='s'>
+        <EuiText size="s">
           <code>{error.path}</code>
         </EuiText>
       }
-      paddingSize='none'
+      paddingSize="none"
     >
       <div style={{ padding: '8px 12px 4px' }}>
-        <EuiPanel
-          color='subdued'
-          paddingSize='s'
-          hasShadow={false}
-          hasBorder={false}
-        >
+        <EuiPanel color="subdued" paddingSize="s" hasShadow={false} hasBorder={false}>
           <div
             style={{
               display: 'grid',
@@ -106,10 +101,10 @@ const ValidationErrorItem: React.FC<{
           >
             {listItems.map(({ title, description }, i) => (
               <React.Fragment key={i}>
-                <EuiText size='s'>
+                <EuiText size="s">
                   <strong>{title}</strong>
                 </EuiText>
-                <EuiText size='s'>{description}</EuiText>
+                <EuiText size="s">{description}</EuiText>
               </React.Fragment>
             ))}
           </div>
@@ -145,53 +140,51 @@ const DetectionMatchItem: React.FC<{
     <EuiAccordion
       id={`detection-match-${index}`}
       buttonContent={
-        <EuiFlexGroup alignItems='center' gutterSize='s'>
+        <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>
-            <EuiBadge color={getLevelBadgeColor(rule.level)}>
-              {rule.level}
-            </EuiBadge>
+            <EuiBadge color={getLevelBadgeColor(rule.level)}>{rule.level}</EuiBadge>
           </EuiFlexItem>
           <EuiFlexItem>
-            <EuiText size='s'>
+            <EuiText size="s">
               {onRuleClick ? (
                 <EuiLink onClick={() => onRuleClick!(rule.id)}>
                   <strong>{rule.title}</strong>
                 </EuiLink>
               ) : (
-              <strong>{rule.title}</strong>
-            )}
+                <strong>{rule.title}</strong>
+              )}
             </EuiText>
           </EuiFlexItem>
         </EuiFlexGroup>
       }
-      paddingSize='s'
+      paddingSize="s"
     >
-      <EuiText size='xs' color='subdued'>
+      <EuiText size="xs" color="subdued">
         <strong>ID:</strong> {rule.id}
       </EuiText>
-      <EuiSpacer size='xs' />
+      <EuiSpacer size="xs" />
       {rule.tags && rule.tags.length > 0 && (
         <>
-          <EuiFlexGroup gutterSize='xs' wrap>
+          <EuiFlexGroup gutterSize="xs" wrap>
             {rule.tags.map((tag) => (
               <EuiFlexItem grow={false} key={tag}>
-                <EuiBadge color='hollow'>{tag}</EuiBadge>
+                <EuiBadge color="hollow">{tag}</EuiBadge>
               </EuiFlexItem>
             ))}
           </EuiFlexGroup>
-          <EuiSpacer size='s' />
+          <EuiSpacer size="s" />
         </>
       )}
       {matched_conditions && matched_conditions.length > 0 && (
         <>
-          <EuiText size='xs' color='subdued'>
+          <EuiText size="xs" color="subdued">
             <strong>Matched conditions:</strong>
           </EuiText>
-          <EuiSpacer size='xs' />
+          <EuiSpacer size="xs" />
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {matched_conditions.map((condition, i) => (
               <li key={i}>
-                <EuiText size='s'>
+                <EuiText size="s">
                   <code>{condition}</code>
                 </EuiText>
               </li>
@@ -203,9 +196,7 @@ const DetectionMatchItem: React.FC<{
   );
 };
 
-const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({
-  data,
-}) => {
+const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({ data }) => {
   const formattedOutput = useMemo(() => {
     if (data?.output) {
       return JSON.stringify(data.output, null, 2);
@@ -218,7 +209,7 @@ const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({
 
   if (data.status === 'error') {
     return (
-      <EuiCallOut title='Normalization error' color='danger' iconType='alert'>
+      <EuiCallOut title="Normalization error" color="danger" iconType="alert">
         <p>{data.error?.message ?? 'An unexpected error occurred during normalization.'}</p>
       </EuiCallOut>
     );
@@ -227,40 +218,35 @@ const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({
   return (
     <>
       {formattedOutput ? (
-        <EuiPanel paddingSize='none'>
-          <EuiCodeBlock
-            language='json'
-            paddingSize='m'
-            isCopyable
-            overflowHeight={400}
-          >
+        <EuiPanel paddingSize="none">
+          <EuiCodeBlock language="json" paddingSize="m" isCopyable overflowHeight={400}>
             {formattedOutput}
           </EuiCodeBlock>
         </EuiPanel>
       ) : (
-        <EuiCallOut title='No output' color='warning' iconType='alert'>
+        <EuiCallOut title="No output" color="warning" iconType="alert">
           <p>The logtest did not return any output.</p>
         </EuiCallOut>
       )}
 
       {hasAssetTraces && (
         <>
-          <EuiSpacer size='l' />
+          <EuiSpacer size="l" />
           <EuiAccordion
-            id='asset-traces-section'
+            id="asset-traces-section"
             initialIsOpen={false}
             buttonContent={
-              <EuiText size='s'>
+              <EuiText size="s">
                 <h4>Asset Traces</h4>
               </EuiText>
             }
-            paddingSize='s'
+            paddingSize="s"
           >
-            <EuiSpacer size='s' />
-            <EuiPanel paddingSize='m'>
+            <EuiSpacer size="s" />
+            <EuiPanel paddingSize="m">
               {data.asset_traces!.map((trace, index) => (
                 <React.Fragment key={`${trace.asset}-${index}`}>
-                  {index > 0 && <EuiSpacer size='s' />}
+                  {index > 0 && <EuiSpacer size="s" />}
                   <AssetTraceItem trace={trace} index={index} />
                 </React.Fragment>
               ))}
@@ -271,33 +257,31 @@ const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({
 
       {hasValidation && !data.validation!.valid && (
         <>
-          <EuiSpacer size='l' />
+          <EuiSpacer size="l" />
           <EuiAccordion
-            id='validation-section'
+            id="validation-section"
             initialIsOpen
             buttonContent={
-              <EuiFlexGroup alignItems='center' gutterSize='s'>
+              <EuiFlexGroup alignItems="center" gutterSize="s">
                 <EuiFlexItem>
-                  <EuiText size='s'>
+                  <EuiText size="s">
                     <h4>Validation</h4>
                   </EuiText>
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
-                  <EuiBadge color='danger'>Failed</EuiBadge>
+                  <EuiBadge color="danger">Failed</EuiBadge>
                 </EuiFlexItem>
               </EuiFlexGroup>
             }
-            paddingSize='s'
+            paddingSize="s"
           >
             {data.validation!.errors.length > 0 && (
               <>
-                <EuiSpacer size='s' />
-                <EuiPanel paddingSize='m'>
+                <EuiSpacer size="s" />
+                <EuiPanel paddingSize="m">
                   {data.validation!.errors.map((error, index) => (
-                    <React.Fragment
-                      key={`${error.path}-${error.kind}-${index}`}
-                    >
-                      {index > 0 && <EuiSpacer size='s' />}
+                    <React.Fragment key={`${error.path}-${error.kind}-${index}`}>
+                      {index > 0 && <EuiSpacer size="s" />}
                       <ValidationErrorItem error={error} index={index} />
                     </React.Fragment>
                   ))}
@@ -311,13 +295,13 @@ const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({
   );
 };
 
-const DetectionSection: React.FC<{ 
+const DetectionSection: React.FC<{
   data: LogTestDetectionResult;
   onRuleClick?: (ruleId: string) => void;
-}> = ({ data, onRuleClick, }) => {
+}> = ({ data, onRuleClick }) => {
   if (data.status === 'skipped') {
     return (
-      <EuiCallOut title='Detection skipped' color='warning' iconType='alert'>
+      <EuiCallOut title="Detection skipped" color="warning" iconType="alert">
         <p>{data.reason || 'Detection was skipped.'}</p>
       </EuiCallOut>
     );
@@ -325,7 +309,7 @@ const DetectionSection: React.FC<{
 
   if (data.status === 'error') {
     return (
-      <EuiCallOut title='Detection error' color='danger' iconType='alert'>
+      <EuiCallOut title="Detection error" color="danger" iconType="alert">
         <p>{data.reason || 'Detection failed due to an unexpected error.'}</p>
       </EuiCallOut>
     );
@@ -335,7 +319,7 @@ const DetectionSection: React.FC<{
 
   if (matches.length === 0) {
     return (
-      <EuiCallOut title='No rules matched' color='primary' iconType='iInCircle'>
+      <EuiCallOut title="No rules matched" color="primary" iconType="iInCircle">
         <p>
           {data.rules_evaluated != null
             ? `${data.rules_evaluated} rules evaluated, 0 matched.`
@@ -347,17 +331,17 @@ const DetectionSection: React.FC<{
 
   return (
     <>
-      <EuiText size='s'>
+      <EuiText size="s">
         <p>
           <strong>{data.rules_evaluated}</strong> rules evaluated,{' '}
           <strong>{data.rules_matched}</strong> matched
         </p>
       </EuiText>
-      <EuiSpacer size='m' />
-      <EuiPanel paddingSize='m'>
+      <EuiSpacer size="m" />
+      <EuiPanel paddingSize="m">
         {matches.map((match, index) => (
           <React.Fragment key={`${match.rule.id}-${index}`}>
-            {index > 0 && <EuiSpacer size='s' />}
+            {index > 0 && <EuiSpacer size="s" />}
             <DetectionMatchItem match={match} index={index} onRuleClick={onRuleClick} />
           </React.Fragment>
         ))}
@@ -375,18 +359,16 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, onRuleClic
 
   return (
     <>
-      <EuiFlexGroup justifyContent='spaceBetween' alignItems='center'>
+      <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
         <EuiFlexItem grow={false}>
-          <EuiText size='s'>
+          <EuiText size="s">
             <h3>Test Result</h3>
           </EuiText>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>
           <EuiBadge
             color={
-              result?.status === 'OK' || String(result?.status) === '200'
-                ? 'success'
-                : 'warning'
+              result?.status === 'OK' || String(result?.status) === '200' ? 'success' : 'warning'
             }
           >
             {result?.status}
@@ -394,9 +376,9 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, onRuleClic
         </EuiFlexItem>
       </EuiFlexGroup>
 
-      <EuiSpacer size='m' />
+      <EuiSpacer size="m" />
 
-      <EuiTabs size='s'>
+      <EuiTabs size="s">
         <EuiTab
           isSelected={selectedTab === 'normalization'}
           onClick={() => setSelectedTab('normalization')}
@@ -411,17 +393,13 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, onRuleClic
         </EuiTab>
       </EuiTabs>
 
-      <EuiSpacer size='m' />
+      <EuiSpacer size="m" />
 
       {selectedTab === 'normalization' &&
         (normalization ? (
           <NormalizationSection data={normalization} />
         ) : (
-          <EuiCallOut
-            title='No normalization data'
-            color='primary'
-            iconType='iInCircle'
-          >
+          <EuiCallOut title="No normalization data" color="primary" iconType="iInCircle">
             <p>The logtest did not return normalization results.</p>
           </EuiCallOut>
         ))}
@@ -430,11 +408,7 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, onRuleClic
         (detection ? (
           <DetectionSection data={detection} onRuleClick={onRuleClick} />
         ) : (
-          <EuiCallOut
-            title='No detection data'
-            color='primary'
-            iconType='iInCircle'
-          >
+          <EuiCallOut title="No detection data" color="primary" iconType="iInCircle">
             <p>The logtest did not return detection results.</p>
           </EuiCallOut>
         ))}
