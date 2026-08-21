@@ -65,6 +65,15 @@ export const SpaceTypes = {
   },
 } as const;
 
+// Wazuh: log test runs against the engine, and draft content is never loaded there.
+export const DRAFT_UNAVAILABLE_IN_LOG_TEST = i18n.translate(
+  'securityAnalytics.logTest.draftUnavailable',
+  {
+    defaultMessage:
+      'Draft content is not loaded into the engine. Promote it to test to run it here.',
+  }
+);
+
 export const SPACE_SELECTOR_LABEL = i18n.translate('securityAnalytics.spaceSelector.label', {
   defaultMessage: 'Space:',
 });

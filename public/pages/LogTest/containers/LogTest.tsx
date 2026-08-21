@@ -21,7 +21,7 @@ import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
 import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { SpaceTypes } from '../../../../common/constants';
+import { DRAFT_UNAVAILABLE_IN_LOG_TEST, SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
 import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
@@ -34,11 +34,18 @@ import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
 const PAGE_DESCRIPTION =
   'Log test runs a sample event through the content loaded in a space, so you can confirm it is parsed and matched as expected.';
 
+// Wazuh: draft is listed so its absence stops reading as an oversight; it cannot be
+// picked because its content never reaches the engine.
 const LOG_TEST_SPACE_OPTIONS = [
+  SpaceTypes.DRAFT.value,
   SpaceTypes.TEST.value,
   SpaceTypes.CUSTOM.value,
   SpaceTypes.STANDARD.value,
 ];
+
+const LOG_TEST_UNAVAILABLE_SPACES = {
+  [SpaceTypes.DRAFT.value]: DRAFT_UNAVAILABLE_IN_LOG_TEST,
+};
 
 const INITIAL_FORM_DATA: LogTestFormData = {
   queue: undefined,
@@ -222,6 +229,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
                 onSpaceChange={(id) => handleFormChange('space', id)}
                 isDisabled={isLoading}
                 allowedSpaces={LOG_TEST_SPACE_OPTIONS}
+                unavailableSpaces={LOG_TEST_UNAVAILABLE_SPACES}
               />
             </EuiFlexItem>
           </EuiFlexGroup>
