@@ -117,9 +117,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
         buttonColor={'primary'}
         defaultFocusedButton="confirm"
         isLoading={isPromoting}
-        confirmButtonDisabled={
-          confirmActionText !== expectedConfirmActionText && !requireRootDecoderError
-        }
+        confirmButtonDisabled={confirmActionText !== expectedConfirmActionText && !requireRootDecoderError}
       >
         <EuiForm>
           <p>

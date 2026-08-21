@@ -393,8 +393,8 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
         currentStep > stepData.step
           ? 'complete'
           : currentStep < stepData.step
-          ? 'disabled'
-          : undefined,
+            ? 'disabled'
+            : undefined,
       children: <></>,
     }));
   }
