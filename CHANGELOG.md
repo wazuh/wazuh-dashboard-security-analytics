@@ -31,7 +31,7 @@
 | [#164](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/164) [#347](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/347) | Rules table and details now display the real integration title. |
 | [#178](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/178) | Updated nav menu group label to "Security analytics" to match Wazuh Dashboard capitalization style. |
 | [#353](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/353) | Removed getLogTypeLabel usage across Security analytics |
-| [#447](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/447) | Improved the security analytics UX: unified the user-facing terminology and documented it in `TERMINOLOGY.md`, said what each entity and space is for, added a "How security analytics works" flyout, told the user what to do next on empty lists, replaced the log test status code with a plain-language verdict, and gave the remaining dead ends a cause |
+| [#447](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/447) | Improved the security analytics UX: unified the user-facing terminology and documented it in `TERMINOLOGY.md`, said what each entity and space is for, added a "How security analytics works" flyout, told the user what to do next on empty lists, replaced the log test status code with a plain-language verdict, gave the remaining dead ends a cause, paired asset identifiers with their name so the root decoder reads as a name instead of `decoder/core-wazuh-message/0`, labelled each compliance framework's values with its own unit, and made the space policy panel legible: consistent booleans, enrichments as badges, and a hint on every setting saying what it affects |
 
 ### Removed
 
@@ -44,6 +44,7 @@
 
 | Issue | Comment |
 | ----- | ------- |
+| [#430](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/430) | Fixed the integration detail view reporting "Integration not found" for a promoted integration, because the list linked it by its OpenSearch document id while the view looks it up by the id shared across space copies |
 | [#9](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/9) [#446](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/446) | Fixed YAML Editor when creating or editing detection rules |
 | [#44](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/44) | Fixed detection rule editor causing blank screen |
 | [#315](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/315) | Fixed rule JSON viewer showing the detection field as a YAML string instead of a structured object |
