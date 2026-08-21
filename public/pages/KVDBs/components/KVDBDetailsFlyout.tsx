@@ -68,11 +68,30 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdbId, on
     { key: 'document.id', label: 'ID', value: document.id || kvdb?.id },
     { key: 'document.metadata.author', label: 'Author', value: metadata?.author },
     { key: 'document.metadata.description', label: 'Description', value: metadata?.description },
-    { key: 'document.metadata.date', label: 'Date', value: metadata?.date, type: 'date' },
-    { key: 'document.metadata.modified', label: 'Modified', value: metadata?.modified, type: 'date' },
-    { key: 'document.metadata.documentation', label: 'Documentation', value: metadata?.documentation },
-    { key: 'document.metadata.references', label: 'References', value: metadata?.references, type: 'url' },
-    { key: 'document.metadata.supports', label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={metadata?.supports} />, type: 'raw' },
+    { key: 'document.metadata.date', label: 'Created', value: metadata?.date, type: 'date' },
+    {
+      key: 'document.metadata.modified',
+      label: 'Modified',
+      value: metadata?.modified,
+      type: 'date',
+    },
+    {
+      key: 'document.metadata.documentation',
+      label: 'Documentation',
+      value: metadata?.documentation,
+    },
+    {
+      key: 'document.metadata.references',
+      label: 'References',
+      value: metadata?.references,
+      type: 'url',
+    },
+    {
+      key: 'document.metadata.supports',
+      label: 'Supports',
+      value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={metadata?.supports} />,
+      type: 'raw',
+    },
   ];
 
   const renderBody = () => {

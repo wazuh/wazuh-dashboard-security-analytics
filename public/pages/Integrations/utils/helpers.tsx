@@ -223,19 +223,11 @@ export const getIntegrationsTableColumns = ({
     ),
   },
   {
-    field: 'enabled',
-    name: 'Status',
-    sortable: true,
-    render: (enabled: boolean) => (
-      <EnabledHealth enabled={enabled} data-test-subj="integration_status" />
-    ),
-  },
-  {
     name: 'Actions',
     actions: [
       {
-        name: 'Details',
-        description: 'Show details',
+        name: 'View',
+        description: 'View integration details',
         type: 'icon',
         icon: 'inspect',
         onClick: (item) => {
@@ -243,8 +235,8 @@ export const getIntegrationsTableColumns = ({
         },
       },
       {
-        name: 'Remove',
-        description: 'Remove integration',
+        name: 'Delete',
+        description: 'Delete integration',
         type: 'icon',
         icon: 'trash',
         color: 'danger',

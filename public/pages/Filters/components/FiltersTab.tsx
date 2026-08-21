@@ -16,6 +16,7 @@ import {
 } from '@elastic/eui';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { DataStore } from '../../../store/DataStore';
 import { ROUTES } from '../../../utils/constants';
 import { pluralize } from '../../../utils/helpers';
@@ -241,6 +242,11 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
         }}
         isSelectable={true}
         sorting={true}
+        message={
+          loading ? undefined : (
+            <ListEmptyPrompt entity="filters" hasFilters={items.length > 0} space={spaceFilter} />
+          )
+        }
       />
 
       {selectedFilterId && (

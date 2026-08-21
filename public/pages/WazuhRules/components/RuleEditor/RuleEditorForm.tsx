@@ -43,7 +43,7 @@ import { YamlRuleEditorComponent } from './components/YamlRuleEditorComponent/Ya
 import { mapFormToRule, mapRuleToForm } from './mappers';
 import { DetectionVisualEditor } from '../../../Rules/components/RuleEditor/DetectionVisualEditor';
 import { MitreVisualEditor } from './components/MitreVisualEditor/MitreVisualEditor';
-import { MITRE_SECTIONS } from '../../utils/mitre';
+import { parseMitreYmlWithErrors } from '../../utils/mitre';
 import { ComplianceVisualEditor } from './components/ComplianceVisualEditor/ComplianceVisualEditor';
 import { getSeverityLabel } from '../../../Correlations/utils/constants';
 import { PageHeader } from '../../../../components/PageHeader/PageHeader';
@@ -87,7 +87,11 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   validateOnMount,
   subtitleData,
 }) => {
-  const [selectedEditorType, setSelectedEditorType] = useState('visual');
+  // A block the visual editor cannot show opens in the YAML editor instead, so simply
+  // opening a rule never discards it.
+  const [selectedEditorType, setSelectedEditorType] = useState(
+    parseMitreYmlWithErrors(initialValue.mitre).errors.length ? 'yaml' : 'visual'
+  );
   const [isDetectionInvalid, setIsDetectionInvalid] = useState(false);
   const [integrationId, setIntegrationId] = useState('');
 
@@ -169,14 +173,9 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
           errors.tags = `Tags must start with '${TAGS_PREFIX}'`;
         }
 
-        const mitreErrors: Partial<Record<keyof typeof values.mitre, string>> = {};
-        for (const section of MITRE_SECTIONS) {
-          if (values.mitre[section.field].some((e) => !e.id || !e.name)) {
-            mitreErrors[section.field] = 'Both ID and name are required for each entry.';
-          }
-        }
-        if (Object.keys(mitreErrors).length > 0) {
-          errors.mitre = mitreErrors as FormikErrors<RuleEditorFormModel>['mitre'];
+        const mitreErrors = parseMitreYmlWithErrors(values.mitre).errors;
+        if (mitreErrors.length) {
+          errors.mitre = mitreErrors.join(' ');
         }
 
         return errors;
@@ -232,7 +231,17 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                 legend="This is editor type selector"
                 options={editorTypes}
                 idSelected={selectedEditorType}
-                onChange={(id) => setSelectedEditorType(id)}
+                onChange={(id) => {
+                  // The visual editor can only hold valid data, so switching to it clears
+                  // a block it cannot show rather than leaving the two editors disagreeing.
+                  if (
+                    id === 'visual' &&
+                    parseMitreYmlWithErrors(props.values.mitre).errors.length
+                  ) {
+                    props.setFieldValue('mitre', '');
+                  }
+                  setSelectedEditorType(id);
+                }}
               />
 
               <EuiSpacer size="xl" />
@@ -435,7 +444,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                   <EuiCompressedFormRow
                     label={
                       <EuiText size={'s'}>
-                        <strong>Rule level (severity)</strong>
+                        <strong>Rule level</strong>
                       </EuiText>
                     }
                     isInvalid={(validateOnMount || props.touched.level) && !!props.errors?.level}
@@ -543,9 +552,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
 
                   <EuiAccordion
                     id="mitre-attack"
-                    initialIsOpen={MITRE_SECTIONS.some(
-                      (s) => props.values.mitre[s.field]?.length > 0
-                    )}
+                    initialIsOpen={!!props.values.mitre}
                     buttonContent={
                       <>
                         MITRE ATT&CK <i>- optional</i>
@@ -560,8 +567,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                   >
                     <EuiSpacer size="s" />
                     <MitreVisualEditor
-                      mitre={props.values.mitre}
-                      onChange={(state) => props.setFieldValue('mitre', state)}
+                      mitreYml={props.values.mitre}
+                      onChange={(yml) => props.setFieldValue('mitre', yml)}
                     />
                   </EuiAccordion>
 

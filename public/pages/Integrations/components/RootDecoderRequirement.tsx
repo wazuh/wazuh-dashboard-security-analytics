@@ -194,12 +194,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
             <EuiButtonEmpty onClick={onCancel}>Cancel</EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton
-              fill={true}
-              onClick={updatePolicyAction.run}
-              isDisabled={!selected}
-              isLoading={updatePolicyAction.running}
-            >
+            <EuiButton fill={true} onClick={updatePolicyAction.run} isDisabled={!selected} isLoading={updatePolicyAction.running}>
               Confirm
             </EuiButton>
           </EuiFlexItem>
@@ -330,6 +325,6 @@ export const withConditionalHOC = (
   };
 };
 
-export function isRootDecoderRequiementError(error) {
+export function isRootDecoderRequiementError(error){
   return /missing root decoder/i.test(error);
 }

@@ -23,6 +23,7 @@ import { OS_NOTIFICATION_PLUGIN } from './utils/constants';
 import { dataSourceInfo } from './services/utils/constants';
 import { History } from 'history';
 import { getBrowserServices } from './services/utils/constants';
+import { HowItWorksFlyout } from './components/HowItWorksFlyout';
 
 export function renderApp(
   coreStart: CoreStart,
@@ -47,34 +48,34 @@ export function renderApp(
                 push: props.history.push,
                 replace: props.history.replace,
               };
-              const wrapper = (method: 'push' | 'replace') => (
-                ...args: Parameters<History['push']>
-              ) => {
-                if (typeof args[0] === 'string') {
-                  const url = new URL(args[0], window.location.origin);
-                  const searchParams = url.searchParams;
-                  searchParams.set('dataSourceId', dataSourceInfo.activeDataSource.id);
-                  originalMethods[method](
-                    {
-                      pathname: url.pathname,
-                      search: searchParams.toString(),
-                    },
-                    ...args.slice(1)
-                  );
-                } else if (typeof args[0] === 'object') {
-                  const searchParams = new URLSearchParams(args[0].search);
-                  searchParams.set('dataSourceId', dataSourceInfo.activeDataSource.id);
-                  originalMethods[method](
-                    {
-                      ...args[0],
-                      search: searchParams.toString(),
-                    },
-                    ...args.slice(1)
-                  );
-                } else {
-                  originalMethods[method](...args);
-                }
-              };
+              const wrapper =
+                (method: 'push' | 'replace') =>
+                (...args: Parameters<History['push']>) => {
+                  if (typeof args[0] === 'string') {
+                    const url = new URL(args[0], window.location.origin);
+                    const searchParams = url.searchParams;
+                    searchParams.set('dataSourceId', dataSourceInfo.activeDataSource.id);
+                    originalMethods[method](
+                      {
+                        pathname: url.pathname,
+                        search: searchParams.toString(),
+                      },
+                      ...args.slice(1)
+                    );
+                  } else if (typeof args[0] === 'object') {
+                    const searchParams = new URLSearchParams(args[0].search);
+                    searchParams.set('dataSourceId', dataSourceInfo.activeDataSource.id);
+                    originalMethods[method](
+                      {
+                        ...args[0],
+                        search: searchParams.toString(),
+                      },
+                      ...args.slice(1)
+                    );
+                  } else {
+                    originalMethods[method](...args);
+                  }
+                };
 
               props.history = {
                 ...props.history,
@@ -94,6 +95,7 @@ export function renderApp(
                         dataSourceManagement={dataSourceManagement}
                         setActionMenu={params.setHeaderActionMenu}
                       />
+                      <HowItWorksFlyout />
                     </CoreServicesContext.Provider>
                   </SecurityAnalyticsContext.Provider>
                 </DarkModeContext.Provider>
@@ -117,5 +119,7 @@ export function renderApp(
       console.error(error.message ?? error);
     });
 
-  return () => root.unmount();
+  return () => {
+    root.unmount();
+  };
 }
