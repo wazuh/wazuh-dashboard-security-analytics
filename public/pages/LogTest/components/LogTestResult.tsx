@@ -26,6 +26,7 @@ import {
   LogTestDetectionRuleMatch,
   LogTestValidationError,
 } from '../../../../types';
+import { buildLogTestVerdict, countNormalizedFields } from '../utils';
 
 export interface LogTestResultProps {
   result: LogTestResponse;
@@ -61,7 +62,8 @@ const AssetTraceItem: React.FC<{ trace: LogTestAssetTrace; index: number }> = ({
         </EuiCodeBlock>
       ) : (
         <EuiText size="s" color="subdued">
-          No trace details available
+          No trace details available. Traces are only returned when the test runs with a trace level
+          above none.
         </EuiText>
       )}
     </EuiAccordion>
@@ -318,12 +320,21 @@ const DetectionSection: React.FC<{
   const matches = data.matches ?? [];
 
   if (matches.length === 0) {
+    // Wazuh: the payload only distinguishes these two by rules_evaluated, and reporting
+    // "0 rules evaluated, 0 matched" for both hid the difference.
+    const noneEvaluated = data.rules_evaluated === 0;
     return (
-      <EuiCallOut title="No rules matched" color="primary" iconType="iInCircle">
+      <EuiCallOut
+        title={noneEvaluated ? 'No rules were evaluated' : 'No rules matched'}
+        color="primary"
+        iconType="iInCircle"
+      >
         <p>
-          {data.rules_evaluated != null
-            ? `${data.rules_evaluated} rules evaluated, 0 matched.`
-            : 'No detection rules matched the log event.'}
+          {noneEvaluated
+            ? 'The detection logic ran with no rules to evaluate, so nothing could match.'
+            : data.rules_evaluated != null
+            ? `${data.rules_evaluated} rules were evaluated and none matched this event.`
+            : 'No rules matched this event.'}
         </p>
       </EuiCallOut>
     );
@@ -356,6 +367,16 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, onRuleClic
   const [selectedTab, setSelectedTab] = useState<ResultTab>('normalization');
   const normalization = result?.message?.normalization;
   const detection = result?.message?.detection;
+  const verdict = useMemo(
+    () =>
+      buildLogTestVerdict({
+        normalizationStatus: normalization?.status,
+        detectionStatus: detection?.status,
+        fieldCount: countNormalizedFields(normalization?.output),
+        rulesMatched: detection?.matches?.length ?? 0,
+      }),
+    [normalization?.status, normalization?.output, detection?.status, detection?.matches]
+  );
 
   return (
     <>
@@ -366,13 +387,9 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, onRuleClic
           </EuiText>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>
-          <EuiBadge
-            color={
-              result?.status === 'OK' || String(result?.status) === '200' ? 'success' : 'warning'
-            }
-          >
-            {result?.status}
-          </EuiBadge>
+          {/* Wazuh: the engine's raw status code (often just "200") told the user nothing,
+              so this states the outcome instead. */}
+          <EuiBadge color={verdict.color}>{verdict.text}</EuiBadge>
         </EuiFlexItem>
       </EuiFlexGroup>
 
