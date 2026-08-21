@@ -1698,7 +1698,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                         fullWidth={true}
                         hasChildLabel={true}
                         hasEmptyLabelSpace={false}
-                        label="Detector dashboard"
+                        label="Description"
                         labelType="label"
                       >
                         <div
@@ -1718,7 +1718,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                                 className="euiFormLabel euiFormRow__label"
                                 htmlFor="some_html_id"
                               >
-                                Detector dashboard
+                                Description
                               </label>
                             </EuiFormLabel>
                           </div>
@@ -1726,7 +1726,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             className="euiFormRow__fieldWrapper"
                           >
                             <EuiText
-                              data-test-subj="text-details-group-content-detector-dashboard"
+                              data-test-subj="text-details-group-content-description"
                               id="some_html_id"
                               onBlur={[Function]}
                               onFocus={[Function]}
@@ -1734,7 +1734,7 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                             >
                               <div
                                 className="euiText euiText--small"
-                                data-test-subj="text-details-group-content-detector-dashboard"
+                                data-test-subj="text-details-group-content-description"
                                 id="some_html_id"
                                 onBlur={[Function]}
                                 onFocus={[Function]}
@@ -1950,66 +1950,6 @@ exports[`<DetectorDetails /> spec renders the component 1`] = `
                   </EuiFlexItem>
                 </div>
               </EuiFlexGroup>
-              <EuiSpacer
-                size="l"
-              >
-                <div
-                  className="euiSpacer euiSpacer--l"
-                />
-              </EuiSpacer>
-              <EuiCompressedFormRow
-                describedByIds={Array []}
-                display="rowCompressed"
-                fullWidth={true}
-                hasChildLabel={true}
-                hasEmptyLabelSpace={false}
-                label="Description"
-                labelType="label"
-              >
-                <div
-                  className="euiFormRow euiFormRow--fullWidth euiFormRow--compressed"
-                  id="some_html_id-row"
-                >
-                  <div
-                    className="euiFormRow__labelWrapper"
-                  >
-                    <EuiFormLabel
-                      className="euiFormRow__label"
-                      htmlFor="some_html_id"
-                      isFocused={false}
-                      type="label"
-                    >
-                      <label
-                        className="euiFormLabel euiFormRow__label"
-                        htmlFor="some_html_id"
-                      >
-                        Description
-                      </label>
-                    </EuiFormLabel>
-                  </div>
-                  <div
-                    className="euiFormRow__fieldWrapper"
-                  >
-                    <EuiText
-                      data-test-subj="text-details-group-content-description"
-                      id="some_html_id"
-                      onBlur={[Function]}
-                      onFocus={[Function]}
-                      size="s"
-                    >
-                      <div
-                        className="euiText euiText--small"
-                        data-test-subj="text-details-group-content-description"
-                        id="some_html_id"
-                        onBlur={[Function]}
-                        onFocus={[Function]}
-                      >
-                        -
-                      </div>
-                    </EuiText>
-                  </div>
-                </div>
-              </EuiCompressedFormRow>
               <EuiSpacer
                 size="l"
               >
