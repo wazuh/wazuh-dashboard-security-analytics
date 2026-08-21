@@ -10,7 +10,6 @@ import {
   EuiSmallButton,
   EuiContextMenuItem,
   EuiContextMenuPanel,
-  EuiEmptyPrompt,
   EuiFlexGroup,
   EuiFlexItem,
   EuiHealth,
@@ -24,7 +23,12 @@ import {
   EuiToolTip,
   EuiSearchBar,
 } from '@elastic/eui';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_EMPTY_DATA,
+  ROUTES,
+  PAGE_HEADER_CONTROL_STYLE,
+} from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
 import { getDetectorNames } from '../../utils/helpers';
 import {
@@ -51,6 +55,7 @@ import {
   writeInMemoryUrlFilterValues,
 } from '../../../../utils/inMemoryUrlFilterAdapter';
 import { buildStatusIntegrationFilters } from '../../../../utils/entitySearchBarFilters';
+import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -65,6 +70,10 @@ interface DetectorsState {
   isDeleteModalVisible: boolean;
   isPopoverOpen: boolean;
 }
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.';
 
 export default class Detectors extends Component<DetectorsProps, DetectorsState> {
   constructor(props: DetectorsProps) {
@@ -340,7 +349,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
       {
         field: 'lastUpdatedTime',
-        name: 'Last updated time',
+        name: 'Modified',
         sortable: true,
         dataType: 'date',
         render: (last_update_time: number) => renderTime(last_update_time) || DEFAULT_EMPTY_DATA,
@@ -360,7 +369,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       return [
         <EuiToolTip
           key={'Delete'}
-          content={hasStandardSelected ? 'Only Custom detectors can be deleted.' : undefined}
+          content={hasStandardSelected ? 'Only custom detectors can be deleted.' : undefined}
         >
           <EuiSmallButton
             color={'danger'}
@@ -496,16 +505,20 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
           appRightControls={actions.map((action) => ({
             renderComponent: action,
           }))}
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
         >
           <EuiFlexItem>
-            <EuiFlexGroup>
+            <EuiFlexGroup alignItems="flexStart">
               <EuiFlexItem>
                 <EuiText size="s">
                   {/* Wazuh modification: Changed page title to "Detectors" */}
                   <h1>Detectors</h1>
                 </EuiText>
+                <EuiText size="s" color="subdued">
+                  {PAGE_DESCRIPTION}
+                </EuiText>
               </EuiFlexItem>
-              <EuiFlexItem>
+              <EuiFlexItem style={PAGE_HEADER_CONTROL_STYLE}>
                 <EuiFlexGroup justifyContent="flexEnd">
                   {actions.map((action, idx) => {
                     return (
@@ -533,15 +546,15 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               search={search}
               loading={loadingDetectors}
               message={
-                <EuiEmptyPrompt
-                  style={{ maxWidth: '45em' }}
-                  body={
-                    <EuiText size="s">
-                      <p>There are no existing detectors.</p>
-                    </EuiText>
-                  }
-                  actions={[actions[3]]}
-                />
+                loadingDetectors ? undefined : (
+                  <ListEmptyPrompt
+                    entity="detectors"
+                    hasFilters={detectorHits.length > 0}
+                    noContentTitle="No detectors yet"
+                    emptyBody={<p>Create one to start generating findings from your log data.</p>}
+                    actions={[actions[3]]}
+                  />
+                )
               }
             />
           </EuiPanel>

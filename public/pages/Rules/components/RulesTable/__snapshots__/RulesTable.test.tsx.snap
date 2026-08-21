@@ -63,10 +63,10 @@ Object {
                       >
                         <span
                           class="euiFilterButton__textShift"
-                          data-text="Rule severity"
-                          title="Rule severity"
+                          data-text="Rule level"
+                          title="Rule level"
                         >
-                          Rule severity
+                          Rule level
                         </span>
                       </span>
                     </span>
@@ -180,9 +180,9 @@ Object {
                       >
                         <span
                           class="euiTableCellContent__text"
-                          title="Rule Severity"
+                          title="Rule level"
                         >
-                          Rule Severity
+                          Rule level
                         </span>
                       </span>
                     </button>
@@ -343,10 +343,10 @@ Object {
                     >
                       <span
                         class="euiFilterButton__textShift"
-                        data-text="Rule severity"
-                        title="Rule severity"
+                        data-text="Rule level"
+                        title="Rule level"
                       >
-                        Rule severity
+                        Rule level
                       </span>
                     </span>
                   </span>
@@ -460,9 +460,9 @@ Object {
                     >
                       <span
                         class="euiTableCellContent__text"
-                        title="Rule Severity"
+                        title="Rule level"
                       >
-                        Rule Severity
+                        Rule level
                       </span>
                     </span>
                   </button>

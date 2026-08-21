@@ -12,7 +12,6 @@ import { Space } from '../../types';
 interface UseSpaceSelectorOptions {
   isDisabled?: boolean;
   isLoading?: boolean;
-  documentationUrl?: string;
   onSpaceChange?: (spaceId: string) => void;
   /** Pass the caller's own `history` prop — see the comment on useSpaceFilter. */
   history?: History;
@@ -22,9 +21,12 @@ interface UseSpaceSelectorOptions {
 
 export const useSpaceSelector = (
   options: UseSpaceSelectorOptions = {}
-): { component: React.ReactComponentElement; spaceFilter: Space } => {
-  const { isDisabled, isLoading, documentationUrl, onSpaceChange, history, clearParamsOnChange } =
-    options;
+): {
+  component: React.ReactComponentElement;
+  spaceFilter: Space;
+  setSpace: (id: string) => void;
+} => {
+  const { isDisabled, isLoading, onSpaceChange, history, clearParamsOnChange } = options;
   const [spaceFilter, setSpaceFilter] = useSpaceFilter(history);
   const [isChanging, setIsChanging] = useState(false);
   const trackPending = isLoading !== undefined;
@@ -59,9 +61,10 @@ export const useSpaceSelector = (
       selectedSpace={spaceFilter}
       onSpaceChange={handleSpaceChange}
       isDisabled={isDisabled || isLoading || isChanging}
-      documentationUrl={documentationUrl}
     />
   );
 
-  return { component, spaceFilter };
+  // Wazuh: setSpace is handleSpaceChange, so callers outside the selector (an empty
+  // state pointing at Standard) reuse its single history write.
+  return { component, spaceFilter, setSpace: handleSpaceChange };
 };
