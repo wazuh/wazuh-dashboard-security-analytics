@@ -41,6 +41,8 @@ interface IntegrationComboBoxProps {
   error?: string;
   space?: string;
   fullWidth?: boolean;
+  /** True where picking an integration is optional, so the empty state must not demand one. */
+  isOptional?: boolean;
 }
 
 export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
@@ -57,6 +59,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   error,
   space = 'draft',
   fullWidth = false,
+  isOptional = false,
 }) => {
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const selectedOption = options.find((o) => o.id === selectedId);
@@ -141,8 +144,12 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
           <EuiSpacer size="m" />
           <EuiCallOut title="No integrations available" color="warning" iconType="alert">
             <p>
-              There are no integrations in {space} space available to add {resourceName}. Please
-              create an integration first before adding {resourceName}.
+              {/* Wazuh: names the space it was given, and only demands an integration where
+                  one is actually required. */}
+              There are no integrations in the {space} space to add {resourceName} to.
+              {isOptional
+                ? ' Promote or create one in a space that allows it to narrow the results.'
+                : ' Create an integration first.'}
             </p>
           </EuiCallOut>
         </>

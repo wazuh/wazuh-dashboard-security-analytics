@@ -106,9 +106,7 @@ export const Overview: React.FC<OverviewProps> = (props) => {
 
   useEffect(() => {
     // Breadcrumbs set to 'Overview' for Wazuh
-    setBreadcrumbs(
-      [BREADCRUMBS.OVERVIEW]
-    )
+    setBreadcrumbs([BREADCRUMBS.OVERVIEW]);
 
     // setBreadcrumbs(
     //   isSecurityAnalyticsUseCase
@@ -171,8 +169,9 @@ export const Overview: React.FC<OverviewProps> = (props) => {
         startTime: start,
         endTime: endTime,
       });
-      // Wazuh: hide Summary widget (alerts-focused).
-    setTimeUnit(timeUnits.timeUnit);
+    // Wazuh: hide Summary widget (alerts-focused). setTimeUnit and timeUnits went with
+    // it, so calling them here threw on every date-range change.
+    // setTimeUnit(timeUnits.timeUnit);
     setRecentlyUsedRanges(usedRanges);
   };
 
