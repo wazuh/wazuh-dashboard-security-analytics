@@ -348,7 +348,9 @@ const DetectionSection: React.FC<{
           {noneEvaluated
             ? 'The detection logic ran with no rules to evaluate, so nothing could match.'
             : data.rules_evaluated != null
-            ? `${data.rules_evaluated} rules were evaluated and none matched this event.`
+            ? `${data.rules_evaluated} ${
+                data.rules_evaluated === 1 ? 'rule was' : 'rules were'
+              } evaluated and none matched this event.`
             : 'No rules matched this event.'}
         </p>
       </EuiCallOut>
@@ -359,8 +361,8 @@ const DetectionSection: React.FC<{
     <>
       <EuiText size="s">
         <p>
-          <strong>{data.rules_evaluated}</strong> rules evaluated,{' '}
-          <strong>{data.rules_matched}</strong> matched
+          <strong>{data.rules_evaluated}</strong> {data.rules_evaluated === 1 ? 'rule' : 'rules'}{' '}
+          evaluated, <strong>{data.rules_matched}</strong> matched
         </p>
       </EuiText>
       <EuiSpacer size="m" />

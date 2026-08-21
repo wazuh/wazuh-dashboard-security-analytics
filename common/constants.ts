@@ -71,8 +71,7 @@ export const SpaceTypes = {
 export const DRAFT_UNAVAILABLE_IN_LOG_TEST = i18n.translate(
   'securityAnalytics.logTest.draftUnavailable',
   {
-    defaultMessage:
-      'Draft content is not loaded into the engine. Promote it to test to run it here.',
+    defaultMessage: 'The draft space cannot be tested. Promote it to test to evaluate it here.',
   }
 );
 

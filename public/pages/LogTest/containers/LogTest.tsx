@@ -81,6 +81,9 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
   const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
+  // Wazuh: the space the result belongs to. The selector can move after a test, and the
+  // rule links must keep pointing at the space the event was actually evaluated in.
+  const [testedSpace, setTestedSpace] = useState<string | null>(null);
   const [spaceCache, setSpaceCache] = useState<SpaceCache>({});
 
   useEffect(() => {
@@ -181,6 +184,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
 
     if (result.success && result.data) {
       setTestResult(result.data);
+      setTestedSpace(formData.space);
     }
   };
 
@@ -208,6 +212,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
     setFormData(INITIAL_FORM_DATA);
     setErrors(INITIAL_ERRORS);
     setTestResult(null);
+    setTestedSpace(null);
   }, []);
 
   return (
@@ -286,11 +291,15 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               <LogTestResult
                 result={testResult}
                 /* Wazuh: a real cross-app URL, so the link can be opened in a new tab,
-                   copied, and read by assistive tech. */
+                   copied, and read by assistive tech. The rule id goes in `query`, which
+                   the rules list applies as its search, and the space is the one the test
+                   ran against, not whatever the selector shows now. */
                 ruleHref={(ruleId) =>
                   buildAppUrl(
                     DETECTION_RULE_NAV_ID,
-                    `${ROUTES.RULES}?ruleId=${ruleId}&space=${formData.space}`
+                    `${ROUTES.RULES}?space=${encodeURIComponent(
+                      testedSpace ?? formData.space
+                    )}&dataSourceId=&query=${encodeURIComponent(ruleId)}`
                   )
                 }
               />
