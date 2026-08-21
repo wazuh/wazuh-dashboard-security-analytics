@@ -27,8 +27,8 @@ import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/L
 import { LogTestResult } from '../components/LogTestResult';
 import { IntegrationOption } from '../../../components/IntegrationComboBox';
 import { MetadataEntry, buildMetadataObject } from '../utils';
-import { getApplication } from '../../../services/utils/constants';
 import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
+import { buildAppUrl } from '../../../utils/routes';
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
@@ -285,10 +285,13 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               <EuiHorizontalRule margin="l" />
               <LogTestResult
                 result={testResult}
-                onRuleClick={(ruleId) =>
-                  getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {
-                    path: `#${ROUTES.RULES}?ruleId=${ruleId}&space=${formData.space}`,
-                  })
+                /* Wazuh: a real cross-app URL, so the link can be opened in a new tab,
+                   copied, and read by assistive tech. */
+                ruleHref={(ruleId) =>
+                  buildAppUrl(
+                    DETECTION_RULE_NAV_ID,
+                    `${ROUTES.RULES}?ruleId=${ruleId}&space=${formData.space}`
+                  )
                 }
               />
             </>

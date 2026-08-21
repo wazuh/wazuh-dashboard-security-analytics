@@ -16,7 +16,8 @@ import {
   EuiCallOut,
   EuiTabs,
   EuiTab,
-  EuiLink,
+  EuiButtonEmpty,
+  EuiToolTip,
 } from '@elastic/eui';
 import {
   LogTestResponse,
@@ -30,7 +31,7 @@ import { buildLogTestVerdict, countNormalizedFields } from '../utils';
 
 export interface LogTestResultProps {
   result: LogTestResponse;
-  onRuleClick?: (ruleId: string) => void;
+  ruleHref?: (ruleId: string) => string;
 }
 
 const AssetTraceItem: React.FC<{ trace: LogTestAssetTrace; index: number }> = ({
@@ -134,8 +135,8 @@ function getLevelBadgeColor(level: string): string {
 const DetectionMatchItem: React.FC<{
   match: LogTestDetectionRuleMatch;
   index: number;
-  onRuleClick?: (ruleId: string) => void;
-}> = ({ match, index, onRuleClick }) => {
+  ruleHref?: (ruleId: string) => string;
+}> = ({ match, index, ruleHref }) => {
   const { rule, matched_conditions } = match;
 
   return (
@@ -148,16 +149,30 @@ const DetectionMatchItem: React.FC<{
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiText size="s">
-              {onRuleClick ? (
-                <EuiLink onClick={() => onRuleClick!(rule.id)}>
-                  <strong>{rule.title}</strong>
-                </EuiLink>
-              ) : (
-                <strong>{rule.title}</strong>
-              )}
+              <strong>{rule.title}</strong>
             </EuiText>
           </EuiFlexItem>
         </EuiFlexGroup>
+      }
+      /* Wazuh: the link lives here, not in buttonContent. EuiAccordion renders
+         buttonContent inside a <button>, so an anchor there was nested in a button:
+         invalid markup, and the click fought the accordion toggle. extraAction is
+         rendered as a sibling of that button. */
+      extraAction={
+        ruleHref ? (
+          <EuiToolTip content="View this rule in a new tab">
+            <EuiButtonEmpty
+              size="xs"
+              flush="right"
+              iconType="popout"
+              iconSide="right"
+              href={ruleHref(rule.id)}
+              target="_blank"
+            >
+              View this rule
+            </EuiButtonEmpty>
+          </EuiToolTip>
+        ) : undefined
       }
       paddingSize="s"
     >
@@ -299,8 +314,8 @@ const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({ 
 
 const DetectionSection: React.FC<{
   data: LogTestDetectionResult;
-  onRuleClick?: (ruleId: string) => void;
-}> = ({ data, onRuleClick }) => {
+  ruleHref?: (ruleId: string) => string;
+}> = ({ data, ruleHref }) => {
   if (data.status === 'skipped') {
     return (
       <EuiCallOut title="Detection skipped" color="warning" iconType="alert">
@@ -353,7 +368,7 @@ const DetectionSection: React.FC<{
         {matches.map((match, index) => (
           <React.Fragment key={`${match.rule.id}-${index}`}>
             {index > 0 && <EuiSpacer size="s" />}
-            <DetectionMatchItem match={match} index={index} onRuleClick={onRuleClick} />
+            <DetectionMatchItem match={match} index={index} ruleHref={ruleHref} />
           </React.Fragment>
         ))}
       </EuiPanel>
@@ -363,7 +378,7 @@ const DetectionSection: React.FC<{
 
 type ResultTab = 'normalization' | 'detection';
 
-export const LogTestResult: React.FC<LogTestResultProps> = ({ result, onRuleClick }) => {
+export const LogTestResult: React.FC<LogTestResultProps> = ({ result, ruleHref }) => {
   const [selectedTab, setSelectedTab] = useState<ResultTab>('normalization');
   const normalization = result?.message?.normalization;
   const detection = result?.message?.detection;
@@ -423,7 +438,7 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, onRuleClic
 
       {selectedTab === 'detection' &&
         (detection ? (
-          <DetectionSection data={detection} onRuleClick={onRuleClick} />
+          <DetectionSection data={detection} ruleHref={ruleHref} />
         ) : (
           <EuiCallOut title="No detection data" color="primary" iconType="iInCircle">
             <p>The logtest did not return detection results.</p>

@@ -5,7 +5,6 @@
 
 import {
   EuiButtonEmpty,
-  EuiCallOut,
   EuiCompressedComboBox,
   EuiCompressedFormRow,
   EuiFlexGroup,
@@ -16,6 +15,9 @@ import React, { ReactNode, useState } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import FormFieldHeader from '../FormFieldHeader';
 import { IntegrationOption } from './useIntegrationSelector';
+import { SpaceTypes } from '../../../common/constants';
+import { getPreviousSpace } from '../../../common/helpers';
+import { PromoteSpaces } from '../../../types';
 import { CreateIntegrationFlyout } from '../../pages/Integrations/components/CreateIntegrationFlyout';
 
 const DEFAULT_LABEL = (
@@ -30,7 +32,11 @@ interface IntegrationComboBoxProps {
   selectedId: string;
   isLoading: boolean;
   onChange: (options: IntegrationOption[]) => void;
-  resourceName: string;
+  /**
+   * Wazuh: no longer read. The empty-state copy dropped "to add <resourceName> to",
+   * and seven call sites still pass it. Remove the prop and those call sites together.
+   */
+  resourceName?: string;
   /** Required to enable the inline create-integration flyout */
   notifications?: NotificationsStart;
   /** Called after a new integration is successfully created via the flyout */
@@ -51,7 +57,6 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   selectedId,
   isLoading,
   onChange,
-  resourceName,
   notifications,
   onCreateSuccess,
   'data-test-subj': dataTestSubj,
@@ -70,9 +75,40 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
     onCreateSuccess?.(newOption);
   };
 
+  // Wazuh: when there is nothing to pick, say so on the control itself. A callout here
+  // competed with the form it belonged to, and the combo box is already disabled, so the
+  // help text only has to supply the reason.
+  const noOptions = !isLoading && options.length === 0;
+  // Where picking one is optional, name the space it would come from. Draft has no
+  // previous stage, integrations are created there, and standard is not a stage at all.
+  const previousSpace = getPreviousSpace(space as PromoteSpaces);
+  const optionalNextStep = previousSpace
+    ? ` Promote one from the ${SpaceTypes[
+        previousSpace.toUpperCase() as keyof typeof SpaceTypes
+      ].label.toLowerCase()} space to evaluate it.`
+    : space === SpaceTypes.DRAFT.value
+    ? ' Create one to evaluate it.'
+    : '';
+  // The create button only renders when `notifications` is given, so telling the user to
+  // create one is only worth saying where that button is absent.
+  const nextStep = isOptional
+    ? optionalNextStep
+    : notifications
+    ? ''
+    : ' Create an integration first.';
+  const emptyHelpText = noOptions
+    ? `There are no integrations in the ${space} space.${nextStep}`
+    : undefined;
+
   return (
     <>
-      <EuiCompressedFormRow label={label} isInvalid={isInvalid} error={error} fullWidth={fullWidth}>
+      <EuiCompressedFormRow
+        label={label}
+        isInvalid={isInvalid}
+        error={error}
+        helpText={emptyHelpText}
+        fullWidth={fullWidth}
+      >
         {notifications ? (
           <EuiFlexGroup
             gutterSize="s"
@@ -138,22 +174,6 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
           />
         )}
       </EuiCompressedFormRow>
-
-      {!isLoading && options.length === 0 && (
-        <>
-          <EuiSpacer size="m" />
-          <EuiCallOut title="No integrations available" color="warning" iconType="alert">
-            <p>
-              {/* Wazuh: names the space it was given, and only demands an integration where
-                  one is actually required. */}
-              There are no integrations in the {space} space to add {resourceName} to.
-              {isOptional
-                ? ' Promote or create one in a space that allows it to narrow the results.'
-                : ' Create an integration first.'}
-            </p>
-          </EuiCallOut>
-        </>
-      )}
 
       {isFlyoutOpen && notifications && (
         <CreateIntegrationFlyout
