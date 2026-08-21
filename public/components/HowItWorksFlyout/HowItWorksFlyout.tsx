@@ -132,11 +132,17 @@ export const HowItWorksFlyout: React.FC = () => {
         <EuiText size="s">
           <p>
             Three spaces are the stages of the content lifecycle: <em>draft</em>, <em>test</em> and{' '}
-            <em>custom</em>. The fourth, <em>standard</em>, is read-only content shipped with Wazuh.
+            <em>custom</em>. The fourth, <em>standard</em>, holds the content shipped with Wazuh.
           </p>
           <p>
             User-managed content is promoted sequentially from <em>draft</em> to <em>test</em>, and
             from <em>test</em> to <em>custom</em>, after validation.
+          </p>
+          {/* Wazuh: name the restriction here, so the lists do not repeat it per row. */}
+          <p>
+            This is why <em>draft</em> is the only space where content can be edited or deleted.
+            Further along the pipeline it is already loaded in the engine, so the lists there offer
+            no edit or delete action. To change it, edit it in <em>draft</em> and promote again.
           </p>
         </EuiText>
         <EuiSpacer size="s" />

@@ -3,14 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { EuiSmallButton, EuiSpacer, EuiLink, EuiIcon, EuiText, EuiToolTip } from '@elastic/eui';
+// Wazuh: EuiLink and EuiIcon dropped with the Detector dashboard field below.
+import { EuiSmallButton, EuiSpacer, EuiText, EuiToolTip } from '@elastic/eui';
 import React from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { createTextDetailsGroup, parseSchedule } from '../../../../utils/helpers';
 // Wazuh: replaced the `moment` import with formatUIDate to honor the
 // `dateFormat`/`dateFormat:tz` advanced settings (upstream imported `moment` here).
 import { formatUIDate } from '../../../../utils/dateFormat';
-import { DEFAULT_EMPTY_DATA, logTypesWithDashboards } from '../../../../utils/constants';
+// Wazuh: logTypesWithDashboards dropped with the Detector dashboard field below.
+import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import { isStandardSource } from '../../../../utils/detectorSource';
 import { Detector } from '../../../../../types';
 // Wazuh: remove integration title formatting
@@ -33,7 +35,7 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
   last_update_time,
   rulesCanFold,
   children,
-  dashboardId,
+  // dashboardId, // Wazuh: unused since the Detector dashboard field is hidden
   onEditClicked,
   isEditable = true,
   space, // Wazuh
@@ -99,18 +101,27 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
           ),
         },
         { label: 'Detector schedule', content: detectorSchedule }, // Wazuh: reorganize props
+        // Wazuh: hide the Detector dashboard field. `logTypesWithDashboards`
+        // (public/utils/constants.ts) only holds network, cloudtrail and s3, so a Wazuh
+        // integration name can never match it and the field is a permanent dead end.
+        // {
+        //   label: 'Detector dashboard',
+        //   content: dashboardId ? (
+        //     <EuiLink onClick={() => window.open(`dashboards#/view/${dashboardId}`, '_blank')}>
+        //       {`${name} summary`}
+        //       <EuiIcon type={'popout'} />
+        //     </EuiLink>
+        //   ) : !logTypesWithDashboards.has(detector_type) ? (
+        //     'Not available for this integration' // Changed Log Type to Integration by Wazuh
+        //   ) : (
+        //     '-'
+        //   ),
+        // },
         {
-          label: 'Detector dashboard',
-          content: dashboardId ? (
-            <EuiLink onClick={() => window.open(`dashboards#/view/${dashboardId}`, '_blank')}>
-              {`${name} summary`}
-              <EuiIcon type={'popout'} />
-            </EuiLink>
-          ) : !logTypesWithDashboards.has(detector_type) ? (
-            'Not available for this integration' // Changed Log Type to Integration by Wazuh
-          ) : (
-            '-'
-          ),
+          // Wazuh: reorganize props, Description takes the slot the hidden
+          // Detector dashboard field left, so the group keeps three items.
+          label: 'Description',
+          content: inputs[0].detector_input.description || DEFAULT_EMPTY_DATA,
         },
       ])}
       {createTextDetailsGroup([
@@ -119,13 +130,6 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
         {
           label: 'Modified',
           content: lastUpdated || DEFAULT_EMPTY_DATA,
-        },
-      ])}
-      {createTextDetailsGroup([
-        {
-          // Wazuh: reorganize props
-          label: 'Description',
-          content: inputs[0].detector_input.description || DEFAULT_EMPTY_DATA,
         },
       ])}
       {rulesCanFold ? children : null}

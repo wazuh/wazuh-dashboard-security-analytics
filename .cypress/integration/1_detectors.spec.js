@@ -185,7 +185,9 @@ const createDetector = (detectorName, dataSource, expectFailure) => {
             cy.validateDetailsItem('Description', '-');
             cy.validateDetailsItem('Detector schedule', 'Every 1 minute');
             cy.validateDetailsItem('Rules', '14'); // Wazuh: rename 'Detection rules' to 'Rules'
-            cy.validateDetailsItem('Detector dashboard', 'Not available for this log type');
+            // Wazuh: the Detector dashboard field is hidden, so this assertion is gone.
+            // It was already stale: it expected 'Not available for this log type' while the
+            // code rendered 'Not available for this integration'.
 
             cy.wait(5000); // waiting for the page to be reloaded after pushing detector id into route
             cy.getElementByText('button.euiTab', 'Alert triggers').should('be.visible').click();

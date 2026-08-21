@@ -265,7 +265,8 @@ const RearrangeIntegrationWithData: React.FC<RearrangeIntegrationWithDataProps> 
           iconType="iInCircle"
           color="primary"
         >
-          Add integrations to enable the rearrange functionality.
+          The policy of this space holds no integrations, so there is no order to change. Add
+          integrations to enable the rearrange functionality.
         </EuiCallOut>
       </EuiFlyoutBody>
     )
