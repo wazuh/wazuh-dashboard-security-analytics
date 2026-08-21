@@ -60,10 +60,20 @@ export const SpaceTypes = {
     value: 'standard',
     description: i18n.translate('securityAnalytics.spaceTypes.standardDescription', {
       defaultMessage:
-        'Read-only space holding the default integrations, decoders and rules shipped with Wazuh.',
+        // Wazuh: not read-only. Its content cannot be created, edited or deleted, but
+        // integrations can be disabled and their policy adjusted.
+        'Space holding the default integrations, decoders and rules shipped with Wazuh. Its content cannot be edited or deleted, though integrations can be disabled.',
     }),
   },
 } as const;
+
+// Wazuh: log test runs against the engine, and draft content is never loaded there.
+export const DRAFT_UNAVAILABLE_IN_LOG_TEST = i18n.translate(
+  'securityAnalytics.logTest.draftUnavailable',
+  {
+    defaultMessage: 'The draft space cannot be tested. Promote it to test to evaluate it here.',
+  }
+);
 
 export const SPACE_SELECTOR_LABEL = i18n.translate('securityAnalytics.spaceSelector.label', {
   defaultMessage: 'Space:',

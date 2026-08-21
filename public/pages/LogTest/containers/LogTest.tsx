@@ -16,29 +16,36 @@ import {
 } from '@elastic/eui';
 import { RouteComponentProps } from 'react-router-dom';
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
-import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { SpaceTypes } from '../../../../common/constants';
+import { DRAFT_UNAVAILABLE_IN_LOG_TEST, SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
 import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
 import { IntegrationOption } from '../../../components/IntegrationComboBox';
 import { MetadataEntry, buildMetadataObject } from '../utils';
-import { getApplication } from '../../../services/utils/constants';
 import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
+import { buildAppUrl } from '../../../utils/routes';
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
   'Log test runs a sample event through the content loaded in a space, so you can confirm it is parsed and matched as expected.';
 
+// Wazuh: draft is listed so its absence stops reading as an oversight; it cannot be
+// picked because its content never reaches the engine.
 const LOG_TEST_SPACE_OPTIONS = [
+  SpaceTypes.DRAFT.value,
   SpaceTypes.TEST.value,
   SpaceTypes.CUSTOM.value,
   SpaceTypes.STANDARD.value,
 ];
+
+const LOG_TEST_UNAVAILABLE_SPACES = {
+  [SpaceTypes.DRAFT.value]: DRAFT_UNAVAILABLE_IN_LOG_TEST,
+};
 
 const INITIAL_FORM_DATA: LogTestFormData = {
   queue: undefined,
@@ -74,6 +81,9 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
   const [errors, setErrors] = useState<LogTestFormErrors>(INITIAL_ERRORS);
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<LogTestResponse | null>(null);
+  // Wazuh: the space the result belongs to. The selector can move after a test, and the
+  // rule links must keep pointing at the space the event was actually evaluated in.
+  const [testedSpace, setTestedSpace] = useState<string | null>(null);
   const [spaceCache, setSpaceCache] = useState<SpaceCache>({});
 
   useEffect(() => {
@@ -174,6 +184,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
 
     if (result.success && result.data) {
       setTestResult(result.data);
+      setTestedSpace(formData.space);
     }
   };
 
@@ -201,31 +212,26 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
     setFormData(INITIAL_FORM_DATA);
     setErrors(INITIAL_ERRORS);
     setTestResult(null);
+    setTestedSpace(null);
   }, []);
 
   return (
     <EuiFlexGroup direction="column" gutterSize="m">
       <EuiFlexItem grow={false}>
-        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
-          <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween" gutterSize="m">
-            <EuiFlexItem>
-              <EuiText size="s">
-                <h1>Log test</h1>
-              </EuiText>
-              <EuiText size="s" color="subdued">
-                {PAGE_DESCRIPTION}
-              </EuiText>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
-              <SpaceSelector
-                selectedSpace={formData.space}
-                onSpaceChange={(id) => handleFormChange('space', id)}
-                isDisabled={isLoading}
-                allowedSpaces={LOG_TEST_SPACE_OPTIONS}
-              />
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        </PageHeader>
+        <WazuhPageHeader
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          title="Log test"
+          description={PAGE_DESCRIPTION}
+          controls={[
+            <SpaceSelector
+              selectedSpace={formData.space}
+              onSpaceChange={(id) => handleFormChange('space', id)}
+              isDisabled={isLoading}
+              allowedSpaces={LOG_TEST_SPACE_OPTIONS}
+              unavailableSpaces={LOG_TEST_UNAVAILABLE_SPACES}
+            />,
+          ]}
+        />
       </EuiFlexItem>
 
       <EuiFlexItem>
@@ -277,10 +283,17 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               <EuiHorizontalRule margin="l" />
               <LogTestResult
                 result={testResult}
-                onRuleClick={(ruleId) =>
-                  getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {
-                    path: `#${ROUTES.RULES}?ruleId=${ruleId}&space=${formData.space}`,
-                  })
+                /* Wazuh: a real cross-app URL, so the link can be opened in a new tab,
+                   copied, and read by assistive tech. The rule id goes in `query`, which
+                   the rules list applies as its search, and the space is the one the test
+                   ran against, not whatever the selector shows now. */
+                ruleHref={(ruleId) =>
+                  buildAppUrl(
+                    DETECTION_RULE_NAV_ID,
+                    `${ROUTES.RULES}?space=${encodeURIComponent(
+                      testedSpace ?? formData.space
+                    )}&dataSourceId=&query=${encodeURIComponent(ruleId)}`
+                  )
                 }
               />
             </>

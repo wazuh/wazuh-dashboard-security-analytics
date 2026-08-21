@@ -36,7 +36,7 @@ import { useCallback } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { PolicyInfoCard } from '../components/PolicyInfoCard';
 import {
@@ -600,24 +600,16 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         </EuiConfirmModal>
       )}
 
-      <PageHeader
+      <WazuhPageHeader
         appRightControls={[{ renderComponent: createIntegrationAction }]}
         appDescriptionControls={[{ description: pageDescription }]}
-      >
-        <EuiFlexItem>
-          <EuiFlexGroup alignItems="center" justifyContent={'spaceBetween'}>
-            <EuiFlexItem>
-              <EuiText size="s">
-                <h1>Overview</h1>
-              </EuiText>
-              <EuiSpacer size="s"></EuiSpacer>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-            <EuiFlexItem grow={false}>{overviewActionsButton}</EuiFlexItem>
-          </EuiFlexGroup>
-          <EuiSpacer size={'s'} />
-        </EuiFlexItem>
-      </PageHeader>
+        title="Overview"
+        /* Wazuh: no description under the title here. This one is per tab
+           (TAB_DESCRIPTIONS), so it describes integrations or filters, not the Overview
+           container it would sit under. */
+        controls={[spaceSelector, overviewActionsButton]}
+      />
+      <EuiSpacer size="m" />
       {hasPendingPromotions && !promotionCalloutDismissed && pendingPromotionNextSpace != null && (
         <PendingPromotionCallout
           space={String(spaceFilter)}

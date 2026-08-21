@@ -39,7 +39,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
     <div
       className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--directionColumn euiFlexGroup--responsive"
     >
-      <PageHeader
+      <WazuhPageHeader
         appDescriptionControls={
           Array [
             Object {
@@ -63,167 +63,215 @@ exports[`<Detectors /> spec renders the component 1`] = `
             },
           ]
         }
-      >
-        <EuiFlexItem>
-          <div
-            className="euiFlexItem"
-          >
-            <EuiFlexGroup
-              alignItems="flexStart"
+        controls={
+          Array [
+            <EuiSmallButton
+              data-test-subj="detectorsCreateButton"
+              fill={true}
+              href="#/create-detector"
+              iconGap="s"
+              iconSide="left"
+              iconType="plus"
             >
-              <div
-                className="euiFlexGroup euiFlexGroup--gutterLarge euiFlexGroup--alignItemsFlexStart euiFlexGroup--directionRow euiFlexGroup--responsive"
-              >
-                <EuiFlexItem>
-                  <div
-                    className="euiFlexItem"
-                  >
-                    <EuiText
-                      size="s"
-                    >
-                      <div
-                        className="euiText euiText--small"
-                      >
-                        <h1>
-                          Detectors
-                        </h1>
-                      </div>
-                    </EuiText>
-                    <EuiText
-                      color="subdued"
-                      size="s"
-                    >
-                      <div
-                        className="euiText euiText--small"
-                      >
-                        <EuiTextColor
-                          color="subdued"
-                          component="div"
-                        >
-                          <div
-                            className="euiTextColor euiTextColor--subdued"
-                          >
-                            A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.
-                          </div>
-                        </EuiTextColor>
-                      </div>
-                    </EuiText>
-                  </div>
-                </EuiFlexItem>
-                <EuiFlexItem
-                  style={
-                    Object {
-                      "alignSelf": "center",
-                    }
-                  }
+              Create detector
+            </EuiSmallButton>,
+          ]
+        }
+        description="A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard."
+        title="Detectors"
+      >
+        <PageHeader
+          appDescriptionControls={
+            Array [
+              Object {
+                "description": "A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.",
+              },
+            ]
+          }
+          appRightControls={
+            Array [
+              Object {
+                "renderComponent": <EuiSmallButton
+                  data-test-subj="detectorsCreateButton"
+                  fill={true}
+                  href="#/create-detector"
+                  iconGap="s"
+                  iconSide="left"
+                  iconType="plus"
                 >
-                  <div
-                    className="euiFlexItem"
+                  Create detector
+                </EuiSmallButton>,
+              },
+            ]
+          }
+        >
+          <EuiFlexItem>
+            <div
+              className="euiFlexItem"
+            >
+              <EuiFlexGroup
+                alignItems="center"
+                gutterSize="m"
+                justifyContent="spaceBetween"
+              >
+                <div
+                  className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--alignItemsCenter euiFlexGroup--justifyContentSpaceBetween euiFlexGroup--directionRow euiFlexGroup--responsive"
+                >
+                  <EuiFlexItem>
+                    <div
+                      className="euiFlexItem"
+                    >
+                      <EuiText
+                        size="s"
+                      >
+                        <div
+                          className="euiText euiText--small"
+                        >
+                          <h1>
+                            Detectors
+                          </h1>
+                        </div>
+                      </EuiText>
+                    </div>
+                  </EuiFlexItem>
+                  <EuiFlexItem
+                    grow={false}
+                    key="0"
                     style={
                       Object {
                         "alignSelf": "center",
                       }
                     }
                   >
-                    <EuiFlexGroup
-                      justifyContent="flexEnd"
+                    <div
+                      className="euiFlexItem euiFlexItem--flexGrowZero"
+                      style={
+                        Object {
+                          "alignSelf": "center",
+                        }
+                      }
                     >
-                      <div
-                        className="euiFlexGroup euiFlexGroup--gutterLarge euiFlexGroup--justifyContentFlexEnd euiFlexGroup--directionRow euiFlexGroup--responsive"
+                      <EuiSmallButton
+                        data-test-subj="detectorsCreateButton"
+                        fill={true}
+                        href="#/create-detector"
+                        iconGap="s"
+                        iconSide="left"
+                        iconType="plus"
                       >
-                        <EuiFlexItem
-                          grow={false}
-                          key="0"
+                        <EuiButton
+                          data-test-subj="detectorsCreateButton"
+                          fill={true}
+                          href="#/create-detector"
+                          iconGap="s"
+                          iconSide="left"
+                          iconType="plus"
+                          size="s"
                         >
-                          <div
-                            className="euiFlexItem euiFlexItem--flexGrowZero"
+                          <EuiButtonDisplay
+                            baseClassName="euiButton"
+                            data-test-subj="detectorsCreateButton"
+                            element="a"
+                            fill={true}
+                            href="#/create-detector"
+                            iconGap="s"
+                            iconSide="left"
+                            iconType="plus"
+                            isDisabled={false}
+                            rel="noreferrer"
+                            size="s"
                           >
-                            <EuiSmallButton
+                            <a
+                              className="euiButton euiButton--primary euiButton--small euiButton--fill"
                               data-test-subj="detectorsCreateButton"
-                              fill={true}
+                              disabled={false}
                               href="#/create-detector"
-                              iconGap="s"
-                              iconSide="left"
-                              iconType="plus"
+                              rel="noreferrer"
+                              style={
+                                Object {
+                                  "minWidth": undefined,
+                                }
+                              }
                             >
-                              <EuiButton
-                                data-test-subj="detectorsCreateButton"
-                                fill={true}
-                                href="#/create-detector"
+                              <EuiButtonContent
+                                className="euiButton__content"
                                 iconGap="s"
                                 iconSide="left"
                                 iconType="plus"
-                                size="s"
+                                textProps={
+                                  Object {
+                                    "className": "euiButton__text",
+                                  }
+                                }
                               >
-                                <EuiButtonDisplay
-                                  baseClassName="euiButton"
-                                  data-test-subj="detectorsCreateButton"
-                                  element="a"
-                                  fill={true}
-                                  href="#/create-detector"
-                                  iconGap="s"
-                                  iconSide="left"
-                                  iconType="plus"
-                                  isDisabled={false}
-                                  rel="noreferrer"
-                                  size="s"
+                                <span
+                                  className="euiButtonContent euiButtonContent--smallIconGap euiButton__content"
                                 >
-                                  <a
-                                    className="euiButton euiButton--primary euiButton--small euiButton--fill"
-                                    data-test-subj="detectorsCreateButton"
-                                    disabled={false}
-                                    href="#/create-detector"
-                                    rel="noreferrer"
-                                    style={
-                                      Object {
-                                        "minWidth": undefined,
-                                      }
-                                    }
+                                  <EuiIcon
+                                    className="euiButtonContent__icon"
+                                    color="inherit"
+                                    size="m"
+                                    type="plus"
                                   >
-                                    <EuiButtonContent
-                                      className="euiButton__content"
-                                      iconGap="s"
-                                      iconSide="left"
-                                      iconType="plus"
-                                      textProps={
-                                        Object {
-                                          "className": "euiButton__text",
-                                        }
-                                      }
-                                    >
-                                      <span
-                                        className="euiButtonContent euiButtonContent--smallIconGap euiButton__content"
-                                      >
-                                        <EuiIcon
-                                          className="euiButtonContent__icon"
-                                          color="inherit"
-                                          size="m"
-                                          type="plus"
-                                        >
-                                          EuiIconMock
-                                        </EuiIcon>
-                                        <span
-                                          className="euiButton__text"
-                                        >
-                                          Create detector
-                                        </span>
-                                      </span>
-                                    </EuiButtonContent>
-                                  </a>
-                                </EuiButtonDisplay>
-                              </EuiButton>
-                            </EuiSmallButton>
-                          </div>
-                        </EuiFlexItem>
-                      </div>
-                    </EuiFlexGroup>
-                  </div>
-                </EuiFlexItem>
-              </div>
-            </EuiFlexGroup>
-          </div>
-        </EuiFlexItem>
-      </PageHeader>
+                                    EuiIconMock
+                                  </EuiIcon>
+                                  <span
+                                    className="euiButton__text"
+                                  >
+                                    Create detector
+                                  </span>
+                                </span>
+                              </EuiButtonContent>
+                            </a>
+                          </EuiButtonDisplay>
+                        </EuiButton>
+                      </EuiSmallButton>
+                    </div>
+                  </EuiFlexItem>
+                </div>
+              </EuiFlexGroup>
+              <EuiSpacer
+                size="xs"
+              >
+                <div
+                  className="euiSpacer euiSpacer--xs"
+                />
+              </EuiSpacer>
+              <EuiText
+                color="subdued"
+                size="s"
+                style={
+                  Object {
+                    "maxWidth": "90ch",
+                  }
+                }
+              >
+                <div
+                  className="euiText euiText--small"
+                  style={
+                    Object {
+                      "maxWidth": "90ch",
+                    }
+                  }
+                >
+                  <EuiTextColor
+                    color="subdued"
+                    component="div"
+                  >
+                    <div
+                      className="euiTextColor euiTextColor--subdued"
+                    >
+                      <p>
+                        A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.
+                      </p>
+                    </div>
+                  </EuiTextColor>
+                </div>
+              </EuiText>
+            </div>
+          </EuiFlexItem>
+        </PageHeader>
+      </WazuhPageHeader>
       <EuiFlexItem>
         <div
           className="euiFlexItem"
