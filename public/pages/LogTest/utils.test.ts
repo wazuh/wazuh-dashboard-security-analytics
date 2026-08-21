@@ -46,7 +46,7 @@ describe('buildLogTestVerdict', () => {
     });
 
     expect(verdict).toEqual({
-      text: 'Parsed by active decoders into 12 fields, 2 rules matched',
+      text: 'Parsed into 12 fields, 2 rules matched',
       color: 'success',
     });
   });
@@ -59,7 +59,7 @@ describe('buildLogTestVerdict', () => {
         fieldCount: 1,
         rulesMatched: 1,
       }).text
-    ).toBe('Parsed by active decoders into 1 field, 1 rule matched');
+    ).toBe('Parsed into 1 field, 1 rule matched');
   });
 
   it('separates a parsed event that matched nothing from a failed one', () => {
@@ -71,9 +71,29 @@ describe('buildLogTestVerdict', () => {
     });
 
     expect(verdict).toEqual({
-      text: 'Parsed by active decoders into 8 fields, no rules matched',
-      color: 'warning',
+      text: 'Parsed into 8 fields, no rules matched',
+      color: 'default',
     });
+  });
+
+  it('keeps a matched-nothing verdict neutral, since it is a complete answer', () => {
+    // warning is for a test that did not answer, not for an answer of "no": probing that a
+    // benign event matches nothing is a pass, and must not read as a problem.
+    const matchedNothing = buildLogTestVerdict({
+      normalizationStatus: 'success',
+      detectionStatus: 'success',
+      fieldCount: 3,
+      rulesMatched: 0,
+    });
+    const didNotRun = buildLogTestVerdict({
+      normalizationStatus: 'success',
+      detectionStatus: 'skipped',
+      fieldCount: 3,
+      rulesMatched: 0,
+    });
+
+    expect(matchedNothing.color).toBe('default');
+    expect(didNotRun.color).toBe('warning');
   });
 
   it('keeps the parsing result visible when detection was skipped or failed', () => {
@@ -85,7 +105,7 @@ describe('buildLogTestVerdict', () => {
         rulesMatched: 0,
       })
     ).toEqual({
-      text: 'Parsed by active decoders into 5 fields, detection logic skipped',
+      text: 'Parsed into 5 fields, detection logic skipped',
       color: 'warning',
     });
 
@@ -97,7 +117,7 @@ describe('buildLogTestVerdict', () => {
         rulesMatched: 0,
       })
     ).toEqual({
-      text: 'Parsed by active decoders into 5 fields, detection logic failed',
+      text: 'Parsed into 5 fields, detection logic failed',
       color: 'danger',
     });
   });

@@ -54,7 +54,12 @@ export function countNormalizedFields(output: unknown): number {
 export interface LogTestVerdict {
   /** Plain-language outcome, replacing the engine's raw status code. */
   text: string;
-  color: 'success' | 'warning' | 'danger';
+  /**
+   * Wazuh: `warning` is reserved for a test that did not answer the question, not for an
+   * answer of "no". An event that matched nothing is a complete, often intended result,
+   * so it stays neutral.
+   */
+  color: 'success' | 'warning' | 'danger' | 'default';
 }
 
 /**
@@ -74,9 +79,11 @@ export function buildLogTestVerdict(args: {
     return { text: 'Not parsed by active decoders', color: 'danger' };
   }
 
-  const parsed = `Parsed by active decoders into ${fieldCount} ${
-    fieldCount === 1 ? 'field' : 'fields'
-  }`;
+  // Wazuh: the actor is dropped here on purpose. This clause sits above the Normalization
+  // tab, which already frames who parses, and the badge has a second clause to fit. The
+  // failure branch above keeps it, since there nothing else competes for the space and the
+  // user needs to know no active decoder claimed the event.
+  const parsed = `Parsed into ${fieldCount} ${fieldCount === 1 ? 'field' : 'fields'}`;
 
   if (detectionStatus === 'error') {
     return { text: `${parsed}, detection logic failed`, color: 'danger' };
@@ -93,5 +100,5 @@ export function buildLogTestVerdict(args: {
     };
   }
 
-  return { text: `${parsed}, no rules matched`, color: 'warning' };
+  return { text: `${parsed}, no rules matched`, color: 'default' };
 }
