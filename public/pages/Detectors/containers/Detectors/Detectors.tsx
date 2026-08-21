@@ -23,12 +23,7 @@ import {
   EuiToolTip,
   EuiSearchBar,
 } from '@elastic/eui';
-import {
-  BREADCRUMBS,
-  DEFAULT_EMPTY_DATA,
-  ROUTES,
-  PAGE_HEADER_CONTROL_STYLE,
-} from '../../../../utils/constants';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
 import { getDetectorNames } from '../../utils/helpers';
 import {
@@ -45,7 +40,7 @@ import { DetectorHit, DetectorHitWithSpace } from '../../../../../server/models/
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
-import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { WazuhPageHeader } from '../../../../components/WazuhPageHeader';
 import { IntegrationCell } from '../../../../components/IntegrationCell/IntegrationCell';
 import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource'; // Wazuh: import functions to handle detector source and space
 import {
@@ -501,37 +496,16 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     };
     return (
       <EuiFlexGroup direction="column" gutterSize={'m'}>
-        <PageHeader
+        <WazuhPageHeader
           appRightControls={actions.map((action) => ({
             renderComponent: action,
           }))}
           appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
-        >
-          <EuiFlexItem>
-            <EuiFlexGroup alignItems="flexStart">
-              <EuiFlexItem>
-                <EuiText size="s">
-                  {/* Wazuh modification: Changed page title to "Detectors" */}
-                  <h1>Detectors</h1>
-                </EuiText>
-                <EuiText size="s" color="subdued">
-                  {PAGE_DESCRIPTION}
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem style={PAGE_HEADER_CONTROL_STYLE}>
-                <EuiFlexGroup justifyContent="flexEnd">
-                  {actions.map((action, idx) => {
-                    return (
-                      <EuiFlexItem key={idx} grow={false}>
-                        {action}
-                      </EuiFlexItem>
-                    );
-                  })}
-                </EuiFlexGroup>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        </PageHeader>
+          /* Wazuh modification: Changed page title to "Detectors" */
+          title="Detectors"
+          description={PAGE_DESCRIPTION}
+          controls={actions}
+        />
 
         <EuiFlexItem>
           <EuiPanel>

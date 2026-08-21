@@ -28,8 +28,8 @@ import {
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DataStore } from '../../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../../types';
-import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../../utils/constants';
-import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
+import { WazuhPageHeader } from '../../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
 import { setBreadcrumbs } from '../../../../utils/helpers';
@@ -563,26 +563,12 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
-          <EuiFlexItem>
-            <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween">
-              <EuiFlexItem>
-                <EuiText size="s">
-                  <h1>Rules</h1>
-                </EuiText>
-                <EuiText size="s" color="subdued">
-                  {PAGE_DESCRIPTION}
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
-                {spaceSelector}
-              </EuiFlexItem>
-              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
-                {actionsButton}
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        </PageHeader>
+        <WazuhPageHeader
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          title="Rules"
+          description={PAGE_DESCRIPTION}
+          controls={[spaceSelector, actionsButton]}
+        />
       </EuiFlexItem>
       <EuiFlexItem>
         <EuiPanel>

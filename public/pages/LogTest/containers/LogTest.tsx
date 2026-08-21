@@ -16,10 +16,10 @@ import {
 } from '@elastic/eui';
 import { RouteComponentProps } from 'react-router-dom';
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
-import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { DRAFT_UNAVAILABLE_IN_LOG_TEST, SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
@@ -218,27 +218,20 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
   return (
     <EuiFlexGroup direction="column" gutterSize="m">
       <EuiFlexItem grow={false}>
-        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
-          <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween" gutterSize="m">
-            <EuiFlexItem>
-              <EuiText size="s">
-                <h1>Log test</h1>
-              </EuiText>
-              <EuiText size="s" color="subdued">
-                {PAGE_DESCRIPTION}
-              </EuiText>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
-              <SpaceSelector
-                selectedSpace={formData.space}
-                onSpaceChange={(id) => handleFormChange('space', id)}
-                isDisabled={isLoading}
-                allowedSpaces={LOG_TEST_SPACE_OPTIONS}
-                unavailableSpaces={LOG_TEST_UNAVAILABLE_SPACES}
-              />
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        </PageHeader>
+        <WazuhPageHeader
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          title="Log test"
+          description={PAGE_DESCRIPTION}
+          controls={[
+            <SpaceSelector
+              selectedSpace={formData.space}
+              onSpaceChange={(id) => handleFormChange('space', id)}
+              isDisabled={isLoading}
+              allowedSpaces={LOG_TEST_SPACE_OPTIONS}
+              unavailableSpaces={LOG_TEST_UNAVAILABLE_SPACES}
+            />,
+          ]}
+        />
       </EuiFlexItem>
 
       <EuiFlexItem>
