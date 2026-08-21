@@ -26,8 +26,14 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_EMPTY_DATA,
+  ROUTES,
+  PAGE_HEADER_CONTROL_STYLE,
+} from '../../../utils/constants';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { KVDBS_PAGE_SIZE, KVDBS_SORT_FIELD } from '../utils/constants';
@@ -56,6 +62,10 @@ import {
 interface KVDBsProps extends RouteComponentProps {
   notifications: NotificationsStart;
 }
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A KVDB is a lookup table that decoder or rule logic can reference to enrich events, for example mapping IP addresses to threat categories.';
 
 export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const isMountedRef = useRef(true);
@@ -87,7 +97,11 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   // on every keystroke — only status/integration checkboxes apply immediately.
   const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
-  const { component: spaceSelector, spaceFilter } = useSpaceSelector({
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
     isLoading: loading,
     clearParamsOnChange: ['page', 'integration'],
     history,
@@ -166,6 +180,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     () => getOrSelectedValues(searchQuery, 'integration'),
     [searchQuery]
   );
+
+  const hasFilters =
+    !!appliedQueryText || selectedStatuses.length > 0 || selectedIntegrations.length > 0;
 
   // Wazuh: Status/Integration checkboxes (multiSelect 'or') apply immediately,
   // unlike the free-text debounce above — matches the Rules/Decoders pattern.
@@ -459,15 +476,20 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader>
-          <EuiFlexGroup gutterSize="s" justifyContent="spaceBetween" alignItems="center">
+        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
+          <EuiFlexGroup gutterSize="s" justifyContent="spaceBetween" alignItems="flexStart">
             <EuiFlexItem>
               <EuiText size="s">
                 <h1>KVDBs</h1>
               </EuiText>
+              <EuiText size="s" color="subdued">
+                {PAGE_DESCRIPTION}
+              </EuiText>
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>{spaceSelector}</EuiFlexItem>
-            <EuiFlexItem grow={false}>
+            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
+              {spaceSelector}
+            </EuiFlexItem>
+            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
               <EuiPopover
                 id="kvdbsActionsPopover"
                 button={
@@ -491,7 +513,6 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           </EuiFlexGroup>
         </PageHeader>
       </EuiFlexItem>
-      <EuiSpacer size="xs" />
       <EuiFlexItem>
         <EuiPanel>
           <EuiFlexGroup alignItems="center" gutterSize="m">
@@ -534,7 +555,18 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             sorting={sorting}
             onChange={onTableChange}
             itemId={(item) => item.document?.id || item.id}
-            noItemsMessage="No KVDBs to display"
+            noItemsMessage={
+              loading ? (
+                'Loading...'
+              ) : (
+                <ListEmptyPrompt
+                  entity="KVDBs"
+                  hasFilters={hasFilters}
+                  space={spaceFilter}
+                  onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+                />
+              )
+            }
             selection={{
               selectable: () => true,
               onSelectionChange: setSelectedItems,

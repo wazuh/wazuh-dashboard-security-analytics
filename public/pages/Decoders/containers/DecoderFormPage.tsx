@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Form, Formik } from 'formik';
 import YAML from 'yaml';
@@ -65,6 +65,16 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const idDecoder = props.match.params.id;
   const spaceDecoder = new URLSearchParams(props.location?.search).get('space') ?? '';
+  // Wazuh: creation always targets Draft; on edit the space comes from the URL.
+  const pageDescription =
+    action === 'create'
+      ? 'Create a new decoder to normalize logs from your selected integration. New decoders are created in the draft space.'
+      : 'Edit the decoder to update the normalization of logs from your selected integration.' +
+        (spaceDecoder
+          ? ` This decoder is in the ${
+              spaceDecoder.charAt(0).toUpperCase() + spaceDecoder.slice(1)
+            } space.`
+          : '');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEditorType, setSelectedEditorType] = useState('yaml');
   const [integrationType, setIntegrationType] = useState<string>('');
@@ -220,20 +230,30 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     [action, createDecoder, updateDecoder]
   );
 
+  const validationSeq = useRef(0);
+
+  // A superseded validation call must never resolve as "valid" — that would
+  // let an out-of-order result overwrite the current (correct) error state.
+  // Returning a promise that never resolves means Formik simply never
+  // applies this call's result.
+  const NEVER_RESOLVES = new Promise<never>(() => {});
+
   const validateForm = useCallback(
-    (values: { rawDecoder: string }) => {
+    async (values: { rawDecoder: string }) => {
       // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
+      const seq = ++validationSeq.current;
       let decoder: object;
       try {
         decoder = YAML.parse(values.rawDecoder);
       } catch (e) {
         const msg = e instanceof Error ? e.message.split('\n')[0] : 'Invalid YAML syntax';
-        return { rawDecoder: msg };
+        return seq === validationSeq.current ? { rawDecoder: msg } : NEVER_RESOLVES;
       }
       const skippedFields = action === 'create' ? ['id'] : [];
-      return validateWithJsonSchemaAsync(decoderSchema, decoder, {
+      const result = await validateWithJsonSchemaAsync(decoderSchema, decoder, {
         skipRequired: skippedFields,
       });
+      return seq === validationSeq.current ? result : NEVER_RESOLVES;
     },
     [action]
   );
@@ -266,15 +286,13 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           {(props) => (
             <Form>
               <EuiPanel className={'rule-editor-form'} style={{ paddingBottom: '60px' }}>
-                <PageHeader appDescriptionControls={false}>
+                <PageHeader appDescriptionControls={[{ description: pageDescription }]}>
                   <EuiText size="s">
-                    <h1>{actionLabels[action]}</h1>
+                    <h1>{actionLabels[action]} decoder</h1>
                   </EuiText>
 
                   <EuiText size="s" color="subdued">
-                    {action === 'create'
-                      ? 'Create a new decoder to normalize logs from your selected integration.'
-                      : 'Edit the decoder to update the normalization of logs from your selected integration.'}
+                    {pageDescription}
                   </EuiText>
 
                   <EuiSpacer size="m" />

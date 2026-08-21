@@ -404,7 +404,7 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                   },
                   Object {
                     "field": "level",
-                    "name": "Rule Severity",
+                    "name": "Rule level",
                     "render": [Function],
                     "sortable": true,
                     "truncateText": true,
@@ -460,7 +460,7 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                       "compressed": true,
                       "field": "level",
                       "multiSelect": "or",
-                      "name": "Rule severity",
+                      "name": "Rule level",
                       "options": Array [
                         Object {
                           "color": Object {
@@ -550,7 +550,7 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                         "compressed": true,
                         "field": "level",
                         "multiSelect": "or",
-                        "name": "Rule severity",
+                        "name": "Rule level",
                         "options": Array [
                           Object {
                             "color": Object {
@@ -712,7 +712,7 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                                   "compressed": true,
                                   "field": "level",
                                   "multiSelect": "or",
-                                  "name": "Rule severity",
+                                  "name": "Rule level",
                                   "options": Array [
                                     Object {
                                       "color": Object {
@@ -795,7 +795,7 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                                       "compressed": true,
                                       "field": "level",
                                       "multiSelect": "or",
-                                      "name": "Rule severity",
+                                      "name": "Rule level",
                                       "options": Array [
                                         Object {
                                           "color": Object {
@@ -879,7 +879,7 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                                         onClick={[Function]}
                                         size="s"
                                       >
-                                        Rule severity
+                                        Rule level
                                       </EuiFilterButton>
                                     }
                                     closePopover={[Function]}
@@ -954,10 +954,10 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                                                   >
                                                     <span
                                                       className="euiFilterButton__textShift"
-                                                      data-text="Rule severity"
-                                                      title="Rule severity"
+                                                      data-text="Rule level"
+                                                      title="Rule level"
                                                     >
-                                                      Rule severity
+                                                      Rule level
                                                     </span>
                                                   </span>
                                                 </span>
@@ -997,7 +997,7 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                       },
                       Object {
                         "field": "level",
-                        "name": "Rule Severity",
+                        "name": "Rule level",
                         "render": [Function],
                         "sortable": true,
                         "truncateText": true,
@@ -1095,7 +1095,7 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                                           "isSortAscending": undefined,
                                           "isSorted": false,
                                           "key": "_data_s_level_1",
-                                          "name": "Rule Severity",
+                                          "name": "Rule level",
                                           "onSort": [Function],
                                         },
                                         Object {
@@ -1331,15 +1331,15 @@ exports[`<DetectorRulesView /> spec renders the component 1`] = `
                                               values={
                                                 Object {
                                                   "description": undefined,
-                                                  "innerText": "Rule Severity",
+                                                  "innerText": "Rule level",
                                                 }
                                               }
                                             >
                                               <span
                                                 className="euiTableCellContent__text"
-                                                title="Rule Severity"
+                                                title="Rule level"
                                               >
-                                                Rule Severity
+                                                Rule level
                                               </span>
                                             </EuiI18n>
                                           </EuiInnerText>

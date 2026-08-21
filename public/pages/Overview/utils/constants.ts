@@ -25,7 +25,7 @@ export const getOverviewsCardsProps = (): EuiCardProps[] => {
     {
       icon: React.createElement(EuiIcon, { type: 'rocket', size: 'l', color: 'primary' }),
       title: '',
-      description: 'Configure Security Analytics tools and components to get started.',
+      description: 'Configure security analytics tools and components to get started.',
       onClick: () => {
         getApplication().navigateToApp(GET_STARTED_NAV_ID);
       },
