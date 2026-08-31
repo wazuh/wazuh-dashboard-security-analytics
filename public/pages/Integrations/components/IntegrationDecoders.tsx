@@ -28,6 +28,7 @@ import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common
 import { Space } from '../../../../types';
 import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { IntegrationEditAction } from './IntegrationEditAction';
 
 export interface IntegrationDecodersProps {
   decoderIds: string[];
@@ -85,6 +86,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   });
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
+  const canEdit = actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT);
 
   const columns: EuiBasicTableColumn<DecoderTableItem>[] = useMemo(
     () => [
@@ -117,19 +119,23 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
           {
             name: 'Edit',
             description: 'Edit decoder',
-            type: 'icon',
-            icon: 'pencil',
-            'data-test-subj': 'integration-decoders-edit',
-            onClick: (decoder: DecoderTableItem) =>
-              history.push(
-                withReturnTo(`${ROUTES.DECODERS_EDIT}/${decoder.id}?space=${space}`, returnTo)
-              ),
-            available: () => actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT),
+            render: (decoder: DecoderTableItem) => (
+              <IntegrationEditAction
+                entityLabel="decoder"
+                canEdit={canEdit}
+                onClick={() =>
+                  history.push(
+                    withReturnTo(`${ROUTES.DECODERS_EDIT}/${decoder.id}?space=${space}`, returnTo)
+                  )
+                }
+                data-test-subj="integration-decoders-edit"
+              />
+            ),
           },
         ],
       },
     ],
-    [history, space, returnTo]
+    [history, space, returnTo, canEdit]
   );
 
   const closeFlyout = useCallback(() => {

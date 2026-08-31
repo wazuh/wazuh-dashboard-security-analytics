@@ -40,29 +40,34 @@ const mountTable = async (space: string, history: any) => {
   return wrapper;
 };
 
-const getEditAction = (wrapper: any) => {
-  const columns = wrapper.find('EuiBasicTable').first().prop('columns') as any[];
-  const actionsColumn = columns.find((column) => column.name === 'Actions');
-  return actionsColumn?.actions?.find((action: any) => action.name === 'Edit');
-};
+const getEditButton = (wrapper: any) =>
+  wrapper.find(`button[data-test-subj="integration-rules-edit"]`).first();
+
+const getEditTooltip = (wrapper: any) =>
+  wrapper.find('IntegrationEditAction').first().find('EuiToolTip').first().prop('content');
 
 describe('<IntegrationDetectionRules /> edit action', () => {
   it('navigates to the rule edit page in the draft space', async () => {
     const history = buildHistory();
     const wrapper = await mountTable(SpaceTypes.DRAFT.value, history);
-    const editAction = getEditAction(wrapper);
+    const editButton = getEditButton(wrapper);
 
-    expect(editAction.available()).toBe(true);
+    expect(editButton.prop('disabled')).toBe(false);
+    expect(getEditTooltip(wrapper)).toBe('Edit rule');
 
-    editAction.onClick({ ruleId: 'rule-1' });
+    editButton.simulate('click');
     expect(history.push).toHaveBeenCalledWith(
       `/edit-rule/rule-1?returnTo=${encodeURIComponent(RETURN_TO)}`
     );
   });
 
-  it('is not available outside the draft space', async () => {
-    const wrapper = await mountTable(SpaceTypes.STANDARD.value, buildHistory());
+  it('stays visible but disabled outside the draft space, saying where editing is allowed', async () => {
+    const history = buildHistory();
+    const wrapper = await mountTable(SpaceTypes.STANDARD.value, history);
 
-    expect(getEditAction(wrapper).available()).toBe(false);
+    expect(getEditButton(wrapper).prop('disabled')).toBe(true);
+    expect(getEditTooltip(wrapper)).toBe('Rule can only be edited in the spaces: draft');
+
+    expect(history.push).not.toHaveBeenCalled();
   });
 });

@@ -32,6 +32,7 @@ import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common
 import { Space } from '../../../../types';
 import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { IntegrationEditAction } from './IntegrationEditAction';
 
 export interface IntegrationDetectionRulesProps {
   ruleIds: string[];
@@ -88,6 +89,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
   }, []);
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
+  const canEdit = actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT);
 
   const columns: EuiBasicTableColumn<RuleTableItem>[] = useMemo(
     () => [
@@ -127,17 +129,21 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
           {
             name: 'Edit',
             description: 'Edit rule',
-            type: 'icon',
-            icon: 'pencil',
-            'data-test-subj': 'integration-rules-edit',
-            onClick: (rule: RuleTableItem) =>
-              history.push(withReturnTo(`${ROUTES.RULES_EDIT}/${rule.ruleId}`, returnTo)),
-            available: () => actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT),
+            render: (rule: RuleTableItem) => (
+              <IntegrationEditAction
+                entityLabel="rule"
+                canEdit={canEdit}
+                onClick={() =>
+                  history.push(withReturnTo(`${ROUTES.RULES_EDIT}/${rule.ruleId}`, returnTo))
+                }
+                data-test-subj="integration-rules-edit"
+              />
+            ),
           },
         ],
       },
     ],
-    [history, space, returnTo]
+    [history, space, returnTo, canEdit]
   );
 
   const onTableChange = useCallback(

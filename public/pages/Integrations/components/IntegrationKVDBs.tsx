@@ -28,13 +28,13 @@ import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { IntegrationEditAction } from './IntegrationEditAction';
 
 export interface IntegrationKVDBsProps {
   kvdbIds: string[];
   space: string;
   enabled: boolean;
   history: RouteComponentProps['history'];
-  // Wazuh: where the edit form must come back to — this view, on this tab.
   returnTo: string;
 }
 
@@ -78,6 +78,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   });
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
+  const canEdit = actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT);
 
   const columns: EuiBasicTableColumn<KVDBItem>[] = useMemo(
     () => [
@@ -104,17 +105,21 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
           {
             name: 'Edit',
             description: 'Edit KVDB',
-            type: 'icon',
-            icon: 'pencil',
-            'data-test-subj': 'integration-kvdbs-edit',
-            onClick: (kvdb: KVDBItem) =>
-              history.push(withReturnTo(`${ROUTES.KVDBS_EDIT}/${kvdb.id}`, returnTo)),
-            available: () => actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT),
+            render: (kvdb: KVDBItem) => (
+              <IntegrationEditAction
+                entityLabel="KVDB"
+                canEdit={canEdit}
+                onClick={() =>
+                  history.push(withReturnTo(`${ROUTES.KVDBS_EDIT}/${kvdb.id}`, returnTo))
+                }
+                data-test-subj="integration-kvdbs-edit"
+              />
+            ),
           },
         ],
       },
     ],
-    [history, space, returnTo]
+    [history, space, returnTo, canEdit]
   );
 
   const closeFlyout = useCallback(() => {

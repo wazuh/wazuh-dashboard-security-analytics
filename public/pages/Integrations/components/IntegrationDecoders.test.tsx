@@ -40,21 +40,22 @@ const mountTable = async (space: string, history: any) => {
   return wrapper;
 };
 
-const getEditAction = (wrapper: any) => {
-  const columns = wrapper.find('EuiBasicTable').first().prop('columns') as any[];
-  const actionsColumn = columns.find((column) => column.name === 'Actions');
-  return actionsColumn?.actions?.find((action: any) => action.name === 'Edit');
-};
+const getEditButton = (wrapper: any) =>
+  wrapper.find(`button[data-test-subj="integration-decoders-edit"]`).first();
+
+const getEditTooltip = (wrapper: any) =>
+  wrapper.find('IntegrationEditAction').first().find('EuiToolTip').first().prop('content');
 
 describe('<IntegrationDecoders /> edit action', () => {
-  it('navigates to the decoder edit page in the draft space, keeping the space param', async () => {
+  it('navigates to the decoder edit page in the draft space', async () => {
     const history = buildHistory();
     const wrapper = await mountTable(SpaceTypes.DRAFT.value, history);
-    const editAction = getEditAction(wrapper);
+    const editButton = getEditButton(wrapper);
 
-    expect(editAction.available()).toBe(true);
+    expect(editButton.prop('disabled')).toBe(false);
+    expect(getEditTooltip(wrapper)).toBe('Edit decoder');
 
-    editAction.onClick({ id: 'decoder-1' });
+    editButton.simulate('click');
     expect(history.push).toHaveBeenCalledWith(
       `/edit-decoder/decoder-1?space=${SpaceTypes.DRAFT.value}&returnTo=${encodeURIComponent(
         RETURN_TO
@@ -62,9 +63,13 @@ describe('<IntegrationDecoders /> edit action', () => {
     );
   });
 
-  it('is not available outside the draft space', async () => {
-    const wrapper = await mountTable(SpaceTypes.STANDARD.value, buildHistory());
+  it('stays visible but disabled outside the draft space, saying where editing is allowed', async () => {
+    const history = buildHistory();
+    const wrapper = await mountTable(SpaceTypes.STANDARD.value, history);
 
-    expect(getEditAction(wrapper).available()).toBe(false);
+    expect(getEditButton(wrapper).prop('disabled')).toBe(true);
+    expect(getEditTooltip(wrapper)).toBe('Decoder can only be edited in the spaces: draft');
+
+    expect(history.push).not.toHaveBeenCalled();
   });
 });
