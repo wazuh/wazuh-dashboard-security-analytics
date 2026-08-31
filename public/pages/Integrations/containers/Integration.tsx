@@ -302,7 +302,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
-                ? `Rule can only be created in the spaces: ${getSpacesAllowAction(
+                ? `Rules can only be created in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.CREATE
                   ).join(', ')}`
                 : undefined
@@ -321,7 +321,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
-                ? `Decoder can only be created in the spaces: ${getSpacesAllowAction(
+                ? `Decoders can only be created in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.CREATE
                   ).join(', ')}`
                 : undefined
@@ -340,7 +340,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
-                ? `KVDB can only be created in the spaces: ${getSpacesAllowAction(
+                ? `KVDBs can only be created in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.CREATE
                   ).join(', ')}`
                 : undefined
@@ -363,7 +363,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             data-test-subj={'integrationEnableDisableMenuItem'}
             toolTipContent={
               isDisableIntegrationsDisabled
-                ? `Integration can only be enabled or disabled in the spaces: ${getSpacesAllowAction(
+                ? `Integrations can only be enabled or disabled in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.DISABLE_INTEGRATIONS
                   ).join(', ')}`
                 : integrationDetails?.document.mode === IntegrationMode.Protected
@@ -384,7 +384,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             data-test-subj={'editIntegrationButton'}
             toolTipContent={
               isEditDisabled
-                ? `Integration can only be edited in the spaces: ${getSpacesAllowAction(
+                ? `Integrations can only be edited in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.EDIT
                   ).join(', ')}`
                 : undefined
@@ -402,7 +402,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isDeleteDisabled}
             toolTipContent={
               isDeleteDisabled
-                ? `Integration can only be deleted in the spaces: ${getSpacesAllowAction(
+                ? `Integrations can only be deleted in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.DELETE
                   ).join(', ')}`
                 : undefined

@@ -197,7 +197,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
               <EuiFlexItem grow={false}>
                 {isCreateDisabled ? (
                   <EuiToolTip
-                    content={`Rule can only be created in the spaces: ${getSpacesAllowAction(
+                    content={`Rules can only be created in the spaces: ${getSpacesAllowAction(
                       SPACE_ACTIONS.CREATE
                     ).join(', ')}`}
                   >

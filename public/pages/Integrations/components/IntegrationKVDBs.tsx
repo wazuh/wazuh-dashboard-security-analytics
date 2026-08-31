@@ -169,7 +169,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
               <EuiFlexItem grow={false}>
                 {isCreateDisabled ? (
                   <EuiToolTip
-                    content={`KVDB can only be created in the spaces: ${getSpacesAllowAction(
+                    content={`KVDBs can only be created in the spaces: ${getSpacesAllowAction(
                       SPACE_ACTIONS.CREATE
                     ).join(', ')}`}
                   >

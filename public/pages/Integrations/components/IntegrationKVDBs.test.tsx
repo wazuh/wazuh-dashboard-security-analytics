@@ -66,7 +66,7 @@ describe('<IntegrationKVDBs /> edit action', () => {
     const wrapper = await mountTable(SpaceTypes.STANDARD.value, history);
 
     expect(getEditButton(wrapper).prop('disabled')).toBe(true);
-    expect(getEditTooltip(wrapper)).toBe('KVDB can only be edited in the spaces: draft');
+    expect(getEditTooltip(wrapper)).toBe('KVDBs can only be edited in the spaces: draft');
 
     expect(history.push).not.toHaveBeenCalled();
   });

@@ -66,7 +66,7 @@ describe('<IntegrationDetectionRules /> edit action', () => {
     const wrapper = await mountTable(SpaceTypes.STANDARD.value, history);
 
     expect(getEditButton(wrapper).prop('disabled')).toBe(true);
-    expect(getEditTooltip(wrapper)).toBe('Rule can only be edited in the spaces: draft');
+    expect(getEditTooltip(wrapper)).toBe('Rules can only be edited in the spaces: draft');
 
     expect(history.push).not.toHaveBeenCalled();
   });

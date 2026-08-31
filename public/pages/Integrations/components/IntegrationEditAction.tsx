@@ -23,11 +23,12 @@ export const IntegrationEditAction: React.FC<IntegrationEditActionProps> = ({
   'data-test-subj': dataTestSubj,
 }) => {
   const label = `Edit ${entityLabel}`;
-  // Only the first letter, so an acronym keeps its case ('KVDB', not 'Kvdb').
-  const entitySentenceStart = `${entityLabel.charAt(0).toUpperCase()}${entityLabel.slice(1)}`;
+  // The reason names the entity in plural; only the first letter is capitalized, so an
+  // acronym keeps its case ('KVDBs', not 'Kvdbs').
+  const entityPlural = `${entityLabel.charAt(0).toUpperCase()}${entityLabel.slice(1)}s`;
   const tooltip = canEdit
     ? label
-    : `${entitySentenceStart} can only be edited in the spaces: ${getSpacesAllowAction(
+    : `${entityPlural} can only be edited in the spaces: ${getSpacesAllowAction(
         SPACE_ACTIONS.EDIT
       ).join(', ')}`;
 

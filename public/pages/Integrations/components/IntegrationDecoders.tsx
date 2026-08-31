@@ -187,7 +187,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
               <EuiFlexItem grow={false}>
                 {isCreateDisabled ? (
                   <EuiToolTip
-                    content={`Decoder can only be created in the spaces: ${getSpacesAllowAction(
+                    content={`Decoders can only be created in the spaces: ${getSpacesAllowAction(
                       SPACE_ACTIONS.CREATE
                     ).join(', ')}`}
                   >

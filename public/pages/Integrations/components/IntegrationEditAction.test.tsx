@@ -39,16 +39,16 @@ describe('<IntegrationEditAction />', () => {
 
     expect(button.prop('disabled')).toBe(true);
     // The acronym keeps its case, and the reason names the spaces that do allow it.
-    expect(tooltipOf(wrapper)).toBe('KVDB can only be edited in the spaces: draft');
+    expect(tooltipOf(wrapper)).toBe('KVDBs can only be edited in the spaces: draft');
 
     button.simulate('click');
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it('capitalizes only the first letter of a plain entity name', () => {
+  it('pluralizes a plain entity name, capitalizing only its first letter', () => {
     const { wrapper } = mountAction(false);
     wrapper.setProps({ entityLabel: 'decoder' });
 
-    expect(tooltipOf(wrapper)).toBe('Decoder can only be edited in the spaces: draft');
+    expect(tooltipOf(wrapper)).toBe('Decoders can only be edited in the spaces: draft');
   });
 });
