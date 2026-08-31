@@ -75,12 +75,17 @@ export class PoliciesStore {
     space: string,
     data: UpdatePolicyRequestBody
   ): Promise<[boolean, UpdatePolicyResponse['response']]> {
-    const response = await this.service.updatePolicy(space, data);
-    if (!response.ok) {
-      errorNotificationToast(this.notifications, 'update', 'policy', response.error);
+    try {
+      const response = await this.service.updatePolicy(space, data);
+      if (!response.ok) {
+        errorNotificationToast(this.notifications, 'update', 'policy', response.error);
+        return [false, null];
+      }
+      return [response.ok, response.response];
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'update', 'policy', error);
       return [false, null];
     }
-    return [response.ok, response.response];
   }
 
   public async deleteSpace(space: string): Promise<boolean> {
