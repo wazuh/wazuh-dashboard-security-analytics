@@ -56,6 +56,7 @@
 | [#398](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/398) | Fixed duplicate submissions by adding a loading state to create, edit and delete buttons |
 | [#401](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/401) | Fixed inconsistent error handling in operations with integrations, filters, decoders, kvdbs, detectors, rules and promotion to show the server error message |
 | [#458](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/458) | Fixed the Create rule action in the Integration details Actions menu redirecting to a nonexistent app |
+| [#463](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/463) | Fixed promote and policy retrieval/clear errors failing silently instead of showing an error toast |
 
 ## Prior versions
 
