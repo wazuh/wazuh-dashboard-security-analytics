@@ -23,6 +23,7 @@ import { get } from 'lodash';
 import { compose } from 'redux';
 import { RearrangeItems, RearrangeItemsProps } from './Rearrange';
 import { withPolicyGuard } from './PolicyGuard';
+import { RootDecoderRequirement } from './RootDecoderRequirement';
 import { Space } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { successNotificationToast } from '../../../utils/helpers';
@@ -182,6 +183,8 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
     [policyDocumentData]
   );
   const [rearrangedIntegrations, setRearrangedIntegrations] = useState(integrations);
+  const [rootDecoderResolved, setRootDecoderResolved] = useState(false);
+  const hasRootDecoder = Boolean(policyDocumentData?.root_decoder) || rootDecoderResolved;
 
   const areIntegrationsInOrder = useMemo(() => {
     return integrations.every(
@@ -197,7 +200,8 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
     // Re-fetch the current policy just before saving to guard against race conditions
     // (e.g. an integration deleted in another tab while this flyout was open).
     const latestPolicy = await DataStore.policies.searchPolicies(space, {});
-    const latestIntegrationIds = new Set(latestPolicy.items[0]?.document?.integrations ?? []);
+    const latestDocument = latestPolicy.items[0]?.document;
+    const latestIntegrationIds = new Set(latestDocument?.integrations ?? []);
 
     // Drop any integration that no longer exists in the latest policy state
     const validIntegrations = rearrangedIntegrations.filter(({ id }) =>
@@ -217,6 +221,9 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
         ...payloadMetadata,
       },
       integrations: validIntegrations.map(({ id }) => id),
+      // Use the freshly-fetched root decoder, not the possibly stale one this
+      // flyout was opened with (e.g. just resolved via the callout below).
+      root_decoder: latestDocument?.root_decoder,
     };
     const [success] = await DataStore.policies.updatePolicy(space, payload);
 
@@ -230,17 +237,25 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
     <>
       <EuiFlyoutBody>
         {prependRearrangeItems}
-        <RearrangeItems
-          items={rearrangedIntegrations}
-          onChange={setRearrangedIntegrations}
-          draggableProps={{ spacing: 's' }}
-          renderItem={RearrangeItem}
-        />
+        {hasRootDecoder ? (
+          <RearrangeItems
+            items={rearrangedIntegrations}
+            onChange={setRearrangedIntegrations}
+            draggableProps={{ spacing: 's' }}
+            renderItem={RearrangeItem}
+          />
+        ) : (
+          <RootDecoderRequirement space={space} onSucess={() => setRootDecoderResolved(true)} />
+        )}
       </EuiFlyoutBody>
       <EuiFlyoutFooter>
         <EuiFlexGroup justifyContent="flexEnd" gutterSize="m">
           <EuiFlexItem grow={false}>
-            <EuiButton fill={true} onClick={onConfirmEnhanced} isDisabled={areIntegrationsInOrder}>
+            <EuiButton
+              fill={true}
+              onClick={onConfirmEnhanced}
+              isDisabled={!hasRootDecoder || areIntegrationsInOrder}
+            >
               Rearrange
             </EuiButton>
           </EuiFlexItem>

@@ -64,11 +64,7 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
           enrichments: schema.arrayOf(schema.string(), { defaultValue: [] }),
           filters: schema.arrayOf(schema.string(), { defaultValue: [] }),
           integrations: schema.arrayOf(schema.string(), { defaultValue: [] }),
-          // Stored policy documents can have `root_decoder: null` when no root decoder
-          // was ever assigned, so the update payload must accept null, not only string.
-          root_decoder: schema.oneOf([schema.string(), schema.literal(null)], {
-            defaultValue: '',
-          }),
+          root_decoder: schema.string({ defaultValue: '' }),
         }),
       },
     },

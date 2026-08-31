@@ -52,7 +52,7 @@
 | [#200](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/200) | Fixed float numbers ending in .0 in the Decoders yaml editor being transformed into integers |
 | [#249](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/249) | Fixed detector details failing to load right after detector creation |
 | [#322](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/322) | Fixed integration documentation field being truncated in the details view |
-| [#462](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/462) | Fixed reordering integrations failing with a `root_decoder` validation error, and the error not being shown in the UI |
+| [#462](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/462) | Fixed reordering integrations failing with a `root_decoder` validation error; the rearrange flyout now shows the same "select a root decoder" callout used when promoting, and update errors are surfaced in the UI |
 | [#398](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/398) | Fixed duplicate submissions by adding a loading state to create, edit and delete buttons |
 | [#401](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/401) | Fixed inconsistent error handling in operations with integrations, filters, decoders, kvdbs, detectors, rules and promotion to show the server error message |
 | [#458](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/458) | Fixed the Create rule action in the Integration details Actions menu redirecting to a nonexistent app |
