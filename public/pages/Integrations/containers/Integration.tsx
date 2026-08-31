@@ -29,7 +29,13 @@ import {
   EuiHorizontalRule,
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import {
+  BREADCRUMBS,
+  ROUTES,
+  DETECTION_RULE_NAV_ID,
+  DECODERS_NAV_ID,
+  KVDBS_NAV_ID,
+} from '../../../utils/constants';
 import {
   INTEGRATION_DETAILS_TAB,
   integrationDetailsTabs,
@@ -257,7 +263,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         items={[
           <EuiContextMenuItem
             key={'createRule'}
-            href={'detection_rules#/create-rule'}
+            href={`${DETECTION_RULE_NAV_ID}#${ROUTES.RULES_CREATE}`}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -276,7 +282,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'createDecoder'}
-            href={'decoders#/create-decoder'}
+            href={`${DECODERS_NAV_ID}#${ROUTES.DECODERS_CREATE}`}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -295,7 +301,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'createKVDB'}
-            href={'kvdbs#/create-kvdb'}
+            href={`${KVDBS_NAV_ID}#${ROUTES.KVDBS_CREATE}`}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
