@@ -17,7 +17,7 @@
 | [#362](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/362) | Added date formatter that respects the dateFormat advanced setting |
 | [#381](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/381) | Added a callout to promote pending changes between spaces |
 | [#430](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/430) | Unify search, Status/Integration filters and URL-persisted list state across Rules, Decoders, KVDBs, Integrations, Filters and Detectors; add a clickable Integration column CTA to jump to related Decoders/Rules/KVDBs and Detectors |
-| [#459](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/459) | Added a documentation link to the Log test page |
+| [#459](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/459) | Added a documentation link and a brief explanation of each Trace level option to the Log test page |
 
 ### Changed
 
