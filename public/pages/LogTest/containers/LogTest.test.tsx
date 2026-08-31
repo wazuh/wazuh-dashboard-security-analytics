@@ -52,16 +52,26 @@ const mountLogTest = async () => {
 };
 
 describe('<LogTest /> documentation link', () => {
-  it('renders a link to the Log test documentation, separate from the "How it works" icon', async () => {
+  it('renders a "View documentation" link right after the page description, not as a header icon', async () => {
     const wrapper = await mountLogTest();
 
     const docLink = wrapper.find('[data-test-subj="logTestDocumentationLink"]').hostNodes();
     expect(docLink.length).toBe(1);
     expect(docLink.prop('href')).toBe(LOG_TEST_DOCUMENTATION_URL);
     expect(docLink.prop('target')).toBe('_blank');
+    expect(docLink.text()).toBe('View documentation');
 
-    // Wazuh: locks in that this is additive — the shared "How it works" trigger
-    // rendered by SpaceSelector must still be there, unchanged.
-    expect(wrapper.find('EuiButtonIcon[iconType="iInCircle"]').length).toBe(2);
+    // Wazuh: the link sits in the same paragraph as (right after) the
+    // description text, not off in the header controls.
+    const descriptionParagraph = wrapper
+      .find('p')
+      .filterWhere((p) => p.text().includes('View documentation'));
+    expect(descriptionParagraph.first().text()).toContain(
+      'Log test runs a sample event through the content loaded in a space'
+    );
+
+    // Wazuh: locks in that the header controls reverted to just the space
+    // selector — the shared "How it works" trigger is the only "i" icon left.
+    expect(wrapper.find('EuiButtonIcon[iconType="iInCircle"]').length).toBe(1);
   });
 });

@@ -12,9 +12,8 @@ import {
   EuiSpacer,
   EuiText,
   EuiButton,
-  EuiButtonIcon,
   EuiHorizontalRule,
-  EuiToolTip,
+  EuiLink,
 } from '@elastic/eui';
 import { RouteComponentProps } from 'react-router-dom';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -32,9 +31,25 @@ import { MetadataEntry, buildMetadataObject } from '../utils';
 import { DETECTION_RULE_NAV_ID, LOG_TEST_DOCUMENTATION_URL } from '../../../utils/constants';
 import { buildAppUrl } from '../../../utils/routes';
 
-// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
-const PAGE_DESCRIPTION =
+// Wazuh: appDescriptionControls (home:useNewHomePage) needs a plain string, so the
+// same sentence is kept here and reused as the JSX description below.
+const PAGE_DESCRIPTION_TEXT =
   'Log test runs a sample event through the content loaded in a space, so you can confirm it is parsed and matched as expected.';
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION = (
+  <>
+    {PAGE_DESCRIPTION_TEXT}{' '}
+    <EuiLink
+      href={LOG_TEST_DOCUMENTATION_URL}
+      target="_blank"
+      external
+      data-test-subj="logTestDocumentationLink"
+    >
+      View documentation
+    </EuiLink>
+  </>
+);
 
 // Wazuh: draft is listed so its absence stops reading as an oversight; it cannot be
 // picked because its content never reaches the engine.
@@ -221,7 +236,18 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
     <EuiFlexGroup direction="column" gutterSize="m">
       <EuiFlexItem grow={false}>
         <WazuhPageHeader
-          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          appDescriptionControls={[
+            {
+              description: PAGE_DESCRIPTION_TEXT,
+              links: {
+                controlType: 'link',
+                label: 'View documentation',
+                href: LOG_TEST_DOCUMENTATION_URL,
+                target: '_blank',
+                testId: 'logTestDocumentationLink',
+              },
+            },
+          ]}
           title="Log test"
           description={PAGE_DESCRIPTION}
           controls={[
@@ -232,16 +258,6 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               allowedSpaces={LOG_TEST_SPACE_OPTIONS}
               unavailableSpaces={LOG_TEST_UNAVAILABLE_SPACES}
             />,
-            <EuiToolTip content="View documentation">
-              <EuiButtonIcon
-                iconType="iInCircle"
-                color="primary"
-                aria-label="View Log test documentation"
-                href={LOG_TEST_DOCUMENTATION_URL}
-                target="_blank"
-                data-test-subj="logTestDocumentationLink"
-              />
-            </EuiToolTip>,
           ]}
         />
       </EuiFlexItem>
