@@ -471,12 +471,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   responsive={false}
                 >
                   <EuiFlexItem grow={false}>
-                    <EuiButtonEmpty
-                      color="ghost"
-                      size="s"
-                      iconType="cross"
-                      href={`#${returnTo}`}
-                    >
+                    <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${returnTo}`}>
                       Cancel
                     </EuiButtonEmpty>
                   </EuiFlexItem>
