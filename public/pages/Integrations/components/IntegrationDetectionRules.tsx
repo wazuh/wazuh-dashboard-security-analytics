@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 import {
   EuiBadge,
   EuiBasicTable,
@@ -25,22 +26,29 @@ import { RuleViewerFlyout } from '../../WazuhRules/components/RuleViewerFlyout/R
 import { getSeverityColor, getSeverityLabel } from '../../Correlations/utils/constants';
 import { ruleSeverity } from '../../Rules/utils/constants';
 import { ROUTES } from '../../../utils/constants';
+import { withReturnTo } from '../../../utils/routes';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
 import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { IntegrationEditAction } from './IntegrationEditAction';
 
 export interface IntegrationDetectionRulesProps {
   ruleIds: string[];
   space: string;
   enabled: boolean;
+  history: RouteComponentProps['history'];
+  // Wazuh: where the edit form must come back to — this view, on this tab.
+  returnTo: string;
 }
 
 export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps> = ({
   ruleIds,
   space,
   enabled,
+  history,
+  returnTo,
 }) => {
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -81,6 +89,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
   }, []);
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
+  const canEdit = actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT);
 
   const columns: EuiBasicTableColumn<RuleTableItem>[] = useMemo(
     () => [
@@ -113,8 +122,28 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
         sortable: false,
         truncateText: true,
       },
+      {
+        name: 'Actions',
+        width: '80px',
+        actions: [
+          {
+            name: 'Edit',
+            description: 'Edit rule',
+            render: (rule: RuleTableItem) => (
+              <IntegrationEditAction
+                entityLabel="rule"
+                canEdit={canEdit}
+                onClick={() =>
+                  history.push(withReturnTo(`${ROUTES.RULES_EDIT}/${rule.ruleId}`, returnTo))
+                }
+                data-test-subj="integration-rules-edit"
+              />
+            ),
+          },
+        ],
+      },
     ],
-    []
+    [history, space, returnTo, canEdit]
   );
 
   const onTableChange = useCallback(
@@ -168,7 +197,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
               <EuiFlexItem grow={false}>
                 {isCreateDisabled ? (
                   <EuiToolTip
-                    content={`Rule can only be created in the spaces: ${getSpacesAllowAction(
+                    content={`Rules can only be created in the spaces: ${getSpacesAllowAction(
                       SPACE_ACTIONS.CREATE
                     ).join(', ')}`}
                   >

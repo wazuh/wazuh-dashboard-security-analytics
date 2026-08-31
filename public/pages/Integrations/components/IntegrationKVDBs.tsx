@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
@@ -21,19 +22,29 @@ import { KVDBDetailsFlyout } from '../../KVDBs/components/KVDBDetailsFlyout';
 import { formatCellValue } from '../../../utils/helpers';
 import { EuiIcon } from '@elastic/eui';
 import { ROUTES } from '../../../utils/constants';
+import { withReturnTo } from '../../../utils/routes';
 import { KVDBItem, Space } from '../../../../types';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { IntegrationEditAction } from './IntegrationEditAction';
 
 export interface IntegrationKVDBsProps {
   kvdbIds: string[];
   space: string;
   enabled: boolean;
+  history: RouteComponentProps['history'];
+  returnTo: string;
 }
 
-export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, space, enabled }) => {
+export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
+  kvdbIds,
+  space,
+  enabled,
+  history,
+  returnTo,
+}) => {
   const [flyoutKvdbId, setFlyoutKvdbId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -67,6 +78,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, spa
   });
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
+  const canEdit = actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT);
 
   const columns: EuiBasicTableColumn<KVDBItem>[] = useMemo(
     () => [
@@ -86,8 +98,28 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, spa
         sortable: true,
         render: (_: string, kvdb: KVDBItem) => formatCellValue(kvdb.document?.metadata?.author),
       },
+      {
+        name: 'Actions',
+        width: '80px',
+        actions: [
+          {
+            name: 'Edit',
+            description: 'Edit KVDB',
+            render: (kvdb: KVDBItem) => (
+              <IntegrationEditAction
+                entityLabel="KVDB"
+                canEdit={canEdit}
+                onClick={() =>
+                  history.push(withReturnTo(`${ROUTES.KVDBS_EDIT}/${kvdb.id}`, returnTo))
+                }
+                data-test-subj="integration-kvdbs-edit"
+              />
+            ),
+          },
+        ],
+      },
     ],
-    []
+    [history, space, returnTo, canEdit]
   );
 
   const closeFlyout = useCallback(() => {
@@ -137,7 +169,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, spa
               <EuiFlexItem grow={false}>
                 {isCreateDisabled ? (
                   <EuiToolTip
-                    content={`KVDB can only be created in the spaces: ${getSpacesAllowAction(
+                    content={`KVDBs can only be created in the spaces: ${getSpacesAllowAction(
                       SPACE_ACTIONS.CREATE
                     ).join(', ')}`}
                   >
