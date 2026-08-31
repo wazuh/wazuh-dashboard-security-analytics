@@ -26,13 +26,8 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import {
-  BREADCRUMBS,
-  DEFAULT_EMPTY_DATA,
-  ROUTES,
-  PAGE_HEADER_CONTROL_STYLE,
-} from '../../../utils/constants';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
+import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
@@ -476,42 +471,33 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
-          <EuiFlexGroup gutterSize="s" justifyContent="spaceBetween" alignItems="flexStart">
-            <EuiFlexItem>
-              <EuiText size="s">
-                <h1>KVDBs</h1>
-              </EuiText>
-              <EuiText size="s" color="subdued">
-                {PAGE_DESCRIPTION}
-              </EuiText>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
-              {spaceSelector}
-            </EuiFlexItem>
-            <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
-              <EuiPopover
-                id="kvdbsActionsPopover"
-                button={
-                  <EuiSmallButton
-                    iconType="arrowDown"
-                    iconSide="right"
-                    onClick={() => setActionsPopoverOpen((prev) => !prev)}
-                    data-test-subj="kvdbsActionsButton"
-                  >
-                    Actions
-                  </EuiSmallButton>
-                }
-                isOpen={actionsPopoverOpen}
-                closePopover={() => setActionsPopoverOpen(false)}
-                panelPaddingSize="none"
-                anchorPosition="downLeft"
-              >
-                <EuiContextMenuPanel size="s" items={menuItems} />
-              </EuiPopover>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        </PageHeader>
+        <WazuhPageHeader
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          title="KVDBs"
+          description={PAGE_DESCRIPTION}
+          controls={[
+            spaceSelector,
+            <EuiPopover
+              id="kvdbsActionsPopover"
+              button={
+                <EuiSmallButton
+                  iconType="arrowDown"
+                  iconSide="right"
+                  onClick={() => setActionsPopoverOpen((prev) => !prev)}
+                  data-test-subj="kvdbsActionsButton"
+                >
+                  Actions
+                </EuiSmallButton>
+              }
+              isOpen={actionsPopoverOpen}
+              closePopover={() => setActionsPopoverOpen(false)}
+              panelPaddingSize="none"
+              anchorPosition="downLeft"
+            >
+              <EuiContextMenuPanel size="s" items={menuItems} />
+            </EuiPopover>,
+          ]}
+        />
       </EuiFlexItem>
       <EuiFlexItem>
         <EuiPanel>
