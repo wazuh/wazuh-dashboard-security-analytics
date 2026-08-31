@@ -85,7 +85,7 @@ export function actionIsAllowedOnSpace(
   space: Space,
   action: string,
   allowedActionsBySpace = AllowedActionsBySpace
-): Boolean {
+): boolean {
   return allowedActionsBySpace?.[SpaceTypes[space.toUpperCase()]?.value]?.includes(action);
 }
 
