@@ -42,7 +42,13 @@ const getIntegrationCategoryFilterDisplayName = (value: string): string => {
 };
 
 export interface IntegrationTableItem {
+  /** OpenSearch `_id`, unique per space copy. Row selection and deletion use it. */
   id: string;
+  /**
+   * `document.id`, shared by every space copy of a promoted integration. The detail view
+   * looks an integration up by this plus the space, so links carry it instead of `id`.
+   */
+  documentId: string;
   title: string;
   category: string;
   mode: string;
@@ -70,11 +76,15 @@ export const mapPolicyToIntegrationTableItems = (
   const map = policy.integrationsMap ?? {};
   const orderedIds: string[] = policy.document?.integrations ?? [];
 
+  // The policy lists its integrations by `document.id`, which is what keys the map.
   return orderedIds
-    .map((id) => map[id])
-    .filter((source): source is PolicyIntegrationTableEntry => Boolean(source && source._id))
-    .map((source) => ({
+    .map((documentId) => ({ documentId, source: map[documentId] }))
+    .filter((entry): entry is { documentId: string; source: PolicyIntegrationTableEntry } =>
+      Boolean(entry.source && entry.source._id)
+    )
+    .map(({ documentId, source }) => ({
       id: source._id,
+      documentId,
       title: source.document.metadata?.title ?? '',
       category: source.document.category,
       mode: source.document.mode ?? '',
@@ -168,6 +178,11 @@ export const getIntegrationsTableColumns = ({
   showDetails,
   setItemForAction,
 }: {
+  /**
+   * Takes `document.id`, not the OpenSearch `_id`. Promoting an integration creates a
+   * copy per space with its own `_id`, while `document.id` stays the same across them,
+   * and the detail view looks the integration up by `document.id` and space.
+   */
   showDetails: (id: string) => void;
   setItemForAction: (options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null) => void;
 }) => [
@@ -176,7 +191,7 @@ export const getIntegrationsTableColumns = ({
     name: 'Title',
     sortable: false,
     render: (name: string, item: Integration) => {
-      return <EuiLink onClick={() => showDetails(item.id)}>{name}</EuiLink>;
+      return <EuiLink onClick={() => showDetails(item.documentId)}>{name}</EuiLink>;
     },
   },
   {
@@ -231,7 +246,7 @@ export const getIntegrationsTableColumns = ({
         type: 'icon',
         icon: 'inspect',
         onClick: (item) => {
-          showDetails(item.id);
+          showDetails(item.documentId);
         },
       },
       {

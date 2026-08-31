@@ -26,8 +26,8 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
@@ -526,26 +526,12 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         </EuiConfirmModal>
       )}
       <EuiFlexItem grow={false}>
-        <PageHeader appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}>
-          <EuiFlexItem>
-            <EuiFlexGroup alignItems="flexStart" justifyContent="spaceBetween">
-              <EuiFlexItem>
-                <EuiText size="s">
-                  <h1>Decoders</h1>
-                </EuiText>
-                <EuiText size="s" color="subdued">
-                  {PAGE_DESCRIPTION}
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
-                {spaceSelector}
-              </EuiFlexItem>
-              <EuiFlexItem grow={false} style={PAGE_HEADER_CONTROL_STYLE}>
-                {actionsButton}
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        </PageHeader>
+        <WazuhPageHeader
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          title="Decoders"
+          description={PAGE_DESCRIPTION}
+          controls={[spaceSelector, actionsButton]}
+        />
       </EuiFlexItem>
       <EuiFlexItem>
         <EuiPanel>
