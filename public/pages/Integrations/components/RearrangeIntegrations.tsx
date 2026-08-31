@@ -18,6 +18,7 @@ import {
   EuiPanel,
   EuiText,
   EuiSpacer,
+  EuiToolTip,
 } from '@elastic/eui';
 import { get } from 'lodash';
 import { compose } from 'redux';
@@ -237,27 +238,36 @@ const RearrangeIntegrationsBody: React.FC<RearrangeIntegrationsViewProps> = ({
     <>
       <EuiFlyoutBody>
         {prependRearrangeItems}
-        {hasRootDecoder ? (
-          <RearrangeItems
-            items={rearrangedIntegrations}
-            onChange={setRearrangedIntegrations}
-            draggableProps={{ spacing: 's' }}
-            renderItem={RearrangeItem}
-          />
-        ) : (
+        {!hasRootDecoder && (
           <RootDecoderRequirement space={space} onSucess={() => setRootDecoderResolved(true)} />
         )}
+        <RearrangeItems
+          items={rearrangedIntegrations}
+          onChange={setRearrangedIntegrations}
+          draggableProps={{ spacing: 's' }}
+          renderItem={RearrangeItem}
+        />
       </EuiFlyoutBody>
       <EuiFlyoutFooter>
         <EuiFlexGroup justifyContent="flexEnd" gutterSize="m">
           <EuiFlexItem grow={false}>
-            <EuiButton
-              fill={true}
-              onClick={onConfirmEnhanced}
-              isDisabled={!hasRootDecoder || areIntegrationsInOrder}
-            >
-              Rearrange
-            </EuiButton>
+            {hasRootDecoder ? (
+              <EuiButton
+                fill={true}
+                onClick={onConfirmEnhanced}
+                isDisabled={areIntegrationsInOrder}
+              >
+                Rearrange
+              </EuiButton>
+            ) : (
+              <EuiToolTip content="Select a root decoder for this space before rearranging integrations">
+                <span>
+                  <EuiButton fill={true} isDisabled={true}>
+                    Rearrange
+                  </EuiButton>
+                </span>
+              </EuiToolTip>
+            )}
           </EuiFlexItem>
         </EuiFlexGroup>
       </EuiFlyoutFooter>
