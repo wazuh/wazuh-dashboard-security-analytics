@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
@@ -31,9 +32,15 @@ export interface IntegrationKVDBsProps {
   kvdbIds: string[];
   space: string;
   enabled: boolean;
+  history: RouteComponentProps['history'];
 }
 
-export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, space, enabled }) => {
+export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
+  kvdbIds,
+  space,
+  enabled,
+  history,
+}) => {
   const [flyoutKvdbId, setFlyoutKvdbId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -86,8 +93,23 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({ kvdbIds, spa
         sortable: true,
         render: (_: string, kvdb: KVDBItem) => formatCellValue(kvdb.document?.metadata?.author),
       },
+      {
+        name: 'Actions',
+        width: '80px',
+        actions: [
+          {
+            name: 'Edit',
+            description: 'Edit KVDB',
+            type: 'icon',
+            icon: 'pencil',
+            'data-test-subj': 'integration-kvdbs-edit',
+            onClick: (kvdb: KVDBItem) => history.push(`${ROUTES.KVDBS_EDIT}/${kvdb.id}`),
+            available: () => actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT),
+          },
+        ],
+      },
     ],
-    []
+    [history, space]
   );
 
   const closeFlyout = useCallback(() => {

@@ -152,6 +152,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             decoderIds={decoderIds}
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DECODERS}
+            history={history}
           />
         );
       case INTEGRATION_DETAILS_TAB.KVDBS:
@@ -160,6 +161,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             kvdbIds={kvdbIds}
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.KVDBS}
+            history={history}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETECTION_RULES:
@@ -168,6 +170,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             ruleIds={ruleIds}
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DETECTION_RULES}
+            history={history}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETAILS:

@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
@@ -31,6 +32,7 @@ export interface IntegrationDecodersProps {
   decoderIds: string[];
   space: string;
   enabled: boolean;
+  history: RouteComponentProps['history'];
 }
 
 export interface DecoderTableItem {
@@ -44,6 +46,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   decoderIds,
   space,
   enabled,
+  history,
 }) => {
   const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -103,8 +106,24 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
         sortable: true,
         render: (_: string, decoder: DecoderTableItem) => formatCellValue(decoder?.author),
       },
+      {
+        name: 'Actions',
+        width: '80px',
+        actions: [
+          {
+            name: 'Edit',
+            description: 'Edit decoder',
+            type: 'icon',
+            icon: 'pencil',
+            'data-test-subj': 'integration-decoders-edit',
+            onClick: (decoder: DecoderTableItem) =>
+              history.push(`${ROUTES.DECODERS_EDIT}/${decoder.id}?space=${space}`),
+            available: () => actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT),
+          },
+        ],
+      },
     ],
-    []
+    [history, space]
   );
 
   const closeFlyout = useCallback(() => {

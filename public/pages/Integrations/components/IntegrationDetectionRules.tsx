@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 import {
   EuiBadge,
   EuiBasicTable,
@@ -35,12 +36,14 @@ export interface IntegrationDetectionRulesProps {
   ruleIds: string[];
   space: string;
   enabled: boolean;
+  history: RouteComponentProps['history'];
 }
 
 export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps> = ({
   ruleIds,
   space,
   enabled,
+  history,
 }) => {
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -113,8 +116,23 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
         sortable: false,
         truncateText: true,
       },
+      {
+        name: 'Actions',
+        width: '80px',
+        actions: [
+          {
+            name: 'Edit',
+            description: 'Edit rule',
+            type: 'icon',
+            icon: 'pencil',
+            'data-test-subj': 'integration-rules-edit',
+            onClick: (rule: RuleTableItem) => history.push(`${ROUTES.RULES_EDIT}/${rule.ruleId}`),
+            available: () => actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT),
+          },
+        ],
+      },
     ],
-    []
+    [history, space]
   );
 
   const onTableChange = useCallback(
