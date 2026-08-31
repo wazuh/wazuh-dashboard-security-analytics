@@ -26,6 +26,7 @@ import { RuleViewerFlyout } from '../../WazuhRules/components/RuleViewerFlyout/R
 import { getSeverityColor, getSeverityLabel } from '../../Correlations/utils/constants';
 import { ruleSeverity } from '../../Rules/utils/constants';
 import { ROUTES } from '../../../utils/constants';
+import { withReturnTo } from '../../../utils/routes';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
@@ -37,6 +38,8 @@ export interface IntegrationDetectionRulesProps {
   space: string;
   enabled: boolean;
   history: RouteComponentProps['history'];
+  // Wazuh: where the edit form must come back to — this view, on this tab.
+  returnTo: string;
 }
 
 export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps> = ({
@@ -44,6 +47,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
   space,
   enabled,
   history,
+  returnTo,
 }) => {
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -126,13 +130,14 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
             type: 'icon',
             icon: 'pencil',
             'data-test-subj': 'integration-rules-edit',
-            onClick: (rule: RuleTableItem) => history.push(`${ROUTES.RULES_EDIT}/${rule.ruleId}`),
+            onClick: (rule: RuleTableItem) =>
+              history.push(withReturnTo(`${ROUTES.RULES_EDIT}/${rule.ruleId}`, returnTo)),
             available: () => actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT),
           },
         ],
       },
     ],
-    [history, space]
+    [history, space, returnTo]
   );
 
   const onTableChange = useCallback(

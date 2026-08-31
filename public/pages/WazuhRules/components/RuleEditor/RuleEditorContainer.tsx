@@ -7,6 +7,7 @@ import React, { useCallback } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { ROUTES } from '../../../../utils/constants';
+import { getReturnTo } from '../../../../utils/routes';
 import { EuiSpacer } from '@elastic/eui';
 import { RuleEditorFormModel, ruleEditorStateDefaultValue } from './RuleEditorFormModel';
 import { mapFormToRule, mapRuleToForm } from './mappers';
@@ -42,6 +43,7 @@ export const RuleEditorContainer: React.FC<RuleEditorProps> = ({
   subtitleData,
 }) => {
   const initialRuleValue = rule ? { ...mapRuleToForm(rule) } : ruleEditorStateDefaultValue;
+  const returnTo = getReturnTo(history.location.search, ROUTES.RULES);
 
   const onSubmit = async (values: RuleEditorFormModel, integrationId: string) => {
     // Wazuh: added integrationId param
@@ -71,13 +73,13 @@ export const RuleEditorContainer: React.FC<RuleEditorProps> = ({
             mode === 'create' ? 'created' : 'updated'
           } successfully.`
       );
-      history.replace(ROUTES.RULES);
+      history.replace(returnTo);
     }
   };
 
-  const goToRulesList = useCallback(() => {
-    history.replace(ROUTES.RULES);
-  }, [history]);
+  const goBack = useCallback(() => {
+    history.replace(returnTo);
+  }, [history, returnTo]);
 
   return (
     <>
@@ -88,7 +90,7 @@ export const RuleEditorContainer: React.FC<RuleEditorProps> = ({
         initialValue={initialRuleValue}
         validateOnMount={validateOnMount}
         subtitleData={subtitleData}
-        cancel={goToRulesList}
+        cancel={goBack}
         submit={onSubmit}
       />
       <EuiSpacer size="xl" />

@@ -20,11 +20,20 @@ jest.mock('../../Decoders/hooks/useIntegrationDecoders', () => ({
 
 const buildHistory = () => ({ push: jest.fn() } as any);
 
+// Wazuh: the Integration details view hands the table its own path, on its own tab.
+const RETURN_TO = '/integrations/wazuh-core?space=draft&tab=decoders';
+
 const mountTable = async (space: string, history: any) => {
   let wrapper: any;
   await act(async () => {
     wrapper = mount(
-      <IntegrationDecoders decoderIds={['decoder-1']} space={space} enabled history={history} />
+      <IntegrationDecoders
+        decoderIds={['decoder-1']}
+        space={space}
+        enabled
+        history={history}
+        returnTo={RETURN_TO}
+      />
     );
   });
   wrapper.update();
@@ -47,7 +56,9 @@ describe('<IntegrationDecoders /> edit action', () => {
 
     editAction.onClick({ id: 'decoder-1' });
     expect(history.push).toHaveBeenCalledWith(
-      `/edit-decoder/decoder-1?space=${SpaceTypes.DRAFT.value}`
+      `/edit-decoder/decoder-1?space=${SpaceTypes.DRAFT.value}&returnTo=${encodeURIComponent(
+        RETURN_TO
+      )}`
     );
   });
 

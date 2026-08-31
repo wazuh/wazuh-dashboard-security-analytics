@@ -22,6 +22,7 @@ import { DecoderDetailsFlyout } from '../../Decoders/components/DecoderDetailsFl
 import { formatCellValue } from '../../../utils/helpers';
 import { EuiIcon } from '@elastic/eui';
 import { ROUTES } from '../../../utils/constants';
+import { withReturnTo } from '../../../utils/routes';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
@@ -33,6 +34,8 @@ export interface IntegrationDecodersProps {
   space: string;
   enabled: boolean;
   history: RouteComponentProps['history'];
+  // Wazuh: where the edit form must come back to — this view, on this tab.
+  returnTo: string;
 }
 
 export interface DecoderTableItem {
@@ -47,6 +50,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   space,
   enabled,
   history,
+  returnTo,
 }) => {
   const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -117,13 +121,15 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
             icon: 'pencil',
             'data-test-subj': 'integration-decoders-edit',
             onClick: (decoder: DecoderTableItem) =>
-              history.push(`${ROUTES.DECODERS_EDIT}/${decoder.id}?space=${space}`),
+              history.push(
+                withReturnTo(`${ROUTES.DECODERS_EDIT}/${decoder.id}?space=${space}`, returnTo)
+              ),
             available: () => actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT),
           },
         ],
       },
     ],
-    [history, space]
+    [history, space, returnTo]
   );
 
   const closeFlyout = useCallback(() => {

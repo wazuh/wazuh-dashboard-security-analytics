@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
 import { IntegrationItem, Space } from '../../../../types';
 import { SPACE_ACTIONS } from '../../../../common/constants';
@@ -41,6 +41,7 @@ import {
   integrationDetailsTabs,
   IntegrationMode,
 } from '../utils/constants';
+
 import { IntegrationDetails } from '../components/IntegrationDetails';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { IntegrationDetectionRules } from '../components/IntegrationDetectionRules';
@@ -49,7 +50,11 @@ import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { formatIntegrationMetadataDate } from '../utils/helpers';
+import {
+  buildIntegrationDetailsRoute,
+  formatIntegrationMetadataDate,
+  getSelectedTabFromUrl,
+} from '../utils/helpers';
 
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -64,7 +69,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   const { integrationId } = useParams<{ integrationId: string }>();
   const location = useLocation();
   const spaceParam = new URLSearchParams(location.search).get('space') ?? undefined;
-  const [selectedTabId, setSelectedTabId] = useState<string>(INTEGRATION_DETAILS_TAB.DETAILS);
+  // Wazuh: the open tab lives in the URL so it survives a refresh, can be linked to,
+  // and — via `returnTo` below — can be handed to an editor to come back to.
+  const [selectedTabId, setSelectedTabId] = useState<string>(() =>
+    getSelectedTabFromUrl(location.search)
+  );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [infoText, setInfoText] = useState<React.ReactNode | string>(
@@ -123,11 +132,26 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   );
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
 
+  const selectTab = useCallback(
+    (tabId: string) => {
+      setSelectedTabId(tabId);
+      history.replace(
+        buildIntegrationDetailsRoute(integrationId, { space: spaceParam, tab: tabId })
+      );
+    },
+    [history, integrationId, spaceParam]
+  );
+
+  const returnTo = useMemo(
+    () => buildIntegrationDetailsRoute(integrationId, { space: spaceParam, tab: selectedTabId }),
+    [integrationId, spaceParam, selectedTabId]
+  );
+
   // Wazuh: the count opens its child tab; zero stays a disabled link, as in the list.
   const renderCountLink = (count: number, tabId: string, entityLabel: string) => {
     const link =
       count > 0 ? (
-        <EuiLink onClick={() => setSelectedTabId(tabId)}>{count}</EuiLink>
+        <EuiLink onClick={() => selectTab(tabId)}>{count}</EuiLink>
       ) : (
         <EuiLink disabled>{count}</EuiLink>
       );
@@ -153,6 +177,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DECODERS}
             history={history}
+            returnTo={returnTo}
           />
         );
       case INTEGRATION_DETAILS_TAB.KVDBS:
@@ -162,6 +187,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.KVDBS}
             history={history}
+            returnTo={returnTo}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETECTION_RULES:
@@ -171,6 +197,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DETECTION_RULES}
             history={history}
+            returnTo={returnTo}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETAILS:
@@ -351,7 +378,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             onClick={() => {
               closeActionsPopover();
               setIsEditMode(true);
-              setSelectedTabId(INTEGRATION_DETAILS_TAB.DETAILS);
+              selectTab(INTEGRATION_DETAILS_TAB.DETAILS);
             }}
             disabled={isEditDisabled}
             data-test-subj={'editIntegrationButton'}
@@ -545,7 +572,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           return (
             <EuiTab
               onClick={() => {
-                setSelectedTabId(tab.id);
+                selectTab(tab.id);
               }}
               key={index}
               isSelected={selectedTabId === tab.id}

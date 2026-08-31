@@ -20,11 +20,20 @@ jest.mock('../../WazuhRules/hooks/useIntegrationRules', () => ({
 
 const buildHistory = () => ({ push: jest.fn() } as any);
 
+// Wazuh: the Integration details view hands the table its own path, on its own tab.
+const RETURN_TO = '/integrations/wazuh-core?space=draft&tab=detection_rules';
+
 const mountTable = async (space: string, history: any) => {
   let wrapper: any;
   await act(async () => {
     wrapper = mount(
-      <IntegrationDetectionRules ruleIds={['rule-1']} space={space} enabled history={history} />
+      <IntegrationDetectionRules
+        ruleIds={['rule-1']}
+        space={space}
+        enabled
+        history={history}
+        returnTo={RETURN_TO}
+      />
     );
   });
   wrapper.update();
@@ -46,7 +55,9 @@ describe('<IntegrationDetectionRules /> edit action', () => {
     expect(editAction.available()).toBe(true);
 
     editAction.onClick({ ruleId: 'rule-1' });
-    expect(history.push).toHaveBeenCalledWith('/edit-rule/rule-1');
+    expect(history.push).toHaveBeenCalledWith(
+      `/edit-rule/rule-1?returnTo=${encodeURIComponent(RETURN_TO)}`
+    );
   });
 
   it('is not available outside the draft space', async () => {
