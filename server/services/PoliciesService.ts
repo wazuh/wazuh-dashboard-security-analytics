@@ -361,12 +361,15 @@ export class PoliciesService extends MDSEnabledClientService {
     try {
       const { space } = request.params;
       const { body } = request;
+      // `root_decoder` may arrive as null (unset in the stored policy document);
+      // the engine backend expects a string.
+      const resource = { ...body, root_decoder: (body as any).root_decoder ?? '' };
 
       const client = this.getClient(request, context);
       const updatePolicyResponse = await client(CLIENT_POLICY_METHODS.UPDATE_POLICY, {
         space,
         body: {
-          resource: body,
+          resource,
         },
       });
 
