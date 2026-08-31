@@ -28,8 +28,8 @@ export interface PromoteBySpaceModalProps {
   promote: GetPromoteBySpaceResponse['response'];
   closeModal: () => void;
   space: PromoteSpaces;
-  notifications: NotificationsStart
-  history: RouteComponentProps['history']
+  notifications: NotificationsStart;
+  history: RouteComponentProps['history'];
 }
 
 const PromoteEntity: React.FC<{
@@ -67,7 +67,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
   promote,
   space,
   notifications,
-  history
+  history,
 }) => {
   const [confirmActionText, setconfirmActionText] = useState('');
   const [requireRootDecoderError, setRequireRootDecoderError] = useState(false);
@@ -82,8 +82,8 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
     if (success) {
       successNotificationToast(notifications, 'promoted', `[${space}] space`);
       history.push(ROUTES.INTEGRATIONS);
-    }else if(isRootDecoderRequiementError(error)){
-      setRequireRootDecoderError(true)
+    } else if (isRootDecoderRequiementError(error)) {
+      setRequireRootDecoderError(true);
     }
     return success;
   };
@@ -117,7 +117,9 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
         buttonColor={'primary'}
         defaultFocusedButton="confirm"
         isLoading={isPromoting}
-        confirmButtonDisabled={confirmActionText !== expectedConfirmActionText && !requireRootDecoderError}
+        confirmButtonDisabled={
+          confirmActionText !== expectedConfirmActionText && !requireRootDecoderError
+        }
       >
         <EuiForm>
           <p>
@@ -139,14 +141,16 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
             return null;
           })}
 
-          {
-            requireRootDecoderError && (
-              <>
-                <RootDecoderRequirement space={space} onSucess={() => setRequireRootDecoderError(false)}/>
-                <EuiSpacer size="m" />
-              </>
-            )
-          }
+          {requireRootDecoderError && (
+            <>
+              <RootDecoderRequirement
+                space={space}
+                notifications={notifications}
+                onSucess={() => setRequireRootDecoderError(false)}
+              />
+              <EuiSpacer size="m" />
+            </>
+          )}
 
           <p style={{ marginBottom: '0.3rem' }}>
             <EuiText size="s">Type {<b>{expectedConfirmActionText}</b>} to confirm</EuiText>
