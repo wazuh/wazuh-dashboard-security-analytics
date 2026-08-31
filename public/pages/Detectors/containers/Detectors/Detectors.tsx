@@ -23,7 +23,11 @@ import {
   EuiToolTip,
   EuiSearchBar,
 } from '@elastic/eui';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_EMPTY_DATA,
+  ROUTES,
+} from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
 import { getDetectorNames } from '../../utils/helpers';
 import {
