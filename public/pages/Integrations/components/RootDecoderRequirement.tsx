@@ -16,7 +16,7 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
-import { DecoderSource, PolicyDocument, Space } from '../../../../types';
+import { DecoderSource, PolicyDocument, UserSpace } from '../../../../types';
 import { ButtonOpenModal, ButtonOpenModalProps } from './Button';
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -26,7 +26,7 @@ const delayOnSearch = 300; // ms
 const itemsPerPage = 25;
 
 interface SelectRootDecoderFormProps {
-  space: Space;
+  space: UserSpace;
   notifications: NotificationsStart;
   policyDocumentData: PolicyDocument;
   rootDecoderSource?: DecoderSource;
@@ -273,8 +273,8 @@ const Callout: React.FC<CalloutProps> = ({
   return (
     <EuiCallOut title="Root decoder not defined in the space" color="warning" iconType="alert">
       <p>
-        This action requires a root decoder to be defined in the space. Please create and/or select
-        a root decoder.
+        The promotion of the space requires a root decoder to be defined in the space. Please create
+        and/or select a root decoder.
       </p>
       <ButtonSelectRootDecoder
         buttonProps={{ color: 'warning' }}
@@ -289,7 +289,7 @@ const Callout: React.FC<CalloutProps> = ({
 };
 
 export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC = withGuardAsync(
-  async ({ space, onSucess, check }) => {
+  async ({ space, onSuccess }) => {
     try {
       const response = await DataStore.policies.searchPolicies(space);
 
@@ -301,13 +301,13 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
         rootDecoder = await DataStore.decoders.getDecoder(rootDecoderId, space);
       }
 
-      if (onSucess && rootDecoder) {
-        onSucess();
+      if (onSuccess && rootDecoder) {
+        onSuccess();
       }
 
       return {
         ok: !Boolean(rootDecoder),
-        data: { policyDocumentData, rootDecoder, check },
+        data: { policyDocumentData, rootDecoder },
       };
     } catch (error) {
       return { ok: false, data: { error } };
@@ -316,7 +316,7 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
   Callout
 );
 
-export const RootDecoderRequirement: React.FC<{ space: Space; onSucess?: () => void }> =
+export const RootDecoderRequirement: React.FC<{ space: UserSpace; onSucess?: () => void }> =
   withRootDecoderRequirementGuard(({ error }: { error: Error }) => {
     return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
   });
