@@ -12,7 +12,8 @@ import {
   EuiTextArea,
   EuiAccordion,
   EuiSpacer,
-  EuiSelect,
+  EuiSuperSelect,
+  EuiText,
   EuiTitle,
 } from '@elastic/eui';
 import { LogTestTraceLevel } from '../../../../types';
@@ -20,10 +21,51 @@ import { MetadataEntry } from '../utils';
 import { MetadataFieldsEditor } from './MetadataFieldsEditor';
 import { IntegrationComboBox, IntegrationOption } from '../../../components/IntegrationComboBox';
 
-const TRACE_LEVEL_OPTIONS: Array<{ value: LogTestTraceLevel; text: string }> = [
-  { value: 'NONE', text: 'None' },
-  { value: 'ASSET_ONLY', text: 'Asset only' },
-  { value: 'ALL', text: 'All' },
+const TRACE_LEVEL_OPTIONS: Array<{
+  value: LogTestTraceLevel;
+  inputDisplay: string;
+  dropdownDisplay: JSX.Element;
+}> = [
+  {
+    value: 'NONE',
+    inputDisplay: 'None',
+    dropdownDisplay: (
+      <>
+        <strong>None</strong>
+        <EuiText size="s" color="subdued">
+          <p className="ouiTextColor--subdued">
+            Only the final normalized output. Use for quick checks.
+          </p>
+        </EuiText>
+      </>
+    ),
+  },
+  {
+    value: 'ASSET_ONLY',
+    inputDisplay: 'Asset only',
+    dropdownDisplay: (
+      <>
+        <strong>Asset only</strong>
+        <EuiText size="s" color="subdued">
+          <p className="ouiTextColor--subdued">Output plus the list of decoders that matched.</p>
+        </EuiText>
+      </>
+    ),
+  },
+  {
+    value: 'ALL',
+    inputDisplay: 'All',
+    dropdownDisplay: (
+      <>
+        <strong>All</strong>
+        <EuiText size="s" color="subdued">
+          <p className="ouiTextColor--subdued">
+            Full trace including every decoder attempted. Use for debugging decoder issues.
+          </p>
+        </EuiText>
+      </>
+    ),
+  },
 ];
 
 export interface LogTestFormData {
@@ -88,12 +130,14 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
         </EuiFlexItem>
         <EuiFlexItem style={{ minWidth: '200px' }}>
           <EuiFormRow label="Trace level" fullWidth>
-            <EuiSelect
+            <EuiSuperSelect
               options={TRACE_LEVEL_OPTIONS}
-              value={formData.traceLevel}
-              onChange={(e) => onFormChange('traceLevel', e.target.value as LogTestTraceLevel)}
+              valueOfSelected={formData.traceLevel}
+              onChange={(value) => onFormChange('traceLevel', value as LogTestTraceLevel)}
               disabled={disabled}
               fullWidth
+              hasDividers
+              itemLayoutAlign="top"
             />
           </EuiFormRow>
         </EuiFlexItem>
