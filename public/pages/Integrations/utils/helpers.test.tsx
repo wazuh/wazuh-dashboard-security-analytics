@@ -5,7 +5,13 @@
 
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
-import { getIntegrationsTableColumns, IntegrationTableItem } from './helpers';
+import {
+  buildIntegrationDetailsRoute,
+  getIntegrationsTableColumns,
+  getSelectedTabFromUrl,
+  IntegrationTableItem,
+} from './helpers';
+import { INTEGRATION_DETAILS_TAB } from './constants';
 import { ROUTES } from '../../../utils/constants';
 import { setupCoreStart } from '../../../../test/utils/helpers';
 import { getApplication } from '../../../services/utils/constants';
@@ -135,5 +141,44 @@ describe('getIntegrationsTableColumns — opening an integration', () => {
     fireEvent.click(screen.getByText('aws'));
 
     expect(showDetails).toHaveBeenCalledWith('shared-doc-id');
+  });
+});
+
+describe('buildIntegrationDetailsRoute', () => {
+  it('builds the bare details route when there is no space and no tab', () => {
+    expect(buildIntegrationDetailsRoute('wazuh-core')).toBe('/integrations/wazuh-core');
+  });
+
+  it('carries the space and the open tab', () => {
+    expect(
+      buildIntegrationDetailsRoute('wazuh-core', {
+        space: 'draft',
+        tab: INTEGRATION_DETAILS_TAB.DECODERS,
+      })
+    ).toBe('/integrations/wazuh-core?space=draft&tab=decoders');
+  });
+
+  it('omits the tab param for Details, which is the tab the view opens on anyway', () => {
+    expect(
+      buildIntegrationDetailsRoute('wazuh-core', {
+        space: 'draft',
+        tab: INTEGRATION_DETAILS_TAB.DETAILS,
+      })
+    ).toBe('/integrations/wazuh-core?space=draft');
+  });
+});
+
+describe('getSelectedTabFromUrl', () => {
+  it('reads a known tab', () => {
+    expect(getSelectedTabFromUrl('?tab=kvdbs')).toBe(INTEGRATION_DETAILS_TAB.KVDBS);
+    expect(getSelectedTabFromUrl('?space=draft&tab=detection_rules')).toBe(
+      INTEGRATION_DETAILS_TAB.DETECTION_RULES
+    );
+  });
+
+  it('falls back to Details for a missing or unknown tab', () => {
+    expect(getSelectedTabFromUrl('')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
+    expect(getSelectedTabFromUrl('?space=draft')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
+    expect(getSelectedTabFromUrl('?tab=nope')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
   });
 });

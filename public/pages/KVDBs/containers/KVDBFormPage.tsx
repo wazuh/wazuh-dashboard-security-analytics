@@ -33,6 +33,7 @@ import { FormFieldArray } from '../../../components/FormFieldArray';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { DataStore } from '../../../store/DataStore';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { getReturnTo } from '../../../utils/routes';
 import {
   errorNotificationToast,
   getErrorMessage,
@@ -82,6 +83,7 @@ type KVDBFormPageProps = {
 export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const kvdbId = props.match.params.id;
+  const returnTo = getReturnTo(history.location.search, ROUTES.KVDBS);
   // Wazuh: creation always targets Draft; this form has no space in scope on edit.
   const pageDescription =
     action === KVDB_ACTION.CREATE
@@ -172,10 +174,10 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
           'KVDB',
           result.message || `The KVDB "${values.title}" has been created successfully.`
         );
-        history.push(ROUTES.KVDBS);
+        history.push(returnTo);
       }
     },
-    [integrationType, notifications, history, selectedEditorType, rawKvdb]
+    [integrationType, notifications, history, selectedEditorType, rawKvdb, returnTo]
   );
 
   const updateKVDB = useCallback(
@@ -193,10 +195,10 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
           'KVDB',
           result.message || `The KVDB "${values.title}" has been updated successfully.`
         );
-        history.push(ROUTES.KVDBS);
+        history.push(returnTo);
       }
     },
-    [kvdbId, notifications, history, selectedEditorType, rawKvdb]
+    [kvdbId, notifications, history, selectedEditorType, rawKvdb, returnTo]
   );
 
   const handleSubmit = useCallback(
@@ -469,12 +471,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   responsive={false}
                 >
                   <EuiFlexItem grow={false}>
-                    <EuiButtonEmpty
-                      color="ghost"
-                      size="s"
-                      iconType="cross"
-                      href={`#${ROUTES.KVDBS}`}
-                    >
+                    <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${returnTo}`}>
                       Cancel
                     </EuiButtonEmpty>
                   </EuiFlexItem>

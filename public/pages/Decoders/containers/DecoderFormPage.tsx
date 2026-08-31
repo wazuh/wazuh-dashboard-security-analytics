@@ -16,6 +16,7 @@ import {
   successNotificationToast,
 } from '../../../utils/helpers';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { getReturnTo } from '../../../utils/routes';
 import {
   EuiBottomBar,
   EuiButton,
@@ -65,6 +66,9 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const idDecoder = props.match.params.id;
   const spaceDecoder = new URLSearchParams(props.location?.search).get('space') ?? '';
+  // Wazuh: back to the Decoders list, unless the form was opened from elsewhere
+  // (the Integration details Decoders tab) and that page asked for a return path.
+  const returnTo = getReturnTo(history.location.search, ROUTES.DECODERS);
   // Wazuh: creation always targets Draft; on edit the space comes from the URL.
   const pageDescription =
     action === 'create'
@@ -173,7 +177,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
             result.message || `The decoder ${values.name} has been created successfully.`
           );
 
-          history.push(`${ROUTES.DECODERS}`);
+          history.push(returnTo);
         }
       } catch (error: any) {
         errorNotificationToast(
@@ -184,7 +188,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         );
       }
     },
-    [integrationType, notifications, history]
+    [integrationType, notifications, history, returnTo]
   );
 
   const updateDecoder = useCallback(
@@ -207,7 +211,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
             result.message || `The decoder ${values.name} has been updated successfully.`
           );
 
-          history.push(`${ROUTES.DECODERS}`);
+          history.push(returnTo);
         }
       } catch (error: any) {
         errorNotificationToast(
@@ -218,7 +222,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         );
       }
     },
-    [notifications, history]
+    [notifications, history, returnTo]
   );
 
   const handleOnClick = useCallback(
@@ -355,7 +359,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
                       color="ghost"
                       size="s"
                       iconType="cross"
-                      href={`#${ROUTES.DECODERS}`}
+                      href={`#${returnTo}`}
                       isDisabled={props.isSubmitting}
                     >
                       Cancel

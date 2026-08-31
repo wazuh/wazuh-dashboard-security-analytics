@@ -21,6 +21,11 @@ import { actionIsAllowedOnSpace } from '../../../../common/helpers';
 import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
 import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
 import { buildAppUrl, buildEntityQueryRoute } from '../../../utils/routes';
+import {
+  INTEGRATION_DETAILS_TAB,
+  INTEGRATION_TAB_PARAM,
+  IntegrationDetailsTabId,
+} from './constants';
 import { Search } from '@elastic/eui/src/components/basic_table';
 
 import moment from 'moment';
@@ -34,6 +39,28 @@ export const formatIntegrationMetadataDate = (value?: string) => {
   if (!value?.trim()) return '';
   const m = moment(value);
   return m.isValid() ? formatUIDate(value) : value;
+};
+
+// Wazuh: build the route of an Integration details view on a given tab. Single place
+// where the details URL is assembled, so the tab sync, the tab deep links and the
+// `returnTo` handed to the rule/decoder/KVDB editors cannot drift apart.
+export const buildIntegrationDetailsRoute = (
+  integrationId: string,
+  { space, tab }: { space?: string; tab?: string } = {}
+): string => {
+  const params = new URLSearchParams();
+  if (space) params.set('space', space);
+  if (tab && tab !== INTEGRATION_DETAILS_TAB.DETAILS) params.set(INTEGRATION_TAB_PARAM, tab);
+  const query = params.toString();
+
+  return `${ROUTES.INTEGRATIONS}/${integrationId}${query ? `?${query}` : ''}`;
+};
+
+export const getSelectedTabFromUrl = (search: string): IntegrationDetailsTabId => {
+  const tab = new URLSearchParams(search).get(INTEGRATION_TAB_PARAM);
+  const isKnownTab = Object.values(INTEGRATION_DETAILS_TAB).some((tabId) => tabId === tab);
+
+  return isKnownTab ? (tab as IntegrationDetailsTabId) : INTEGRATION_DETAILS_TAB.DETAILS;
 };
 
 const getIntegrationCategoryFilterDisplayName = (value: string): string => {

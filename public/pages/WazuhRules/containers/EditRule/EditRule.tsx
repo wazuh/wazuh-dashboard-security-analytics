@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { EuiFlexGroup, EuiFlexItem, EuiLoadingSpinner, EuiPanel } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
+import { getReturnTo } from '../../../../utils/routes';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { setRulesRelatedBreadCrumb } from '../../utils/helpers';
 import { Rule } from '../../../../../types';
@@ -22,6 +23,7 @@ export interface EditRuleProps extends RouteComponentProps<{ id: string }> {
 
 export const EditRule: React.FC<EditRuleProps> = ({ history, match, notifications }) => {
   const ruleId = match.params.id;
+  const returnTo = getReturnTo(history.location.search, ROUTES.RULES);
   const [rule, setRule] = useState<Rule | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -35,7 +37,7 @@ export const EditRule: React.FC<EditRuleProps> = ({ history, match, notification
         );
         const item = result.items[0];
         if (!item) {
-          history.replace(ROUTES.RULES);
+          history.replace(returnTo);
           return;
         }
 
@@ -48,14 +50,14 @@ export const EditRule: React.FC<EditRuleProps> = ({ history, match, notification
         setRule(item._source);
       } catch (error: any) {
         errorNotificationToast(notifications, 'retrieve', 'rule', error);
-        history.replace(ROUTES.RULES);
+        history.replace(returnTo);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchRule();
-  }, [ruleId, history, notifications]);
+  }, [ruleId, history, notifications, returnTo]);
 
   if (isLoading || !rule) {
     return (
