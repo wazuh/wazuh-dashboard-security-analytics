@@ -12,7 +12,9 @@ import {
   EuiSpacer,
   EuiText,
   EuiButton,
+  EuiButtonIcon,
   EuiHorizontalRule,
+  EuiToolTip,
 } from '@elastic/eui';
 import { RouteComponentProps } from 'react-router-dom';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -27,7 +29,7 @@ import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/L
 import { LogTestResult } from '../components/LogTestResult';
 import { IntegrationOption } from '../../../components/IntegrationComboBox';
 import { MetadataEntry, buildMetadataObject } from '../utils';
-import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
+import { DETECTION_RULE_NAV_ID, LOG_TEST_DOCUMENTATION_URL } from '../../../utils/constants';
 import { buildAppUrl } from '../../../utils/routes';
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
@@ -230,6 +232,16 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               allowedSpaces={LOG_TEST_SPACE_OPTIONS}
               unavailableSpaces={LOG_TEST_UNAVAILABLE_SPACES}
             />,
+            <EuiToolTip content="View documentation">
+              <EuiButtonIcon
+                iconType="iInCircle"
+                color="primary"
+                aria-label="View Log test documentation"
+                href={LOG_TEST_DOCUMENTATION_URL}
+                target="_blank"
+                data-test-subj="logTestDocumentationLink"
+              />
+            </EuiToolTip>,
           ]}
         />
       </EuiFlexItem>
