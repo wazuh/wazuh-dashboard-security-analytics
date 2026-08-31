@@ -64,7 +64,7 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
           enrichments: schema.arrayOf(schema.string(), { defaultValue: [] }),
           filters: schema.arrayOf(schema.string(), { defaultValue: [] }),
           integrations: schema.arrayOf(schema.string(), { defaultValue: [] }),
-          root_decoder: schema.string({ defaultValue: '' }),
+          root_decoder: schema.nullable(schema.string({ defaultValue: '' })),
         }),
       },
     },
