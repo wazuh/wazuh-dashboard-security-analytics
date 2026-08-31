@@ -34,6 +34,7 @@ import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validatio
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
 import { SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpaceTypeLabel } from '../../../../common/helpers';
+import { AssetIdentity, formatAssetLabel } from '../../../components/AssetIdentity';
 import { UI_DISABLED_SETTINGS_IDS, isUiSettingDisabled } from '../../../utils/helpers';
 import { ALLOWED_ENRICHMENTS, ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 
@@ -91,7 +92,9 @@ const EditForm: React.FC<{}> = withPolicyGuard({
     if (rootDecoder?.document) {
       return [
         {
-          label: rootDecoder.document.name,
+          // `root_decoder` is saved from `value.document.id`, so the label is free to name
+          // the decoder instead of addressing it.
+          label: formatAssetLabel(rootDecoder.document.metadata?.title, rootDecoder.document.name),
           value: rootDecoder,
         },
       ];
@@ -191,13 +194,16 @@ const EditForm: React.FC<{}> = withPolicyGuard({
           size: DECODER_SEARCH_SIZE,
           sort: [{ ['document.name']: { order: 'asc', unmapped_type: 'keyword' } }],
           query,
-          _source: { includes: ['document.id', 'document.name'] },
+          // The title is what a reader recognises; the name is the identifier.
+          _source: { includes: ['document.id', 'document.name', 'document.metadata.title'] },
         },
         space
       );
       setDecoderList(
         response.items.map((item) => ({
-          label: item?.document?.name ?? item?.document?.id,
+          label:
+            formatAssetLabel(item?.document?.metadata?.title, item?.document?.name) ||
+            (item?.document?.id ?? ''),
           value: item,
         }))
       );
@@ -362,7 +368,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             renderBooleanValue(policyDetails.enabled)
           )}
         </EuiCompressedFormRow>
-        <EuiCompressedFormRow label="Root Decoder">
+        <EuiCompressedFormRow label="Root decoder">
           {canEditPolicy ? (
             <EuiComboBox
               placeholder="Search and select a decoder"
@@ -385,7 +391,14 @@ const EditForm: React.FC<{}> = withPolicyGuard({
               async
             />
           ) : (
-            renderTextValue(rootDecoder?.document?.name)
+            // The same field pairs the name with the identifier when it is editable, so the
+            // read-only branch cannot show the identifier alone.
+            <EuiText size="s" color="subdued">
+              <AssetIdentity
+                title={rootDecoder?.document?.metadata?.title}
+                identifier={rootDecoder?.document?.name}
+              />
+            </EuiText>
           )}
         </EuiCompressedFormRow>
         {showAnyIndexingSetting && (
