@@ -14,9 +14,9 @@ import {
   AppNavLinkStatus,
 } from '../../../src/core/public';
 import {
-  // Wazuh: hide Correlations app in Ruleset management nav.
+  // Wazuh: hide Correlations app in Ruleset Management nav.
   // CORRELATIONS_NAV_ID,
-  // Wazuh: hide Correlation rules app in Ruleset management nav.
+  // Wazuh: hide Correlation rules app in Ruleset Management nav.
   // CORRELATIONS_RULE_NAV_ID,
   DETECTORS_NAV_ID,
   DETECTION_RULE_NAV_ID,
@@ -28,7 +28,7 @@ import {
   OVERVIEW_NAV_ID,
   PLUGIN_NAME,
   ROUTES,
-  // Wazuh: hide Alerts app in Ruleset management nav.
+  // Wazuh: hide Alerts app in Ruleset Management nav.
   // THREAT_ALERTS_NAV_ID,
   dataSourceObservable,
   setDarkMode,
@@ -117,10 +117,10 @@ export class SecurityAnalyticsPlugin
       return renderApp(coreStart, params, redirect, depsStart, dataSourceManagement);
     };
 
-    // <- Main menu Ruleset management created with sub-menus for each section
+    // <- Main menu Ruleset Management created with sub-menus for each section
     core.application.register({
       id: PLUGIN_NAME,
-      title: 'Ruleset management',
+      title: 'Ruleset Management',
       order: 7000,
       category: {
         id: 'security_analytics',
@@ -171,7 +171,7 @@ export class SecurityAnalyticsPlugin
       },
     });
 
-    // Wazuh: hide Findings app from the Ruleset management navigation.
+    // Wazuh: hide Findings app from the Ruleset Management navigation.
     // core.application.register({
     //   id: FINDINGS_NAV_ID,
     //   title: 'Findings',
@@ -188,7 +188,7 @@ export class SecurityAnalyticsPlugin
     //   },
     // });
 
-    // Wazuh: hide Alerts app from the Ruleset management navigation.
+    // Wazuh: hide Alerts app from the Ruleset Management navigation.
     // core.application.register({
     //   id: THREAT_ALERTS_NAV_ID,
     //   title: 'Alerts',
@@ -205,7 +205,7 @@ export class SecurityAnalyticsPlugin
     //   },
     // });
 
-    // Wazuh: hide Correlations app from the Ruleset management navigation.
+    // Wazuh: hide Correlations app from the Ruleset Management navigation.
     // core.application.register({
     //   id: CORRELATIONS_NAV_ID,
     //   title: 'Correlations',
@@ -301,7 +301,7 @@ export class SecurityAnalyticsPlugin
       },
     });
 
-    // Wazuh: hide Correlation rules app from the Ruleset management navigation.
+    // Wazuh: hide Correlation rules app from the Ruleset Management navigation.
     // core.application.register({
     //   id: CORRELATIONS_RULE_NAV_ID,
     //   title: 'Correlation rules',
@@ -318,7 +318,7 @@ export class SecurityAnalyticsPlugin
     //   },
     // });
 
-    // Main menu Ruleset management created with sub-menus for each section ->
+    // Main menu Ruleset Management created with sub-menus for each section ->
     if (core.chrome.navGroup.getNavGroupEnabled()) {
       dataSourceObservable.subscribe((dataSourceOption) => {
         if (dataSourceOption) {

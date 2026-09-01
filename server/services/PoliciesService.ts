@@ -84,7 +84,7 @@ export class PoliciesService extends MDSEnabledClientService {
           this.spaceFieldCaps = result;
           return result;
         } catch (error: any) {
-          console.warn('Ruleset management - PoliciesService - fieldCaps:', error?.message);
+          console.warn('Ruleset Management - PoliciesService - fieldCaps:', error?.message);
         }
 
         const fallback = {
@@ -187,7 +187,7 @@ export class PoliciesService extends MDSEnabledClientService {
 
       return { integrations, total };
     } catch (error: any) {
-      console.warn('Ruleset management - PoliciesService - fetchIntegrationMap:', error?.message);
+      console.warn('Ruleset Management - PoliciesService - fetchIntegrationMap:', error?.message);
       return { integrations: new Map(), total: 0 };
     }
   }
@@ -283,7 +283,7 @@ export class PoliciesService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Ruleset management - PoliciesService - searchPolicies:', error);
+      console.error('Ruleset Management - PoliciesService - searchPolicies:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -342,7 +342,7 @@ export class PoliciesService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Ruleset management - PoliciesService - getPolicy:', error);
+      console.error('Ruleset Management - PoliciesService - getPolicy:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -378,7 +378,7 @@ export class PoliciesService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Ruleset management - PoliciesService - updatePolicy:', error);
+      console.error('Ruleset Management - PoliciesService - updatePolicy:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -408,7 +408,7 @@ export class PoliciesService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Ruleset management - PoliciesService - deleteSpace:', error);
+      console.error('Ruleset Management - PoliciesService - deleteSpace:', error);
       return response.custom({
         statusCode: 200,
         body: {

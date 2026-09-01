@@ -46,7 +46,7 @@ export class FiltersService extends MDSEnabledClientService {
         },
       });
     } catch (error) {
-      console.error('Ruleset management - FiltersService - searchFilters:', error);
+      console.error('Ruleset Management - FiltersService - searchFilters:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -71,7 +71,7 @@ export class FiltersService extends MDSEnabledClientService {
       });
       return response.custom({ statusCode: 200, body: { ok: true, response: createResponse } });
     } catch (error) {
-      console.error('Ruleset management - FiltersService - createFilter:', error);
+      console.error('Ruleset Management - FiltersService - createFilter:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: extractErrorMessage(error) },
@@ -95,7 +95,7 @@ export class FiltersService extends MDSEnabledClientService {
       });
       return response.custom({ statusCode: 200, body: { ok: true, response: updateResponse } });
     } catch (error) {
-      console.error('Ruleset management - FiltersService - updateFilter:', error);
+      console.error('Ruleset Management - FiltersService - updateFilter:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: extractErrorMessage(error) },
@@ -116,7 +116,7 @@ export class FiltersService extends MDSEnabledClientService {
       await client('indices.refresh', { index: CONTENT_INDICES.FILTERS });
       return response.custom({ statusCode: 200, body: { ok: true, response: null } });
     } catch (error) {
-      console.error('Ruleset management - FiltersService - deleteFilter:', error);
+      console.error('Ruleset Management - FiltersService - deleteFilter:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: error.message },

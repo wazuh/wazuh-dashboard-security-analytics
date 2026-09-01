@@ -28,7 +28,7 @@ review.
 | `Modified` | `Last updated time` | The last-modification timestamp. |
 | `Integration` | `Log type` | The unit that groups decoders, rules, KVDBs and filters. The `detector_type` wire field keeps its name; only its label changes. |
 | `Space` | None | The active scope only: Draft, Test, Custom, Standard. |
-| `Ruleset management` | `Security Analytics`, `Security analytics` | The plugin itself, in the navigation, the root breadcrumb and prose. In a sentence it reads `ruleset management`. |
+| `Ruleset management` | `Security Analytics`, `Security analytics` | The plugin itself. The app title, the root breadcrumb and the side-nav heading keep their `Ruleset Management` casing; the navigation group labels stay `Ruleset management`. In a sentence it reads `ruleset management`. |
 
 ## Capitalization in prose
 

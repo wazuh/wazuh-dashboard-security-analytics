@@ -109,7 +109,7 @@ import { DecoderFormPage } from '../Decoders/containers/DecoderFormPage';
 import { FilterFormPage } from '../Filters/containers/FilterFormPage';
 
 enum Navigation {
-  SecurityAnalytics = 'Ruleset management', // Wazuh: rename 'Security analytics' to 'Ruleset management'
+  SecurityAnalytics = 'Ruleset Management', // Wazuh: rename 'Security Analytics' to 'Ruleset Management'
   // Wazuh: hide Findings navigation items.
   // Findings = 'Findings',
   Detectors = 'Detectors',
