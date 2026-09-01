@@ -9,10 +9,12 @@ import { mount } from 'enzyme';
 import { IntegrationDecoders } from './IntegrationDecoders';
 import { SpaceTypes } from '../../../../common/constants';
 
+let mockDecoders = [{ id: 'decoder-1', name: 'decoder/one/0', title: 'One', author: 'Wazuh' }];
+
 jest.mock('../../Decoders/hooks/useIntegrationDecoders', () => ({
   useIntegrationDecoders: () => ({
-    items: [{ id: 'decoder-1', name: 'decoder/one/0', title: 'One', author: 'Wazuh' }],
-    total: 1,
+    items: mockDecoders,
+    total: mockDecoders.length,
     loading: false,
     refresh: jest.fn(),
   }),
@@ -22,6 +24,9 @@ const buildHistory = () => ({ push: jest.fn() } as any);
 
 // Wazuh: the Integration details view hands the table its own path, on its own tab.
 const RETURN_TO = '/integrations/wazuh-core?space=draft&tab=decoders';
+
+// The cross-app link to the create form, carrying this integration.
+const CREATE_HREF = 'decoders#/create-decoder?integration=Wazuh%20core';
 
 const mountTable = async (space: string, history: any) => {
   let wrapper: any;
@@ -33,6 +38,7 @@ const mountTable = async (space: string, history: any) => {
         enabled
         history={history}
         returnTo={RETURN_TO}
+        createHref={CREATE_HREF}
       />
     );
   });
@@ -71,5 +77,23 @@ describe('<IntegrationDecoders /> edit action', () => {
     expect(getEditTooltip(wrapper)).toBe('Decoders can only be edited in the spaces: draft');
 
     expect(history.push).not.toHaveBeenCalled();
+  });
+});
+
+describe('<IntegrationDecoders /> empty state', () => {
+  afterEach(() => {
+    mockDecoders = [{ id: 'decoder-1', name: 'decoder/one/0', title: 'One', author: 'Wazuh' }];
+  });
+
+  it('offers a create link that carries the integration to the create form', async () => {
+    mockDecoders = [];
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+    const createButton = wrapper
+      .find('EuiButton')
+      .filterWhere((button: any) => button.text().startsWith('Create decoder'))
+      .first();
+
+    expect(createButton.prop('href')).toBe(CREATE_HREF);
   });
 });

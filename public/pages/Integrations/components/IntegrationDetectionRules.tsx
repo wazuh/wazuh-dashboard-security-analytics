@@ -41,6 +41,9 @@ export interface IntegrationDetectionRulesProps {
   history: RouteComponentProps['history'];
   // Wazuh: where the edit form must come back to — this view, on this tab.
   returnTo: string;
+  // Cross-app link to the create form, carrying this integration so its
+  // Integration field comes pre-selected.
+  createHref: string;
 }
 
 export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps> = ({
@@ -49,6 +52,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
   enabled,
   history,
   returnTo,
+  createHref,
 }) => {
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -209,7 +213,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
                     </span>
                   </EuiToolTip>
                 ) : (
-                  <EuiSmallButton fill href={`#${ROUTES.RULES_CREATE}`} target="_blank">
+                  <EuiSmallButton fill href={createHref} target="_blank">
                     Create rule&nbsp;
                     <EuiIcon type={'popout'} />
                   </EuiSmallButton>

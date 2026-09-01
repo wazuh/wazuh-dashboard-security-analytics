@@ -23,6 +23,9 @@ const buildHistory = () => ({ push: jest.fn() } as any);
 // Wazuh: the Integration details view hands the table its own path, on its own tab.
 const RETURN_TO = '/integrations/wazuh-core?space=draft&tab=detection_rules';
 
+// The cross-app link to the create form, carrying this integration.
+const CREATE_HREF = 'rules#/create-rule?integration=Wazuh%20core';
+
 const mountTable = async (space: string, history: any) => {
   let wrapper: any;
   await act(async () => {
@@ -33,6 +36,7 @@ const mountTable = async (space: string, history: any) => {
         enabled
         history={history}
         returnTo={RETURN_TO}
+        createHref={CREATE_HREF}
       />
     );
   });

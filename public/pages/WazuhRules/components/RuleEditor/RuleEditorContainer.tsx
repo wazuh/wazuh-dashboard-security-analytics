@@ -92,6 +92,7 @@ export const RuleEditorContainer: React.FC<RuleEditorProps> = ({
         subtitleData={subtitleData}
         cancel={goBack}
         submit={onSubmit}
+        search={history.location.search}
       />
       <EuiSpacer size="xl" />
     </>
