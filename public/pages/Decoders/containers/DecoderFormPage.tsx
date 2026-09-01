@@ -33,7 +33,9 @@ import {
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import {
   IntegrationComboBox,
+  IntegrationOption,
   useIntegrationSelector,
+  usePreselectedIntegration,
 } from '../../../components/IntegrationComboBox';
 import { DecoderDocument } from '../../../../types/Decoders';
 import { DataStore } from '../../../store/DataStore';
@@ -91,6 +93,21 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     options: integrationTypeOptions,
     refresh: refreshIntegrations,
   } = useIntegrationSelector({ notifications });
+
+  // Seed the selector from `?integration=<name>` when the form was opened
+  // from an integration (its details page), leaving it empty otherwise.
+  const preselectIntegration = useCallback(
+    (option: IntegrationOption) => setIntegrationType(option.id),
+    []
+  );
+
+  usePreselectedIntegration({
+    search: props.location?.search,
+    options: integrationTypeOptions,
+    isLoading: loadingIntegrations,
+    enabled: action === 'create',
+    onPreselect: preselectIntegration,
+  });
 
   useEffect(() => {
     const fetchDecoder = async () => {

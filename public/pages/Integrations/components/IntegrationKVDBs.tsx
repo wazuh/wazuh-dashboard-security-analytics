@@ -36,6 +36,9 @@ export interface IntegrationKVDBsProps {
   enabled: boolean;
   history: RouteComponentProps['history'];
   returnTo: string;
+  // Cross-app link to the create form, carrying this integration so its
+  // Integration field comes pre-selected.
+  createHref: string;
 }
 
 export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
@@ -44,6 +47,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   enabled,
   history,
   returnTo,
+  createHref,
 }) => {
   const [flyoutKvdbId, setFlyoutKvdbId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -181,7 +185,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
                     </span>
                   </EuiToolTip>
                 ) : (
-                  <EuiSmallButton fill href={`#${ROUTES.KVDBS_CREATE}`} target="_blank">
+                  <EuiSmallButton fill href={createHref} target="_blank">
                     Create KVDBs&nbsp;
                     <EuiIcon type={'popout'} />
                   </EuiSmallButton>
