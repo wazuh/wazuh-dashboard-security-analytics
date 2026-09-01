@@ -43,8 +43,6 @@ export interface IntegrationDecodersProps {
   history: RouteComponentProps['history'];
   // Wazuh: where the edit form must come back to — this view, on this tab.
   returnTo: string;
-  // Wazuh: the integration's root decoder, drawn as the entry point of the cascade.
-  rootDecoderId?: string;
 }
 
 // Wazuh: the decoders of an integration can be read as a list or as the cascade
@@ -72,7 +70,6 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   enabled,
   history,
   returnTo,
-  rootDecoderId,
 }) => {
   const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(undefined);
   const [viewId, setViewId] = useState<string>(DECODERS_VIEW.TABLE);
@@ -118,7 +115,6 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   } = useIntegrationDecoderGraph({
     decoderIds,
     space,
-    rootDecoderId,
     // The cascade fetches every decoder at once, so only load it when shown.
     enabled: enabled && isGraphView,
   });

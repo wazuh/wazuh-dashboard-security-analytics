@@ -55,11 +55,33 @@ describe('buildDecoderGraph', () => {
     expect(access.decoderId).toBe(uuid(3));
   });
 
-  it('matches the root decoder by id, which is how an integration references it', () => {
-    // `document.parent_decoder` holds the UUID, not the name.
+  it('matches the root decoder by id, which is how the policy references it', () => {
+    // The space policy's `root_decoder` holds the decoder id, not its name.
     const graph = buildDecoderGraph(chain, uuid(1));
 
     expect(nodeById(graph, ROOT).role).toBe('root');
+  });
+
+  it('marks the space root decoder as the root even when it is an outside parent', () => {
+    // The usual shape: the root decoder belongs to the space, so it reaches the
+    // graph through the second lookup, flagged external — but it is the entry
+    // point and must be drawn as one.
+    const graph = buildDecoderGraph(
+      [
+        { name: 'decoder/apache/0', decoderId: uuid(2), parents: [ROOT] },
+        { name: ROOT, decoderId: uuid(1), external: true },
+      ],
+      uuid(1)
+    );
+
+    expect(nodeById(graph, ROOT).role).toBe('root');
+    expect(nodeById(graph, ROOT).decoderId).toBe(uuid(1));
+  });
+
+  it('marks no root at all when the space has no root decoder configured', () => {
+    const graph = buildDecoderGraph(chain, undefined);
+
+    expect(graph.nodes.some((node) => node.role === 'root')).toBe(false);
   });
 
   it('joins parents on the decoder name, not on the id', () => {

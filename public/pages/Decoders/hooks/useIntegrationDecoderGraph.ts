@@ -31,8 +31,6 @@ const GRAPH_SOURCE_FIELDS = [
 export interface UseIntegrationDecoderGraphParams {
   decoderIds: string[];
   space: string;
-  /** The integration's `document.parent_decoder`, drawn as the entry point. */
-  rootDecoderId?: string;
   enabled?: boolean;
 }
 
@@ -52,6 +50,18 @@ const toInput = (item: DecoderItem, external: boolean): DecoderGraphInput => ({
   parents: item.document?.parents,
   external,
 });
+
+/**
+ * The root decoder is a property of the space, not of the integration: it lives
+ * on the policy document as `root_decoder`, holding a decoder id, and is set
+ * through the same picker `EditPolicy` uses. `searchPolicies` reports its own
+ * failures and resolves to an empty result, so a missing policy costs the
+ * cascade its root marker and nothing else.
+ */
+const loadRootDecoderId = async (space: string): Promise<string | undefined> => {
+  const response = await DataStore.policies.searchPolicies(space, {});
+  return response.items?.[0]?.document?.root_decoder || undefined;
+};
 
 const searchByTerms = async (
   field: 'document.id' | 'document.name',
@@ -81,11 +91,13 @@ const searchByTerms = async (
  * `document.parents` names them. The second pass resolves the parents that
  * aren't part of the integration — the space root decoder, most of all — so
  * they carry their own id and can be opened like any other node.
+ *
+ * The root decoder itself comes from the space's policy, which is where it is
+ * configured; the integration document does not carry one.
  */
 export function useIntegrationDecoderGraph({
   decoderIds,
   space,
-  rootDecoderId,
   enabled = true,
 }: UseIntegrationDecoderGraphParams): UseIntegrationDecoderGraphResult {
   const [graph, setGraph] = useState<DecoderGraph>(EMPTY_GRAPH);
@@ -114,11 +126,10 @@ export function useIntegrationDecoderGraph({
     setError(false);
 
     const load = async (): Promise<DecoderGraph> => {
-      const owned = await searchByTerms(
-        'document.id',
-        decoderIds.slice(0, MAX_GRAPH_DECODERS),
-        space
-      );
+      const [owned, rootDecoderId] = await Promise.all([
+        searchByTerms('document.id', decoderIds.slice(0, MAX_GRAPH_DECODERS), space),
+        loadRootDecoderId(space),
+      ]);
       const inputs = owned.map((item) => toInput(item, false));
 
       const known = new Set(inputs.map((input) => input.name).filter(Boolean));
@@ -164,7 +175,7 @@ export function useIntegrationDecoderGraph({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [decoderIdsKey, space, rootDecoderId, enabled, reloadTrigger]);
+  }, [decoderIdsKey, space, enabled, reloadTrigger]);
 
   const refresh = useCallback(() => {
     setReloadTrigger((previous) => previous + 1);

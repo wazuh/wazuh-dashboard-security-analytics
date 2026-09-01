@@ -178,7 +178,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DECODERS}
             history={history}
             returnTo={returnTo}
-            rootDecoderId={integrationDetails?.document?.parent_decoder}
           />
         );
       case INTEGRATION_DETAILS_TAB.KVDBS:
