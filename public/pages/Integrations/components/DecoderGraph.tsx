@@ -16,6 +16,12 @@ import {
   parseDecoderEdgeId,
 } from '../utils/decoderGraph';
 import { blendColor } from '../utils/blendColor';
+import {
+  DECODER_LEGEND_ITEMS,
+  DecoderGraphPalette,
+  getDecoderNodeCaption,
+  getDecoderNodeStyle,
+} from '../utils/decoderGraphStyle';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 
 export interface DecoderGraphProps {
@@ -27,16 +33,6 @@ export interface DecoderGraphProps {
   maxDecoders: number;
   onSelectDecoder: (decoderId: string) => void;
   height?: number;
-}
-
-interface DecoderGraphPalette {
-  surface: string;
-  member: string;
-  external: string;
-  cycle: string;
-  edge: string;
-  text: string;
-  fontFamily: string;
 }
 
 /** How far a dimmed element is blended into the surface while tracing a path. */
@@ -59,46 +55,18 @@ const getPalette = (): DecoderGraphPalette => ({
   fontFamily: euiThemeVars.euiCodeFontFamily,
 });
 
-const roleColour = (node: DecoderGraphNode, palette: DecoderGraphPalette): string => {
-  if (node.role === 'external') {
-    return palette.external;
-  }
-  if (node.role === 'cycle') {
-    return palette.cycle;
-  }
-  return palette.member;
-};
-
-/**
- * The second line of a node. The role never rests on colour alone — the
- * blue/grey pair is only ~12 ΔE apart in both EUI themes, so the caption and
- * the dashed border are what actually carry the distinction.
- */
-const nodeCaption = (node: DecoderGraphNode): string => {
-  switch (node.role) {
-    case 'root':
-      return 'root decoder';
-    case 'external':
-      return 'outside this integration';
-    case 'cycle':
-      return 'parent cycle';
-    default:
-      return node.parents.length > 1 ? `${node.parents.length} parents` : node.title ?? '';
-  }
-};
-
 const toVisNode = (node: DecoderGraphNode, palette: DecoderGraphPalette, lit: boolean): Node => {
-  const colour = roleColour(node, palette);
-  const caption = nodeCaption(node);
+  const { colour, borderWidth, dashed } = getDecoderNodeStyle(node, palette);
+  const caption = getDecoderNodeCaption(node);
   return {
     id: node.id,
     label: caption ? `${node.label}\n${caption}` : node.label,
     level: node.depth,
     shape: 'box',
-    borderWidth: node.role === 'root' ? 3 : 1,
-    borderWidthSelected: node.role === 'root' ? 3 : 2,
+    borderWidth,
+    borderWidthSelected: borderWidth,
     shapeProperties: {
-      borderDashes: node.role === 'external' ? [5, 3] : false,
+      borderDashes: dashed ? [5, 3] : false,
       borderRadius: 4,
     },
     margin: { top: 8, right: 12, bottom: 8, left: 12 },
@@ -133,6 +101,50 @@ const toVisEdge = (edge: DecoderGraphEdge, palette: DecoderGraphPalette, lit: bo
     smooth: { enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.55 },
   };
 };
+
+/**
+ * The key for the cascade. Each swatch is drawn from the same style rule as the
+ * node it stands for, so the two cannot drift apart.
+ */
+const DecoderGraphLegend: React.FC<{ palette: DecoderGraphPalette }> = ({ palette }) => (
+  <ul
+    aria-label="Decoder cascade key"
+    style={{
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '4px 16px',
+      margin: 0,
+      padding: 0,
+      listStyle: 'none',
+    }}
+  >
+    {DECODER_LEGEND_ITEMS.map((item) => {
+      const { colour, borderWidth, dashed } = getDecoderNodeStyle(item.subject, palette);
+      return (
+        <li
+          key={item.id}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}
+          data-test-subj={`decoder-graph-legend-${item.id}`}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              width: 22,
+              height: 13,
+              flex: 'none',
+              borderRadius: 3,
+              background: palette.surface,
+              border: `${borderWidth}px ${dashed ? 'dashed' : 'solid'} ${colour}`,
+            }}
+          />
+          <EuiText size="xs" color="subdued">
+            {item.label}
+          </EuiText>
+        </li>
+      );
+    })}
+  </ul>
+);
 
 export const DecoderGraph: React.FC<DecoderGraphProps> = ({
   graph,
@@ -312,6 +324,9 @@ export const DecoderGraph: React.FC<DecoderGraphProps> = ({
           <EuiSpacer size="s" />
         </>
       )}
+
+      <DecoderGraphLegend palette={palette} />
+      <EuiSpacer size="s" />
 
       <div style={{ height }}>
         <Graph

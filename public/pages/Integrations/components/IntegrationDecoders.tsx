@@ -56,7 +56,7 @@ export const DECODERS_VIEW = {
 
 const decodersViewOptions = [
   { id: DECODERS_VIEW.TABLE, label: 'Table', iconType: 'tableOfContents' },
-  { id: DECODERS_VIEW.GRAPH, label: 'Cascade', iconType: 'visNetwork' },
+  { id: DECODERS_VIEW.GRAPH, label: 'Cascade', iconType: 'indexMapping' },
 ];
 
 export interface DecoderTableItem {
