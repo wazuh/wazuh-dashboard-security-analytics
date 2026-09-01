@@ -196,13 +196,17 @@ export const DecoderGraph: React.FC<DecoderGraphProps> = ({
       hoverNode: (params: any) => trace(params?.node),
       blurNode: () => trace(undefined),
       selectNode: (params: any) => {
-        const [decoderId] = params?.nodes ?? [];
-        if (decoderId) {
-          onSelectDecoder(decoderId);
+        const [nodeId] = params?.nodes ?? [];
+        // Nodes are keyed by decoder name, because that is what `parents`
+        // references — but the details flyout fetches by `document.id`. A parent
+        // that resolved to no decoder has no id, and cannot be opened.
+        const decoder = graph.nodes.find((candidate) => candidate.id === nodeId);
+        if (decoder?.decoderId) {
+          onSelectDecoder(decoder.decoderId);
         }
       },
     }),
-    [trace, onSelectDecoder]
+    [graph, trace, onSelectDecoder]
   );
 
   const options: Options = useMemo(

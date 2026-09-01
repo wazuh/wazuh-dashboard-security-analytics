@@ -14,11 +14,13 @@ import {
 const ROOT = 'decoder/integrations/0';
 
 /** root -> apache -> {access, error} */
+const uuid = (n: number) => `0000000${n}-0000-4000-8000-000000000000`;
+
 const chain: DecoderGraphInput[] = [
-  { id: ROOT, name: ROOT },
-  { id: 'decoder/apache/0', name: 'decoder/apache/0', parents: [ROOT] },
-  { id: 'decoder/apache-access/0', parents: ['decoder/apache/0'] },
-  { id: 'decoder/apache-error/0', parents: ['decoder/apache/0'] },
+  { name: ROOT, decoderId: uuid(1) },
+  { name: 'decoder/apache/0', decoderId: uuid(2), parents: [ROOT] },
+  { name: 'decoder/apache-access/0', decoderId: uuid(3), parents: ['decoder/apache/0'] },
+  { name: 'decoder/apache-error/0', decoderId: uuid(4), parents: ['decoder/apache/0'] },
 ];
 
 const nodeById = (graph: ReturnType<typeof buildDecoderGraph>, id: string) => {
@@ -45,10 +47,29 @@ describe('buildDecoderGraph', () => {
     expect(graph.backEdges).toEqual([]);
   });
 
-  it('falls back to the decoder id when it has no name', () => {
+  it('labels a node with the decoder name and keeps its id for fetching', () => {
     const graph = buildDecoderGraph(chain, ROOT);
+    const access = nodeById(graph, 'decoder/apache-access/0');
 
-    expect(nodeById(graph, 'decoder/apache-access/0').label).toBe('decoder/apache-access/0');
+    expect(access.label).toBe('decoder/apache-access/0');
+    expect(access.decoderId).toBe(uuid(3));
+  });
+
+  it('matches the root decoder by id, which is how an integration references it', () => {
+    // `document.parent_decoder` holds the UUID, not the name.
+    const graph = buildDecoderGraph(chain, uuid(1));
+
+    expect(nodeById(graph, ROOT).role).toBe('root');
+  });
+
+  it('joins parents on the decoder name, not on the id', () => {
+    // The regression: parents name their decoder, so matching them against
+    // UUIDs marked every parent as external and broke every relationship.
+    const graph = buildDecoderGraph(chain, uuid(1));
+
+    expect(graph.edges).toHaveLength(3);
+    expect(graph.nodes.filter((node) => node.role === 'external')).toEqual([]);
+    expect(nodeById(graph, 'decoder/apache/0').parents).toEqual([ROOT]);
   });
 
   it('draws a decoder with several parents once, with an edge from each parent', () => {
@@ -56,7 +77,8 @@ describe('buildDecoderGraph', () => {
       [
         ...chain,
         {
-          id: 'decoder/http-fields/0',
+          name: 'decoder/http-fields/0',
+          decoderId: uuid(5),
           parents: ['decoder/apache-access/0', 'decoder/apache-error/0'],
         },
       ],
@@ -73,10 +95,10 @@ describe('buildDecoderGraph', () => {
   it('uses the longest path when a decoder is reachable by two routes of different length', () => {
     const graph = buildDecoderGraph(
       [
-        { id: ROOT },
-        { id: 'a', parents: [ROOT] },
-        { id: 'b', parents: ['a'] },
-        { id: 'c', parents: [ROOT, 'b'] },
+        { name: ROOT },
+        { name: 'a', parents: [ROOT] },
+        { name: 'b', parents: ['a'] },
+        { name: 'c', parents: [ROOT, 'b'] },
       ],
       ROOT
     );
@@ -86,7 +108,10 @@ describe('buildDecoderGraph', () => {
 
   it('surfaces a parent the integration does not own as an external decoder', () => {
     const graph = buildDecoderGraph(
-      [...chain, { id: 'decoder/tls-alert/0', parents: ['decoder/tls-common/0'] }],
+      [
+        ...chain,
+        { name: 'decoder/tls-alert/0', decoderId: uuid(6), parents: ['decoder/tls-common/0'] },
+      ],
       ROOT
     );
 
@@ -94,25 +119,51 @@ describe('buildDecoderGraph', () => {
     expect(external.role).toBe('external');
     expect(external.depth).toBe(0);
     expect(external.children).toEqual(['decoder/tls-alert/0']);
+    // Nothing resolved it, so there is no id to open it with.
+    expect(external.decoderId).toBeUndefined();
+  });
+
+  it('keeps a resolved outside parent external, but with an id to open it', () => {
+    const graph = buildDecoderGraph(
+      [
+        ...chain,
+        { name: 'decoder/tls-alert/0', decoderId: uuid(6), parents: ['decoder/tls-common/0'] },
+        { name: 'decoder/tls-common/0', decoderId: uuid(7), external: true },
+      ],
+      ROOT
+    );
+
+    const external = nodeById(graph, 'decoder/tls-common/0');
+    expect(external.role).toBe('external');
+    expect(external.decoderId).toBe(uuid(7));
+  });
+
+  it('does not mark a decoder of the integration as external', () => {
+    // The reported bug: a root decoder that belongs to the integration was
+    // being drawn as though it sat outside it.
+    const graph = buildDecoderGraph(chain, uuid(1));
+
+    expect(nodeById(graph, ROOT).role).toBe('root');
+    expect(nodeById(graph, 'decoder/apache/0').role).toBe('member');
   });
 
   it('still marks the root decoder as the root when the integration does not own it', () => {
     // The space root decoder is normally outside the integration's decoder list.
-    const graph = buildDecoderGraph([{ id: 'decoder/apache/0', parents: [ROOT] }], ROOT);
+    const graph = buildDecoderGraph([{ name: 'decoder/apache/0', parents: [ROOT] }], ROOT);
 
     expect(nodeById(graph, ROOT).role).toBe('root');
     expect(nodeById(graph, ROOT).depth).toBe(0);
   });
 
   it('ignores a decoder that declares itself as its own parent', () => {
-    const graph = buildDecoderGraph([{ id: ROOT }, { id: 'a', parents: ['a', ROOT] }], ROOT);
+    const graph = buildDecoderGraph([{ name: ROOT }, { name: 'a', parents: ['a', ROOT] }], ROOT);
 
     expect(graph.edges).toHaveLength(1);
     expect(graph.edges[0]).toMatchObject({ from: ROOT, to: 'a' });
   });
 
   it('collapses a parent declared twice into a single relationship', () => {
-    const graph = buildDecoderGraph([{ id: ROOT }, { id: 'a', parents: [ROOT, ROOT] }], ROOT);
+    const graph = buildDecoderGraph([{ name: ROOT }, { name: 'a', parents: [ROOT, ROOT] }], ROOT);
 
     expect(graph.edges).toHaveLength(1);
     expect(nodeById(graph, 'a').parents).toEqual([ROOT]);
@@ -121,10 +172,10 @@ describe('buildDecoderGraph', () => {
   it('breaks a parent cycle, keeps the remaining depths, and reports the dropped edge', () => {
     const graph = buildDecoderGraph(
       [
-        { id: ROOT },
-        { id: 'a', parents: [ROOT, 'c'] },
-        { id: 'b', parents: ['a'] },
-        { id: 'c', parents: ['b'] },
+        { name: ROOT },
+        { name: 'a', parents: [ROOT, 'c'] },
+        { name: 'b', parents: ['a'] },
+        { name: 'c', parents: ['b'] },
       ],
       ROOT
     );
@@ -140,8 +191,8 @@ describe('buildDecoderGraph', () => {
 
   it('terminates on a cycle with no entry point at all', () => {
     const graph = buildDecoderGraph([
-      { id: 'a', parents: ['b'] },
-      { id: 'b', parents: ['a'] },
+      { name: 'a', parents: ['b'] },
+      { name: 'b', parents: ['a'] },
     ]);
 
     expect(graph.backEdges).toHaveLength(1);
@@ -170,7 +221,8 @@ describe('getDecoderHighlight', () => {
     [
       ...chain,
       {
-        id: 'decoder/http-fields/0',
+        name: 'decoder/http-fields/0',
+        decoderId: uuid(5),
         parents: ['decoder/apache-access/0'],
       },
     ],

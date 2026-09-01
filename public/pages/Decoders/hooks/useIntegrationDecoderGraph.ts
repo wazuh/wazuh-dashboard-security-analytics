@@ -5,7 +5,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
-import { buildDecoderGraph, DecoderGraph } from '../../Integrations/utils/decoderGraph';
+import { DecoderItem } from '../../../../types';
+import {
+  buildDecoderGraph,
+  DecoderGraph,
+  DecoderGraphInput,
+} from '../../Integrations/utils/decoderGraph';
 
 /**
  * Upper bound on the decoders the graph fetches and draws. Past this a
@@ -15,6 +20,13 @@ import { buildDecoderGraph, DecoderGraph } from '../../Integrations/utils/decode
 export const MAX_GRAPH_DECODERS = 500;
 
 const EMPTY_GRAPH: DecoderGraph = { nodes: [], edges: [], backEdges: [] };
+
+const GRAPH_SOURCE_FIELDS = [
+  'document.id',
+  'document.name',
+  'document.metadata.title',
+  'document.parents',
+];
 
 export interface UseIntegrationDecoderGraphParams {
   decoderIds: string[];
@@ -33,10 +45,42 @@ export interface UseIntegrationDecoderGraphResult {
   refresh: () => void;
 }
 
+const toInput = (item: DecoderItem, external: boolean): DecoderGraphInput => ({
+  name: item.document?.name,
+  decoderId: item.document?.id,
+  title: item.document?.metadata?.title,
+  parents: item.document?.parents,
+  external,
+});
+
+const searchByTerms = async (
+  field: 'document.id' | 'document.name',
+  values: string[],
+  space: string
+): Promise<DecoderItem[]> => {
+  const response = await DataStore.decoders.searchDecoders(
+    {
+      from: 0,
+      size: values.length,
+      query: { bool: { filter: [{ terms: { [field]: values } }] } },
+      sort: [{ 'document.name': { order: 'asc', unmapped_type: 'keyword' } }],
+      _source: { includes: GRAPH_SOURCE_FIELDS },
+    },
+    space
+  );
+  return response.items;
+};
+
 /**
  * Loads every decoder of an integration together with `document.parents`, and
  * turns them into the graph the diagram draws. Unlike the table this cannot be
  * paginated — a partial page would produce a partial hierarchy.
+ *
+ * It takes two passes, because the two ends of a relationship are expressed
+ * differently: an integration lists its decoders by `document.id`, while
+ * `document.parents` names them. The second pass resolves the parents that
+ * aren't part of the integration — the space root decoder, most of all — so
+ * they carry their own id and can be opened like any other node.
  */
 export function useIntegrationDecoderGraph({
   decoderIds,
@@ -69,43 +113,40 @@ export function useIntegrationDecoderGraph({
     setLoading(true);
     setError(false);
 
-    DataStore.decoders
-      .searchDecoders(
-        {
-          from: 0,
-          size: Math.min(decoderIds.length, MAX_GRAPH_DECODERS),
-          query: {
-            bool: {
-              filter: [{ terms: { 'document.id': decoderIds.slice(0, MAX_GRAPH_DECODERS) } }],
-            },
-          },
-          sort: [{ 'document.name': { order: 'asc' } }],
-          _source: {
-            includes: [
-              'document.id',
-              'document.name',
-              'document.metadata.title',
-              'document.parents',
-            ],
-          },
-        },
+    const load = async (): Promise<DecoderGraph> => {
+      const owned = await searchByTerms(
+        'document.id',
+        decoderIds.slice(0, MAX_GRAPH_DECODERS),
         space
-      )
-      .then((response) => {
-        if (cancelled) {
-          return;
-        }
-        setGraph(
-          buildDecoderGraph(
-            response.items.map((item) => ({
-              id: item.document?.id,
-              name: item.document?.name,
-              title: item.document?.metadata?.title,
-              parents: item.document?.parents,
-            })),
-            rootDecoderId
+      );
+      const inputs = owned.map((item) => toInput(item, false));
+
+      const known = new Set(inputs.map((input) => input.name).filter(Boolean));
+      const unresolved = Array.from(
+        new Set(
+          inputs
+            .flatMap((input) => input.parents ?? [])
+            .filter((name) => Boolean(name) && !known.has(name))
+        )
+      );
+
+      // A parent that resolves to nothing still gets a node, from the
+      // relationship alone — buildDecoderGraph adds it. It simply has no id, so
+      // it cannot be opened.
+      const external = unresolved.length
+        ? (await searchByTerms('document.name', unresolved, space)).map((item) =>
+            toInput(item, true)
           )
-        );
+        : [];
+
+      return buildDecoderGraph([...inputs, ...external], rootDecoderId);
+    };
+
+    load()
+      .then((next) => {
+        if (!cancelled) {
+          setGraph(next);
+        }
       })
       .catch(() => {
         if (!cancelled) {

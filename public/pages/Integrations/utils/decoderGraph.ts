@@ -12,19 +12,37 @@
  * source node and feeds vis-network's `level`.
  */
 
-/** A decoder reduced to what the graph needs. */
+/**
+ * A decoder reduced to what the graph needs.
+ *
+ * Decoders carry two identifiers and they are not interchangeable:
+ * `document.id` is a UUID assigned by the backend, while `document.name` is the
+ * `decoder/<name>/<version>` string. **`document.parents` references names** —
+ * the YAML author has no UUID to write at authoring time — so the graph joins
+ * on the name and keeps the UUID alongside for whoever needs to fetch the
+ * decoder itself.
+ */
 export interface DecoderGraphInput {
-  id: string;
-  name?: string;
+  /** `document.name`; the key `parents` joins on. */
+  name: string;
+  /** `document.id`; absent when the decoder itself was never fetched. */
+  decoderId?: string;
   title?: string;
   parents?: string[];
+  /**
+   * The decoder was resolved only because something referenced it as a parent —
+   * it is not one of the integration's own decoders.
+   */
+  external?: boolean;
 }
 
 export type DecoderNodeRole = 'root' | 'member' | 'external' | 'cycle';
 
 export interface DecoderGraphNode {
+  /** The decoder name, which is what relationships are expressed in. */
   id: string;
-  /** Decoder name when known, the id otherwise. */
+  /** `document.id`, for fetching the decoder. Absent for an unresolved parent. */
+  decoderId?: string;
   label: string;
   title?: string;
   role: DecoderNodeRole;
@@ -62,6 +80,7 @@ export const parseDecoderEdgeId = (id: string): { from: string; to: string } => 
 
 interface WorkingNode {
   id: string;
+  decoderId?: string;
   label: string;
   title?: string;
   external: boolean;
@@ -73,19 +92,26 @@ interface WorkingNode {
 
 const EMPTY_GRAPH: DecoderGraph = { nodes: [], edges: [], backEdges: [] };
 
+/**
+ * @param decoders the decoders of the integration, plus any parent already resolved
+ * @param rootDecoderRef the integration's `document.parent_decoder`. Matched
+ *   against both identifiers: integrations reference decoders by UUID, but
+ *   accepting the name too keeps this correct either way.
+ */
 export function buildDecoderGraph(
   decoders: DecoderGraphInput[],
-  rootDecoderId?: string
+  rootDecoderRef?: string
 ): DecoderGraph {
   if (!decoders.length) {
     return EMPTY_GRAPH;
   }
 
-  const byId = new Map<string, WorkingNode>();
-  const addNode = (id: string, external: boolean, source?: DecoderGraphInput) => {
-    byId.set(id, {
-      id,
-      label: source?.name || id,
+  const byName = new Map<string, WorkingNode>();
+  const addNode = (name: string, external: boolean, source?: DecoderGraphInput) => {
+    byName.set(name, {
+      id: name,
+      decoderId: source?.decoderId,
+      label: name,
       title: source?.title,
       external,
       parents: [],
@@ -96,8 +122,8 @@ export function buildDecoderGraph(
   };
 
   decoders.forEach((decoder) => {
-    if (decoder.id && !byId.has(decoder.id)) {
-      addNode(decoder.id, false, decoder);
+    if (decoder.name && !byName.has(decoder.name)) {
+      addNode(decoder.name, !!decoder.external, decoder);
     }
   });
 
@@ -105,36 +131,36 @@ export function buildDecoderGraph(
   const seenEdges = new Set<string>();
 
   decoders.forEach((decoder) => {
-    const child = byId.get(decoder.id);
+    const child = byName.get(decoder.name);
     if (!child) {
       return;
     }
-    (decoder.parents ?? []).forEach((parentId) => {
-      if (!parentId || parentId === decoder.id) {
+    (decoder.parents ?? []).forEach((parentName) => {
+      if (!parentName || parentName === decoder.name) {
         return;
       }
-      if (!byId.has(parentId)) {
+      if (!byName.has(parentName)) {
         // A parent the integration doesn't own — the space root decoder, or a
         // decoder from another integration. Surface it so the link stays visible.
-        addNode(parentId, true);
+        addNode(parentName, true);
       }
-      const id = decoderEdgeId(parentId, decoder.id);
+      const id = decoderEdgeId(parentName, decoder.name);
       if (seenEdges.has(id)) {
         return;
       }
       seenEdges.add(id);
-      edges.push({ id, from: parentId, to: decoder.id, back: false });
-      byId.get(parentId)!.children.push(decoder.id);
-      child.parents.push(parentId);
+      edges.push({ id, from: parentName, to: decoder.name, back: false });
+      byName.get(parentName)!.children.push(decoder.name);
+      child.parents.push(parentName);
     });
   });
 
-  byId.forEach((node) => {
+  byName.forEach((node) => {
     node.parents.sort();
     node.children.sort();
   });
 
-  const backEdges = findBackEdges(byId);
+  const backEdges = findBackEdges(byName);
   edges.forEach((edge) => {
     edge.back = backEdges.has(edge.id);
   });
@@ -145,23 +171,24 @@ export function buildDecoderGraph(
     if (edge.back) {
       return;
     }
-    byId.get(edge.from)!.layoutChildren.push(edge.to);
-    byId.get(edge.to)!.layoutParents.push(edge.from);
+    byName.get(edge.from)!.layoutChildren.push(edge.to);
+    byName.get(edge.to)!.layoutParents.push(edge.from);
   });
 
-  const depth = computeDepth(byId);
+  const depth = computeDepth(byName);
   const cycleTargets = new Set(Array.from(backEdges).map((id) => parseDecoderEdgeId(id).to));
 
-  const nodes: DecoderGraphNode[] = Array.from(byId.values()).map((node) => ({
+  const nodes: DecoderGraphNode[] = Array.from(byName.values()).map((node) => ({
     id: node.id,
+    decoderId: node.decoderId,
     label: node.label,
     title: node.title,
-    role: resolveRole(node, rootDecoderId, cycleTargets),
+    role: resolveRole(node, rootDecoderRef, cycleTargets),
     depth: depth.get(node.id) ?? 0,
     parents: node.parents,
     children: node.children,
-    ancestors: Array.from(reach(byId, node.id, 'parents')),
-    descendants: Array.from(reach(byId, node.id, 'children')),
+    ancestors: Array.from(reach(byName, node.id, 'parents')),
+    descendants: Array.from(reach(byName, node.id, 'children')),
   }));
 
   nodes.sort((a, b) => a.depth - b.depth || a.id.localeCompare(b.id));
@@ -171,12 +198,13 @@ export function buildDecoderGraph(
 
 function resolveRole(
   node: WorkingNode,
-  rootDecoderId: string | undefined,
+  rootDecoderRef: string | undefined,
   cycleTargets: Set<string>
 ): DecoderNodeRole {
   // The root wins over `external`: the space root decoder usually isn't part of
-  // the integration's own decoder list, but it's still the entry point.
-  if (rootDecoderId && node.id === rootDecoderId) {
+  // the integration's own decoder list, but it's still the entry point. The
+  // reference may be either identifier, so match on both.
+  if (rootDecoderRef && (node.decoderId === rootDecoderRef || node.id === rootDecoderRef)) {
     return 'root';
   }
   if (cycleTargets.has(node.id)) {
@@ -192,12 +220,12 @@ function resolveRole(
  * Depth-first pass marking the edges that close a loop. Sorting the entry
  * points keeps the choice of broken edge stable across renders.
  */
-function findBackEdges(byId: Map<string, WorkingNode>): Set<string> {
+function findBackEdges(byName: Map<string, WorkingNode>): Set<string> {
   const WHITE = 0;
   const GREY = 1;
   const BLACK = 2;
   const colour = new Map<string, number>();
-  byId.forEach((_node, id) => colour.set(id, WHITE));
+  byName.forEach((_node, id) => colour.set(id, WHITE));
   const backEdges = new Set<string>();
 
   const visit = (startId: string) => {
@@ -208,7 +236,7 @@ function findBackEdges(byId: Map<string, WorkingNode>): Set<string> {
 
     while (stack.length) {
       const frame = stack[stack.length - 1];
-      const node = byId.get(frame.id)!;
+      const node = byName.get(frame.id)!;
       if (frame.index >= node.children.length) {
         colour.set(frame.id, BLACK);
         stack.pop();
@@ -226,9 +254,9 @@ function findBackEdges(byId: Map<string, WorkingNode>): Set<string> {
     }
   };
 
-  const ids = Array.from(byId.keys()).sort();
+  const ids = Array.from(byName.keys()).sort();
   ids
-    .filter((id) => byId.get(id)!.parents.length === 0)
+    .filter((id) => byName.get(id)!.parents.length === 0)
     .forEach((id) => {
       if (colour.get(id) === WHITE) {
         visit(id);
@@ -244,19 +272,19 @@ function findBackEdges(byId: Map<string, WorkingNode>): Set<string> {
 }
 
 /** Longest path from a source node, over the graph without its back edges. */
-function computeDepth(byId: Map<string, WorkingNode>): Map<string, number> {
+function computeDepth(byName: Map<string, WorkingNode>): Map<string, number> {
   const indegree = new Map<string, number>();
-  byId.forEach((node, id) => indegree.set(id, node.layoutParents.length));
+  byName.forEach((node, id) => indegree.set(id, node.layoutParents.length));
 
-  const ready = Array.from(byId.keys())
+  const ready = Array.from(byName.keys())
     .filter((id) => indegree.get(id) === 0)
     .sort();
   const depth = new Map<string, number>();
-  byId.forEach((_node, id) => depth.set(id, 0));
+  byName.forEach((_node, id) => depth.set(id, 0));
 
   while (ready.length) {
     const id = ready.shift()!;
-    byId.get(id)!.layoutChildren.forEach((childId) => {
+    byName.get(id)!.layoutChildren.forEach((childId) => {
       depth.set(childId, Math.max(depth.get(childId)!, depth.get(id)! + 1));
       const remaining = indegree.get(childId)! - 1;
       indegree.set(childId, remaining);
@@ -272,7 +300,7 @@ function computeDepth(byId: Map<string, WorkingNode>): Map<string, number> {
 
 /** Transitive closure in one direction. The seen set makes it cycle-safe. */
 function reach(
-  byId: Map<string, WorkingNode>,
+  byName: Map<string, WorkingNode>,
   startId: string,
   direction: 'parents' | 'children'
 ): Set<string> {
@@ -280,7 +308,7 @@ function reach(
   const stack = [startId];
   while (stack.length) {
     const id = stack.pop()!;
-    byId.get(id)![direction].forEach((neighbourId) => {
+    byName.get(id)![direction].forEach((neighbourId) => {
       if (!seen.has(neighbourId)) {
         seen.add(neighbourId);
         stack.push(neighbourId);
