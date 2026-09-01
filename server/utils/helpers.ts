@@ -64,7 +64,7 @@ export const resolveIdsByIntegrationMatch = async (
     });
     return Array.from(ids);
   } catch (error: any) {
-    console.warn(`Security Analytics - ${errorContext}:`, extractErrorMessage(error));
+    console.warn(`Ruleset management - ${errorContext}:`, extractErrorMessage(error));
     return [];
   }
 };

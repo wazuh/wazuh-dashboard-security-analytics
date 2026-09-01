@@ -94,7 +94,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - KVDBsService - searchKVDBs:', error);
+      console.error('Ruleset management - KVDBsService - searchKVDBs:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -146,7 +146,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - KVDBsService - searchIntegrations:', error);
+      console.error('Ruleset management - KVDBsService - searchIntegrations:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -182,7 +182,7 @@ export class KVDBsService extends MDSEnabledClientService {
 
       return response.custom({ statusCode: 200, body: { ok: true, response: createResponse } });
     } catch (error: any) {
-      console.error('Security Analytics - KVDBsService - createKVDB:', error);
+      console.error('Ruleset management - KVDBsService - createKVDB:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: extractErrorMessage(error) },
@@ -214,7 +214,7 @@ export class KVDBsService extends MDSEnabledClientService {
 
       return response.custom({ statusCode: 200, body: { ok: true, response: updateResponse } });
     } catch (error: any) {
-      console.error('Security Analytics - KVDBsService - updateKVDB:', error);
+      console.error('Ruleset management - KVDBsService - updateKVDB:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: extractErrorMessage(error) },
@@ -244,7 +244,7 @@ export class KVDBsService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - KVDBsService - deleteKVDB:', error);
+      console.error('Ruleset management - KVDBsService - deleteKVDB:', error);
       return response.custom({
         statusCode: 200,
         body: {

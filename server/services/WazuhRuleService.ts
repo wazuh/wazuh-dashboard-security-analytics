@@ -166,7 +166,7 @@ export default class WazuhRulesService {
       });
     } catch (error: any) {
       console.warn(
-        'Security Analytics - WazuhRulesService - fetchIntegrationMap:',
+        'Ruleset management - WazuhRulesService - fetchIntegrationMap:',
         extractErrorMessage(error)
       );
     }
@@ -296,7 +296,7 @@ export default class WazuhRulesService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - RulesService - getRules:', error);
+      console.error('Ruleset management - RulesService - getRules:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: extractErrorMessage(error) },
@@ -334,7 +334,7 @@ export default class WazuhRulesService {
         body: { ok: true, response: createResponse },
       });
     } catch (error: any) {
-      console.error('Security Analytics - RulesService - createRule:', error);
+      console.error('Ruleset management - RulesService - createRule:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: extractErrorMessage(error) },
@@ -367,7 +367,7 @@ export default class WazuhRulesService {
         body: { ok: true, response: updateResponse },
       });
     } catch (error: any) {
-      console.error('Security Analytics - RulesService - updateRule:', error);
+      console.error('Ruleset management - RulesService - updateRule:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: extractErrorMessage(error) },
@@ -392,7 +392,7 @@ export default class WazuhRulesService {
         body: { ok: true, response: {} },
       });
     } catch (error: any) {
-      console.error('Security Analytics - RulesService - deleteRule:', error);
+      console.error('Ruleset management - RulesService - deleteRule:', error);
       return response.custom({
         statusCode: 200,
         body: { ok: false, error: extractErrorMessage(error) },

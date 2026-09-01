@@ -34,7 +34,7 @@ export const mapYamlObjectToYamlString = (yamlObject: any): string => {
     }
     return dump(yamlObject);
   } catch (error: any) {
-    console.warn('Security Analytics - Rule Editor - Yaml dump', error);
+    console.warn('Ruleset management - Rule Editor - Yaml dump', error);
     return '';
   }
 };

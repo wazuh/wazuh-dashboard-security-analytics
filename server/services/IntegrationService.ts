@@ -55,7 +55,7 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - createIntegration:', error);
+      console.error('Ruleset management - IntegrationService - createIntegration:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -102,7 +102,7 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - searchIntegrations:', error);
+      console.error('Ruleset management - IntegrationService - searchIntegrations:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -143,7 +143,7 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - updateIntegration:', error);
+      console.error('Ruleset management - IntegrationService - updateIntegration:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -350,7 +350,7 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - promoteIntegration:', error);
+      console.error('Ruleset management - IntegrationService - promoteIntegration:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -385,7 +385,7 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - promoteIntegration:', error);
+      console.error('Ruleset management - IntegrationService - promoteIntegration:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -420,7 +420,7 @@ export class IntegrationService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - IntegrationService - deleteIntegration:', error);
+      console.error('Ruleset management - IntegrationService - deleteIntegration:', error);
       return response.custom({
         statusCode: 200,
         body: {

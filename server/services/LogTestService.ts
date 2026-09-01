@@ -78,7 +78,7 @@ export class LogTestService extends MDSEnabledClientService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - LogTestService - logTest:', error);
+      console.error('Ruleset management - LogTestService - logTest:', error);
       return response.custom({
         statusCode: 200,
         body: {
