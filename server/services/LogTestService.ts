@@ -26,7 +26,10 @@ export class LogTestService extends MDSEnabledClientService {
       const { document: rawDocument } = request.body as LogTestApiRequest;
       const rawMeta = rawDocument.metadata;
       const hasMetadata =
-        rawMeta && typeof rawMeta === 'object' && !Array.isArray(rawMeta) && Object.keys(rawMeta).length > 0;
+        rawMeta &&
+        typeof rawMeta === 'object' &&
+        !Array.isArray(rawMeta) &&
+        Object.keys(rawMeta).length > 0;
 
       const logTest = {
         ...rawDocument,
