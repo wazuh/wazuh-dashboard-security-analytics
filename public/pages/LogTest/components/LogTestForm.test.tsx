@@ -66,7 +66,9 @@ describe('<LogTestForm /> trace level', () => {
     expect(options.map((option) => option.value)).toEqual(['NONE', 'ASSET_ONLY', 'ALL']);
 
     options.forEach((option) => {
-      const dropdownDisplay = mount(option.dropdownDisplay);
+      // Wazuh: each dropdownDisplay is a fragment of two nodes, and enzyme's
+      // `text()` only runs on a single node, so it is mounted wrapped.
+      const dropdownDisplay = mount(<div>{option.dropdownDisplay}</div>);
       expect(dropdownDisplay.text()).toContain(option.inputDisplay);
       expect(dropdownDisplay.text()).toContain(EXPECTED_TRACE_LEVEL_DESCRIPTIONS[option.value]);
     });
