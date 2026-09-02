@@ -49,6 +49,7 @@ const DIM = 0.75;
  */
 const getPalette = (): DecoderGraphPalette => ({
   surface: euiThemeVars.euiColorEmptyShade,
+  root: euiThemeVars.euiColorAccent,
   member: euiThemeVars.euiColorPrimary,
   external: euiThemeVars.euiColorDarkShade,
   cycle: euiThemeVars.euiColorWarning,

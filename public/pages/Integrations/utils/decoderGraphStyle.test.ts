@@ -13,6 +13,7 @@ import {
 
 const palette: DecoderGraphPalette = {
   surface: '#FFF',
+  root: '#DD0A73',
   member: '#006BB4',
   external: '#69707D',
   cycle: '#F5A700',
@@ -34,10 +35,10 @@ const node = (overrides: Partial<DecoderGraphNode> = {}): DecoderGraphNode => ({
 });
 
 describe('getDecoderNodeStyle', () => {
-  it('gives the root decoder the heaviest border', () => {
+  it('sets the root decoder apart by hue, on the emphasised border weight', () => {
     expect(getDecoderNodeStyle(node({ role: 'root', parents: [] }), palette)).toEqual({
-      colour: palette.member,
-      borderWidth: 3,
+      colour: palette.root,
+      borderWidth: 2,
       dashed: false,
     });
   });
@@ -111,6 +112,7 @@ describe('DECODER_LEGEND_ITEMS', () => {
       'In this integration',
       'Parent outside this integration',
       'More than one parent',
+      'Parent cycle',
     ]);
   });
 
@@ -118,10 +120,11 @@ describe('DECODER_LEGEND_ITEMS', () => {
     const styles = DECODER_LEGEND_ITEMS.map((item) => getDecoderNodeStyle(item.subject, palette));
 
     expect(styles).toEqual([
-      { colour: palette.member, borderWidth: 3, dashed: false },
+      { colour: palette.root, borderWidth: 2, dashed: false },
       { colour: palette.member, borderWidth: 1, dashed: false },
       { colour: palette.external, borderWidth: 1, dashed: true },
       { colour: palette.member, borderWidth: 2, dashed: false },
+      { colour: palette.cycle, borderWidth: 2, dashed: false },
     ]);
   });
 

@@ -15,6 +15,7 @@ import { DecoderGraphNode } from './decoderGraph';
  */
 export interface DecoderGraphPalette {
   surface: string;
+  root: string;
   member: string;
   external: string;
   cycle: string;
@@ -45,7 +46,7 @@ export function getDecoderNodeStyle(
     return { colour: palette.cycle, borderWidth: 2, dashed: false };
   }
   if (node.role === 'root') {
-    return { colour: palette.member, borderWidth: 3, dashed: false };
+    return { colour: palette.root, borderWidth: 2, dashed: false };
   }
   // A decoder several branches share is the reason this is a graph and not a
   // tree, so it gets a weight of its own rather than only a caption.
@@ -89,4 +90,5 @@ export const DECODER_LEGEND_ITEMS: DecoderLegendItem[] = [
     label: 'More than one parent',
     subject: { role: 'member', parents: ['one', 'two'] },
   },
+  { id: 'cycle', label: 'Parent cycle', subject: { role: 'cycle', parents: ['one'] } },
 ];
