@@ -115,6 +115,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     loading: graphLoading,
     error: graphError,
     truncated: graphTruncated,
+    hierarchyTruncated: graphHierarchyTruncated,
     refresh: refreshGraph,
   } = useIntegrationDecoderGraph({
     decoderIds,
@@ -288,6 +289,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
                 error={graphError}
                 truncated={graphTruncated}
                 maxDecoders={MAX_GRAPH_DECODERS}
+                hierarchyTruncated={graphHierarchyTruncated}
                 onSelectDecoder={setFlyoutDecoderId}
               />
             ) : (

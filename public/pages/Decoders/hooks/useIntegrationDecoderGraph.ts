@@ -13,11 +13,28 @@ import {
 } from '../../Integrations/utils/decoderGraph';
 
 /**
- * Upper bound on the decoders the graph fetches and draws. Past this a
- * node-link diagram stops being readable, and the table stays the way to
- * browse them.
+ * Upper bound on the integration's own (owned) decoders the graph fetches and
+ * draws. Past this a node-link diagram stops being readable, and the table
+ * stays the way to browse them. External-parent resolution has its own,
+ * independent cap — see MAX_EXTERNAL_DECODERS.
  */
 export const MAX_GRAPH_DECODERS = 500;
+
+/**
+ * Upper bound on how many decoders outside the integration the cascade
+ * resolves and draws. Independent of MAX_GRAPH_DECODERS, which only bounds
+ * the integration's own decoder count — an integration close to that limit
+ * would otherwise leave almost no budget for external-parent resolution
+ * regardless of the hop cap below.
+ */
+export const MAX_EXTERNAL_DECODERS = 25;
+
+/**
+ * Upper bound on how many BFS passes external-parent resolution takes. Real
+ * decoder hierarchies are shallow, so this only guards against a pathological
+ * or maliciously long `parents` chain making unbounded round trips.
+ */
+export const MAX_EXTERNAL_HOPS = 25;
 
 const EMPTY_GRAPH: DecoderGraph = { nodes: [], edges: [], backEdges: [] };
 
@@ -40,6 +57,8 @@ export interface UseIntegrationDecoderGraphResult {
   error: boolean;
   /** The integration has more decoders than the graph will draw. */
   truncated: boolean;
+  /** The parent chain extends past what external-parent resolution could reach. */
+  hierarchyTruncated: boolean;
   refresh: () => void;
 }
 
@@ -86,14 +105,23 @@ const searchByTerms = async (
  * turns them into the graph the diagram draws. Unlike the table this cannot be
  * paginated — a partial page would produce a partial hierarchy.
  *
- * It takes two passes, because the two ends of a relationship are expressed
- * differently: an integration lists its decoders by `document.id`, while
- * `document.parents` names them. The second pass resolves the parents that
- * aren't part of the integration — the space root decoder, most of all — so
- * they carry their own id and can be opened like any other node.
+ * Resolution runs in two stages, because the two ends of a relationship are
+ * expressed differently: an integration lists its decoders by `document.id`,
+ * while `document.parents` names them. The second stage resolves the parents
+ * that aren't part of the integration — walking outward by name, one hop at a
+ * time (BFS), for as many hops as it takes to reach the space root decoder.
+ * A single hop isn't enough: the root is rarely a direct parent of an owned
+ * decoder, so stopping after one pass leaves it (and anything between it and
+ * the integration) as an id-less placeholder that can't be opened or
+ * recognised as root.
  *
  * The root decoder itself comes from the space's policy, which is where it is
  * configured; the integration document does not carry one.
+ *
+ * A parent name is only ever drawn if it was actually searched for: one that
+ * a resolved decoder references but that a cap stopped us from looking up is
+ * left out of the graph entirely, rather than shown as "not found" — that
+ * caption is reserved for a name we did search for and got nothing back.
  */
 export function useIntegrationDecoderGraph({
   decoderIds,
@@ -103,6 +131,7 @@ export function useIntegrationDecoderGraph({
   const [graph, setGraph] = useState<DecoderGraph>(EMPTY_GRAPH);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [hierarchyTruncated, setHierarchyTruncated] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
   // The parent rebuilds `decoderIds` on every render, so depend on its content.
@@ -117,6 +146,7 @@ export function useIntegrationDecoderGraph({
     if (!decoderIds.length) {
       setGraph(EMPTY_GRAPH);
       setError(false);
+      setHierarchyTruncated(false);
       setLoading(false);
       return;
     }
@@ -125,7 +155,12 @@ export function useIntegrationDecoderGraph({
     setLoading(true);
     setError(false);
 
-    const load = async (): Promise<DecoderGraph> => {
+    interface LoadResult {
+      graph: DecoderGraph;
+      hierarchyTruncated: boolean;
+    }
+
+    const load = async (): Promise<LoadResult> => {
       const [owned, rootDecoderId] = await Promise.all([
         searchByTerms('document.id', decoderIds.slice(0, MAX_GRAPH_DECODERS), space),
         loadRootDecoderId(space),
@@ -133,7 +168,10 @@ export function useIntegrationDecoderGraph({
       const inputs = owned.map((item) => toInput(item, false));
 
       const known = new Set(inputs.map((input) => input.name).filter(Boolean));
-      const unresolved = Array.from(
+      const externalByName = new Map<string, DecoderGraphInput>();
+      const attemptedNames = new Set<string>();
+
+      let frontier = Array.from(
         new Set(
           inputs
             .flatMap((input) => input.parents ?? [])
@@ -141,28 +179,72 @@ export function useIntegrationDecoderGraph({
         )
       );
 
-      // A parent that resolves to nothing still gets a node, from the
-      // relationship alone — buildDecoderGraph adds it. It simply has no id, so
-      // it cannot be opened.
-      const external = unresolved.length
-        ? (await searchByTerms('document.name', unresolved, space)).map((item) =>
-            toInput(item, true)
-          )
-        : [];
+      let hops = 0;
+      while (
+        frontier.length &&
+        externalByName.size < MAX_EXTERNAL_DECODERS &&
+        hops < MAX_EXTERNAL_HOPS
+      ) {
+        frontier.forEach((name) => attemptedNames.add(name));
 
-      return buildDecoderGraph([...inputs, ...external], rootDecoderId);
+        // eslint-disable-next-line no-await-in-loop
+        const fetched = await searchByTerms('document.name', frontier, space);
+        const nextFrontier = new Set<string>();
+
+        fetched.forEach((item) => {
+          const input = toInput(item, true);
+          if (!input.name || externalByName.has(input.name)) {
+            return;
+          }
+          externalByName.set(input.name, input);
+          (input.parents ?? []).forEach((parentName) => {
+            if (parentName && !known.has(parentName) && !externalByName.has(parentName)) {
+              nextFrontier.add(parentName);
+            }
+          });
+        });
+
+        // A parent that resolves to nothing still gets a node, from the
+        // relationship alone — buildDecoderGraph adds it. It simply has no id,
+        // so it cannot be opened; resolution stops there rather than retrying.
+        frontier = Array.from(nextFrontier);
+        hops += 1;
+      }
+
+      // Anything still queued here was never looked up — the hop cap or the
+      // external-decoder cap stopped resolution with more chain left to walk.
+      const hierarchyTruncated = frontier.length > 0;
+
+      // A referenced parent that was never actually searched for shouldn't be
+      // drawn at all — buildDecoderGraph can't tell "we didn't look" from "we
+      // looked and it doesn't exist" on its own, so strip those references
+      // here. A name that was searched for and came back empty stays in
+      // attemptedNames, so it keeps its usual "not found" placeholder.
+      const resolvable = (name: string) =>
+        known.has(name) || externalByName.has(name) || attemptedNames.has(name);
+      const finalInputs = [...inputs, ...externalByName.values()].map((input) => ({
+        ...input,
+        parents: (input.parents ?? []).filter(resolvable),
+      }));
+
+      return {
+        graph: buildDecoderGraph(finalInputs, rootDecoderId),
+        hierarchyTruncated,
+      };
     };
 
     load()
       .then((next) => {
         if (!cancelled) {
-          setGraph(next);
+          setGraph(next.graph);
+          setHierarchyTruncated(next.hierarchyTruncated);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setGraph(EMPTY_GRAPH);
           setError(true);
+          setHierarchyTruncated(false);
         }
       })
       .finally(() => {
@@ -181,5 +263,5 @@ export function useIntegrationDecoderGraph({
     setReloadTrigger((previous) => previous + 1);
   }, []);
 
-  return { graph, loading, error, truncated, refresh };
+  return { graph, loading, error, truncated, hierarchyTruncated, refresh };
 }

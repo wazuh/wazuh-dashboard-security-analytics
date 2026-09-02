@@ -31,6 +31,8 @@ export interface DecoderGraphProps {
   /** The integration has more decoders than the diagram draws. */
   truncated: boolean;
   maxDecoders: number;
+  /** The parent chain extends past what external-parent resolution could reach. */
+  hierarchyTruncated: boolean;
   onSelectDecoder: (decoderId: string) => void;
   height?: number;
 }
@@ -152,6 +154,7 @@ export const DecoderGraph: React.FC<DecoderGraphProps> = ({
   error,
   truncated,
   maxDecoders,
+  hierarchyTruncated,
   onSelectDecoder,
   height = 520,
 }) => {
@@ -195,7 +198,7 @@ export const DecoderGraph: React.FC<DecoderGraphProps> = ({
     () => ({
       hoverNode: (params: any) => trace(params?.node),
       blurNode: () => trace(undefined),
-      selectNode: (params: any) => {
+      click: (params: any) => {
         const [nodeId] = params?.nodes ?? [];
         // Nodes are keyed by decoder name, because that is what `parents`
         // references — but the details flyout fetches by `document.id`. A parent
@@ -297,6 +300,24 @@ export const DecoderGraph: React.FC<DecoderGraphProps> = ({
             <p>
               This integration has more decoders than the cascade can draw legibly. Switch to the
               table view to browse all of them.
+            </p>
+          </EuiCallOut>
+          <EuiSpacer size="s" />
+        </>
+      )}
+
+      {hierarchyTruncated && (
+        <>
+          <EuiCallOut
+            title="Part of the decoder hierarchy wasn't loaded"
+            color="warning"
+            iconType="iInCircle"
+            size="s"
+            data-test-subj="decoder-graph-hierarchy-truncated-callout"
+          >
+            <p>
+              This integration has more external parent decoders than the cascade resolves, so part
+              of the chain above it isn't shown.
             </p>
           </EuiCallOut>
           <EuiSpacer size="s" />

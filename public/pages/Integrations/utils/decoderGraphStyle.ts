@@ -58,7 +58,7 @@ export function getDecoderNodeCaption(node: DecoderGraphNode): string {
     case 'root':
       return 'root decoder';
     case 'external':
-      return 'outside this integration';
+      return node.decoderId ? 'outside this integration' : 'not found';
     case 'cycle':
       return 'parent cycle';
     default:

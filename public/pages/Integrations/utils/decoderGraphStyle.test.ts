@@ -74,10 +74,21 @@ describe('getDecoderNodeStyle', () => {
 describe('getDecoderNodeCaption', () => {
   it.each([
     ['root', 'root decoder'],
-    ['external', 'outside this integration'],
     ['cycle', 'parent cycle'],
   ] as const)('names the %s role', (role, expected) => {
     expect(getDecoderNodeCaption(node({ role }))).toBe(expected);
+  });
+
+  it('names a resolved external parent', () => {
+    expect(getDecoderNodeCaption(node({ role: 'external', decoderId: 'uuid-1' }))).toBe(
+      'outside this integration'
+    );
+  });
+
+  it('flags an external parent that never resolved to a decoder', () => {
+    expect(getDecoderNodeCaption(node({ role: 'external', decoderId: undefined }))).toBe(
+      'not found'
+    );
   });
 
   it('counts the parents when a decoder has several', () => {
