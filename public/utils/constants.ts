@@ -116,7 +116,7 @@ export const getNotificationDetailsHref = (channelId: string) =>
 
 export const BREADCRUMBS = Object.freeze({
   SECURITY_ANALYTICS: {
-    text: 'Security Analytics',
+    text: 'Ruleset Management',
     href: `#${ROUTES.INTEGRATIONS}`,
   },
   OVERVIEW: { text: 'Overview', href: `#${ROUTES.OVERVIEW}` },

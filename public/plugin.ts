@@ -14,9 +14,9 @@ import {
   AppNavLinkStatus,
 } from '../../../src/core/public';
 import {
-  // Wazuh: hide Correlations app in Security Analytics nav.
+  // Wazuh: hide Correlations app in Ruleset Management nav.
   // CORRELATIONS_NAV_ID,
-  // Wazuh: hide Correlation rules app in Security Analytics nav.
+  // Wazuh: hide Correlation rules app in Ruleset Management nav.
   // CORRELATIONS_RULE_NAV_ID,
   DETECTORS_NAV_ID,
   DETECTION_RULE_NAV_ID,
@@ -28,7 +28,7 @@ import {
   OVERVIEW_NAV_ID,
   PLUGIN_NAME,
   ROUTES,
-  // Wazuh: hide Alerts app in Security Analytics nav.
+  // Wazuh: hide Alerts app in Ruleset Management nav.
   // THREAT_ALERTS_NAV_ID,
   dataSourceObservable,
   setDarkMode,
@@ -74,12 +74,15 @@ export interface SecurityAnalyticsPluginStartDeps {
   contentManagement: ContentManagementPluginStart;
 }
 
-export class SecurityAnalyticsPlugin implements Plugin<
-  SecurityAnalyticsPluginSetup,
-  SecurityAnalyticsPluginStart,
-  SecurityAnalyticsPluginSetupDeps,
-  SecurityAnalyticsPluginStartDeps
-> {
+export class SecurityAnalyticsPlugin
+  implements
+    Plugin<
+      SecurityAnalyticsPluginSetup,
+      SecurityAnalyticsPluginStart,
+      SecurityAnalyticsPluginSetupDeps,
+      SecurityAnalyticsPluginStartDeps
+    >
+{
   public constructor(
     private initializerContext: PluginInitializerContext<SecurityAnalyticsPluginConfigType>
   ) {}
@@ -114,14 +117,14 @@ export class SecurityAnalyticsPlugin implements Plugin<
       return renderApp(coreStart, params, redirect, depsStart, dataSourceManagement);
     };
 
-    // <- Main menu Security Analytics created with sub-menus for each section
+    // <- Main menu Ruleset Management created with sub-menus for each section
     core.application.register({
       id: PLUGIN_NAME,
-      title: 'Security Analytics',
+      title: 'Ruleset Management',
       order: 7000,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Ruleset management',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
@@ -158,7 +161,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
       order: 7000,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Ruleset management',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
@@ -168,7 +171,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
       },
     });
 
-    // Wazuh: hide Findings app from the Security Analytics navigation.
+    // Wazuh: hide Findings app from the Ruleset Management navigation.
     // core.application.register({
     //   id: FINDINGS_NAV_ID,
     //   title: 'Findings',
@@ -185,7 +188,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
     //   },
     // });
 
-    // Wazuh: hide Alerts app from the Security Analytics navigation.
+    // Wazuh: hide Alerts app from the Ruleset Management navigation.
     // core.application.register({
     //   id: THREAT_ALERTS_NAV_ID,
     //   title: 'Alerts',
@@ -202,7 +205,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
     //   },
     // });
 
-    // Wazuh: hide Correlations app from the Security Analytics navigation.
+    // Wazuh: hide Correlations app from the Ruleset Management navigation.
     // core.application.register({
     //   id: CORRELATIONS_NAV_ID,
     //   title: 'Correlations',
@@ -225,7 +228,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
       order: 7006,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Ruleset management',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
@@ -240,7 +243,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
       order: 7007,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Ruleset management',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
@@ -256,7 +259,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
       order: 7011,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Ruleset management',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
@@ -272,7 +275,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
       order: 7009,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Ruleset management',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
@@ -288,7 +291,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
       order: 7010,
       category: {
         id: 'security_analytics',
-        label: 'Security analytics',
+        label: 'Ruleset management',
         order: 550,
         euiIconType: 'securityAnalyticsApp',
       },
@@ -298,7 +301,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
       },
     });
 
-    // Wazuh: hide Correlation rules app from the Security Analytics navigation.
+    // Wazuh: hide Correlation rules app from the Ruleset Management navigation.
     // core.application.register({
     //   id: CORRELATIONS_RULE_NAV_ID,
     //   title: 'Correlation rules',
@@ -315,7 +318,7 @@ export class SecurityAnalyticsPlugin implements Plugin<
     //   },
     // });
 
-    // Main menu Security Analytics created with sub-menus for each section ->
+    // Main menu Ruleset Management created with sub-menus for each section ->
     if (core.chrome.navGroup.getNavGroupEnabled()) {
       dataSourceObservable.subscribe((dataSourceOption) => {
         if (dataSourceOption) {

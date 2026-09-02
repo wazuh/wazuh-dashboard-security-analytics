@@ -17,7 +17,7 @@ import {
 import { SpaceTypes } from '../../../common/constants';
 import { SECURITY_ANALYTICS_DOCUMENTATION_URL } from '../../utils/constants';
 
-export const HOW_IT_WORKS_TITLE = 'How security analytics works';
+export const HOW_IT_WORKS_TITLE = 'How ruleset management works';
 
 // Wazuh: the help menu registers a plain callback outside React, so the open state lives
 // here and the flyout subscribes to it.
@@ -37,7 +37,7 @@ const ENTITIES = [
     term: 'Integrations',
     detail: (
       <>
-        The top-level unit of security analytics. It groups the <em>decoders</em>, <em>rules</em>{' '}
+        The top-level unit of ruleset management. It groups the <em>decoders</em>, <em>rules</em>{' '}
         and <em>KVDBs</em> that add support for one log source or use case. Each of those belongs to
         exactly one integration and travels with it when the space is promoted.
       </>
@@ -104,7 +104,7 @@ export const HowItWorksFlyout: React.FC = () => {
       <EuiFlyoutBody>
         <EuiText size="s">
           <p>
-            Security analytics provides the tools for managing the full lifecycle of log
+            Ruleset management provides the tools for managing the full lifecycle of log
             normalization and event-based detection.
           </p>
         </EuiText>
