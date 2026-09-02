@@ -26,7 +26,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import {
   IntegrationComboBox,
+  IntegrationOption,
   useIntegrationSelector,
+  usePreselectedIntegration,
 } from '../../../components/IntegrationComboBox';
 import FormFieldHeader from '../../../components/FormFieldHeader';
 import { FormFieldArray } from '../../../components/FormFieldArray';
@@ -101,6 +103,21 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
     options: integrationTypeOptions,
     refresh: refreshIntegrations,
   } = useIntegrationSelector({ notifications, enabled: action === KVDB_ACTION.CREATE });
+
+  // Seed the selector from `?integration=<name>` when the form was opened
+  // from an integration (its details page), leaving it empty otherwise.
+  const preselectIntegration = useCallback(
+    (option: IntegrationOption) => setIntegrationType(option.id),
+    []
+  );
+
+  usePreselectedIntegration({
+    search: history.location.search,
+    options: integrationTypeOptions,
+    isLoading: loadingIntegrations,
+    enabled: action === KVDB_ACTION.CREATE,
+    onPreselect: preselectIntegration,
+  });
 
   useEffect(() => {
     if (action !== KVDB_ACTION.EDIT) return;

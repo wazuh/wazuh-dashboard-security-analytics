@@ -49,6 +49,7 @@ import { IntegrationDecoders } from '../components/IntegrationDecoders';
 import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import { buildEntityQueryRoute } from '../../../utils/routes';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import {
   buildIntegrationDetailsRoute,
@@ -62,7 +63,7 @@ export interface IntegrationProps extends RouteComponentProps {
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const INTEGRATION_DESCRIPTION =
-  'An integration is the top-level unit of security analytics: it groups the decoders, rules and KVDBs that add support for one log source or use case.';
+  'An integration is the top-level unit of ruleset management: it groups the decoders, rules and KVDBs that add support for one log source or use case.';
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
   const isMountedRef = useRef(true);
@@ -147,6 +148,15 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     [integrationId, spaceParam, selectedTabId]
   );
 
+  // Every "Create <entity>" affordance on this page carries the integration in
+  // the URL, so the create form opens with its Integration field already filled in.
+  const integrationTitle = integrationDetails?.document.metadata?.title ?? '';
+  const createHref = useCallback(
+    (navId: string, route: string) =>
+      `${navId}#${integrationTitle ? buildEntityQueryRoute(route, integrationTitle) : route}`,
+    [integrationTitle]
+  );
+
   // Wazuh: the count opens its child tab; zero stays a disabled link, as in the list.
   const renderCountLink = (count: number, tabId: string, entityLabel: string) => {
     const link =
@@ -178,6 +188,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DECODERS}
             history={history}
             returnTo={returnTo}
+            createHref={createHref(DECODERS_NAV_ID, ROUTES.DECODERS_CREATE)}
           />
         );
       case INTEGRATION_DETAILS_TAB.KVDBS:
@@ -188,6 +199,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.KVDBS}
             history={history}
             returnTo={returnTo}
+            createHref={createHref(KVDBS_NAV_ID, ROUTES.KVDBS_CREATE)}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETECTION_RULES:
@@ -198,6 +210,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DETECTION_RULES}
             history={history}
             returnTo={returnTo}
+            createHref={createHref(DETECTION_RULE_NAV_ID, ROUTES.RULES_CREATE)}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETAILS:
@@ -293,7 +306,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         items={[
           <EuiContextMenuItem
             key={'createRule'}
-            href={`${DETECTION_RULE_NAV_ID}#${ROUTES.RULES_CREATE}`}
+            href={createHref(DETECTION_RULE_NAV_ID, ROUTES.RULES_CREATE)}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -312,7 +325,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'createDecoder'}
-            href={`${DECODERS_NAV_ID}#${ROUTES.DECODERS_CREATE}`}
+            href={createHref(DECODERS_NAV_ID, ROUTES.DECODERS_CREATE)}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -331,7 +344,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'createKVDB'}
-            href={`${KVDBS_NAV_ID}#${ROUTES.KVDBS_CREATE}`}
+            href={createHref(KVDBS_NAV_ID, ROUTES.KVDBS_CREATE)}
             target="_blank"
             onClick={() => {
               closeActionsPopover();

@@ -43,6 +43,9 @@ export interface IntegrationDecodersProps {
   history: RouteComponentProps['history'];
   // Wazuh: where the edit form must come back to — this view, on this tab.
   returnTo: string;
+  // Cross-app link to the create form, carrying this integration so its
+  // Integration field comes pre-selected.
+  createHref: string;
 }
 
 // Wazuh: the decoders of an integration can be read as a list or as the cascade
@@ -70,6 +73,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   enabled,
   history,
   returnTo,
+  createHref,
 }) => {
   const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(undefined);
   const [viewId, setViewId] = useState<string>(DECODERS_VIEW.TABLE);
@@ -242,7 +246,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
                     </span>
                   </EuiToolTip>
                 ) : (
-                  <EuiSmallButton fill href={`#${ROUTES.DECODERS_CREATE}`} target="_blank">
+                  <EuiSmallButton fill href={createHref} target="_blank">
                     Create decoder&nbsp;
                     <EuiIcon type={'popout'} />
                   </EuiSmallButton>
