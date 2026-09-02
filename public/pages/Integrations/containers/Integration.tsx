@@ -63,7 +63,7 @@ export interface IntegrationProps extends RouteComponentProps {
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const INTEGRATION_DESCRIPTION =
-  'An integration is the top-level unit of security analytics: it groups the decoders, rules and KVDBs that add support for one log source or use case.';
+  'An integration is the top-level unit of ruleset management: it groups the decoders, rules and KVDBs that add support for one log source or use case.';
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
   const isMountedRef = useRef(true);

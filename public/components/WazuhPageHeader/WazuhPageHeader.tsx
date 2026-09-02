@@ -30,7 +30,7 @@ const CONTROL_STYLE: React.CSSProperties = { alignSelf: 'center' };
 const DESCRIPTION_STYLE: React.CSSProperties = { maxWidth: '90ch' };
 
 /**
- * The page header every security analytics list page shares: one row for the title and
+ * The page header every ruleset management list page shares: one row for the title and
  * its controls, one row for the description.
  *
  * Sharing one row, the description took whatever width the controls left over. The long

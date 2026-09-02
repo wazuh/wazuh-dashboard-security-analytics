@@ -67,7 +67,7 @@ export interface IntegrationsProps extends RouteComponentProps, DataSourceProps 
 // would sit above the space policy card and read as describing that.
 const TAB_DESCRIPTIONS: Record<string, string> = {
   [OVERVIEW_TAB.INTEGRATIONS]:
-    'An integration is the top-level unit of security analytics: it groups the decoders, rules and KVDBs that add support for one log source or use case.',
+    'An integration is the top-level unit of ruleset management: it groups the decoders, rules and KVDBs that add support for one log source or use case.',
   [OVERVIEW_TAB.FILTERS]:
     'A filter checks conditions on an event without modifying it and discards the events that do not pass. Filters apply to the whole space, not to a single integration.',
 };

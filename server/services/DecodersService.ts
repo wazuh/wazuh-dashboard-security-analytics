@@ -93,7 +93,7 @@ export class DecodersService {
           this.spaceFieldCaps = result;
           return result;
         } catch (error: any) {
-          console.warn('Security Analytics - DecodersService - fieldCaps:', error);
+          console.warn('Ruleset Management - DecodersService - fieldCaps:', error);
         }
 
         const fallback = {
@@ -188,7 +188,7 @@ export class DecodersService {
         });
       });
     } catch (error: any) {
-      console.warn('Security Analytics - DecodersService - fetchIntegrationMap:', error);
+      console.warn('Ruleset Management - DecodersService - fetchIntegrationMap:', error);
     }
 
     return integrations;
@@ -341,7 +341,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - searchDecoders:', error);
+      console.error('Ruleset Management - DecodersService - searchDecoders:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -401,7 +401,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - getDecoder:', error);
+      console.error('Ruleset Management - DecodersService - getDecoder:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -446,7 +446,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - createDecoder:', error);
+      console.error('Ruleset Management - DecodersService - createDecoder:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -493,7 +493,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - updateDecoder:', error);
+      console.error('Ruleset Management - DecodersService - updateDecoder:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -526,7 +526,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - deleteDecoder:', error);
+      console.error('Ruleset Management - DecodersService - deleteDecoder:', error);
       return response.custom({
         statusCode: 200,
         body: {
@@ -574,7 +574,7 @@ export class DecodersService {
         },
       });
     } catch (error: any) {
-      console.error('Security Analytics - DecodersService - getDraftIntegrations:', error);
+      console.error('Ruleset Management - DecodersService - getDraftIntegrations:', error);
       return response.custom({
         statusCode: 200,
         body: {

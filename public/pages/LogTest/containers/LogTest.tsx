@@ -117,7 +117,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
             ];
           })
           .catch((error): [string, SpaceCacheEntry] => {
-            console.error(`Security Analytics - LogTest - searchPolicies (${option.id}):`, error);
+            console.error(`Ruleset Management - LogTest - searchPolicies (${option.id}):`, error);
             errorNotificationToast(notifications, 'retrieve', 'policies', error);
             return [option.id, { enabled: false, integrations: [] }];
           })
