@@ -4,12 +4,12 @@
 
 | Issue | Comment |
 | ----- | ------- |
-| [#23](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/23) [#214](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/214) | Added KVDBs management feature with detailed views |
-| [#21](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/21) [#214](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/214) | Added Decoders management feature |
-| [#32](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/32) [#214](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/214) | Added Integrations management feature |
-| [#42](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/42) [#385](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/385) | Added Log test feature |
+| [#23](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/23) | Added KVDBs management feature with detailed views |
+| [#21](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/21) | Added Decoders management feature |
+| [#32](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/32) | Added Integrations management feature |
+| [#42](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/42) | Added Log test feature |
 | [#55](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/55) | Added space persistence when navigate |
-| [wazuh-dashboard-plugins#8164](https://github.com/wazuh/wazuh-dashboard-plugins/issues/8164) [#214](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/214) | Added Filters management feature |
+| [wazuh-dashboard-plugins#8164](https://github.com/wazuh/wazuh-dashboard-plugins/issues/8164) | Added Filters management feature |
 | [#184](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/184) | Added clear space action to the Overview actions button |
 | [#257](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/257) | Added modifiers in the dropdown inside the rule creation and edition form |
 | [#307](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/307) | Added URL-based rule navigation from Log Test detection results |
@@ -40,7 +40,7 @@
 | Issue | Comment |
 | ----- | ------- |
 | [#10](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/10) | Removed Threat Intelligence section entirely |
-| [#132](https://github.com/wazuh/wazuh-dashboard-security-analytics/pull/132) | Removed the Findings app from the Ruleset management plugin |
+| [#127](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/127) | Removed the Findings app from the Ruleset management plugin |
 
 ### Fixed
 
