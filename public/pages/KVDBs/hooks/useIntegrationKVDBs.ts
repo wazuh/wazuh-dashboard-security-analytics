@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { EuiSearchBar } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { KVDBItem } from '../../../../types';
@@ -17,6 +17,7 @@ export interface UseIntegrationKVDBsParams {
   sortField: string;
   sortDirection: 'asc' | 'desc';
   search: string;
+  reloadTrigger: number;
 }
 
 export function useIntegrationKVDBs({
@@ -28,11 +29,14 @@ export function useIntegrationKVDBs({
   sortField,
   sortDirection,
   search,
+  reloadTrigger,
 }: UseIntegrationKVDBsParams) {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [reloadTrigger, setReloadTrigger] = useState(0);
+
+  // The parent rebuilds `kvdbIds` on every render, so depend on its content.
+  const kvdbIdsKey = useMemo(() => kvdbIds.join(','), [kvdbIds]);
 
   useEffect(() => {
     if (!enabled) {
@@ -107,8 +111,9 @@ export function useIntegrationKVDBs({
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    kvdbIds,
+    kvdbIdsKey,
     space,
     enabled,
     pageIndex,
@@ -119,9 +124,5 @@ export function useIntegrationKVDBs({
     reloadTrigger,
   ]);
 
-  const refresh = useCallback(() => {
-    setReloadTrigger((prev) => prev + 1);
-  }, []);
-
-  return { items, total, loading, refresh };
+  return { items, total, loading };
 }

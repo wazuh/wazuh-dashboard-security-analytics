@@ -44,6 +44,8 @@ export interface IntegrationDetectionRulesProps {
   // Cross-app link to the create form, carrying this integration so its
   // Integration field comes pre-selected.
   createHref: string;
+  reloadTrigger: number;
+  onRefresh: () => void;
 }
 
 export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps> = ({
@@ -53,6 +55,8 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
   history,
   returnTo,
   createHref,
+  reloadTrigger,
+  onRefresh,
 }) => {
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -75,7 +79,6 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     items: rules,
     total,
     loading: loadingRules,
-    refresh,
   } = useIntegrationRules({
     ruleIds,
     space,
@@ -85,6 +88,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     sortField,
     sortDirection,
     search: appliedSearch,
+    reloadTrigger,
     severityLevels,
   });
 
@@ -187,7 +191,11 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
       <ContentPanel
         title="Rules"
         hideHeaderBorder={true}
-        actions={[<EuiSmallButton onClick={refresh}>Refresh</EuiSmallButton>]}
+        actions={[
+          <EuiSmallButton onClick={onRefresh} data-test-subj="integration-rules-refresh">
+            Refresh
+          </EuiSmallButton>,
+        ]}
       >
         {isEmptyState ? (
           <EuiFlexGroup justifyContent="center" alignItems="center" direction="column">
