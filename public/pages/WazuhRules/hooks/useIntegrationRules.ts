@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../types';
 import { RuleTableItem } from '../utils/helpers';
@@ -35,6 +35,7 @@ export interface UseIntegrationRulesParams {
   sortDirection: 'asc' | 'desc';
   search: string;
   severityLevels?: string[];
+  reloadTrigger: number;
 }
 
 export function useIntegrationRules({
@@ -47,11 +48,14 @@ export function useIntegrationRules({
   sortDirection,
   search,
   severityLevels,
+  reloadTrigger,
 }: UseIntegrationRulesParams) {
   const [items, setItems] = useState<RuleTableItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [reloadTrigger, setReloadTrigger] = useState(0);
+
+  // The parent rebuilds `ruleIds` on every render, so depend on its content.
+  const ruleIdsKey = useMemo(() => ruleIds.join(','), [ruleIds]);
 
   useEffect(() => {
     if (!enabled) {
@@ -117,8 +121,9 @@ export function useIntegrationRules({
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    ruleIds,
+    ruleIdsKey,
     space,
     enabled,
     pageIndex,
@@ -130,9 +135,5 @@ export function useIntegrationRules({
     reloadTrigger,
   ]);
 
-  const refresh = useCallback(() => {
-    setReloadTrigger((prev) => prev + 1);
-  }, []);
-
-  return { items, total, loading, refresh };
+  return { items, total, loading };
 }

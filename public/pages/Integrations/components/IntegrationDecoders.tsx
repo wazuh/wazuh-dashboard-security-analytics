@@ -46,6 +46,8 @@ export interface IntegrationDecodersProps {
   // Cross-app link to the create form, carrying this integration so its
   // Integration field comes pre-selected.
   createHref: string;
+  reloadTrigger: number;
+  onRefresh: () => void;
 }
 
 // Wazuh: the decoders of an integration can be read as a list or as the cascade
@@ -74,6 +76,8 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   history,
   returnTo,
   createHref,
+  reloadTrigger,
+  onRefresh,
 }) => {
   const [flyoutDecoderId, setFlyoutDecoderId] = useState<string | undefined>(undefined);
   const [viewId, setViewId] = useState<string>(DECODERS_VIEW.TABLE);
@@ -96,7 +100,6 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     items: decoders,
     total,
     loading,
-    refresh,
   } = useIntegrationDecoders({
     decoderIds,
     space,
@@ -106,6 +109,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     sortField,
     sortDirection,
     search: appliedSearch,
+    reloadTrigger,
   });
 
   const isGraphView = viewId === DECODERS_VIEW.GRAPH;
@@ -116,12 +120,12 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     error: graphError,
     truncated: graphTruncated,
     hierarchyTruncated: graphHierarchyTruncated,
-    refresh: refreshGraph,
   } = useIntegrationDecoderGraph({
     decoderIds,
     space,
     // The cascade fetches every decoder at once, so only load it when shown.
     enabled: enabled && isGraphView,
+    reloadTrigger,
   });
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
@@ -213,12 +217,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
         title="Decoders"
         hideHeaderBorder={true}
         actions={[
-          <EuiSmallButton
-            onClick={() => {
-              refresh();
-              refreshGraph();
-            }}
-          >
+          <EuiSmallButton onClick={onRefresh} data-test-subj="integration-decoders-refresh">
             Refresh
           </EuiSmallButton>,
         ]}

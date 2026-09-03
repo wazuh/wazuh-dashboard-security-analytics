@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
 import {
@@ -49,6 +49,7 @@ export interface UseIntegrationDecoderGraphParams {
   decoderIds: string[];
   space: string;
   enabled?: boolean;
+  reloadTrigger: number;
 }
 
 export interface UseIntegrationDecoderGraphResult {
@@ -59,7 +60,6 @@ export interface UseIntegrationDecoderGraphResult {
   truncated: boolean;
   /** The parent chain extends past what external-parent resolution could reach. */
   hierarchyTruncated: boolean;
-  refresh: () => void;
 }
 
 const toInput = (item: DecoderItem, external: boolean): DecoderGraphInput => ({
@@ -127,12 +127,12 @@ export function useIntegrationDecoderGraph({
   decoderIds,
   space,
   enabled = true,
+  reloadTrigger,
 }: UseIntegrationDecoderGraphParams): UseIntegrationDecoderGraphResult {
   const [graph, setGraph] = useState<DecoderGraph>(EMPTY_GRAPH);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [hierarchyTruncated, setHierarchyTruncated] = useState(false);
-  const [reloadTrigger, setReloadTrigger] = useState(0);
 
   // The parent rebuilds `decoderIds` on every render, so depend on its content.
   const decoderIdsKey = useMemo(() => decoderIds.join(','), [decoderIds]);
@@ -259,9 +259,5 @@ export function useIntegrationDecoderGraph({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decoderIdsKey, space, enabled, reloadTrigger]);
 
-  const refresh = useCallback(() => {
-    setReloadTrigger((previous) => previous + 1);
-  }, []);
-
-  return { graph, loading, error, truncated, hierarchyTruncated, refresh };
+  return { graph, loading, error, truncated, hierarchyTruncated };
 }

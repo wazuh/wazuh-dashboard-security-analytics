@@ -72,10 +72,14 @@ const HookProbe: React.FC<
   return null;
 };
 
-const mountProbe = async (params: UseIntegrationDecoderGraphParams) => {
+const mountProbe = async (
+  params: Omit<UseIntegrationDecoderGraphParams, 'reloadTrigger'> & {
+    reloadTrigger?: number;
+  }
+) => {
   let latest: ProbeResult = { loading: true, hierarchyTruncated: false, nodes: [] };
   await act(async () => {
-    mount(<HookProbe {...params} onResult={(r) => (latest = r)} />);
+    mount(<HookProbe reloadTrigger={0} {...params} onResult={(r) => (latest = r)} />);
   });
   return () => latest;
 };

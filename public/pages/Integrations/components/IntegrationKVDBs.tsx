@@ -39,6 +39,8 @@ export interface IntegrationKVDBsProps {
   // Cross-app link to the create form, carrying this integration so its
   // Integration field comes pre-selected.
   createHref: string;
+  reloadTrigger: number;
+  onRefresh: () => void;
 }
 
 export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
@@ -48,6 +50,8 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   history,
   returnTo,
   createHref,
+  reloadTrigger,
+  onRefresh,
 }) => {
   const [flyoutKvdbId, setFlyoutKvdbId] = useState<string | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState(0);
@@ -69,7 +73,6 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
     items: kvdbs,
     total,
     loading,
-    refresh,
   } = useIntegrationKVDBs({
     kvdbIds,
     space,
@@ -79,6 +82,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
     sortField,
     sortDirection,
     search: appliedSearch,
+    reloadTrigger,
   });
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
@@ -159,7 +163,11 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
       <ContentPanel
         title="KVDBs"
         hideHeaderBorder={true}
-        actions={[<EuiSmallButton onClick={refresh}>Refresh</EuiSmallButton>]}
+        actions={[
+          <EuiSmallButton onClick={onRefresh} data-test-subj="integration-kvdbs-refresh">
+            Refresh
+          </EuiSmallButton>,
+        ]}
       >
         {isEmptyState ? (
           <EuiFlexGroup justifyContent="center" alignItems="center" direction="column">

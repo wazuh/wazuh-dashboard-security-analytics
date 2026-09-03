@@ -16,7 +16,6 @@ jest.mock('../../Decoders/hooks/useIntegrationDecoders', () => ({
     items: mockDecoders,
     total: mockDecoders.length,
     loading: false,
-    refresh: jest.fn(),
   }),
 }));
 
@@ -39,6 +38,8 @@ const mountTable = async (space: string, history: any) => {
         history={history}
         returnTo={RETURN_TO}
         createHref={CREATE_HREF}
+        reloadTrigger={0}
+        onRefresh={jest.fn()}
       />
     );
   });
