@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderTableItem } from '../../Integrations/components/IntegrationDecoders';
 import { buildDecodersSearchQuery } from '../utils/constants';
@@ -23,6 +23,7 @@ export interface UseIntegrationDecodersParams {
   sortField: string;
   sortDirection: 'asc' | 'desc';
   search: string;
+  reloadTrigger: number;
 }
 
 export function useIntegrationDecoders({
@@ -34,11 +35,14 @@ export function useIntegrationDecoders({
   sortField,
   sortDirection,
   search,
+  reloadTrigger,
 }: UseIntegrationDecodersParams) {
   const [items, setItems] = useState<DecoderTableItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [reloadTrigger, setReloadTrigger] = useState(0);
+
+  // The parent rebuilds `decoderIds` on every render, so depend on its content.
+  const decoderIdsKey = useMemo(() => decoderIds.join(','), [decoderIds]);
 
   useEffect(() => {
     if (!enabled) {
@@ -109,8 +113,9 @@ export function useIntegrationDecoders({
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    decoderIds,
+    decoderIdsKey,
     space,
     enabled,
     pageIndex,
@@ -121,9 +126,5 @@ export function useIntegrationDecoders({
     reloadTrigger,
   ]);
 
-  const refresh = useCallback(() => {
-    setReloadTrigger((prev) => prev + 1);
-  }, []);
-
-  return { items, total, loading, refresh };
+  return { items, total, loading };
 }
