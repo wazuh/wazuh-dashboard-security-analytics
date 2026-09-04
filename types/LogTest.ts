@@ -82,3 +82,13 @@ export interface LogTestResponse {
 export interface LogTestApiRequest {
   document: LogTestRequestBody;
 }
+
+// Wazuh: log-test-scoped failure classification. The response envelope always
+// answers 200, so the kind is what lets the UI tell one failure from another.
+// Kept here rather than on the shared envelope: these codes carry log test
+// semantics and no other endpoint should inherit them.
+export type LogTestErrorKind = 'payload-too-large';
+
+export type LogTestServerResponse =
+  | { ok: true; response: LogTestResponse }
+  | { ok: false; error: string; errorKind?: LogTestErrorKind };

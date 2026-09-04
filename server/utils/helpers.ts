@@ -6,7 +6,6 @@
 import { Props, schema } from '@osd/config-schema';
 import YAML from 'yaml';
 import { CONTENT_INDICES } from './constants';
-import type { ServerErrorKind } from '../../types/services/ServerResponse';
 
 export function createQueryValidationSchema(fieldSchemaObj?: Props) {
   return schema.object({
@@ -214,10 +213,10 @@ export const extractErrorMessage = (
 
 // Wazuh: mechanism only, no policy. The caller supplies its own status map so
 // one endpoint's error semantics never leak into another's.
-export const extractErrorKind = (
+export const extractErrorKind = <K extends string>(
   error: any,
-  kindByStatus: Readonly<Record<number, ServerErrorKind>>
-): ServerErrorKind | undefined => {
+  kindByStatus: Readonly<Record<number, K>>
+): K | undefined => {
   try {
     const status = error?.statusCode;
     return typeof status === 'number' ? kindByStatus[status] : undefined;
