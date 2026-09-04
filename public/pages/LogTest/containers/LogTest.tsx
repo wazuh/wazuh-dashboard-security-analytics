@@ -13,6 +13,7 @@ import {
   EuiText,
   EuiButton,
   EuiHorizontalRule,
+  EuiLink,
 } from '@elastic/eui';
 import { RouteComponentProps } from 'react-router-dom';
 import { NotificationsStart } from 'opensearch-dashboards/public';
@@ -27,12 +28,28 @@ import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/L
 import { LogTestResult } from '../components/LogTestResult';
 import { IntegrationOption } from '../../../components/IntegrationComboBox';
 import { MetadataEntry, buildMetadataObject } from '../utils';
-import { DETECTION_RULE_NAV_ID } from '../../../utils/constants';
+import { DETECTION_RULE_NAV_ID, LOG_TEST_DOCUMENTATION_URL } from '../../../utils/constants';
 import { buildAppUrl } from '../../../utils/routes';
 
-// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
-const PAGE_DESCRIPTION =
+// Wazuh: appDescriptionControls (home:useNewHomePage) needs a plain string, so the
+// same sentence is kept here and reused as the JSX description below.
+const PAGE_DESCRIPTION_TEXT =
   'Log test runs a sample event through the content loaded in a space, so you can confirm it is parsed and matched as expected.';
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION = (
+  <>
+    {PAGE_DESCRIPTION_TEXT}{' '}
+    <EuiLink
+      href={LOG_TEST_DOCUMENTATION_URL}
+      target="_blank"
+      external
+      data-test-subj="logTestDocumentationLink"
+    >
+      View documentation
+    </EuiLink>
+  </>
+);
 
 // Wazuh: draft is listed so its absence stops reading as an oversight; it cannot be
 // picked because its content never reaches the engine.
@@ -115,7 +132,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
             ];
           })
           .catch((error): [string, SpaceCacheEntry] => {
-            console.error(`Security Analytics - LogTest - searchPolicies (${option.id}):`, error);
+            console.error(`Ruleset Management - LogTest - searchPolicies (${option.id}):`, error);
             errorNotificationToast(notifications, 'retrieve', 'policies', error);
             return [option.id, { enabled: false, integrations: [] }];
           })
@@ -219,7 +236,18 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
     <EuiFlexGroup direction="column" gutterSize="m">
       <EuiFlexItem grow={false}>
         <WazuhPageHeader
-          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          appDescriptionControls={[
+            {
+              description: PAGE_DESCRIPTION_TEXT,
+              links: {
+                controlType: 'link',
+                label: 'View documentation',
+                href: LOG_TEST_DOCUMENTATION_URL,
+                target: '_blank',
+                testId: 'logTestDocumentationLink',
+              },
+            },
+          ]}
           title="Log test"
           description={PAGE_DESCRIPTION}
           controls={[

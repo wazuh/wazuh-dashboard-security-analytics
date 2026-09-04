@@ -316,10 +316,13 @@ export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC 
   Callout
 );
 
-export const RootDecoderRequirement: React.FC<{ space: UserSpace; onSucess?: () => void }> =
-  withRootDecoderRequirementGuard(({ error }: { error: Error }) => {
-    return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
-  });
+export const RootDecoderRequirement: React.FC<{
+  space: UserSpace;
+  notifications: NotificationsStart;
+  onSucess?: () => void;
+}> = withRootDecoderRequirementGuard(({ error }: { error: Error }) => {
+  return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
+});
 
 export const withConditionalHOC = (
   condition: (props: any) => boolean,

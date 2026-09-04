@@ -29,66 +29,86 @@ export class PoliciesStore {
     space: string,
     options: SearchPolicyOptions
   ): Promise<SearchPoliciesResponse> {
-    const response = await this.service.searchPolicies(space, options);
-    if (!response.ok) {
-      if (
-        response.error?.includes('index_not_found_exception') ||
-        response.error?.includes('no such index')
-      ) {
+    try {
+      const response = await this.service.searchPolicies(space, options);
+      if (!response.ok) {
+        if (
+          response.error?.includes('index_not_found_exception') ||
+          response.error?.includes('no such index')
+        ) {
+          return { total: 0, items: [] };
+        }
+        errorNotificationToast(this.notifications, 'retrieve', 'policies', response.error);
         return { total: 0, items: [] };
       }
-      errorNotificationToast(this.notifications, 'retrieve', 'policies', response.error);
+
+      const items: PolicyItem[] = response.response.items.map((item) => ({
+        ...item,
+      }));
+
+      return { ...response.response, items };
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'retrieve', 'policies', error);
       return { total: 0, items: [] };
     }
-
-    const items: PolicyItem[] = response.response.items.map((item) => ({
-      ...item,
-    }));
-
-    return { ...response.response, items };
   }
 
   public async getPolicy(policyId: string): Promise<PolicyItem | undefined> {
-    const response = await this.service.getPolicy(policyId);
-    if (!response.ok) {
-      if (
-        response.error?.includes('index_not_found_exception') ||
-        response.error?.includes('no such index')
-      ) {
+    try {
+      const response = await this.service.getPolicy(policyId);
+      if (!response.ok) {
+        if (
+          response.error?.includes('index_not_found_exception') ||
+          response.error?.includes('no such index')
+        ) {
+          return undefined;
+        }
+        errorNotificationToast(this.notifications, 'retrieve', 'policy', response.error);
         return undefined;
       }
-      errorNotificationToast(this.notifications, 'retrieve', 'policy', response.error);
+
+      const item = response.response.item;
+      if (!item) {
+        return undefined;
+      }
+
+      return {
+        ...item,
+      };
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'retrieve', 'policy', error);
       return undefined;
     }
-
-    const item = response.response.item;
-    if (!item) {
-      return undefined;
-    }
-
-    return {
-      ...item,
-    };
   }
 
   public async updatePolicy(
     space: string,
     data: UpdatePolicyRequestBody
   ): Promise<[boolean, UpdatePolicyResponse['response']]> {
-    const response = await this.service.updatePolicy(space, data);
-    if (!response.ok) {
-      errorNotificationToast(this.notifications, 'update', 'policy', response.error);
+    try {
+      const response = await this.service.updatePolicy(space, data);
+      if (!response.ok) {
+        errorNotificationToast(this.notifications, 'update', 'policy', response.error);
+        return [false, null];
+      }
+      return [response.ok, response.response];
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'update', 'policy', error);
       return [false, null];
     }
-    return [response.ok, response.response];
   }
 
   public async deleteSpace(space: string): Promise<boolean> {
-    const response = await this.service.deleteSpace(space);
-    if (!response.ok) {
-      errorNotificationToast(this.notifications, 'clear', 'space', response.error);
+    try {
+      const response = await this.service.deleteSpace(space);
+      if (!response.ok) {
+        errorNotificationToast(this.notifications, 'clear', 'space', response.error);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'clear', 'space', error);
       return false;
     }
-    return true;
   }
 }
