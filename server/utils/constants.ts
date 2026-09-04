@@ -5,6 +5,7 @@
 
 import { CreateDetectorSteps, MetricsCounter } from '../../types';
 import { SecurityAnalyticsApi } from '../models/interfaces';
+import type { ServerErrorKind } from '../../types/services/ServerResponse';
 
 export enum CLUSTER {
   ADMIN = 'admin',
@@ -13,6 +14,13 @@ export enum CLUSTER {
 }
 
 export const BASE_API_PATH = '/_plugins/_security_analytics';
+
+// Wazuh: log-test-scoped status mapping. Keep it here rather than in a shared
+// classifier: these codes carry log test semantics and must not be inherited by
+// other endpoints.
+export const LOGTEST_ERROR_KIND_BY_STATUS: Readonly<Record<number, ServerErrorKind>> = {
+  413: 'payload-too-large',
+};
 
 export const API: SecurityAnalyticsApi = {
   DETECTORS_BASE: `${BASE_API_PATH}/detectors`,
