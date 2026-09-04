@@ -7,7 +7,7 @@
 | [#23](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/23) | Added KVDBs management feature with detailed views |
 | [#21](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/21) | Added Decoders management feature |
 | [#32](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/32) | Added Integrations management feature |
-| [#42](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/42) | Added Log test feature |
+| [#42](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/42) [#480](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/480) | Added Log test feature |
 | [#55](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/55) | Added space persistence when navigate |
 | [wazuh-dashboard-plugins#8164](https://github.com/wazuh/wazuh-dashboard-plugins/issues/8164) | Added Filters management feature |
 | [#184](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/184) | Added clear space action to the Overview actions button |
@@ -59,7 +59,6 @@
 | [#401](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/401) | Fixed inconsistent error handling in operations with integrations, filters, decoders, kvdbs, detectors, rules and promotion to show the server error message |
 | [#458](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/458) | Fixed the Create rule action in the Integration details Actions menu redirecting to a nonexistent app |
 | [#463](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/463) | Fixed promote and policy retrieval/clear errors failing silently instead of showing an error toast |
-| [#480](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/480) | Fixed the log test event too-large error showing a generic failure toast instead of guidance to reduce the event size |
 
 ## Prior versions
 
