@@ -7,7 +7,7 @@
 | [#23](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/23) | Added KVDBs management feature with detailed views |
 | [#21](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/21) | Added Decoders management feature |
 | [#32](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/32) | Added Integrations management feature |
-| [#42](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/42) | Added Log test feature |
+| [#42](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/42) [#480](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/480) | Added Log test feature |
 | [#55](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/55) | Added space persistence when navigate |
 | [wazuh-dashboard-plugins#8164](https://github.com/wazuh/wazuh-dashboard-plugins/issues/8164) | Added Filters management feature |
 | [#184](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/184) | Added clear space action to the Overview actions button |
