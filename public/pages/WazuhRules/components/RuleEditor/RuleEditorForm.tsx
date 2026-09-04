@@ -50,7 +50,9 @@ import { PageHeader } from '../../../../components/PageHeader/PageHeader';
 import { TopNavControlLinkData } from '../../../../../../../src/plugins/navigation/public';
 import {
   IntegrationComboBox,
+  IntegrationOption,
   useIntegrationSelector,
+  usePreselectedIntegration,
 } from '../../../../components/IntegrationComboBox';
 
 export interface VisualRuleEditorProps {
@@ -62,7 +64,24 @@ export interface VisualRuleEditorProps {
   mode: 'create' | 'edit';
   title: string;
   subtitleData?: { description: string; links?: TopNavControlLinkData };
+  /** Location search of the page hosting the form, read for `?integration=<name>`. */
+  search?: string;
 }
+
+/**
+ * Formik owns the `integration` field, so seeding it from the query param has to
+ * happen where setFieldValue is in scope. This renders nothing; it only runs the hook
+ * from inside the form.
+ */
+const PreselectedIntegration: React.FC<{
+  search?: string;
+  options: IntegrationOption[];
+  isLoading: boolean;
+  onPreselect: (option: IntegrationOption) => void;
+}> = ({ search, options, isLoading, onPreselect }) => {
+  usePreselectedIntegration({ search, options, isLoading, onPreselect });
+  return null;
+};
 
 const editorTypes = [
   {
@@ -86,6 +105,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   title,
   validateOnMount,
   subtitleData,
+  search,
 }) => {
   // A block the visual editor cannot show opens in the YAML editor instead, so simply
   // opening a rule never discards it.
@@ -203,8 +223,21 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
           props.setFieldTouched('integration', true, false);
         };
 
+        const onIntegrationPreselect = (option: IntegrationOption) => {
+          setIntegrationId(option.id);
+          props.setFieldValue('integration', option.value, true);
+        };
+
         return (
           <Form>
+            {mode === 'create' && (
+              <PreselectedIntegration
+                search={search}
+                options={integrationOptions}
+                isLoading={loadingIntegrations}
+                onPreselect={onIntegrationPreselect}
+              />
+            )}
             <EuiPanel className={'rule-editor-form'} style={{ paddingBottom: '60px' }}>
               <PageHeader appDescriptionControls={subtitleData ? [subtitleData] : undefined}>
                 <EuiText size="s">

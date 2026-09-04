@@ -22,6 +22,8 @@ export const INTEGRATION_DETAILS_TAB = {
 export type IntegrationDetailsTabId =
   (typeof INTEGRATION_DETAILS_TAB)[keyof typeof INTEGRATION_DETAILS_TAB];
 
+export const INTEGRATION_TAB_PARAM = 'tab';
+
 export const integrationDetailsTabs = [
   {
     id: INTEGRATION_DETAILS_TAB.DETAILS,
