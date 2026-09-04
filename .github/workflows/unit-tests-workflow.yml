@@ -8,7 +8,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 env:
-  OPENSEARCH_DASHBOARDS_VERSION: 'main'
+  # Wazuh: pin the host to the version declared in opensearch_dashboards.json, as
+  # cypress-workflow.yml does. Building against OpenSearch-Dashboards 'main' broke
+  # the unit tests when upstream bumped jest to 30, which the plugin does not use.
+  OPENSEARCH_DASHBOARDS_VERSION: 3.6.0
 jobs:
   Get-CI-Image-Tag:
     if: github.event.pull_request.draft == false

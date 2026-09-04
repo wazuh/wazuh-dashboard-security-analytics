@@ -1,6 +1,6 @@
 # Terminology
 
-Wazuh-owned vocabulary for the security analytics UI. Upstream does not ship this
+Wazuh-owned vocabulary for the ruleset management UI. Upstream does not ship this
 file, so it can grow without creating merge conflicts on syncs.
 
 User-facing copy follows two rules: **one noun per concept, one verb per action.**
@@ -28,16 +28,17 @@ review.
 | `Modified` | `Last updated time` | The last-modification timestamp. |
 | `Integration` | `Log type` | The unit that groups decoders, rules, KVDBs and filters. The `detector_type` wire field keeps its name; only its label changes. |
 | `Space` | None | The active scope only: Draft, Test, Custom, Standard. |
+| `Ruleset management` | `Security Analytics`, `Security analytics` | The plugin itself. The app title, the root breadcrumb and the side-nav heading keep their `Ruleset Management` casing; the navigation group labels stay `Ruleset management`. In a sentence it reads `ruleset management`. |
 
 ## Capitalization in prose
 
-`Security analytics` is not a proper noun with both words capitalized. In a sentence
-it reads `security analytics`, and `Security analytics` only when it opens the
+`Ruleset management` is not a proper noun with both words capitalized. In a sentence
+it reads `ruleset management`, and `Ruleset management` only when it opens the
 sentence. The app name in the navigation and the breadcrumb keeps its own casing.
 
 Space names work the same way: `draft`, `test`, `custom` and `standard` are lowercase
 in prose, and only capitalized when they open a sentence or name the selector button.
-In the `How security analytics works` flyout they also go in italics, together with
+In the `How ruleset management works` flyout they also go in italics, together with
 the entity names, so a sentence about the model reads as a sentence and still marks
 its terms.
 

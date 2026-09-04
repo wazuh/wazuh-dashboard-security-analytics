@@ -67,7 +67,7 @@ export interface IntegrationsProps extends RouteComponentProps, DataSourceProps 
 // would sit above the space policy card and read as describing that.
 const TAB_DESCRIPTIONS: Record<string, string> = {
   [OVERVIEW_TAB.INTEGRATIONS]:
-    'An integration is the top-level unit of security analytics: it groups the decoders, rules and KVDBs that add support for one log source or use case.',
+    'An integration is the top-level unit of ruleset management: it groups the decoders, rules and KVDBs that add support for one log source or use case.',
   [OVERVIEW_TAB.FILTERS]:
     'A filter checks conditions on an event without modifying it and discards the events that do not pass. Filters apply to the whole space, not to a single integration.',
 };
@@ -384,7 +384,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       disabled={isPromoteActionDisabled}
       toolTipContent={
         isPromoteActionDisabled
-          ? `Integration can only be promoted in the spaces: ${getSpacesAllowAction(
+          ? `Integrations can only be promoted in the spaces: ${getSpacesAllowAction(
               SPACE_ACTIONS.PROMOTE
             ).join(', ')}`
           : undefined
@@ -416,7 +416,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         disabled={isCreateActionDisabled}
         toolTipContent={
           isCreateActionDisabled
-            ? `Integration can only be created in the spaces: ${getSpacesAllowAction(
+            ? `Integrations can only be created in the spaces: ${getSpacesAllowAction(
                 SPACE_ACTIONS.CREATE
               ).join(', ')}`
             : undefined
@@ -434,7 +434,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         disabled={isDeleteSelectedActionDisabled}
         toolTipContent={
           isDeleteActionDisabledBySpace
-            ? `Integrations can only be deleted in the space: ${getSpacesAllowAction(
+            ? `Integrations can only be deleted in the spaces: ${getSpacesAllowAction(
                 SPACE_ACTIONS.DELETE
               ).join(', ')}`
             : selectedItems.length === 0
@@ -460,7 +460,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         disabled={isRearrangeIntegrationsActionDisabled}
         toolTipContent={
           isRearrangeIntegrationsActionDisabled
-            ? `Integration can only be rearranged in the spaces: ${getSpacesAllowAction(
+            ? `Integrations can only be rearranged in the spaces: ${getSpacesAllowAction(
                 SPACE_ACTIONS.REARRANGE_INTEGRATIONS
               ).join(', ')}`
             : undefined

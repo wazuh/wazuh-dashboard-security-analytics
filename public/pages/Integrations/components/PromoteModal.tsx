@@ -117,7 +117,9 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
         buttonColor={'primary'}
         defaultFocusedButton="confirm"
         isLoading={isPromoting}
-        confirmButtonDisabled={confirmActionText !== expectedConfirmActionText && !requireRootDecoderError}
+        confirmButtonDisabled={
+          confirmActionText !== expectedConfirmActionText && !requireRootDecoderError
+        }
       >
         <EuiForm>
           <p>
@@ -143,6 +145,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
             <>
               <RootDecoderRequirement
                 space={space}
+                notifications={notifications}
                 onSucess={() => setRequireRootDecoderError(false)}
               />
               <EuiSpacer size="m" />

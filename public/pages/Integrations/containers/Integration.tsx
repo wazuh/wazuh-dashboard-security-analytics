@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
 import { IntegrationItem, Space } from '../../../../types';
 import { SPACE_ACTIONS } from '../../../../common/constants';
@@ -29,7 +29,13 @@ import {
   EuiHorizontalRule,
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import {
+  BREADCRUMBS,
+  ROUTES,
+  DETECTION_RULE_NAV_ID,
+  DECODERS_NAV_ID,
+  KVDBS_NAV_ID,
+} from '../../../utils/constants';
 import {
   INTEGRATION_DETAILS_TAB,
   integrationDetailsTabs,
@@ -42,8 +48,14 @@ import { IntegrationDecoders } from '../components/IntegrationDecoders';
 import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
+import { buildEntityQueryRoute } from '../../../utils/routes';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { formatIntegrationMetadataDate } from '../utils/helpers';
+import {
+  buildIntegrationDetailsRoute,
+  formatIntegrationMetadataDate,
+  getSelectedTabFromUrl,
+} from '../utils/helpers';
+import { useIntegrationDetails } from '../hooks/useIntegrationDetails';
 
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -51,64 +63,51 @@ export interface IntegrationProps extends RouteComponentProps {
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const INTEGRATION_DESCRIPTION =
-  'An integration is the top-level unit of security analytics: it groups the decoders, rules and KVDBs that add support for one log source or use case.';
+  'An integration is the top-level unit of ruleset management: it groups the decoders, rules and KVDBs that add support for one log source or use case.';
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
-  const isMountedRef = useRef(true);
   const { integrationId } = useParams<{ integrationId: string }>();
   const location = useLocation();
   const spaceParam = new URLSearchParams(location.search).get('space') ?? undefined;
-  const [selectedTabId, setSelectedTabId] = useState<string>(INTEGRATION_DETAILS_TAB.DETAILS);
+  // Wazuh: the open tab lives in the URL so it survives a refresh, can be linked to,
+  // and — via `returnTo` below — can be handed to an editor to come back to.
+  const [selectedTabId, setSelectedTabId] = useState<string>(() =>
+    getSelectedTabFromUrl(location.search)
+  );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
-  const [infoText, setInfoText] = useState<React.ReactNode | string>(
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [togglingEnabled, setTogglingEnabled] = useState(false);
+
+  // Wazuh: the integration document is the page's single source of truth — the
+  // tab id lists and the summary counts are both derived from it — so it owns
+  // the reload. `reloadTrigger` changes once per re-read document and travels
+  // down to the tabs, keeping table, cascade and counts in step (#478).
+  const {
+    integration: integrationDetails,
+    reloadTrigger,
+    notFound,
+    refresh: refreshIntegration,
+    setIntegration: setIntegrationDetails,
+  } = useIntegrationDetails(integrationId, spaceParam, notifications);
+
+  const infoText: React.ReactNode = notFound ? (
+    'Integration not found!' // Replace Log Type to Integration by Wazuh
+  ) : (
     <>
       Loading details &nbsp;
       <EuiLoadingSpinner size="l" />
     </>
   );
-  const [integrationDetails, setIntegrationDetails] = useState<IntegrationItem | undefined>(
-    undefined
-  );
-  const [initialIntegrationDetails, setInitialIntegrationDetails] = useState<
-    IntegrationItem | undefined
-  >(undefined);
-
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [togglingEnabled, setTogglingEnabled] = useState(false);
 
   useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    const getIntegrationDetails = async () => {
-      const details = await DataStore.integrations.getIntegration(integrationId, spaceParam);
-
-      if (!isMountedRef.current) {
-        return;
-      }
-
-      if (!details) {
-        setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
-        return;
-      }
-
-      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.metadata?.title ?? '' }]);
-      const integrationItem = {
-        ...details,
-        detectionRulesCount: details.document?.rules?.length ?? 0,
-        decodersCount: details.document.decoders?.length ?? 0,
-        kvdbsCount: details.document.kvdbs?.length ?? 0,
-      };
-      setIntegrationDetails(integrationItem);
-      setInitialIntegrationDetails(integrationItem);
-    };
-
-    getIntegrationDetails();
-  }, [integrationId, spaceParam]);
+    if (integrationDetails) {
+      setBreadcrumbs([
+        BREADCRUMBS.INTEGRATIONS,
+        { text: integrationDetails.document.metadata?.title ?? '' },
+      ]);
+    }
+  }, [integrationDetails]);
 
   const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
   const decoderIds = useMemo(
@@ -117,11 +116,35 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   );
   const kvdbIds = useMemo(() => integrationDetails?.document.kvdbs ?? [], [integrationDetails]);
 
+  const selectTab = useCallback(
+    (tabId: string) => {
+      setSelectedTabId(tabId);
+      history.replace(
+        buildIntegrationDetailsRoute(integrationId, { space: spaceParam, tab: tabId })
+      );
+    },
+    [history, integrationId, spaceParam]
+  );
+
+  const returnTo = useMemo(
+    () => buildIntegrationDetailsRoute(integrationId, { space: spaceParam, tab: selectedTabId }),
+    [integrationId, spaceParam, selectedTabId]
+  );
+
+  // Every "Create <entity>" affordance on this page carries the integration in
+  // the URL, so the create form opens with its Integration field already filled in.
+  const integrationTitle = integrationDetails?.document.metadata?.title ?? '';
+  const createHref = useCallback(
+    (navId: string, route: string) =>
+      `${navId}#${integrationTitle ? buildEntityQueryRoute(route, integrationTitle) : route}`,
+    [integrationTitle]
+  );
+
   // Wazuh: the count opens its child tab; zero stays a disabled link, as in the list.
   const renderCountLink = (count: number, tabId: string, entityLabel: string) => {
     const link =
       count > 0 ? (
-        <EuiLink onClick={() => setSelectedTabId(tabId)}>{count}</EuiLink>
+        <EuiLink onClick={() => selectTab(tabId)}>{count}</EuiLink>
       ) : (
         <EuiLink disabled>{count}</EuiLink>
       );
@@ -146,6 +169,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             decoderIds={decoderIds}
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DECODERS}
+            history={history}
+            returnTo={returnTo}
+            createHref={createHref(DECODERS_NAV_ID, ROUTES.DECODERS_CREATE)}
+            reloadTrigger={reloadTrigger}
+            onRefresh={refreshIntegration}
           />
         );
       case INTEGRATION_DETAILS_TAB.KVDBS:
@@ -154,6 +182,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             kvdbIds={kvdbIds}
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.KVDBS}
+            history={history}
+            returnTo={returnTo}
+            createHref={createHref(KVDBS_NAV_ID, ROUTES.KVDBS_CREATE)}
+            reloadTrigger={reloadTrigger}
+            onRefresh={refreshIntegration}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETECTION_RULES:
@@ -162,6 +195,11 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             ruleIds={ruleIds}
             space={integrationDetails?.space?.name ?? ''}
             enabled={selectedTabId === INTEGRATION_DETAILS_TAB.DETECTION_RULES}
+            history={history}
+            returnTo={returnTo}
+            createHref={createHref(DETECTION_RULE_NAV_ID, ROUTES.RULES_CREATE)}
+            reloadTrigger={reloadTrigger}
+            onRefresh={refreshIntegration}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETAILS:
@@ -211,7 +249,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     const success = await DataStore.integrations.updateIntegration(integrationDetails.id, next);
     if (success) {
       setIntegrationDetails(next);
-      setInitialIntegrationDetails(next);
       successNotificationToast(
         notifications,
         'updated',
@@ -257,7 +294,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         items={[
           <EuiContextMenuItem
             key={'createRule'}
-            href={'detection_rules#/create-rule'}
+            href={createHref(DETECTION_RULE_NAV_ID, ROUTES.RULES_CREATE)}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -266,7 +303,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
-                ? `Rule can only be created in the spaces: ${getSpacesAllowAction(
+                ? `Rules can only be created in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.CREATE
                   ).join(', ')}`
                 : undefined
@@ -276,7 +313,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'createDecoder'}
-            href={'decoders#/create-decoder'}
+            href={createHref(DECODERS_NAV_ID, ROUTES.DECODERS_CREATE)}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -285,7 +322,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
-                ? `Decoder can only be created in the spaces: ${getSpacesAllowAction(
+                ? `Decoders can only be created in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.CREATE
                   ).join(', ')}`
                 : undefined
@@ -295,7 +332,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           </EuiContextMenuItem>,
           <EuiContextMenuItem
             key={'createKVDB'}
-            href={'kvdbs#/create-kvdb'}
+            href={createHref(KVDBS_NAV_ID, ROUTES.KVDBS_CREATE)}
             target="_blank"
             onClick={() => {
               closeActionsPopover();
@@ -304,7 +341,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isCreateDisabled}
             toolTipContent={
               isCreateDisabled
-                ? `KVDB can only be created in the spaces: ${getSpacesAllowAction(
+                ? `KVDBs can only be created in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.CREATE
                   ).join(', ')}`
                 : undefined
@@ -327,7 +364,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             data-test-subj={'integrationEnableDisableMenuItem'}
             toolTipContent={
               isDisableIntegrationsDisabled
-                ? `Integration can only be enabled or disabled in the spaces: ${getSpacesAllowAction(
+                ? `Integrations can only be enabled or disabled in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.DISABLE_INTEGRATIONS
                   ).join(', ')}`
                 : integrationDetails?.document.mode === IntegrationMode.Protected
@@ -342,13 +379,13 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             onClick={() => {
               closeActionsPopover();
               setIsEditMode(true);
-              setSelectedTabId(INTEGRATION_DETAILS_TAB.DETAILS);
+              selectTab(INTEGRATION_DETAILS_TAB.DETAILS);
             }}
             disabled={isEditDisabled}
             data-test-subj={'editIntegrationButton'}
             toolTipContent={
               isEditDisabled
-                ? `Integration can only be edited in the spaces: ${getSpacesAllowAction(
+                ? `Integrations can only be edited in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.EDIT
                   ).join(', ')}`
                 : undefined
@@ -366,7 +403,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isDeleteDisabled}
             toolTipContent={
               isDeleteDisabled
-                ? `Integration can only be deleted in the spaces: ${getSpacesAllowAction(
+                ? `Integrations can only be deleted in the spaces: ${getSpacesAllowAction(
                     SPACE_ACTIONS.DELETE
                   ).join(', ')}`
                 : undefined
@@ -536,7 +573,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
           return (
             <EuiTab
               onClick={() => {
-                setSelectedTabId(tab.id);
+                selectTab(tab.id);
               }}
               key={index}
               isSelected={selectedTabId === tab.id}
