@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
 import { IntegrationItem, Space } from '../../../../types';
 import { SPACE_ACTIONS } from '../../../../common/constants';
@@ -56,6 +56,7 @@ import {
   formatIntegrationMetadataDate,
   getSelectedTabFromUrl,
 } from '../utils/helpers';
+import { useIntegrationDetails } from '../hooks/useIntegrationDetails';
 
 export interface IntegrationProps extends RouteComponentProps {
   notifications: NotificationsStart;
@@ -66,7 +67,6 @@ const INTEGRATION_DESCRIPTION =
   'An integration is the top-level unit of ruleset management: it groups the decoders, rules and KVDBs that add support for one log source or use case.';
 
 export const Integration: React.FC<IntegrationProps> = ({ notifications, history }) => {
-  const isMountedRef = useRef(true);
   const { integrationId } = useParams<{ integrationId: string }>();
   const location = useLocation();
   const spaceParam = new URLSearchParams(location.search).get('space') ?? undefined;
@@ -77,54 +77,38 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
-  const [infoText, setInfoText] = useState<React.ReactNode | string>(
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [togglingEnabled, setTogglingEnabled] = useState(false);
+
+  // Wazuh: the integration document is the page's single source of truth — the
+  // tab id lists and the summary counts are both derived from it — so it owns
+  // the reload. `reloadTrigger` changes once per re-read document and travels
+  // down to the tabs, keeping table, cascade and counts in step (#478).
+  const {
+    integration: integrationDetails,
+    reloadTrigger,
+    notFound,
+    refresh: refreshIntegration,
+    setIntegration: setIntegrationDetails,
+  } = useIntegrationDetails(integrationId, spaceParam, notifications);
+
+  const infoText: React.ReactNode = notFound ? (
+    'Integration not found!' // Replace Log Type to Integration by Wazuh
+  ) : (
     <>
       Loading details &nbsp;
       <EuiLoadingSpinner size="l" />
     </>
   );
-  const [integrationDetails, setIntegrationDetails] = useState<IntegrationItem | undefined>(
-    undefined
-  );
-  const [initialIntegrationDetails, setInitialIntegrationDetails] = useState<
-    IntegrationItem | undefined
-  >(undefined);
-
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [togglingEnabled, setTogglingEnabled] = useState(false);
 
   useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    const getIntegrationDetails = async () => {
-      const details = await DataStore.integrations.getIntegration(integrationId, spaceParam);
-
-      if (!isMountedRef.current) {
-        return;
-      }
-
-      if (!details) {
-        setInfoText('Integration not found!'); // Replace Log Type to Integration by Wazuh
-        return;
-      }
-
-      setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, { text: details.document.metadata?.title ?? '' }]);
-      const integrationItem = {
-        ...details,
-        detectionRulesCount: details.document?.rules?.length ?? 0,
-        decodersCount: details.document.decoders?.length ?? 0,
-        kvdbsCount: details.document.kvdbs?.length ?? 0,
-      };
-      setIntegrationDetails(integrationItem);
-      setInitialIntegrationDetails(integrationItem);
-    };
-
-    getIntegrationDetails();
-  }, [integrationId, spaceParam]);
+    if (integrationDetails) {
+      setBreadcrumbs([
+        BREADCRUMBS.INTEGRATIONS,
+        { text: integrationDetails.document.metadata?.title ?? '' },
+      ]);
+    }
+  }, [integrationDetails]);
 
   const ruleIds = useMemo(() => integrationDetails?.document.rules ?? [], [integrationDetails]);
   const decoderIds = useMemo(
@@ -189,6 +173,8 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             history={history}
             returnTo={returnTo}
             createHref={createHref(DECODERS_NAV_ID, ROUTES.DECODERS_CREATE)}
+            reloadTrigger={reloadTrigger}
+            onRefresh={refreshIntegration}
           />
         );
       case INTEGRATION_DETAILS_TAB.KVDBS:
@@ -200,6 +186,8 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             history={history}
             returnTo={returnTo}
             createHref={createHref(KVDBS_NAV_ID, ROUTES.KVDBS_CREATE)}
+            reloadTrigger={reloadTrigger}
+            onRefresh={refreshIntegration}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETECTION_RULES:
@@ -211,6 +199,8 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             history={history}
             returnTo={returnTo}
             createHref={createHref(DETECTION_RULE_NAV_ID, ROUTES.RULES_CREATE)}
+            reloadTrigger={reloadTrigger}
+            onRefresh={refreshIntegration}
           />
         );
       case INTEGRATION_DETAILS_TAB.DETAILS:
@@ -260,7 +250,6 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     const success = await DataStore.integrations.updateIntegration(integrationDetails.id, next);
     if (success) {
       setIntegrationDetails(next);
-      setInitialIntegrationDetails(next);
       successNotificationToast(
         notifications,
         'updated',

@@ -14,7 +14,6 @@ jest.mock('../../WazuhRules/hooks/useIntegrationRules', () => ({
     items: [{ ruleId: 'rule-1', title: 'Rule 1', level: 'medium', description: '' }],
     total: 1,
     loading: false,
-    refresh: jest.fn(),
   }),
 }));
 
@@ -37,6 +36,8 @@ const mountTable = async (space: string, history: any) => {
         history={history}
         returnTo={RETURN_TO}
         createHref={CREATE_HREF}
+        reloadTrigger={0}
+        onRefresh={jest.fn()}
       />
     );
   });
