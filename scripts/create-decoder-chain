@@ -1,0 +1,762 @@
+#!/bin/bash
+# Description: Seed decoder/integration fixtures in the Security Analytics
+#              draft space to exercise the decoder cascade view's graph
+#              logic (public/pages/Integrations/utils/decoderGraph.ts,
+#              public/pages/Decoders/hooks/useIntegrationDecoderGraph.ts) -
+#              multi-hop external resolution, its hop cap, cycles, fan-in,
+#              missing parents, and the owned-decoders truncation cap.
+# Usage: create-decoder-chain [options]
+# Examples:
+#   create-decoder-chain
+#   create-decoder-chain --mode chain --length 40 --prefix hop-test
+#   create-decoder-chain --mode branching --fanout 4 --depth 8
+#   create-decoder-chain --mode cycle --length 10 --cycle-at 3
+#   create-decoder-chain --mode wide --count 600
+#   create-decoder-chain --mode same-integration
+#   create-decoder-chain --mode mixed-parents
+#   create-decoder-chain --mode dangling
+#   create-decoder-chain --mode self-parent
+#   create-decoder-chain --mode all --prefix demo
+#   create-decoder-chain --mode clean --prefix demo
+#   create-decoder-chain --mode clean --prefix demo --yes
+
+script_name="$(basename $0)"
+script_version="beta"
+script_description="Seed decoder/integration fixtures to test the Security Analytics decoder cascade view."
+script_usage="${script_name} [options]"
+
+default_username="admin"
+default_password="admin"
+default_server="https://localhost:5601"
+default_prefix="hop-test"
+default_space="draft"
+default_category="system-activity"
+default_mode="chain"
+
+# Mode-specific defaults (applied after parsing, only if the flag was not
+# passed - see `_apply_mode_defaults`).
+default_length_chain="30"
+default_length_cycle="10"
+default_length_same_integration="5"
+default_length_dangling="5"
+default_fanout="3"
+default_depth="5"
+default_cycle_at="1"
+default_count="510"
+# Used only by `--mode all`, so the "create one of everything" run stays fast;
+# run `--mode wide` on its own for the full truncation-banner (>500) demo.
+default_count_all="20"
+
+script_commands="
+    --mode <name>                            Topology to create. See Modes below. Default [$default_mode]
+    --prefix <name>                          Decoder/integration name prefix. Default [$default_prefix]
+    --space <space>                          Space to create the integrations in. Default [$default_space]
+    --category <category>                    Integration category. Default [$default_category]
+
+    --length <n>                             chain: external hops beyond the leaf. Default [$default_length_chain]
+                                              cycle: chain length before it loops back. Default [$default_length_cycle]
+                                              same-integration: internal chain length. Default [$default_length_same_integration]
+                                              dangling: chain length before the missing link. Default [$default_length_dangling]
+    --fanout <n>                             branching: parents converging on the leaf. Default [$default_fanout]
+    --depth <n>                              branching: external hops beyond the merge point. Default [$default_depth]
+    --cycle-at <n>                           cycle: which earlier hop the chain loops back to. Default [$default_cycle_at]
+    --count <n>                              wide: number of flat owned decoders. Default [$default_count]
+    --yes                                    clean: actually delete (default is a dry run).
+"
+
+_display_help(){
+  echo """${script_name} (${script_version})
+${script_description}
+
+Usage: ${script_usage}
+
+Examples:
+    ${script_name}
+    ${script_name} --mode chain --length 40 --prefix hop-test
+    ${script_name} --mode branching --fanout 4 --depth 8
+    ${script_name} --mode wide --count 600
+    ${script_name} --mode all --prefix demo
+    ${script_name} --mode clean --prefix demo
+    ${script_name} --mode clean --prefix demo --yes
+
+Modes:
+    clean               delete every decoder and integration this tool
+                        previously created under <prefix> (matched by name/
+                        title prefix AND metadata.author = this script, so it
+                        only ever touches its own fixtures), in the given
+                        --space. Defaults to a DRY RUN that only lists what
+                        would be removed; pass --yes to actually delete.
+                        Decoders are deleted before their integrations, since
+                        the engine refuses to delete an integration that
+                        still has decoders attached. Cannot be combined with
+                        --length/--fanout/--depth/--cycle-at/--count.
+    all                 create one example of every mode below in a single
+                        run, each under '<prefix>-<mode-name>' so they can't
+                        collide. Uses each mode's own defaults (wide uses a
+                        smaller default count of $default_count_all here, not
+                        $default_count, to stay fast). Cannot be combined with
+                        --length/--fanout/--depth/--cycle-at/--count - run
+                        that mode on its own for custom parameters.
+    chain              (default) leaf -> N external hops in a straight line.
+                        Exercises the BFS resolution and its MAX_EXTERNAL_HOPS
+                        cap - decoders beyond the cap show up unresolved.
+    branching           leaf has <fanout> direct external parents that all
+                        converge on one shared decoder, which then continues
+                        for <depth> more external hops. Exercises multi-parent
+                        fan-in (drawn once, thicker border, 'N parents').
+    cycle               a <length> chain whose deepest link points back to an
+                        earlier one instead of terminating. Exercises the
+                        back-edge / 'parent cycle detected' handling.
+    same-integration    a <length> chain entirely owned by one integration -
+                        no external hop at all. Contrast case: every node is
+                        a plain member, nothing external.
+    mixed-parents       one leaf decoder with two direct parents: a sibling
+                        owned by the same integration, and one external.
+                        Exercises a node with both a member and an external
+                        incoming edge at once.
+    dangling            a <length> chain whose outermost link's parent name
+                        is never created anywhere. Exercises the genuinely-
+                        missing-parent path ('not found' caption), as
+                        opposed to the chain mode's hop-cap truncation.
+    self-parent         one decoder that lists itself as its own parent.
+                        Exercises the self-reference skip. (Note: an exact
+                        duplicate parent on the same decoder is rejected by
+                        the engine at write time (error: Parent ... is
+                        duplicated) - so that case can't be seeded live; the
+                        dashboard's de-dup logic only guards pre-existing/
+                        malformed data, see decoderGraph.test.ts instead.)
+    wide                <count> flat sibling decoders (no relationships)
+                        owned directly by one integration. Exercises the
+                        MAX_GRAPH_DECODERS truncation warning banner.
+
+Commands:
+    --username <user>                        Dashboard username. Default [$default_username]
+    --password <pass>                        Dashboard password. Default [$default_password]
+    --server <url>                           Dashboard base URL. Default [$default_server]
+${script_commands}
+    --help, -h                               Display the help.
+    --version, -v                            Display the version."""
+}
+
+_display_version(){
+  echo $script_version
+}
+
+_exit_with_message(){
+  echo "$1" 1>&2;
+  exit 1;
+}
+
+_require_command(){
+  if ! command -v $1 &> /dev/null
+  then
+    _exit_with_message "$1 command could not be found"
+  fi
+}
+
+_require_option(){
+  if [ -z "$1" ];
+  then
+    _exit_with_message "$2 is missing."
+  fi
+}
+
+_require_positive_int(){
+  # $1 = value, $2 = flag name (for the error message)
+  if ! [[ "$1" =~ ^[0-9]+$ ]] || [ "$1" -lt 1 ]; then
+    _exit_with_message "[error] $2 must be a positive integer."
+  fi
+}
+
+username="$default_username"
+password="$default_password"
+server="$default_server"
+prefix="$default_prefix"
+space="$default_space"
+category="$default_category"
+mode="$default_mode"
+length=""
+fanout=""
+depth=""
+cycle_at=""
+count=""
+yes=""
+
+_parse(){
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --username) [ -n "$2" ] && { username="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --password) [ -n "$2" ] && { password="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --server) [ -n "$2" ] && { server="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --prefix) [ -n "$2" ] && { prefix="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --space) [ -n "$2" ] && { space="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --category) [ -n "$2" ] && { category="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --mode) [ -n "$2" ] && { mode="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --length) [ -n "$2" ] && { length="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --fanout) [ -n "$2" ] && { fanout="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --depth) [ -n "$2" ] && { depth="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --cycle-at) [ -n "$2" ] && { cycle_at="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --count) [ -n "$2" ] && { count="$2"; shift 2; } || _exit_with_message "[error] $1 is not defined.";;
+      --yes) yes="1"; shift 1;;
+      --help) _display_help; exit 0;;
+      --version) _display_version; exit 0;;
+      *) _exit_with_message "[error] Unknown option: $1";;
+    esac
+  done
+}
+
+# Display help if there are no arguments
+([ "$#" -eq 0 ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]) && _display_help && exit 0;
+
+# Display the version
+([ "$1" == "-v" ] || [ "$1" == "--version" ]) && _display_version && exit 0;
+
+_parse $@
+
+_require_command curl
+_require_command python3
+_require_option "$username" "username"
+_require_option "$password" "password"
+_require_option "$server" "server"
+_require_option "$prefix" "prefix"
+_require_option "$space" "space"
+_require_option "$category" "category"
+
+case "$mode" in
+  clean|all|chain|branching|cycle|same-integration|mixed-parents|dangling|self-parent|wide) ;;
+  *) _exit_with_message "[error] Unknown --mode '${mode}'. Run with --help to see the list.";;
+esac
+
+if [ "$mode" == "all" ] || [ "$mode" == "clean" ]; then
+  for flag_name in length fanout depth cycle_at count; do
+    if [ -n "${!flag_name}" ]; then
+      _exit_with_message "[error] --mode ${mode} can't be combined with per-mode parameters (--length/--fanout/--depth/--cycle-at/--count). Run that mode on its own instead."
+    fi
+  done
+fi
+
+# Apply mode-specific defaults for anything the user didn't set explicitly.
+# (--mode all sets these itself, per sub-mode, in the loop below.)
+case "$mode" in
+  chain) [ -z "$length" ] && length="$default_length_chain";;
+  cycle) [ -z "$length" ] && length="$default_length_cycle"
+         [ -z "$cycle_at" ] && cycle_at="$default_cycle_at";;
+  same-integration) [ -z "$length" ] && length="$default_length_same_integration";;
+  dangling) [ -z "$length" ] && length="$default_length_dangling";;
+  branching) [ -z "$fanout" ] && fanout="$default_fanout"
+             [ -z "$depth" ] && depth="$default_depth";;
+  wide) [ -z "$count" ] && count="$default_count";;
+esac
+
+[ -n "$length" ] && _require_positive_int "$length" "--length"
+[ -n "$cycle_at" ] && _require_positive_int "$cycle_at" "--cycle-at"
+[ -n "$fanout" ] && _require_positive_int "$fanout" "--fanout"
+[ -n "$depth" ] && { [[ "$depth" =~ ^[0-9]+$ ]] || _exit_with_message "[error] --depth must be a non-negative integer."; }
+[ -n "$count" ] && _require_positive_int "$count" "--count"
+
+if [ "$mode" == "cycle" ] && [ "$cycle_at" -ge "$length" ]; then
+  _exit_with_message "[error] --cycle-at (${cycle_at}) must be less than --length (${length})."
+fi
+
+_request(){
+  # $1 = method, $2 = path (starting with /), $3 = json body (optional)
+  local method="$1" path="$2" body="${3:-}"
+  local args=(-sk -u "${username}:${password}" -H "osd-xsrf: true" -H "Content-Type: application/json" -X "$method")
+  [ -n "$body" ] && args+=(-d "$body")
+  curl "${args[@]}" "${server}${path}"
+}
+
+_create_integration(){
+  # $1 = title/slug (must match the engine's resource-name pattern: lowercase, hyphens)
+  local title="$1"
+  local body
+  body=$(python3 - "$title" "$category" "$space" <<'PY'
+import json, sys
+title, category, space = sys.argv[1:4]
+print(json.dumps({
+    "document": {
+        "id": "",
+        "category": category,
+        "mode": "user-managed",
+        "metadata": {
+            "title": title,
+            "author": "create-decoder-chain",
+            "date": "", "modified": "",
+            "description": f"Test fixture created by create-decoder-chain (integration '{title}').",
+            "references": [], "documentation": "", "supports": [],
+        },
+        "enabled": True,
+        "tags": None,
+    },
+    "space": {"name": space},
+}))
+PY
+)
+  local resp
+  resp=$(_request POST "/_plugins/_security_analytics/integrations" "$body")
+  local ok id
+  ok=$(python3 -c "import json,sys; print(json.loads(sys.argv[1]).get('ok'))" "$resp" 2>/dev/null || echo False)
+  if [ "$ok" != "True" ]; then
+    _exit_with_message "[error] failed to create integration '${title}': ${resp}"
+  fi
+  id=$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['response']['message'])" "$resp")
+  echo "$id"
+}
+
+_create_decoder(){
+  # $1 = name, $2 = title, $3 = parents (JSON array string), $4 = integrationId
+  local name="$1" title="$2" parents_json="$3" integration_id="$4"
+  local doc_json
+  doc_json=$(python3 - "$name" "$title" "$parents_json" <<'PY'
+import json, sys
+name, title, parents_json = sys.argv[1:4]
+doc = {
+    "name": name,
+    "enabled": True,
+    "metadata": {
+        "title": title,
+        "author": "create-decoder-chain",
+        "description": "Test fixture created by create-decoder-chain.",
+    },
+    "parents": json.loads(parents_json),
+}
+print(json.dumps(json.dumps(doc)))
+PY
+)
+  local body="{\"documentJson\": ${doc_json}, \"integrationId\": \"${integration_id}\"}"
+  local resp
+  resp=$(_request POST "/_plugins/_security_analytics/decoders" "$body")
+  local ok
+  ok=$(python3 -c "import json,sys; print(json.loads(sys.argv[1]).get('ok'))" "$resp" 2>/dev/null || echo False)
+  if [ "$ok" != "True" ]; then
+    _exit_with_message "[error] failed to create decoder '${name}': ${resp}"
+  fi
+  echo "  ${name} created."
+}
+
+pad(){
+  # $1 = value, $2 = the max value in the series (sets the zero-padding width)
+  local width=${#2}
+  printf "%0${width}d" "$1"
+}
+
+_delete_decoder(){
+  # $1 = decoder id, $2 = name (for the message only)
+  local id="$1" name="$2"
+  local resp
+  resp=$(_request DELETE "/_plugins/_security_analytics/decoders/${id}?space=${space}")
+  local ok
+  ok=$(python3 -c "import json,sys; print(json.loads(sys.argv[1]).get('ok'))" "$resp" 2>/dev/null || echo False)
+  if [ "$ok" != "True" ]; then
+    echo "  [failed] ${name} (${id}): ${resp}" 1>&2
+    return 1
+  fi
+  echo "  deleted decoder ${name}"
+}
+
+_delete_integration(){
+  # $1 = integration id, $2 = title (for the message only)
+  local id="$1" title="$2"
+  local resp
+  resp=$(_request DELETE "/_plugins/_security_analytics/integrations/${id}")
+  local ok
+  ok=$(python3 -c "import json,sys; print(json.loads(sys.argv[1]).get('ok'))" "$resp" 2>/dev/null || echo False)
+  if [ "$ok" != "True" ]; then
+    echo "  [failed] ${title} (${id}): ${resp}" 1>&2
+    return 1
+  fi
+  echo "  deleted integration ${title}"
+}
+
+# Every row is "id<TAB>name", one per match. Only ever matches fixtures this
+# tool made: name/title prefix AND metadata.author, both required.
+_search_decoders_to_clean(){
+  local body
+  body=$(python3 - "$prefix" <<'PY'
+import json, sys
+prefix = sys.argv[1]
+print(json.dumps({
+    "from": 0,
+    "size": 10000,
+    "query": {"bool": {"filter": [
+        {"prefix": {"document.name": f"decoder/{prefix}-"}},
+        {"term": {"document.metadata.author": "create-decoder-chain"}},
+    ]}},
+    "_source": {"includes": ["document.id", "document.name"]},
+}))
+PY
+)
+  local resp
+  resp=$(_request POST "/_plugins/_security_analytics/decoders/_search?space=${space}" "$body")
+  python3 -c "
+import json, sys
+data = json.loads(sys.argv[1])
+if not data.get('ok'):
+    sys.exit('[error] decoder search failed: ' + sys.argv[1])
+for item in data['response']['items']:
+    doc = item['document']
+    print(f\"{doc['id']}\t{doc['name']}\")
+" "$resp" || _exit_with_message "[error] decoder search for cleanup failed."
+}
+
+_search_integrations_to_clean(){
+  local body
+  body=$(python3 - "$prefix" "$space" <<'PY'
+import json, sys
+prefix, space = sys.argv[1:3]
+print(json.dumps({
+    "size": 10000,
+    "query": {"bool": {"filter": [
+        {"prefix": {"document.metadata.title": f"{prefix}-"}},
+        {"term": {"document.metadata.author": "create-decoder-chain"}},
+        {"term": {"space.name": space}},
+    ]}},
+    "_source": ["document.metadata.title"],
+}))
+PY
+)
+  local resp
+  resp=$(_request POST "/_plugins/_security_analytics/integrations/_search" "$body")
+  python3 -c "
+import json, sys
+data = json.loads(sys.argv[1])
+if not data.get('ok'):
+    sys.exit('[error] integration search failed: ' + sys.argv[1])
+for hit in data['response']['hits']['hits']:
+    print(f\"{hit['_id']}\t{hit['_source']['document']['metadata']['title']}\")
+" "$resp" || _exit_with_message "[error] integration search for cleanup failed."
+}
+
+_mode_clean(){
+  echo "Searching decoders/integrations under prefix '${prefix}-' (space '${space}', author 'create-decoder-chain')..."
+  local decoders integrations
+  decoders=$(_search_decoders_to_clean)
+  integrations=$(_search_integrations_to_clean)
+
+  local decoder_count=0 integration_count=0
+  [ -n "$decoders" ] && decoder_count=$(echo "$decoders" | wc -l)
+  [ -n "$integrations" ] && integration_count=$(echo "$integrations" | wc -l)
+
+  echo ""
+  echo "Decoders (${decoder_count}):"
+  [ -n "$decoders" ] && echo "$decoders" | while IFS=$'\t' read -r id name; do echo "  ${name}  (${id})"; done
+  echo ""
+  echo "Integrations (${integration_count}):"
+  [ -n "$integrations" ] && echo "$integrations" | while IFS=$'\t' read -r id title; do echo "  ${title}  (${id})"; done
+
+  if [ "$decoder_count" -eq 0 ] && [ "$integration_count" -eq 0 ]; then
+    echo ""
+    echo "Nothing to clean."
+    return
+  fi
+
+  if [ -z "$yes" ]; then
+    echo ""
+    echo "Dry run - nothing deleted. Pass --yes to actually delete these ${decoder_count} decoder(s) and ${integration_count} integration(s)."
+    return
+  fi
+
+  echo ""
+  echo "Deleting ${decoder_count} decoder(s)..."
+  local decoder_failures=0
+  if [ -n "$decoders" ]; then
+    while IFS=$'\t' read -r id name; do
+      _delete_decoder "$id" "$name" || decoder_failures=$((decoder_failures + 1))
+    done <<< "$decoders"
+  fi
+
+  echo "Deleting ${integration_count} integration(s)..."
+  local integration_failures=0
+  if [ -n "$integrations" ]; then
+    while IFS=$'\t' read -r id title; do
+      _delete_integration "$id" "$title" || integration_failures=$((integration_failures + 1))
+    done <<< "$integrations"
+  fi
+
+  echo ""
+  echo "Done. Decoders: $((decoder_count - decoder_failures))/${decoder_count} deleted. Integrations: $((integration_count - integration_failures))/${integration_count} deleted."
+  if [ "$decoder_failures" -gt 0 ] || [ "$integration_failures" -gt 0 ]; then
+    echo "Some deletions failed (see [failed] lines above) - a common cause is an integration that still owns a decoder outside this prefix."
+  fi
+}
+
+# --- mode: chain -------------------------------------------------------
+
+_mode_chain(){
+  echo "Creating integration '${prefix}-leaf' (owns the leaf decoder) in space '${space}'..."
+  local leaf_id; leaf_id=$(_create_integration "${prefix}-leaf")
+  echo "  -> ${leaf_id}"
+
+  echo "Creating integration '${prefix}-chain' (owns the ${length}-decoder external chain) in space '${space}'..."
+  local chain_id; chain_id=$(_create_integration "${prefix}-chain")
+  echo "  -> ${chain_id}"
+
+  # Deepest decoder first (no parents), so every subsequent create's
+  # `parents` already references an existing decoder.
+  local last; last=$(pad "$length" "$length")
+  _create_decoder "decoder/${prefix}-${last}/0" "Chain root (hop ${last}, no parents)" '[]' "$chain_id"
+
+  local i=$((length - 1))
+  while [ "$i" -ge 1 ]; do
+    local cur; cur=$(pad "$i" "$length")
+    local next; next=$(pad $((i + 1)) "$length")
+    _create_decoder "decoder/${prefix}-${cur}/0" "Hop ${cur}" "[\"decoder/${prefix}-${next}/0\"]" "$chain_id"
+    i=$((i - 1))
+  done
+
+  local first; first=$(pad 1 "$length")
+  _create_decoder "decoder/${prefix}-leaf/0" "Leaf (owned by ${prefix}-leaf)" "[\"decoder/${prefix}-${first}/0\"]" "$leaf_id"
+
+  echo ""
+  echo "Done. Chain length: ${length} external hops from decoder/${prefix}-leaf/0 to decoder/${prefix}-${last}/0."
+  echo "View it under integration '${prefix}-leaf' (${leaf_id}) -> Decoders tab -> Cascade."
+}
+
+# --- mode: branching -----------------------------------------------------
+
+_mode_branching(){
+  echo "Creating integration '${prefix}-leaf' (owns the leaf decoder) in space '${space}'..."
+  local leaf_id; leaf_id=$(_create_integration "${prefix}-leaf")
+  echo "  -> ${leaf_id}"
+
+  echo "Creating integration '${prefix}-branch' (owns ${fanout} branches + ${depth}-hop tail) in space '${space}'..."
+  local branch_id; branch_id=$(_create_integration "${prefix}-branch")
+  echo "  -> ${branch_id}"
+
+  # Tail beyond the merge point, deepest first.
+  local converge_parents="[]"
+  if [ "$depth" -gt 0 ]; then
+    local last; last=$(pad "$depth" "$depth")
+    _create_decoder "decoder/${prefix}-post-${last}/0" "Tail end (hop ${last}, no parents)" '[]' "$branch_id"
+    local i=$((depth - 1))
+    while [ "$i" -ge 1 ]; do
+      local cur; cur=$(pad "$i" "$depth")
+      local next; next=$(pad $((i + 1)) "$depth")
+      _create_decoder "decoder/${prefix}-post-${cur}/0" "Tail hop ${cur}" "[\"decoder/${prefix}-post-${next}/0\"]" "$branch_id"
+      i=$((i - 1))
+    done
+    local first; first=$(pad 1 "$depth")
+    converge_parents="[\"decoder/${prefix}-post-${first}/0\"]"
+  fi
+
+  _create_decoder "decoder/${prefix}-converge/0" "Merge point (${fanout} parents converge here)" "$converge_parents" "$branch_id"
+
+  local branch_names="["
+  local b=1
+  while [ "$b" -le "$fanout" ]; do
+    local bp; bp=$(pad "$b" "$fanout")
+    _create_decoder "decoder/${prefix}-branch-${bp}/0" "Branch ${bp} of ${fanout}" '["decoder/'"${prefix}"'-converge/0"]' "$branch_id"
+    branch_names="${branch_names}\"decoder/${prefix}-branch-${bp}/0\""
+    [ "$b" -lt "$fanout" ] && branch_names="${branch_names},"
+    b=$((b + 1))
+  done
+  branch_names="${branch_names}]"
+
+  _create_decoder "decoder/${prefix}-leaf/0" "Leaf (${fanout} direct parents)" "$branch_names" "$leaf_id"
+
+  echo ""
+  echo "Done. Leaf has ${fanout} parents converging on decoder/${prefix}-converge/0, then ${depth} more external hops."
+  echo "View it under integration '${prefix}-leaf' (${leaf_id}) -> Decoders tab -> Cascade."
+}
+
+# --- mode: cycle -----------------------------------------------------------
+
+_mode_cycle(){
+  echo "Creating integration '${prefix}-leaf' (owns the leaf decoder) in space '${space}'..."
+  local leaf_id; leaf_id=$(_create_integration "${prefix}-leaf")
+  echo "  -> ${leaf_id}"
+
+  echo "Creating integration '${prefix}-cycle' (owns the ${length}-decoder chain, looping back at hop ${cycle_at}) in space '${space}'..."
+  local cycle_id; cycle_id=$(_create_integration "${prefix}-cycle")
+  echo "  -> ${cycle_id}"
+
+  local at; at=$(pad "$cycle_at" "$length")
+  local last; last=$(pad "$length" "$length")
+  # Deepest link points back into the chain instead of terminating.
+  _create_decoder "decoder/${prefix}-${last}/0" "Chain end (loops back to hop ${at})" "[\"decoder/${prefix}-${at}/0\"]" "$cycle_id"
+
+  local i=$((length - 1))
+  while [ "$i" -ge 1 ]; do
+    local cur; cur=$(pad "$i" "$length")
+    local next; next=$(pad $((i + 1)) "$length")
+    _create_decoder "decoder/${prefix}-${cur}/0" "Hop ${cur}" "[\"decoder/${prefix}-${next}/0\"]" "$cycle_id"
+    i=$((i - 1))
+  done
+
+  local first; first=$(pad 1 "$length")
+  _create_decoder "decoder/${prefix}-leaf/0" "Leaf (owned by ${prefix}-leaf)" "[\"decoder/${prefix}-${first}/0\"]" "$leaf_id"
+
+  echo ""
+  echo "Done. decoder/${prefix}-${last}/0 lists decoder/${prefix}-${at}/0 as a parent, closing a loop."
+  echo "View it under integration '${prefix}-leaf' (${leaf_id}) -> Decoders tab -> Cascade; expect the 'parent cycle detected' callout."
+}
+
+# --- mode: same-integration --------------------------------------------
+
+_mode_same_integration(){
+  echo "Creating integration '${prefix}-same' (owns the whole ${length}-hop chain, nothing external) in space '${space}'..."
+  local id; id=$(_create_integration "${prefix}-same")
+  echo "  -> ${id}"
+
+  local last; last=$(pad "$length" "$length")
+  _create_decoder "decoder/${prefix}-${last}/0" "Chain root (hop ${last}, no parents)" '[]' "$id"
+
+  local i=$((length - 1))
+  while [ "$i" -ge 1 ]; do
+    local cur; cur=$(pad "$i" "$length")
+    local next; next=$(pad $((i + 1)) "$length")
+    _create_decoder "decoder/${prefix}-${cur}/0" "Hop ${cur}" "[\"decoder/${prefix}-${next}/0\"]" "$id"
+    i=$((i - 1))
+  done
+
+  local first; first=$(pad 1 "$length")
+  _create_decoder "decoder/${prefix}-leaf/0" "Leaf (owned by ${prefix}-same)" "[\"decoder/${prefix}-${first}/0\"]" "$id"
+
+  echo ""
+  echo "Done. Every node is owned by '${prefix}-same' (${id}) - expect plain 'member' styling throughout, nothing external."
+  echo "View it under integration '${prefix}-same' -> Decoders tab -> Cascade."
+}
+
+# --- mode: mixed-parents -------------------------------------------------
+
+_mode_mixed_parents(){
+  echo "Creating integration '${prefix}-leaf' (owns the leaf + its same-integration sibling) in space '${space}'..."
+  local leaf_id; leaf_id=$(_create_integration "${prefix}-leaf")
+  echo "  -> ${leaf_id}"
+
+  echo "Creating integration '${prefix}-external' (owns the external parent) in space '${space}'..."
+  local ext_id; ext_id=$(_create_integration "${prefix}-external")
+  echo "  -> ${ext_id}"
+
+  _create_decoder "decoder/${prefix}-sibling/0" "Sibling (same integration as the leaf)" '[]' "$leaf_id"
+  _create_decoder "decoder/${prefix}-external/0" "External parent (different integration)" '[]' "$ext_id"
+  _create_decoder "decoder/${prefix}-leaf/0" "Leaf (one member parent, one external parent)" \
+    "[\"decoder/${prefix}-sibling/0\",\"decoder/${prefix}-external/0\"]" "$leaf_id"
+
+  echo ""
+  echo "Done. decoder/${prefix}-leaf/0 has one member parent (decoder/${prefix}-sibling/0) and one external parent (decoder/${prefix}-external/0)."
+  echo "View it under integration '${prefix}-leaf' (${leaf_id}) -> Decoders tab -> Cascade."
+}
+
+# --- mode: dangling ------------------------------------------------------
+
+_mode_dangling(){
+  echo "Creating integration '${prefix}-leaf' (owns the leaf decoder) in space '${space}'..."
+  local leaf_id; leaf_id=$(_create_integration "${prefix}-leaf")
+  echo "  -> ${leaf_id}"
+
+  echo "Creating integration '${prefix}-dangling' (owns a ${length}-decoder chain that points at a decoder never created) in space '${space}'..."
+  local dangling_id; dangling_id=$(_create_integration "${prefix}-dangling")
+  echo "  -> ${dangling_id}"
+
+  # The outermost link's parent is never created - a genuinely missing decoder,
+  # as opposed to `chain` mode's hop-cap truncation.
+  local missing; missing=$(pad $((length + 1)) $((length + 1)))
+  local last; last=$(pad "$length" "$length")
+  _create_decoder "decoder/${prefix}-${last}/0" "Chain end (parent decoder/${prefix}-${missing}/0 is never created)" "[\"decoder/${prefix}-${missing}/0\"]" "$dangling_id"
+
+  local i=$((length - 1))
+  while [ "$i" -ge 1 ]; do
+    local cur; cur=$(pad "$i" "$length")
+    local next; next=$(pad $((i + 1)) "$length")
+    _create_decoder "decoder/${prefix}-${cur}/0" "Hop ${cur}" "[\"decoder/${prefix}-${next}/0\"]" "$dangling_id"
+    i=$((i - 1))
+  done
+
+  local first; first=$(pad 1 "$length")
+  _create_decoder "decoder/${prefix}-leaf/0" "Leaf (owned by ${prefix}-leaf)" "[\"decoder/${prefix}-${first}/0\"]" "$leaf_id"
+
+  echo ""
+  echo "Done. decoder/${prefix}-${last}/0 lists decoder/${prefix}-${missing}/0 as a parent, but that decoder is never created."
+  echo "View it under integration '${prefix}-leaf' (${leaf_id}) -> Decoders tab -> Cascade; expect a dangling 'not found' node, unclickable."
+}
+
+# --- mode: self-parent ---------------------------------------------------
+
+_mode_self_parent(){
+  echo "Creating integration '${prefix}-selfparent' (owns one self-referencing decoder) in space '${space}'..."
+  local id; id=$(_create_integration "${prefix}-selfparent")
+  echo "  -> ${id}"
+
+  _create_decoder "decoder/${prefix}-self/0" "Self-parent (lists itself as its own parent)" "[\"decoder/${prefix}-self/0\"]" "$id"
+
+  echo ""
+  echo "Done. decoder/${prefix}-self/0 lists itself as a parent - expect it to render with no incoming edge from itself."
+  echo "View it under integration '${prefix}-selfparent' (${id}) -> Decoders tab -> Cascade."
+}
+
+# --- mode: wide ------------------------------------------------------------
+
+_mode_wide(){
+  echo "Creating integration '${prefix}-wide' (owns ${count} flat sibling decoders) in space '${space}'..."
+  local id; id=$(_create_integration "${prefix}-wide")
+  echo "  -> ${id}"
+
+  local n=1
+  while [ "$n" -le "$count" ]; do
+    local cur; cur=$(pad "$n" "$count")
+    _create_decoder "decoder/${prefix}-wide-${cur}/0" "Flat decoder ${cur}/${count}" '[]' "$id"
+    n=$((n + 1))
+  done
+
+  echo ""
+  echo "Done. Integration '${prefix}-wide' (${id}) owns ${count} decoders with no relationships."
+  echo "View its Decoders tab -> Cascade; expect the 'showing the first N decoders' truncation banner if count > 500."
+}
+
+# --- mode: all -------------------------------------------------------------
+
+_mode_all(){
+  local original_prefix="$prefix"
+  local all_modes=(chain branching cycle same-integration mixed-parents dangling self-parent wide)
+  local summary=()
+
+  for m in "${all_modes[@]}"; do
+    prefix="${original_prefix}-${m}"
+    length=""; fanout=""; depth=""; cycle_at=""; count=""
+
+    case "$m" in
+      chain) length="$default_length_chain";;
+      cycle) length="$default_length_cycle"; cycle_at="$default_cycle_at";;
+      same-integration) length="$default_length_same_integration";;
+      dangling) length="$default_length_dangling";;
+      branching) fanout="$default_fanout"; depth="$default_depth";;
+      wide) count="$default_count_all";;
+    esac
+
+    echo ""
+    echo "=== mode: ${m} (prefix '${prefix}') ==="
+    case "$m" in
+      chain) _mode_chain;;
+      branching) _mode_branching;;
+      cycle) _mode_cycle;;
+      same-integration) _mode_same_integration;;
+      mixed-parents) _mode_mixed_parents;;
+      dangling) _mode_dangling;;
+      self-parent) _mode_self_parent;;
+      wide) _mode_wide;;
+    esac
+    summary+=("  ${m}: integration '${prefix}-*'")
+  done
+
+  prefix="$original_prefix"
+
+  echo ""
+  echo "=== All ${#all_modes[@]} modes created under prefix '${original_prefix}-<mode>' ==="
+  printf '%s\n' "${summary[@]}"
+}
+
+# Logic
+
+case "$mode" in
+  clean) _mode_clean;;
+  all) _mode_all;;
+  chain) _mode_chain;;
+  branching) _mode_branching;;
+  cycle) _mode_cycle;;
+  same-integration) _mode_same_integration;;
+  mixed-parents) _mode_mixed_parents;;
+  dangling) _mode_dangling;;
+  self-parent) _mode_self_parent;;
+  wide) _mode_wide;;
+esac

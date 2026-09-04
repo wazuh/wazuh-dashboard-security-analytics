@@ -28,6 +28,10 @@ export const SECURITY_ANALYTICS_DOCUMENTATION_URL = webDocumentationLink(
   'user-manual/wazuh-dashboard/wazuh-dashboard-configurations.html#security-analytics'
 );
 
+export const LOG_TEST_DOCUMENTATION_URL = webDocumentationLink(
+  'user-manual/wazuh-dashboard/wazuh-dashboard-configurations.html#log-test'
+);
+
 // Wazuh: page headers top-align their columns so the description wraps under the title,
 // which would leave the controls hanging at the top of a two-line header.
 export const OVERVIEW_NAV_ID = `sa_overview`;
@@ -112,7 +116,7 @@ export const getNotificationDetailsHref = (channelId: string) =>
 
 export const BREADCRUMBS = Object.freeze({
   SECURITY_ANALYTICS: {
-    text: 'Security Analytics',
+    text: 'Ruleset Management',
     href: `#${ROUTES.INTEGRATIONS}`,
   },
   OVERVIEW: { text: 'Overview', href: `#${ROUTES.OVERVIEW}` },

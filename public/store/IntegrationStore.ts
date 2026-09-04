@@ -245,12 +245,44 @@ export class IntegrationStore {
     data: GetPromote,
     { showErrorToast = true }: { showErrorToast?: boolean } = {}
   ): Promise<[GetPromoteBySpaceResponse['ok'], GetPromoteBySpaceResponse['response']]> {
-    const promoteRes = await this.service.getPromoteIntegration(data);
-    if (!promoteRes.ok && showErrorToast) {
-      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
-    }
+    try {
+      const promoteRes = await this.service.getPromoteIntegration(data);
+      if (!promoteRes.ok && showErrorToast) {
+        errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
+      }
 
-    return [promoteRes.ok, promoteRes.response];
+      return [promoteRes.ok, promoteRes.response];
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error, 'An unexpected error occurred.');
+      if (showErrorToast) {
+        errorNotificationToast(this.notifications, 'promote', 'integration', msg);
+      }
+      return [false, undefined];
+    }
+  }
+
+  public async hasPromotableContentChanges(space: PromoteSpaces): Promise<boolean> {
+    try {
+      const [ok, data] = await this.getPromote({ space }, { showErrorToast: false });
+      if (!ok || !data?.promote?.changes) {
+        return false;
+      }
+      return Object.values(data.promote.changes).some((items) => (items?.length ?? 0) > 0);
+    } catch {
+      return false;
+    }
+  }
+
+  public async hasPromotableContentChanges(space: PromoteSpaces): Promise<boolean> {
+    try {
+      const [ok, data] = await this.getPromote({ space }, { showErrorToast: false });
+      if (!ok || !data?.promote?.changes) {
+        return false;
+      }
+      return Object.values(data.promote.changes).some((items) => (items?.length ?? 0) > 0);
+    } catch {
+      return false;
+    }
   }
 
   public async hasPromotableContentChanges(space: PromoteSpaces): Promise<boolean> {
@@ -266,12 +298,18 @@ export class IntegrationStore {
   }
 
   public async promoteIntegration(data: PromoteIntegrationRequestBody) {
-    const promoteRes = await this.service.promoteIntegration(data);
-    if (!promoteRes.ok) {
-      errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
-    }
+    try {
+      const promoteRes = await this.service.promoteIntegration(data);
+      if (!promoteRes.ok) {
+        errorNotificationToast(this.notifications, 'promote', 'integration', promoteRes.error);
+      }
 
-    return [promoteRes.ok, promoteRes.error];
+      return [promoteRes.ok, promoteRes.error];
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error, 'An unexpected error occurred.');
+      errorNotificationToast(this.notifications, 'promote', 'integration', msg);
+      return [false, msg];
+    }
   }
 
   /**

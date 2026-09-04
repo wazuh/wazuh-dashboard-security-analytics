@@ -62,7 +62,7 @@ export const YamlForm: React.FC<YamlFormProps> = ({
       const localErrors = ['Invalid YAML'];
       setState((prev) => ({ ...prev, errors: localErrors }));
       onErrors?.(localErrors);
-      console.warn(`Security Analytics - ${type} Editor - Yaml load`, err);
+      console.warn(`Ruleset Management - ${type} Editor - Yaml load`, err);
     }
   };
 

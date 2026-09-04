@@ -5,3 +5,4 @@
 
 export { IntegrationComboBox } from './IntegrationComboBox';
 export { useIntegrationSelector, IntegrationOption } from './useIntegrationSelector';
+export { usePreselectedIntegration, INTEGRATION_PARAM } from './usePreselectedIntegration';
