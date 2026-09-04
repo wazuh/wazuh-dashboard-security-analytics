@@ -59,7 +59,9 @@ describe('<LogTest /> documentation link', () => {
     expect(docLink.length).toBe(1);
     expect(docLink.prop('href')).toBe(LOG_TEST_DOCUMENTATION_URL);
     expect(docLink.prop('target')).toBe('_blank');
-    expect(docLink.text()).toBe('View documentation');
+    // Wazuh: EuiLink appends the external-link icon and its screen reader text
+    // to a `target="_blank"` link, so the label is checked as a substring.
+    expect(docLink.text()).toContain('View documentation');
 
     // Wazuh: the link sits in the same paragraph as (right after) the
     // description text, not off in the header controls.
