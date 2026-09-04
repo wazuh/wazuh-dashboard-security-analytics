@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type { ServerErrorKind } from '../../types/services/ServerResponse';
+
 export type MatchAllQuery = { match_all: {} };
 
 export type ServerResponse<T> = FailedServerResponse | { ok: true; response: T };
-export type FailedServerResponse = { ok: false; error: string };
+export type FailedServerResponse = { ok: false; error: string; errorKind?: ServerErrorKind };
