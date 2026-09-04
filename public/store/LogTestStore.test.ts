@@ -83,4 +83,56 @@ describe('LogTestStore.executeLogTest', () => {
     expect(result).toEqual({ success: true, data });
     expect(addDanger).not.toHaveBeenCalled();
   });
+
+  it('adds the guidance when core.http rejects with a 413 from the dashboard itself', async () => {
+    // What OSD's HttpFetchError carries when Hapi rejects an oversized body.
+    const rejection = Object.assign(new Error('Request Entity Too Large'), {
+      response: { status: 413 },
+      body: {
+        statusCode: 413,
+        error: 'Request Entity Too Large',
+        message: 'Payload content length greater than maximum allowed: 1048576',
+      },
+    });
+    const service = buildService(jest.fn().mockRejectedValue(rejection));
+    const { notifications, addDanger } = buildNotifications();
+    const store = new LogTestStore(service, notifications);
+
+    const result = await store.executeLogTest(request);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('too large to process');
+    // The limit comes from the rejecting layer, it is never hardcoded here.
+    expect(result.error).toContain('1048576');
+    expect(addDanger).toHaveBeenCalledWith(
+      expect.objectContaining({ text: expect.stringContaining('too large to process') })
+    );
+  });
+
+  it('keeps the generic message when core.http rejects with any other status', async () => {
+    const rejection = Object.assign(new Error('Bad Gateway'), {
+      response: { status: 502 },
+      body: { statusCode: 502, message: 'Bad Gateway' },
+    });
+    const service = buildService(jest.fn().mockRejectedValue(rejection));
+    const { notifications, addDanger } = buildNotifications();
+    const store = new LogTestStore(service, notifications);
+
+    const result = await store.executeLogTest(request);
+
+    expect(result.error).toBe('Bad Gateway');
+    expect(result.error).not.toContain('too large to process');
+    expect(addDanger).toHaveBeenCalled();
+  });
+
+  it('keeps the generic message when the rejection carries no status', async () => {
+    const service = buildService(jest.fn().mockRejectedValue(new Error('network down')));
+    const { notifications } = buildNotifications();
+    const store = new LogTestStore(service, notifications);
+
+    const result = await store.executeLogTest(request);
+
+    expect(result.error).toBe('network down');
+    expect(result.error).not.toContain('too large to process');
+  });
 });
