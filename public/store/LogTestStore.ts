@@ -61,7 +61,7 @@ export class LogTestStore {
           ? `${PAYLOAD_TOO_LARGE_GUIDANCE} ${errorMessage}`
           : errorMessage;
 
-      errorNotificationToast(this.notifications, 'submit', 'Log test', message);
+      errorNotificationToast(this.notifications, 'execute', 'log test', message);
       return {
         success: false,
         error: message,
