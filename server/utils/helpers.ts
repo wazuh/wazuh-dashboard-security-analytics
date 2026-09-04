@@ -6,6 +6,7 @@
 import { Props, schema } from '@osd/config-schema';
 import YAML from 'yaml';
 import { CONTENT_INDICES } from './constants';
+import type { ServerErrorKind } from '../../types/services/ServerResponse';
 
 export function createQueryValidationSchema(fieldSchemaObj?: Props) {
   return schema.object({
@@ -208,5 +209,19 @@ export const extractErrorMessage = (
     );
   } catch (_e) {
     return fallback;
+  }
+};
+
+// Wazuh: mechanism only, no policy. The caller supplies its own status map so
+// one endpoint's error semantics never leak into another's.
+export const extractErrorKind = (
+  error: any,
+  kindByStatus: Readonly<Record<number, ServerErrorKind>>
+): ServerErrorKind | undefined => {
+  try {
+    const status = error?.statusCode;
+    return typeof status === 'number' ? kindByStatus[status] : undefined;
+  } catch (_e) {
+    return undefined;
   }
 };
