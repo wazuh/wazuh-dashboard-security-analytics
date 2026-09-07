@@ -15,7 +15,7 @@ const buildNotifications = () => {
 const request = {} as any;
 
 describe('LogTestStore.executeLogTest', () => {
-  it('shows the too-large guidance and passes the server message through when errorKind is payload-too-large', async () => {
+  it('names the limit in human units when errorKind is payload-too-large', async () => {
     const serverMessage = 'Event exceeds the maximum allowed size of 1048576 bytes.';
     const service = buildService(
       jest.fn().mockResolvedValue({
@@ -30,12 +30,13 @@ describe('LogTestStore.executeLogTest', () => {
     const result = await store.executeLogTest(request);
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain(
-      'The log test event is too large to process. Reduce the event size and try again.'
+    expect(result.error).toBe(
+      'The log test event is too large to process. Reduce it below 1 MB and try again.'
     );
-    expect(result.error).toContain(serverMessage);
+    // The raw byte count never reaches the user.
+    expect(result.error).not.toContain('1048576');
     expect(addDanger).toHaveBeenCalledWith(
-      expect.objectContaining({ text: expect.stringContaining(serverMessage) })
+      expect.objectContaining({ text: expect.stringContaining('1 MB') })
     );
   });
 
@@ -101,9 +102,11 @@ describe('LogTestStore.executeLogTest', () => {
     const result = await store.executeLogTest(request);
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain('too large to process');
+    expect(result.error).toBe(
+      'The log test event is too large to process. Reduce it below 1 MB and try again.'
+    );
     // The limit comes from the rejecting layer, it is never hardcoded here.
-    expect(result.error).toContain('1048576');
+    expect(result.error).not.toContain('1048576');
     expect(addDanger).toHaveBeenCalledWith(
       expect.objectContaining({ text: expect.stringContaining('too large to process') })
     );
@@ -134,5 +137,35 @@ describe('LogTestStore.executeLogTest', () => {
 
     expect(result.error).toBe('network down');
     expect(result.error).not.toContain('too large to process');
+  });
+
+  it('scales the unit to the size the rejecting layer reports', async () => {
+    const service = buildService(
+      jest.fn().mockResolvedValue({
+        ok: false,
+        error: 'Payload content length greater than maximum allowed: 5242880',
+        errorKind: 'payload-too-large',
+      })
+    );
+    const { notifications } = buildNotifications();
+    const store = new LogTestStore(service, notifications);
+
+    const result = await store.executeLogTest(request);
+
+    expect(result.error).toContain('below 5 MB');
+  });
+
+  it('keeps the raw message when it carries no byte count', async () => {
+    const upstream = 'Request entity too large.';
+    const service = buildService(
+      jest.fn().mockResolvedValue({ ok: false, error: upstream, errorKind: 'payload-too-large' })
+    );
+    const { notifications } = buildNotifications();
+    const store = new LogTestStore(service, notifications);
+
+    const result = await store.executeLogTest(request);
+
+    expect(result.error).toContain('too large to process');
+    expect(result.error).toContain(upstream);
   });
 });
