@@ -29,17 +29,25 @@ const formatBytes = (bytes: number): string => {
   return `${Math.round(value * 10) / 10} ${BYTE_UNITS[unit]}`;
 };
 
+// Named only for the indexer cap, which is scoped to the log test. The dashboard
+// cap, server.maxPayloadBytes, governs every endpoint, so pointing a user at it to
+// unblock one screen would recommend a change far wider than the problem. The
+// indexer does not send this key, so it is hardcoded until upstream ships it in
+// the 413 body.
+const INDEXER_LIMIT_SETTING = 'plugins.content_manager.logtest.max_body_bytes';
+
 // Neither rejecting layer reports the limit as a field, only inside its message
 // text, so it is read from there. Both known messages carry the byte count as
 // their only number; a message that carries none keeps its raw text, so the user
 // still learns what happened.
-const describePayloadTooLarge = (upstreamMessage: string): string => {
+const describePayloadTooLarge = (upstreamMessage: string, limitSetting?: string): string => {
   const [digits] = upstreamMessage.match(/\d+/) ?? [];
   const bytes = Number(digits);
+  const raiseIt = limitSetting ? ` To accept larger events, increase ${limitSetting}.` : '';
 
   return digits && Number.isFinite(bytes) && bytes > 0
-    ? `${PAYLOAD_TOO_LARGE} Reduce it below ${formatBytes(bytes)} and try again.`
-    : `${PAYLOAD_TOO_LARGE} ${REDUCE_AND_RETRY} ${upstreamMessage}`;
+    ? `${PAYLOAD_TOO_LARGE} Reduce it below ${formatBytes(bytes)} and try again.${raiseIt}`
+    : `${PAYLOAD_TOO_LARGE} ${REDUCE_AND_RETRY}${raiseIt} ${upstreamMessage}`;
 };
 
 const readRejectedStatus = (error: unknown): number | undefined => {
@@ -64,7 +72,7 @@ export class LogTestStore {
       if (!response.ok) {
         const message =
           response.errorKind === 'payload-too-large'
-            ? describePayloadTooLarge(response.error)
+            ? describePayloadTooLarge(response.error, INDEXER_LIMIT_SETTING)
             : response.error;
 
         errorNotificationToast(this.notifications, 'execute', 'log test', message);

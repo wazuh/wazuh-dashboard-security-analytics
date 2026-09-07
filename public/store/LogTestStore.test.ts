@@ -31,7 +31,8 @@ describe('LogTestStore.executeLogTest', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe(
-      'The log test event is too large to process. Reduce it below 1 MB and try again.'
+      'The log test event is too large to process. Reduce it below 1 MB and try again. ' +
+        'To accept larger events, increase plugins.content_manager.logtest.max_body_bytes.'
     );
     // The raw byte count never reaches the user.
     expect(result.error).not.toContain('1048576');
@@ -107,6 +108,8 @@ describe('LogTestStore.executeLogTest', () => {
     );
     // The limit comes from the rejecting layer, it is never hardcoded here.
     expect(result.error).not.toContain('1048576');
+    // server.maxPayloadBytes governs every endpoint, so this path names no setting.
+    expect(result.error).not.toContain('max_body_bytes');
     expect(addDanger).toHaveBeenCalledWith(
       expect.objectContaining({ text: expect.stringContaining('too large to process') })
     );
@@ -153,6 +156,7 @@ describe('LogTestStore.executeLogTest', () => {
     const result = await store.executeLogTest(request);
 
     expect(result.error).toContain('below 5 MB');
+    expect(result.error).toContain('increase plugins.content_manager.logtest.max_body_bytes');
   });
 
   it('keeps the raw message when it carries no byte count', async () => {
