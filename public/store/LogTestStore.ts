@@ -26,7 +26,9 @@ const formatBytes = (bytes: number): string => {
     unit += 1;
   }
 
-  return `${Math.round(value * 10) / 10} ${BYTE_UNITS[unit]}`;
+  // Floor, never round: a limit stated larger than the real one sends the user
+  // back to trim an event that was already small enough.
+  return `${Math.floor(value * 10) / 10} ${BYTE_UNITS[unit]}`;
 };
 
 // Named only for the indexer cap, which is scoped to the log test. The dashboard

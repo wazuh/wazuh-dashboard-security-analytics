@@ -172,4 +172,23 @@ describe('LogTestStore.executeLogTest', () => {
     expect(result.error).toContain('too large to process');
     expect(result.error).toContain(upstream);
   });
+
+  it('never states a limit larger than the real one', async () => {
+    // 1234567 bytes is 1.177 MB. Rounding would say 1.2 MB and send the user back
+    // to trim an event that was already under the cap.
+    const service = buildService(
+      jest.fn().mockResolvedValue({
+        ok: false,
+        error: 'Payload content length greater than maximum allowed: 1234567',
+        errorKind: 'payload-too-large',
+      })
+    );
+    const { notifications } = buildNotifications();
+    const store = new LogTestStore(service, notifications);
+
+    const result = await store.executeLogTest(request);
+
+    expect(result.error).toContain('below 1.1 MB');
+    expect(result.error).not.toContain('1.2 MB');
+  });
 });
