@@ -210,3 +210,17 @@ export const extractErrorMessage = (
     return fallback;
   }
 };
+
+// Wazuh: mechanism only, no policy. The caller supplies its own status map so
+// one endpoint's error semantics never leak into another's.
+export const extractErrorKind = <K extends string>(
+  error: any,
+  kindByStatus: Readonly<Record<number, K>>
+): K | undefined => {
+  try {
+    const status = error?.statusCode;
+    return typeof status === 'number' ? kindByStatus[status] : undefined;
+  } catch (_e) {
+    return undefined;
+  }
+};

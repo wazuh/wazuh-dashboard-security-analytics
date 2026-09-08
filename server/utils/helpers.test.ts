@@ -3,7 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { applyEntityFilters, buildStatusFilter, escapeWildcard, mergeIdsClause } from './helpers';
+import {
+  applyEntityFilters,
+  buildStatusFilter,
+  escapeWildcard,
+  extractErrorKind,
+  extractErrorMessage,
+  mergeIdsClause,
+} from './helpers';
+import { LOGTEST_ERROR_KIND_BY_STATUS } from './constants';
 
 describe('escapeWildcard', () => {
   it('escapes * and ? so they are treated as literals', () => {
@@ -177,5 +185,69 @@ describe('applyEntityFilters', () => {
     const query = { match_all: {} };
     const result = applyEntityFilters(query, { levels: [] });
     expect(result.bool.filter).toEqual([{ terms: { 'document.level': [] } }]);
+  });
+});
+
+describe('extractErrorKind', () => {
+  it('returns payload-too-large for a numeric statusCode 413', () => {
+    expect(extractErrorKind({ statusCode: 413 }, LOGTEST_ERROR_KIND_BY_STATUS)).toBe(
+      'payload-too-large'
+    );
+  });
+
+  it('returns payload-too-large when statusCode is a getter backed by body.status', () => {
+    const body = { status: 413 };
+    const error = {
+      get statusCode() {
+        return body.status;
+      },
+    };
+    expect(extractErrorKind(error, LOGTEST_ERROR_KIND_BY_STATUS)).toBe('payload-too-large');
+  });
+
+  it('returns undefined for a status not in the mapping', () => {
+    expect(extractErrorKind({ statusCode: 500 }, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined when statusCode is absent', () => {
+    expect(extractErrorKind({}, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined for a plain Error', () => {
+    expect(extractErrorKind(new Error('boom'), LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined for a thrown string', () => {
+    expect(extractErrorKind('boom', LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined for undefined or null input', () => {
+    expect(extractErrorKind(undefined, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+    expect(extractErrorKind(null, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined for a string statusCode (no numeric coercion)', () => {
+    expect(extractErrorKind({ statusCode: '413' }, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined when reading statusCode throws', () => {
+    const error = {
+      get statusCode(): number {
+        throw new Error('boom');
+      },
+    };
+    expect(extractErrorKind(error, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+});
+
+describe('extractErrorMessage with a 413 body', () => {
+  it('still returns the flat message for a 413 error body', () => {
+    const error = {
+      statusCode: 413,
+      body: { status: 413, message: 'Event exceeds the maximum allowed size of 1048576 bytes.' },
+    };
+    expect(extractErrorMessage(error)).toBe(
+      'Event exceeds the maximum allowed size of 1048576 bytes.'
+    );
   });
 });
