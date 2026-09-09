@@ -40,6 +40,9 @@ const countErrors = (errors: Record<string, string>, prefix: string) =>
  * glance.
  *
  * Inside the normalize tab the entries are the shared panels, not accordions.
+ *
+ * Opens on Check rather than Normalize: Check decides whether the decoder runs at
+ * all, so it is the first thing an event meets and the first thing a reader should.
  */
 export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
   values,
@@ -162,7 +165,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
 
   return (
     <EuiPanel hasShadow={false} hasBorder paddingSize="l">
-      <EuiTabbedContent tabs={tabs} initialSelectedTab={tabs[2]} size="s" />
+      <EuiTabbedContent tabs={tabs} initialSelectedTab={tabs[0]} size="s" />
     </EuiPanel>
   );
 };

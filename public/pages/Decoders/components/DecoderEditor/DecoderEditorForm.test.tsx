@@ -43,24 +43,25 @@ describe('DecoderEditorForm', () => {
     expect(subj(wrapper, 'normalize-entry-2')).toHaveLength(0);
   });
 
-  it('keeps an unrenderable entry in place and disables its visual editor', () => {
+  it('keeps an unrenderable entry in place and offers it no way back to the form', () => {
     const wrapper = render(mapDecoderToForm(document));
 
     // Entry 1 is the one this editor cannot model; entry 0 is fine.
     expect(subj(wrapper, 'slot-unavailable-normalize[1]').length).toBeGreaterThan(0);
     expect(subj(wrapper, 'slot-unavailable-normalize[0]')).toHaveLength(0);
 
-    const options = wrapper
-      .find('EuiButtonGroup[data-test-subj="slot-editor-type-normalize[1]"]')
-      .first()
-      .prop('options') as Array<{ id: string; isDisabled?: boolean }>;
-    expect(options.find((option) => option.id === 'structured')?.isDisabled).toBe(true);
+    // A renderable slot offers an inline escape to YAML; a forced one has nothing to
+    // toggle, so it offers no link at all.
+    expect(subj(wrapper, 'slot-toggle-normalize[0]').length).toBeGreaterThan(0);
+    expect(subj(wrapper, 'slot-toggle-normalize[1]')).toHaveLength(0);
+  });
 
-    const renderable = wrapper
-      .find('EuiButtonGroup[data-test-subj="slot-editor-type-normalize[0]"]')
-      .first()
-      .prop('options') as Array<{ id: string; isDisabled?: boolean }>;
-    expect(renderable.find((option) => option.id === 'structured')?.isDisabled).toBe(false);
+  it('uses an inline link for the YAML escape, not a button group per slot', () => {
+    // Seven persistent two-button groups is most of what made the form feel busy;
+    // the rules detection editor uses an inline link for the same job.
+    const wrapper = render(mapDecoderToForm(document));
+    expect(wrapper.find('EuiButtonGroup')).toHaveLength(0);
+    expect(subj(wrapper, 'slot-toggle-normalize[0]').first().text()).toContain('as YAML');
   });
 
   it('shows an unrenderable entry as YAML rather than an empty form', () => {

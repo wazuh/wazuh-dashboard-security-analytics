@@ -53,6 +53,24 @@ Also fixed while verifying:
 - The check format selector was labelled `Type`, which is already the filter form's
   pre/post stage field. Renamed to `Format`.
 
+## Shared refinements (apply to every variant)
+
+These were fixed once, in the shared row editors, so no variant is judged on a flaw
+another one doesn't have:
+
+- **The YAML escape is an inline link, not a toggle per slot.** A three-entry decoder
+  has seven slots; seven persistent two-button groups was most of what made the form
+  feel busy, while the thing they switch is needed rarely. Now each slot carries a
+  small `Edit <name> as YAML` link, matching how the rules detection editor offers
+  its own escape. A slot that *cannot* be shown as a form offers no link at all —
+  it is already in YAML and there is nowhere to go back to.
+- **No accordions.** `euiAccordionForm` rules the top and bottom of every section
+  and tightens padding; three stacked inside a panel read as clutter.
+- **Compressed really means compressed** — see the `37px` note above.
+- **One spacing rhythm:** `s` between repetitions of one thing, `m` between distinct
+  fields, `l` between sections, `xs` between a label and its control. No component
+  sets its own margins.
+
 ## Ordering by intent
 
 The shipped form (`baseline`) lists `Definitions` **before** `Check`, but definitions
