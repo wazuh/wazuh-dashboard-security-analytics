@@ -5,6 +5,7 @@
 
 import React from 'react';
 import {
+  EuiFormHelpText,
   EuiCallOut,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
@@ -141,9 +142,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
         {' - '}
         <em>optional</em>
       </EuiText>
-      <EuiText size="xs" color="subdued">
-        <p style={{ marginBottom: 4 }}>{PARENTS_HINT}</p>
-      </EuiText>
+      <EuiFormHelpText>{PARENTS_HINT}</EuiFormHelpText>
       <FormFieldArray
         label=""
         values={values.parents.length ? values.parents : ['']}

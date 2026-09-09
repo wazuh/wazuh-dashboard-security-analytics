@@ -5,7 +5,10 @@
 
 import React from 'react';
 import {
-  EuiAccordion,
+  EuiFlexItem,
+  EuiFlexGroup,
+  EuiPanel,
+  EuiFormHelpText,
   EuiButtonEmpty,
   EuiCallOut,
   EuiCompressedFieldText,
@@ -56,9 +59,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
     <div data-test-subj={`parse-rows-${path}`}>
       {helpText && (
         <>
-          <EuiText size="xs" color="subdued">
-            {helpText}
-          </EuiText>
+          <EuiFormHelpText>{helpText}</EuiFormHelpText>
           <EuiSpacer size="s" />
         </>
       )}
@@ -89,25 +90,28 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
         return (
           <div key={index}>
             {index > 0 && <EuiSpacer size="m" />}
-            <EuiAccordion
-              className="euiAccordionForm"
-              id={rowPath}
-              data-test-subj={rowPath}
-              initialIsOpen={true}
-              buttonContent={<EuiText size="m">{`Parser ${index + 1}`}</EuiText>}
-              extraAction={
-                <EuiToolTip title={'Delete parser'}>
-                  <EuiSmallButtonIcon
-                    aria-label={'Delete parser'}
-                    iconType={'trash'}
-                    color="danger"
-                    onClick={() => remove(index)}
-                    data-test-subj={`${rowPath}.delete`}
-                  />
-                </EuiToolTip>
-              }
-            >
-              <EuiSpacer size="s" />
+            <EuiPanel paddingSize="m" hasShadow={false} hasBorder>
+              <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
+                <EuiFlexItem grow={true}>
+                  <EuiText size={'s'}>
+                    <strong>{`Parser ${index + 1}`}</strong>
+                  </EuiText>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiToolTip content={'Remove parser'}>
+                    <EuiSmallButtonIcon
+                      aria-label={`Remove parser ${index + 1}`}
+                      iconType={'trash'}
+                      color="danger"
+                      onClick={() => remove(index)}
+                      data-test-subj={`${rowPath}.delete`}
+                    />
+                  </EuiToolTip>
+                </EuiFlexItem>
+              </EuiFlexGroup>
+
+              <EuiSpacer size="m" />
+
               <EuiCompressedFormRow
                 label={fieldLabel('Field')}
                 helpText="The field this parser reads, for example message or event.original."
@@ -124,11 +128,10 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                   data-test-subj={`${rowPath}.field`}
                 />
               </EuiCompressedFormRow>
+
               <EuiSpacer size="m" />
 
-              <EuiText size="xs" color="subdued">
-                <p style={{ marginBottom: 4 }}>Tried in order until one succeeds.</p>
-              </EuiText>
+              <EuiFormHelpText>Tried in order until one succeeds.</EuiFormHelpText>
               <FormFieldArray
                 label={fieldLabel('Expressions')}
                 values={row.expressions.length ? row.expressions : ['']}
@@ -136,8 +139,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />
-              <EuiSpacer size="m" />
-            </EuiAccordion>
+            </EuiPanel>
           </div>
         );
       })}

@@ -5,6 +5,7 @@
 
 import React from 'react';
 import {
+  EuiFormHelpText,
   EuiButtonEmpty,
   EuiButtonIcon,
   EuiCallOut,
@@ -72,9 +73,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
     <div data-test-subj={`map-rows-${path}`}>
       {helpText && (
         <>
-          <EuiText size="xs" color="subdued">
-            {helpText}
-          </EuiText>
+          <EuiFormHelpText>{helpText}</EuiFormHelpText>
           <EuiSpacer size="s" />
         </>
       )}

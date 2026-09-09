@@ -114,16 +114,12 @@ describe('DecoderEditorForm', () => {
 
   it('orders its fields on the KVDB spine', () => {
     // Identity, the metadata block both siblings order identically, then the
-    // decoder grammar in document order. See TERMINOLOGY.md and the component doc.
+    // decoder grammar in document order. Asserted as relative order of the
+    // top-level section labels, so nested editors can change freely.
     const wrapper = render(mapDecoderToForm(document));
-    const labels = wrapper
-      .find('strong')
-      .map((node) => node.text())
-      .filter(
-        (label) => !label.startsWith('Normalize ') && label !== 'Field' && label !== 'Expressions'
-      );
+    const all = wrapper.find('strong').map((node) => node.text());
 
-    expect(labels).toEqual([
+    const spine = [
       'ID',
       'Name',
       'Title',
@@ -137,12 +133,13 @@ describe('DecoderEditorForm', () => {
       'Parents',
       'Definitions',
       'Check',
-      'Type',
       'Parsers',
       'Normalize',
-      'Type',
-      'Expression',
-    ]);
+    ];
+
+    const positions = spine.map((label) => all.indexOf(label));
+    expect(positions.every((position) => position >= 0)).toBe(true);
+    expect(positions).toEqual([...positions].sort((a, b) => a - b));
   });
 
   it('gives no input its own fullWidth — the form row carries it, as in the sibling forms', () => {

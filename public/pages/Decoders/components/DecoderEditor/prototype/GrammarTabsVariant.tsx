@@ -6,7 +6,6 @@
 
 import React from 'react';
 import {
-  EuiAccordion,
   EuiBadge,
   EuiButtonEmpty,
   EuiNotificationBadge,
@@ -17,8 +16,7 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
-import { CheckEditor } from '../components/CheckEditor';
-import { MapRows } from '../components/MapRows';
+import { NormalizeEditor } from '../components/NormalizeEditor';
 import { ParseRows } from '../components/ParseRows';
 import { YamlSlot } from '../components/YamlSlot';
 import { DecoderFormModel, emptyNormalizeEntry } from '../DecoderEditorFormModel';
@@ -40,6 +38,8 @@ const countErrors = (errors: Record<string, string>, prefix: string) =>
  * competes. Tabs put them side by side instead, with a count badge so nothing
  * hides — the page stops scrolling and the top-level shape becomes legible at a
  * glance.
+ *
+ * Inside the normalize tab the entries are the shared panels, not accordions.
  */
 export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
   values,
@@ -126,109 +126,11 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
           </EuiText>
           <EuiSpacer size="m" />
 
-          {values.normalize.map((entry, index) => (
-            <div key={index}>
-              {index > 0 && <EuiSpacer size="s" />}
-              <EuiAccordion
-                className="euiAccordionForm"
-                id={`tabs-normalize-${index}`}
-                initialIsOpen={values.normalize.length === 1}
-                buttonContent={
-                  <EuiText size="s">
-                    <strong>{`Normalize ${index + 1}`}</strong>{' '}
-                    <span style={{ opacity: 0.7 }}>
-                      {[
-                        entry.check.mode !== 'none' && 'check',
-                        entry.parsers.length > 0 && `${entry.parsers.length} parser(s)`,
-                        entry.map.length > 0 && `${entry.map.length} mapping(s)`,
-                        entry.raw !== undefined && 'YAML only',
-                      ]
-                        .filter(Boolean)
-                        .join(' · ') || 'empty'}
-                    </span>
-                  </EuiText>
-                }
-                extraAction={
-                  <EuiToolTip content={`Delete Normalize ${index + 1}`}>
-                    <EuiSmallButtonIcon
-                      iconType="trash"
-                      color="danger"
-                      aria-label={`Delete Normalize ${index + 1}`}
-                      onClick={() =>
-                        set(
-                          'normalize',
-                          values.normalize.filter((_, i) => i !== index)
-                        )
-                      }
-                    />
-                  </EuiToolTip>
-                }
-              >
-                <EuiSpacer size="m" />
-                <YamlSlot
-                  slotId={`normalize[${index}]`}
-                  label={`Normalize ${index + 1}`}
-                  yamlValue={entryYaml(index)}
-                  error={fieldErrors[`normalize[${index}]`]}
-                  onYamlChange={(text) =>
-                    setEntry(
-                      index,
-                      text.trim() === ''
-                        ? emptyNormalizeEntry()
-                        : normalizeEntryToModel(textToValue(text))
-                    )
-                  }
-                  structuredUnavailableReason={
-                    entry.raw !== undefined
-                      ? `Normalize ${
-                          index + 1
-                        } uses fields this editor does not recognize, so it can only be edited as YAML.`
-                      : undefined
-                  }
-                >
-                  <>
-                    <CheckEditor
-                      path={`normalize[${index}].check`}
-                      nested
-                      model={entry.check}
-                      onChange={(check) => setEntry(index, { ...entry, check })}
-                      errors={fieldErrors}
-                    />
-                    <EuiSpacer size="m" />
-                    <ParseRows
-                      path={`normalize[${index}].parsers`}
-                      rows={entry.parsers}
-                      onChange={(parsers) => setEntry(index, { ...entry, parsers })}
-                      errors={fieldErrors}
-                      helpText={PARSE_HINT}
-                    />
-                    <EuiSpacer size="m" />
-                    <MapRows
-                      path={`normalize[${index}].map`}
-                      rows={entry.map}
-                      onChange={(map) => setEntry(index, { ...entry, map })}
-                      errors={fieldErrors}
-                      fieldPlaceholder="Field (e.g. event.kind)"
-                      valuePlaceholder="Value (text, JSON, $field or a helper)"
-                      addLabel="Add mapping"
-                      emptyLabel="No mappings. A mapping assigns a value to a field."
-                      helpText={MAP_HINT}
-                    />
-                  </>
-                </YamlSlot>
-                <EuiSpacer size="m" />
-              </EuiAccordion>
-            </div>
-          ))}
-
-          <EuiSpacer size="s" />
-          <EuiButtonEmpty
-            size="s"
-            iconType="plusInCircle"
-            onClick={() => set('normalize', [...values.normalize, emptyNormalizeEntry()])}
-          >
-            Add normalize entry
-          </EuiButtonEmpty>
+          <NormalizeEditor
+            entries={values.normalize}
+            onChange={(normalize) => set('normalize', normalize)}
+            errors={fieldErrors}
+          />
         </>
       ),
     },

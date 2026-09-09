@@ -6,6 +6,7 @@
 import React, { useCallback } from 'react';
 import YAML from 'yaml';
 import {
+  EuiFormHelpText,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSelect,
@@ -94,9 +95,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
       }
     >
       <>
-        <EuiText size="xs" color="subdued">
-          {nested ? NORMALIZE_CHECK_HINT : CHECK_HINT}
-        </EuiText>
+        <EuiFormHelpText>{nested ? NORMALIZE_CHECK_HINT : CHECK_HINT}</EuiFormHelpText>
         <EuiSpacer size="s" />
 
         <EuiCompressedFormRow label={fieldLabel('Type')} fullWidth={true}>
