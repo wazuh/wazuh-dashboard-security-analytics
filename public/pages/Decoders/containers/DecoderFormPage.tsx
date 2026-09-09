@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { NotificationsStart } from 'opensearch-dashboards/public';
-import { Form, Formik } from 'formik';
+import { Form, Formik, FormikErrors } from 'formik';
 import YAML from 'yaml';
 import { decoderFormDefaultValue } from '../utils/constants';
 import {
   YamlForm,
   YAML_TYPE,
   mapYamlToLosslessObject,
+  validateYamlSyntax,
   ERROR_SEVERITY,
 } from '../../../components/YamlForm';
 import {
@@ -42,12 +43,29 @@ import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
 import { validateWithJsonSchemaAsync } from '../../../utils/jsonSchemaValidation';
 import decoderSchema from '../../../../common/schemas/wazuh-decoders.schema.json';
+import {
+  DecoderEditorForm,
+  DecoderFormModel,
+  decoderEditorStateDefaultValue,
+  mapDecoderToForm,
+  mapFormToDecoder,
+  routeSchemaErrors,
+} from '../components/DecoderEditor';
+import {
+  collectStructuralErrors,
+  hasStructuralErrors,
+} from '../components/DecoderEditor/structuralValidation';
 
-const editorTypes = [
-  {
-    id: 'yaml',
-    label: 'YAML Editor',
-  },
+const EDITOR_TYPE = {
+  VISUAL: 'visual',
+  YAML: 'yaml',
+} as const;
+
+type EditorType = typeof EDITOR_TYPE[keyof typeof EDITOR_TYPE];
+
+const editorTypes: Array<{ id: EditorType; label: string }> = [
+  { id: EDITOR_TYPE.VISUAL, label: 'Visual Editor' },
+  { id: EDITOR_TYPE.YAML, label: 'YAML Editor' },
 ];
 
 type DecoderFormPageProps = {
@@ -63,6 +81,8 @@ const actionLabels: Record<string, string> = {
   create: 'Create',
   edit: 'Edit',
 };
+
+const SCHEMA_VALIDATION_DEBOUNCE_MS = 300;
 
 export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const { notifications, history, action } = props;
@@ -82,11 +102,25 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
             } space.`
           : '');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedEditorType, setSelectedEditorType] = useState('yaml');
+  const [selectedEditorType, setSelectedEditorType] = useState<EditorType>(EDITOR_TYPE.VISUAL);
   const [integrationType, setIntegrationType] = useState<string>('');
-  const [rawDecoder, setRawDecoder] = useState<string>(decoderFormDefaultValue);
-  const [decoder, setDecoder] = useState<DecoderDocument>();
-  const [hasYamlErrors, setHasYamlErrors] = useState(false);
+  const [initialValues, setInitialValues] = useState<DecoderFormModel>(
+    decoderEditorStateDefaultValue
+  );
+  // Wazuh: the document is the single source of truth and the YAML editor is a view
+  // of it, matching the rules editor. Decoders are persisted as an object
+  // (`documentJson`), so raw YAML text has no privileged status the way it does for
+  // KVDBs and filters, which persist the text itself.
+  // See docs/adr/0002-editor-source-of-truth-follows-persistence-format.md
+  const [yamlSyntaxError, setYamlSyntaxError] = useState<string | null>(null);
+  const [schemaWarnings, setSchemaWarnings] = useState<{
+    fields: Record<string, string>;
+    document: string[];
+  }>({ fields: {}, document: [] });
+  // Wazuh: on create the YAML view shows the starter template until something is
+  // edited, so the guidance a YAML author has today is not lost to a form that
+  // (correctly) starts empty.
+  const [isPristineCreate, setIsPristineCreate] = useState(action === 'create');
 
   const {
     loading: loadingIntegrations,
@@ -115,15 +149,17 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         setIsLoading(true);
         try {
           const response = await DataStore.decoders.getDecoder(idDecoder, spaceDecoder);
-          setRawDecoder(response?.yaml ?? decoderFormDefaultValue);
-          setDecoder(mapYamlToLosslessObject<DecoderDocument>(response?.yaml ?? ''));
+          const document = response?.yaml
+            ? mapYamlToLosslessObject<DecoderDocument>(response.yaml)
+            : response?.document;
+          setInitialValues(mapDecoderToForm(document));
           setIntegrationType(response?.integrations?.[0] || '');
           setBreadcrumbs([
             BREADCRUMBS.NORMALIZATION,
             BREADCRUMBS.DECODERS,
             BREADCRUMBS.DECODERS_EDIT,
             // name the decoder in the trail. A breadcrumb has room for one
-            // string, and the identifier is already on screen inside the YAML.
+            // string, and the identifier is already on screen inside the form.
             { text: response?.document.metadata?.title || response?.document.name },
           ]);
         } catch (error) {
@@ -169,8 +205,9 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   );
 
   const createDecoder = useCallback(
-    async (values: DecoderDocument) => {
-      if (!values || !integrationType) {
+    async (values: DecoderFormModel) => {
+      const document = mapFormToDecoder(values);
+      if (!integrationType) {
         errorNotificationToast(
           notifications,
           'retrieve',
@@ -182,7 +219,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
 
       try {
         const result = await DataStore.decoders.createDecoder({
-          document: values,
+          document,
           integrationId: integrationType,
         });
 
@@ -191,7 +228,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
             notifications,
             'created',
             'decoder',
-            result.message || `The decoder ${values.name} has been created successfully.`
+            result.message || `The decoder ${document.name} has been created successfully.`
           );
 
           history.push(returnTo);
@@ -209,23 +246,18 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   );
 
   const updateDecoder = useCallback(
-    async (values: DecoderDocument) => {
-      if (!values) {
-        errorNotificationToast(notifications, 'retrieve', 'decoder', 'No decoder to update');
-        return;
-      }
+    async (values: DecoderFormModel) => {
+      const document = mapFormToDecoder(values);
 
       try {
-        const result = await DataStore.decoders.updateDecoder(idDecoder, {
-          document: values,
-        });
+        const result = await DataStore.decoders.updateDecoder(idDecoder, { document });
 
         if (result) {
           successNotificationToast(
             notifications,
             'updated',
             'decoder',
-            result.message || `The decoder ${values.name} has been updated successfully.`
+            result.message || `The decoder ${document.name} has been updated successfully.`
           );
 
           history.push(returnTo);
@@ -239,11 +271,11 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         );
       }
     },
-    [notifications, history, returnTo]
+    [idDecoder, notifications, history, returnTo]
   );
 
   const handleOnClick = useCallback(
-    async (values: DecoderDocument) => {
+    async (values: DecoderFormModel) => {
       if (action === 'create') {
         await createDecoder(values);
       } else if (action === 'edit') {
@@ -253,33 +285,17 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     [action, createDecoder, updateDecoder]
   );
 
-  const validationSeq = useRef(0);
-
-  // A superseded validation call must never resolve as "valid" — that would
-  // let an out-of-order result overwrite the current (correct) error state.
-  // Returning a promise that never resolves means Formik simply never
-  // applies this call's result.
-  const NEVER_RESOLVES = new Promise<never>(() => {});
-
-  const validateForm = useCallback(
-    async (values: { rawDecoder: string }) => {
-      // FIXME: This is making a transformation on each detected change in the yaml form, this could create a lot of overhead
-      const seq = ++validationSeq.current;
-      let decoder: object;
-      try {
-        decoder = YAML.parse(values.rawDecoder);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message.split('\n')[0] : 'Invalid YAML syntax';
-        return seq === validationSeq.current ? { rawDecoder: msg } : NEVER_RESOLVES;
-      }
-      const skippedFields = action === 'create' ? ['id'] : [];
-      const result = await validateWithJsonSchemaAsync(decoderSchema, decoder, {
-        skipRequired: skippedFields,
-      });
-      return seq === validationSeq.current ? result : NEVER_RESOLVES;
-    },
-    [action]
-  );
+  /**
+   * The blocking tier. Formik's own errors carry only what makes a document
+   * impossible to build, so `isValid` can gate submission directly. Schema
+   * violations are the advisory tier and live in `schemaWarnings`.
+   */
+  const validateForm = useCallback((values: DecoderFormModel) => {
+    const structural = collectStructuralErrors(values);
+    return (hasStructuralErrors(structural) ? (structural.fields as unknown) : {}) as FormikErrors<
+      DecoderFormModel
+    >;
+  }, []);
 
   return (
     <>
@@ -293,136 +309,258 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         </EuiPanel>
       ) : (
         <Formik
-          key={decoder?.id || 'new-decoder'}
-          initialValues={{ rawDecoder: rawDecoder }}
+          key={initialValues.id || 'new-decoder'}
+          initialValues={initialValues}
           validateOnMount={true}
           enableReinitialize={true}
           validate={validateForm}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              await handleOnClick(mapYamlToLosslessObject<DecoderDocument>(values.rawDecoder));
+              await handleOnClick(values);
             } finally {
               setSubmitting(false);
             }
           }}
         >
-          {(props) => (
-            <Form>
-              <EuiPanel className={'rule-editor-form'} style={{ paddingBottom: '60px' }}>
-                <PageHeader appDescriptionControls={[{ description: pageDescription }]}>
-                  <EuiText size="s">
-                    <h1>{actionLabels[action]} decoder</h1>
-                  </EuiText>
-
-                  <EuiText size="s" color="subdued">
-                    {pageDescription}
-                  </EuiText>
-
-                  <EuiSpacer size="m" />
-                </PageHeader>
-
-                <EuiButtonGroup
-                  data-test-subj="change-editor-type"
-                  legend="This is editor type selector"
-                  options={editorTypes}
-                  idSelected={selectedEditorType}
-                  onChange={(id) => setSelectedEditorType(id)}
-                />
-
-                <EuiSpacer size="m" />
-
-                {action === 'create' && (
-                  <>
-                    <IntegrationComboBox
-                      options={integrationTypeOptions}
-                      selectedId={integrationType}
-                      isLoading={loadingIntegrations}
-                      onChange={onChange}
-                      resourceName="decoders"
-                      data-test-subj="integration_dropdown"
-                      notifications={notifications}
-                      onCreateSuccess={onIntegrationCreateSuccess}
-                    />
-                    <EuiSpacer size="m" />
-                  </>
-                )}
-
-                {selectedEditorType === 'yaml' && (
-                  <YamlForm
-                    errorSeverity={ERROR_SEVERITY.WARNING}
-                    type={YAML_TYPE.DECODER}
-                    value={props.values.rawDecoder}
-                    isInvalid={Object.keys(props.errors).length > 0}
-                    errors={Object.keys(props.errors).map(
-                      (key) => (props.errors as Record<string, string>)[key]
-                    )}
-                    change={(e) => {
-                      props.setValues({ rawDecoder: e });
-                    }}
-                    onErrors={(errors) => setHasYamlErrors(errors !== null && errors.length > 0)}
-                  />
-                )}
-              </EuiPanel>
-
-              <EuiBottomBar>
-                <EuiFlexGroup
-                  gutterSize="s"
-                  justifyContent="flexEnd"
-                  alignItems="center"
-                  responsive={false}
-                >
-                  <EuiFlexItem grow={false}>
-                    <EuiButtonEmpty
-                      color="ghost"
-                      size="s"
-                      iconType="cross"
-                      href={`#${returnTo}`}
-                      isDisabled={props.isSubmitting}
-                    >
-                      Cancel
-                    </EuiButtonEmpty>
-                  </EuiFlexItem>
-                  <EuiFlexItem grow={false}>
-                    <EuiToolTip
-                      content={
-                        <>
-                          <p>
-                            {!integrationType
-                              ? 'Select an integration to enable creating the decoder'
-                              : ''}
-                          </p>
-                        </>
-                      }
-                      position="top"
-                    >
-                      <EuiButton
-                        color="primary"
-                        fill
-                        iconType="check"
-                        size="s"
-                        disabled={!integrationType}
-                        isLoading={props.isSubmitting}
-                        onClick={async () => {
-                          props.setSubmitting(true);
-                          try {
-                            await handleOnClick(
-                              mapYamlToLosslessObject<DecoderDocument>(props.values.rawDecoder)
-                            );
-                          } finally {
-                            props.setSubmitting(false);
-                          }
-                        }}
-                      >
-                        {actionLabels[action]} decoder
-                      </EuiButton>
-                    </EuiToolTip>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              </EuiBottomBar>
-            </Form>
+          {(formikProps) => (
+            <DecoderFormBody
+              action={action}
+              formikProps={formikProps}
+              pageDescription={pageDescription}
+              returnTo={returnTo}
+              selectedEditorType={selectedEditorType}
+              setSelectedEditorType={setSelectedEditorType}
+              yamlSyntaxError={yamlSyntaxError}
+              setYamlSyntaxError={setYamlSyntaxError}
+              schemaWarnings={schemaWarnings}
+              setSchemaWarnings={setSchemaWarnings}
+              isPristineCreate={isPristineCreate}
+              setIsPristineCreate={setIsPristineCreate}
+              integrationType={integrationType}
+              integrationTypeOptions={integrationTypeOptions}
+              loadingIntegrations={loadingIntegrations}
+              onIntegrationChange={onChange}
+              onIntegrationCreateSuccess={onIntegrationCreateSuccess}
+              notifications={notifications}
+              handleOnClick={handleOnClick}
+            />
           )}
         </Formik>
       )}
     </>
+  );
+};
+
+interface DecoderFormBodyProps {
+  action: 'create' | 'edit';
+  formikProps: any;
+  pageDescription: string;
+  returnTo: string;
+  selectedEditorType: EditorType;
+  setSelectedEditorType: (type: EditorType) => void;
+  yamlSyntaxError: string | null;
+  setYamlSyntaxError: (error: string | null) => void;
+  schemaWarnings: { fields: Record<string, string>; document: string[] };
+  setSchemaWarnings: (warnings: { fields: Record<string, string>; document: string[] }) => void;
+  isPristineCreate: boolean;
+  setIsPristineCreate: (pristine: boolean) => void;
+  integrationType: string;
+  integrationTypeOptions: any[];
+  loadingIntegrations: boolean;
+  onIntegrationChange: (options: Array<{ id?: string }>) => void;
+  onIntegrationCreateSuccess: (option: { id: string }) => void;
+  notifications: NotificationsStart;
+  handleOnClick: (values: DecoderFormModel) => Promise<void>;
+}
+
+const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
+  action,
+  formikProps,
+  pageDescription,
+  returnTo,
+  selectedEditorType,
+  setSelectedEditorType,
+  yamlSyntaxError,
+  setYamlSyntaxError,
+  schemaWarnings,
+  setSchemaWarnings,
+  isPristineCreate,
+  setIsPristineCreate,
+  integrationType,
+  integrationTypeOptions,
+  loadingIntegrations,
+  onIntegrationChange,
+  onIntegrationCreateSuccess,
+  notifications,
+  handleOnClick,
+}) => {
+  const values: DecoderFormModel = formikProps.values;
+  const validationSeq = useRef(0);
+
+  // The advisory tier: JSON Schema validation of the document the form would
+  // produce. Debounced and out of band, so it never gates typing, and only the
+  // newest result is applied.
+  useEffect(() => {
+    const seq = ++validationSeq.current;
+    const timer = window.setTimeout(async () => {
+      const document = mapFormToDecoder(values);
+      const skippedFields = action === 'create' ? ['id'] : [];
+      const errors = await validateWithJsonSchemaAsync(decoderSchema, document, {
+        skipRequired: skippedFields,
+      });
+      if (seq !== validationSeq.current) return;
+      setSchemaWarnings(routeSchemaErrors(errors as Record<string, string>, values));
+    }, SCHEMA_VALIDATION_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [values, action, setSchemaWarnings]);
+
+  const yamlText = useMemo(() => {
+    if (action === 'create' && isPristineCreate) return decoderFormDefaultValue;
+    return YAML.stringify(mapFormToDecoder(values), { lineWidth: 0 }).trimEnd();
+  }, [values, action, isPristineCreate]);
+
+  const onYamlChange = useCallback(
+    (text: string) => {
+      const syntaxError = validateYamlSyntax(text);
+      setYamlSyntaxError(syntaxError);
+      // Unparseable YAML never reaches the document, matching the rules editor:
+      // toggling back to the visual editor shows the last valid state.
+      if (syntaxError) return;
+      setIsPristineCreate(false);
+      formikProps.setValues(mapDecoderToForm(mapYamlToLosslessObject<DecoderDocument>(text)));
+    },
+    [formikProps, setYamlSyntaxError, setIsPristineCreate]
+  );
+
+  const onVisualChange = useCallback(
+    (next: DecoderFormModel) => {
+      setIsPristineCreate(false);
+      formikProps.setValues(next);
+    },
+    [formikProps, setIsPristineCreate]
+  );
+
+  const structuralErrors: Record<string, string> = formikProps.errors ?? {};
+  const structuralCount = Object.keys(structuralErrors).length;
+  const warningCount = Object.keys(schemaWarnings.fields).length + schemaWarnings.document.length;
+
+  const isSubmitBlocked =
+    !integrationType ||
+    structuralCount > 0 ||
+    (selectedEditorType === EDITOR_TYPE.YAML && yamlSyntaxError !== null);
+
+  const submitTooltip = (): string | undefined => {
+    if (!integrationType) return 'Select an integration to proceed';
+    if (selectedEditorType === EDITOR_TYPE.YAML && yamlSyntaxError) {
+      return 'Fix the YAML error to proceed';
+    }
+    if (structuralCount > 0) return 'Fix the highlighted errors to proceed';
+    return undefined;
+  };
+
+  return (
+    <Form>
+      <EuiPanel className={'rule-editor-form'} style={{ paddingBottom: '60px' }}>
+        <PageHeader appDescriptionControls={[{ description: pageDescription }]}>
+          <EuiText size="s">
+            <h1>{actionLabels[action]} decoder</h1>
+          </EuiText>
+
+          <EuiText size="s" color="subdued">
+            {pageDescription}
+          </EuiText>
+
+          <EuiSpacer size="m" />
+        </PageHeader>
+
+        <EuiButtonGroup
+          data-test-subj="change-editor-type"
+          legend="This is editor type selector"
+          options={editorTypes}
+          idSelected={selectedEditorType}
+          onChange={(id) => setSelectedEditorType(id as EditorType)}
+        />
+
+        <EuiSpacer size="m" />
+
+        {action === 'create' && (
+          <>
+            <IntegrationComboBox
+              options={integrationTypeOptions}
+              selectedId={integrationType}
+              isLoading={loadingIntegrations}
+              onChange={onIntegrationChange}
+              resourceName="decoders"
+              data-test-subj="integration_dropdown"
+              notifications={notifications}
+              onCreateSuccess={onIntegrationCreateSuccess}
+            />
+            <EuiSpacer size="m" />
+          </>
+        )}
+
+        {selectedEditorType === EDITOR_TYPE.VISUAL && (
+          <DecoderEditorForm
+            values={values}
+            onChange={onVisualChange}
+            fieldErrors={{ ...schemaWarnings.fields, ...structuralErrors }}
+            documentErrors={schemaWarnings.document}
+          />
+        )}
+
+        {selectedEditorType === EDITOR_TYPE.YAML && (
+          <YamlForm
+            errorSeverity={ERROR_SEVERITY.WARNING}
+            type={YAML_TYPE.DECODER}
+            value={yamlText}
+            isInvalid={yamlSyntaxError !== null || warningCount > 0}
+            errors={
+              yamlSyntaxError
+                ? [yamlSyntaxError]
+                : [...Object.values(schemaWarnings.fields), ...schemaWarnings.document]
+            }
+            change={onYamlChange}
+          />
+        )}
+      </EuiPanel>
+
+      <EuiBottomBar>
+        <EuiFlexGroup
+          gutterSize="s"
+          justifyContent="flexEnd"
+          alignItems="center"
+          responsive={false}
+        >
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty
+              color="ghost"
+              size="s"
+              iconType="cross"
+              href={`#${returnTo}`}
+              isDisabled={formikProps.isSubmitting}
+            >
+              Cancel
+            </EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiToolTip content={submitTooltip()} position="top">
+              <EuiButton
+                color="primary"
+                fill
+                iconType="check"
+                size="s"
+                disabled={isSubmitBlocked}
+                isLoading={formikProps.isSubmitting}
+                onClick={formikProps.submitForm}
+                data-test-subj="submit-decoder"
+              >
+                {actionLabels[action]} decoder
+              </EuiButton>
+            </EuiToolTip>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiBottomBar>
+    </Form>
   );
 };

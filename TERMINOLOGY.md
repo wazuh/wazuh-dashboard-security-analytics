@@ -68,3 +68,36 @@ the router or gated off by a flag, and they still contain superseded wording; th
 left untouched on purpose so the fork stays diff-friendly against upstream. Wording in
 unreachable code is not a violation of this document, but any screen that gets
 reactivated must be brought in line with it first.
+
+## Labels in the decoder visual editor
+
+The decoder visual editor labels every field the way the KVDB, filter and rule
+editors label the same field: `Title`, `Author`, `Description`, `Documentation`,
+`References`, `Supports`, `Name`, `Enabled`. A field shared with another editor is
+never renamed just because its document key differs.
+
+Fields with no counterpart elsewhere take the humanized form of their document key:
+`Check`, `Map`, `Parsers`, `Normalize`, `Parents`, `Definitions`, `Compatibility`,
+`ID`, `Expression`, `Expressions`, `Field`, `Type`.
+
+Entries of the `normalize` array are numbered from 1 — `Normalize 1`, `Normalize 2`
+— following the `Map 1` / `Map 2` numbering the rules detection editor already uses
+for its repeated sub-items. Do not call them steps, stages or blocks.
+`Normalization` remains the navigation group that contains decoders, KVDBs, filters
+and rules, and means nothing else.
+
+`Visual Editor` and `YAML Editor` are the canonical labels for the two views, at
+page level and at field level, matching the existing KVDB, filter and rule editors.
+
+### The cost this accepts
+
+Validation messages come from the JSON Schema via
+`public/utils/jsonSchemaValidation.ts`, whose `instancePathToKey` renders paths as
+`metadata.title`, `normalize[2].map`, `check[0]`. Those are document keys, so a
+message names `metadata.title` while the field on screen says `Title`, and the
+reader has to bridge the two. That was weighed against having one entity label its
+fields differently from its three siblings, and cross-entity consistency won.
+
+Keep the bridge short: a message is routed to the field it belongs to
+(`errorRouting.ts`), so it renders *under that input* rather than in a list the
+reader has to match up by name.

@@ -24,20 +24,49 @@ function getValidator(schema: any): ValidateFunction {
 
 export interface ValidateRequest {
   id: number;
-  schema: object;
   data: unknown;
+  /**
+   * The schema itself. Sending it registers (and compiles) it under its `$id`,
+   * after which callers can send `schemaId` alone.
+   */
+  schema?: object;
+  /**
+   * The `$id` of a schema registered by an earlier request. Lets a caller skip
+   * shipping the schema, which matters because postMessage structured-clones it
+   * on every call and the decoder schema is ~2.4 MB.
+   */
+  schemaId?: string;
 }
 
 export interface ValidateResponse {
   id: number;
   valid: boolean;
   errors: Ajv['errors'];
+  /**
+   * Set when the request named a `schemaId` the worker has not been given. The
+   * caller is expected to retry once with the full schema.
+   */
+  unknownSchema?: boolean;
 }
 
 // Exported separately from the self.onmessage wiring below so it can be unit
 // tested directly, without a real Worker/self context.
-export function handleValidateRequest({ id, schema, data }: ValidateRequest): ValidateResponse {
+export function handleValidateRequest({
+  id,
+  schema,
+  schemaId,
+  data,
+}: ValidateRequest): ValidateResponse {
   try {
+    if (!schema) {
+      const registered = schemaId ? ajv.getSchema(schemaId) : undefined;
+      if (!registered) {
+        return { id, valid: false, errors: null, unknownSchema: true };
+      }
+      const valid = registered(data);
+      return { id, valid, errors: valid ? null : registered.errors ?? null };
+    }
+
     const validate = getValidator(schema);
     const valid = validate(data);
     return { id, valid, errors: valid ? null : validate.errors ?? null };
