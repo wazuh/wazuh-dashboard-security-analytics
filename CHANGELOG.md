@@ -48,6 +48,7 @@
 | ----- | ------- |
 | [#7](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/7) | Fixed YAML Editor when creating or editing detection rules |
 | [#39](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/39) | Fixed detection rule editor causing blank screen |
+| [#487](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/487) | Fixed the rule YAML editor asking for a rule name, a field that no longer exists, instead of naming the title under metadata |
 | [#314](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/314) | Fixed rule JSON viewer showing the detection field as a YAML string instead of a structured object |
 | [#112](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/112) | Fixed data source didn't include data stream aliases for detector creation |
 | [#188](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/188) | Fixed decoders form not handling request errors properly |
