@@ -5,6 +5,7 @@
 
 import { dump, load } from 'js-yaml';
 import { Rule } from '../../../../types';
+import { assertRuleShape } from './ruleShape';
 
 function safeLoad(yamlStr: string | undefined): any {
   if (!yamlStr || (typeof yamlStr === 'string' && !yamlStr.trim())) return undefined;
@@ -73,7 +74,8 @@ export const mapRuleToYamlObject = (rule: Rule): any => {
   return yamlObject;
 };
 
-export const mapYamlObjectToRule = (obj: any): Rule => {
+export const mapYamlObjectToRule = (rawObj: any): Rule => {
+  const obj = assertRuleShape(rawObj);
   const detection = safeDump(obj.detection);
   const mitre = safeDump(obj.mitre);
   const compliance = safeDump(obj.compliance);

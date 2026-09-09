@@ -19,14 +19,16 @@ import {
   mapYamlObjectToRule,
   mapYamlObjectToYamlString,
 } from '../../../../utils/mappers';
+import { RuleShapeError } from '../../../../utils/ruleShape';
 import { Rule } from '../../../../../../../types';
 
 export interface YamlRuleEditorComponentProps {
   rule: Rule;
-  change: React.Dispatch<Rule>;
+  change: (rule: Rule) => Promise<unknown> | void;
   isInvalid: boolean;
   errors?: string[];
   parseDebounceMs?: number;
+  flushRef?: React.MutableRefObject<(() => Promise<unknown> | null) | null>;
 }
 
 export interface YamlEditorState {
@@ -40,6 +42,7 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
   isInvalid,
   errors,
   parseDebounceMs = 500,
+  flushRef,
 }) => {
   const yamlObject = mapRuleToYamlObject(rule);
 
@@ -50,6 +53,7 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
 
   const timerRef = useRef<number | null>(null);
   const isFocusedRef = useRef(false);
+  const pendingValueRef = useRef<string | null>(null);
 
   useEffect(() => {
     const newYaml = mapYamlObjectToYamlString(mapRuleToYamlObject(rule));
@@ -60,29 +64,60 @@ export const YamlRuleEditorComponent: React.FC<YamlRuleEditorComponentProps> = (
     });
   }, [rule]);
 
-  const tryParseAndNotify = (value: string) => {
+  const tryParseAndNotify = (value: string): Promise<unknown> | null => {
+    pendingValueRef.current = null;
     if (!value || value.trim() === '') {
       setState((prev) => ({ ...prev, errors: ['Rule cannot be empty'] }));
-      return;
+      return null;
     }
+
+    let yamlObj: unknown;
     try {
-      const yamlObj = load(value);
-      const parsedRule = mapYamlObjectToRule(yamlObj);
-      change(parsedRule);
-      setState((prev) => ({ ...prev, errors: null }));
+      yamlObj = load(value);
     } catch (err) {
       setState((prev) => ({ ...prev, errors: ['Invalid YAML'] }));
       console.warn('Ruleset Management - Rule Editor - Yaml load', err);
+      return null;
+    }
+
+    try {
+      const parsedRule = mapYamlObjectToRule(yamlObj);
+      const applied = change(parsedRule);
+      setState((prev) => ({ ...prev, errors: null }));
+      return applied;
+    } catch (err) {
+      const message = err instanceof RuleShapeError ? err.message : 'The rule could not be read.';
+      setState((prev) => ({ ...prev, errors: [message] }));
+      console.warn('Ruleset Management - Rule Editor - Yaml map', err);
+      return null;
     }
   };
 
   const onChange = (value: string) => {
     setState((prev) => ({ ...prev, value }));
+    pendingValueRef.current = value;
     if (timerRef.current) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
       tryParseAndNotify(value);
     }, parseDebounceMs);
   };
+
+  // Returns the parent's setValues promise so a caller can wait for revalidation
+  // instead of guessing at a timer: Formik revalidates asynchronously.
+  const flush = (): Promise<unknown> | null => {
+    if (pendingValueRef.current === null) return null;
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    const pending = pendingValueRef.current;
+    return tryParseAndNotify(pending);
+  };
+
+  useEffect(() => {
+    if (flushRef) flushRef.current = flush;
+    return () => {
+      if (flushRef) flushRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
 
   useEffect(() => {
     return () => {
