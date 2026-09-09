@@ -136,16 +136,21 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       />
       <EuiSpacer size="m" />
 
+      <EuiText size={'s'}>
+        <strong>Parents</strong>
+        {' - '}
+        <em>optional</em>
+      </EuiText>
+      <EuiText size="xs" color="subdued">
+        <p style={{ marginBottom: 4 }}>{PARENTS_HINT}</p>
+      </EuiText>
       <FormFieldArray
-        label={fieldLabel('Parents', true)}
+        label=""
         values={values.parents.length ? values.parents : ['']}
         placeholder="decoder/integrations/0"
         addButtonLabel="Add parent"
         onChange={(parents) => set('parents', parents)}
       />
-      <EuiText size="xs" color="subdued">
-        <p>{PARENTS_HINT}</p>
-      </EuiText>
       <EuiSpacer size="m" />
 
       {/* PROTOTYPE — decoder-specific block, swappable via ?variant= */}

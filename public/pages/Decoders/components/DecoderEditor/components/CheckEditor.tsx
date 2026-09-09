@@ -94,11 +94,12 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
       }
     >
       <>
-        <EuiCompressedFormRow
-          label={fieldLabel('Type')}
-          fullWidth={true}
-          helpText={nested ? NORMALIZE_CHECK_HINT : CHECK_HINT}
-        >
+        <EuiText size="xs" color="subdued">
+          {nested ? NORMALIZE_CHECK_HINT : CHECK_HINT}
+        </EuiText>
+        <EuiSpacer size="s" />
+
+        <EuiCompressedFormRow label={fieldLabel('Type')} fullWidth={true}>
           <EuiCompressedSelect
             options={CHECK_MODE_OPTIONS}
             value={model.mode === 'yaml' ? 'none' : model.mode}

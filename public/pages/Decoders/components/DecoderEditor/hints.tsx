@@ -11,18 +11,15 @@ import React from 'react';
  * Written to the shape the filter form uses for its `check` field: say what the
  * field is for, then show a real example inline — a reader should not have to know
  * the decoder document by heart to fill one in.
+ *
+ * Each hint renders directly beneath the label of the field it describes, never at
+ * the bottom of a list: a hint that has scrolled away from its field explains
+ * nothing.
  */
 
-const preStyle: React.CSSProperties = {
-  margin: '4px 0 0',
-  padding: '4px 8px',
-  fontSize: '12px',
-  lineHeight: 1.5,
-  background: 'rgba(0,0,0,0.05)',
-  borderRadius: 4,
-  whiteSpace: 'pre',
-  overflowX: 'auto',
-};
+// Matches the filter form's own example block exactly: no fill, no border, just a
+// small gap above it. The example should read as part of the hint, not as a panel.
+const preStyle: React.CSSProperties = { margin: '4px 0 0 0' };
 
 const wrap: React.CSSProperties = { maxWidth: '600px' };
 

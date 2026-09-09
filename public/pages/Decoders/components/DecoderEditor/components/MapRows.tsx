@@ -70,6 +70,15 @@ export const MapRows: React.FC<MapRowsProps> = ({
 
   return (
     <div data-test-subj={`map-rows-${path}`}>
+      {helpText && (
+        <>
+          <EuiText size="xs" color="subdued">
+            {helpText}
+          </EuiText>
+          <EuiSpacer size="s" />
+        </>
+      )}
+
       {sectionError && (
         <>
           <EuiCallOut
@@ -169,15 +178,6 @@ export const MapRows: React.FC<MapRowsProps> = ({
       >
         {addLabel}
       </EuiButtonEmpty>
-
-      {helpText && (
-        <>
-          <EuiSpacer size="xs" />
-          <EuiText size="xs" color="subdued">
-            {helpText}
-          </EuiText>
-        </>
-      )}
     </div>
   );
 };

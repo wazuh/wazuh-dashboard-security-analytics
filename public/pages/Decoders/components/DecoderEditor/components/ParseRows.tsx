@@ -54,6 +54,15 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
   return (
     <div data-test-subj={`parse-rows-${path}`}>
+      {helpText && (
+        <>
+          <EuiText size="xs" color="subdued">
+            {helpText}
+          </EuiText>
+          <EuiSpacer size="s" />
+        </>
+      )}
+
       {sectionError && (
         <>
           <EuiCallOut
@@ -117,6 +126,9 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
               </EuiCompressedFormRow>
               <EuiSpacer size="m" />
 
+              <EuiText size="xs" color="subdued">
+                <p style={{ marginBottom: 4 }}>Tried in order until one succeeds.</p>
+              </EuiText>
               <FormFieldArray
                 label={fieldLabel('Expressions')}
                 values={row.expressions.length ? row.expressions : ['']}
@@ -124,9 +136,6 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />
-              <EuiText size="xs" color="subdued">
-                <p>Tried in order until one succeeds.</p>
-              </EuiText>
               <EuiSpacer size="m" />
             </EuiAccordion>
           </div>
@@ -142,15 +151,6 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
       >
         Add parser
       </EuiButtonEmpty>
-
-      {helpText && (
-        <>
-          <EuiSpacer size="xs" />
-          <EuiText size="xs" color="subdued">
-            {helpText}
-          </EuiText>
-        </>
-      )}
     </div>
   );
 };
