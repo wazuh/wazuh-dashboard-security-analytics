@@ -149,10 +149,10 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
             rows={values.definitions}
             onChange={(definitions) => set('definitions', definitions)}
             errors={fieldErrors}
-            fieldPlaceholder="Name (e.g. _threshold)"
-            valuePlaceholder="Value (text or JSON)"
+            fieldPlaceholder="_threshold"
+            valuePlaceholder="5"
             addLabel="Add definition"
-            emptyLabel="No definitions."
+            emptyLabel="No definitions yet."
             helpText={DEFINITIONS_HINT}
           />
         </>

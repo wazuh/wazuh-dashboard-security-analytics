@@ -40,7 +40,11 @@ export interface MapRowsProps {
 
 /**
  * A list of `{ <field>: <value> }` pairs, laid out like the KVDB content editor so
- * the two read as the same control.
+ * the two read as the same control — minus its `height: 37px` inline override,
+ * which is the *uncompressed* input height and cancels the compressed sizing.
+ *
+ * Vertical rhythm: `s` between rows (they are repetitions of one thing), `m`
+ * between distinct fields, `l` between sections. Nothing sets its own margins.
  *
  * The document holds these with the *field name as the key*, but the form holds
  * `{ field, value }` rows: Formik splits paths on dots, and ECS field names are
@@ -115,7 +119,6 @@ export const MapRows: React.FC<MapRowsProps> = ({
                   fullWidth
                 >
                   <EuiCompressedFieldText
-                    style={{ height: '37px', padding: '6px 8px' }}
                     placeholder={fieldPlaceholder}
                     value={row.field}
                     onChange={(e) => update(index, { field: e.target.value })}
@@ -130,7 +133,6 @@ export const MapRows: React.FC<MapRowsProps> = ({
                 <EuiCompressedFormRow fullWidth>
                   {singleLineValue ? (
                     <EuiCompressedFieldText
-                      style={{ height: '37px', padding: '6px 8px' }}
                       placeholder={valuePlaceholder}
                       value={row.value}
                       onChange={(e) => update(index, { value: e.target.value })}

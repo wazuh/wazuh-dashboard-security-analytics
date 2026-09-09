@@ -14,7 +14,7 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { fieldLabel } from '../labels';
-import { CHECK_HINT, NORMALIZE_CHECK_HINT } from '../hints';
+import { CHECK_EXPRESSION_HINT, CHECK_HINT, CHECK_LIST_HINT, NORMALIZE_CHECK_HINT } from '../hints';
 import { CheckModel } from '../DecoderEditorFormModel';
 import { checkToModel, modelToCheck, textToValue } from '../mappers';
 import { MapRows } from './MapRows';
@@ -47,6 +47,10 @@ const checkToYamlText = (model: CheckModel): string => {
 /**
  * `check` — the schema's `_check`: either a conditional expression or a list of
  * `{ field: condition }` items, both of which this editor models.
+ *
+ * The selector is labelled `Format`, not `Type`: the filter form already uses
+ * `Type` for a filter's pre/post stage, and two meanings of one noun on adjacent
+ * screens is the regression TERMINOLOGY.md exists to prevent.
  *
  * A `check` holding anything else is carried as YAML and the visual view is
  * disabled for it, rather than being reshaped into something the engine did not
@@ -98,7 +102,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
         <EuiFormHelpText>{nested ? NORMALIZE_CHECK_HINT : CHECK_HINT}</EuiFormHelpText>
         <EuiSpacer size="s" />
 
-        <EuiCompressedFormRow label={fieldLabel('Type')} fullWidth={true}>
+        <EuiCompressedFormRow label={fieldLabel('Format')} fullWidth={true}>
           <EuiCompressedSelect
             options={CHECK_MODE_OPTIONS}
             value={model.mode === 'yaml' ? 'none' : model.mode}
@@ -120,7 +124,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
             fullWidth={true}
             isInvalid={!!errors[path]}
             error={errors[path]}
-            helpText="Combine with NOT, AND, OR or a comparison operator, e.g. $event.module == syslog AND NOT $error.code"
+            helpText={CHECK_EXPRESSION_HINT}
           >
             <EuiCompressedFieldText
               placeholder="$event.module == syslog"
@@ -144,16 +148,11 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
               })
             }
             errors={errors}
-            fieldPlaceholder="Field (e.g. event.module)"
-            valuePlaceholder="Condition (e.g. syslog, $other.field, exists())"
-            helpText={
-              <>
-                Every condition must pass, in order. A condition can be a literal, a field reference
-                such as <code>$other.field</code>, or a helper such as <code>exists()</code>.
-              </>
-            }
+            fieldPlaceholder="event.module"
+            valuePlaceholder="syslog"
+            helpText={CHECK_LIST_HINT}
             addLabel="Add condition"
-            emptyLabel="No conditions. All of them must pass, in order."
+            emptyLabel="No conditions yet."
           />
         )}
       </>

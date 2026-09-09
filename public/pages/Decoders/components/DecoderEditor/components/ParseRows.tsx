@@ -78,7 +78,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
       {rows.length === 0 && (
         <EuiText size="s" color="subdued">
-          <p>No parsers. A parser reads a field and extracts values from it.</p>
+          <p>No parsers yet.</p>
         </EuiText>
       )}
 
@@ -135,7 +135,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
               <FormFieldArray
                 label={fieldLabel('Expressions')}
                 values={row.expressions.length ? row.expressions : ['']}
-                placeholder="<~timestamp/RFC3339> <~host> <~message>"
+                placeholder="Logpar expression"
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />

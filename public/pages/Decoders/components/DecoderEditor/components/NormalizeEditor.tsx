@@ -32,7 +32,7 @@ export const NormalizeEditor: React.FC<NormalizeEditorProps> = ({
   <div data-test-subj="normalize-editor">
     {entries.length === 0 && (
       <EuiText size="s" color="subdued">
-        <p>No entries yet. Each one runs in order on every event that reaches it.</p>
+        <p>No entries yet.</p>
       </EuiText>
     )}
 

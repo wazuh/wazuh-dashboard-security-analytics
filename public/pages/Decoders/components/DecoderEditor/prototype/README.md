@@ -29,3 +29,32 @@ Fold it into `DecoderEditorForm.tsx` properly (this code has no tests and no err
 handling), then delete this directory and the `variant` plumbing from
 `DecoderFormPage.tsx` and `DecoderEditorForm.tsx`. The full set lives on the
 throwaway branch, not on the version branch.
+
+## Verification behind the copy
+
+Every example and every claim in `../hints.tsx` was checked against the engine
+schema with Ajv, not written from memory. What that turned up:
+
+| checked | result |
+| --- | --- |
+| `map` / `check`-list **keys** | validated against the ECS catalog — an unknown name is rejected unless it starts with `_`. Stated on both fields, because it is the constraint users actually hit. |
+| `map` **values** | **not validated at all.** `$parsed.ip` and even `total nonsense` are accepted. The hint is the only guidance, so its examples have to be resolvable. |
+| `$parsed.ip` (earlier hint) | schema-valid but unresolvable — `parsed` is not a field and cannot be created, since custom names must start with `_`. Replaced with `$_parsed_ip`. |
+| "definition names start with `_`" (earlier hint) | **false.** `definitions: { threshold: 5 }` is accepted. Claim removed. |
+| `check` expression | needs a field reference *and* an operator, or a bare helper call. `$event.module` alone is rejected. |
+| `normalize: []`, `definitions: {}` | **rejected** (`minItems`/`minProperties` is 1). This was a real bug in `mappers.ts`, which re-emitted `normalize: []` after the user deleted every entry. Fixed and covered by a test. |
+| logpar grammar | **not verifiable.** The schema says only "List of parser expressions (e.g., logpar)", and there is no logpar example anywhere in this repository. `PARSE_HINT` therefore describes what the field does and shows no invented token syntax. **Someone who knows logpar should add a real example.** |
+
+Also fixed while verifying:
+
+- `MapRows` carried `style={{ height: '37px' }}`, copied from `KVDBContentEditor`.
+  That is the *uncompressed* input height, so the inputs were not actually rendering
+  compressed. Removed; EUI's 30–32px compressed sizing now applies.
+- The check format selector was labelled `Type`, which is already the filter form's
+  pre/post stage field. Renamed to `Format`.
+
+## Ordering by intent
+
+The shipped form (`baseline`) lists `Definitions` **before** `Check`, but definitions
+are build-time constants and are not part of the event's path. All three alternatives
+order the block the way an event travels: **Check → Parsers → Normalize → Definitions**.

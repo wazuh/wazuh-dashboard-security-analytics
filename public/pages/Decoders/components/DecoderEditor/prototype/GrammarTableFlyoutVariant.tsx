@@ -209,10 +209,10 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
           rows={values.definitions}
           onChange={(definitions) => set('definitions', definitions)}
           errors={fieldErrors}
-          fieldPlaceholder="Name (e.g. _threshold)"
-          valuePlaceholder="Value (text or JSON)"
+          fieldPlaceholder="_threshold"
+          valuePlaceholder="5"
           addLabel="Add definition"
-          emptyLabel="No definitions."
+          emptyLabel="No definitions yet."
           helpText={DEFINITIONS_HINT}
         />
       </EuiCompressedFormRow>
@@ -285,10 +285,10 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
                     rows={entry.map}
                     onChange={(map) => setEntry(editing, { ...entry, map })}
                     errors={fieldErrors}
-                    fieldPlaceholder="Field (e.g. event.kind)"
-                    valuePlaceholder="Value (text, JSON, $field or a helper)"
+                    fieldPlaceholder="event.kind"
+                    valuePlaceholder="event"
                     addLabel="Add mapping"
-                    emptyLabel="No mappings. A mapping assigns a value to a field."
+                    emptyLabel="No mappings yet."
                     helpText={MAP_HINT}
                   />
                 </EuiCompressedFormRow>

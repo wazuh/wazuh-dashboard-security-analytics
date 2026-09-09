@@ -291,8 +291,11 @@ export const mapFormToDecoder = (values: DecoderFormModel): DecoderDocument => {
     document.parents = values.parents.filter((parent) => parent.trim() !== '');
   }
 
+  // `definitions` has minProperties: 1 and `normalize` has minItems: 1, so writing
+  // an empty one back produces a document the engine rejects. Emptying the section
+  // means removing the key, even when the loaded document had it.
   const definitions = values.definitions.filter((row) => row.field.trim() !== '');
-  if (definitions.length > 0 || rootPresent.has('definitions')) {
+  if (definitions.length > 0) {
     document.definitions = Object.fromEntries(
       definitions.map((row) => [row.field.trim(), textToValue(row.value)])
     );
@@ -302,7 +305,7 @@ export const mapFormToDecoder = (values: DecoderFormModel): DecoderDocument => {
 
   Object.assign(document, rowsToParseKeys(values.parsers));
 
-  if (values.normalize.length > 0 || rootPresent.has('normalize')) {
+  if (values.normalize.length > 0) {
     document.normalize = values.normalize.map(modelToNormalizeEntry);
   }
 

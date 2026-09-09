@@ -148,10 +148,10 @@ export const NormalizeEntryEditor: React.FC<NormalizeEntryEditorProps> = ({
             rows={entry.map}
             onChange={(map) => onChange({ ...entry, map })}
             errors={errors}
-            fieldPlaceholder="Field (e.g. event.kind)"
-            valuePlaceholder="Value (text, JSON, $field or a helper)"
+            fieldPlaceholder="event.kind"
+            valuePlaceholder="event"
             addLabel="Add mapping"
-            emptyLabel="No mappings. A mapping assigns a value to a field."
+            emptyLabel="No mappings yet."
             helpText={MAP_HINT}
           />
         </>
