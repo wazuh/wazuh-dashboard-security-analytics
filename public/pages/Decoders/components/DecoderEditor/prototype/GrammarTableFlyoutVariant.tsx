@@ -22,7 +22,6 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
-import FormFieldHeader from '../../../../../components/FormFieldHeader';
 import { CheckEditor } from '../components/CheckEditor';
 import { MapRows } from '../components/MapRows';
 import { ParseRows } from '../components/ParseRows';
@@ -40,6 +39,8 @@ import {
 } from '../mappers';
 import { GrammarVariantProps } from './GrammarVariantProps';
 import YAML from 'yaml';
+import { fieldLabel } from '../labels';
+import { DEFINITIONS_HINT, MAP_HINT, PARSE_HINT } from '../hints';
 
 const summarizeCheck = (entry: NormalizeEntryModel): string => {
   if (entry.raw !== undefined) return '—';
@@ -152,16 +153,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
 
   return (
     <EuiPanel hasShadow={false} hasBorder paddingSize="l">
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Check'}
-            optionalField={true}
-            toolTipText="Decides whether this decoder accepts the event at all."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Check', true)} fullWidth={true}>
         <CheckEditor
           path="check"
           model={values.check}
@@ -171,21 +163,13 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Parsers'}
-            optionalField={true}
-            toolTipText="Parsers applied at the top level, before normalize runs."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Parsers', true)} fullWidth={true}>
         <ParseRows
           path="parsers"
           rows={values.parsers}
           onChange={(parsers) => set('parsers', parsers)}
           errors={fieldErrors}
+          helpText={PARSE_HINT}
         />
       </EuiCompressedFormRow>
 
@@ -219,16 +203,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
 
       <EuiHorizontalRule margin="l" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Definitions'}
-            optionalField={true}
-            toolTipText="Build-time typed macros, expanded by interpolation."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Definitions', true)} fullWidth={true}>
         <MapRows
           path="definitions"
           rows={values.definitions}
@@ -238,6 +213,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
           valuePlaceholder="Value (text or JSON)"
           addLabel="Add definition"
           emptyLabel="No definitions."
+          helpText={DEFINITIONS_HINT}
         />
       </EuiCompressedFormRow>
 
@@ -281,12 +257,10 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
               }
             >
               <>
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Check'} optionalField={true} />}
-                  fullWidth={true}
-                >
+                <EuiCompressedFormRow label={fieldLabel('Check', true)} fullWidth={true}>
                   <CheckEditor
                     path={`normalize[${editing}].check`}
+                    nested
                     model={entry.check}
                     onChange={(check) => setEntry(editing, { ...entry, check })}
                     errors={fieldErrors}
@@ -294,23 +268,18 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
 
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Parsers'} optionalField={true} />}
-                  fullWidth={true}
-                >
+                <EuiCompressedFormRow label={fieldLabel('Parsers', true)} fullWidth={true}>
                   <ParseRows
                     path={`normalize[${editing}].parsers`}
                     rows={entry.parsers}
                     onChange={(parsers) => setEntry(editing, { ...entry, parsers })}
                     errors={fieldErrors}
+                    helpText={PARSE_HINT}
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
 
-                <EuiCompressedFormRow
-                  label={<FormFieldHeader headerTitle={'Map'} optionalField={true} />}
-                  fullWidth={true}
-                >
+                <EuiCompressedFormRow label={fieldLabel('Map', true)} fullWidth={true}>
                   <MapRows
                     path={`normalize[${editing}].map`}
                     rows={entry.map}
@@ -320,6 +289,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
                     valuePlaceholder="Value (text, JSON, $field or a helper)"
                     addLabel="Add mapping"
                     emptyLabel="No mappings. A mapping assigns a value to a field."
+                    helpText={MAP_HINT}
                   />
                 </EuiCompressedFormRow>
               </>

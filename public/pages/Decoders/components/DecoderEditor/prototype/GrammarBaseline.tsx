@@ -6,13 +6,14 @@
 
 import React from 'react';
 import { EuiCompressedFormRow, EuiSpacer } from '@elastic/eui';
-import FormFieldHeader from '../../../../../components/FormFieldHeader';
 import { CheckEditor } from '../components/CheckEditor';
 import { MapRows } from '../components/MapRows';
 import { NormalizeEditor } from '../components/NormalizeEditor';
 import { ParseRows } from '../components/ParseRows';
+import { fieldLabel } from '../labels';
 import { DecoderFormModel } from '../DecoderEditorFormModel';
 import { GrammarVariantProps } from './GrammarVariantProps';
+import { DEFINITIONS_HINT, PARSE_HINT } from '../hints';
 
 /** What is on 5.0.0 today — the thing the other variants are judged against. */
 export const GrammarBaseline: React.FC<GrammarVariantProps> = ({
@@ -25,16 +26,7 @@ export const GrammarBaseline: React.FC<GrammarVariantProps> = ({
 
   return (
     <>
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Definitions'}
-            optionalField={true}
-            toolTipText="Build-time typed macros, expanded by interpolation."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Definitions', true)} fullWidth={true}>
         <MapRows
           path="definitions"
           rows={values.definitions}
@@ -44,20 +36,12 @@ export const GrammarBaseline: React.FC<GrammarVariantProps> = ({
           valuePlaceholder="Value (text or JSON)"
           addLabel="Add definition"
           emptyLabel="No definitions."
+          helpText={DEFINITIONS_HINT}
         />
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Check'}
-            optionalField={true}
-            toolTipText="Decides whether this decoder accepts the event at all."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Check', true)} fullWidth={true}>
         <CheckEditor
           path="check"
           model={values.check}
@@ -67,35 +51,18 @@ export const GrammarBaseline: React.FC<GrammarVariantProps> = ({
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Parsers'}
-            optionalField={true}
-            toolTipText="Parsers applied at the top level, before normalize runs."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Parsers', true)} fullWidth={true}>
         <ParseRows
           path="parsers"
           rows={values.parsers}
           onChange={(parsers) => set('parsers', parsers)}
           errors={fieldErrors}
+          helpText={PARSE_HINT}
         />
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Normalize'}
-            optionalField={true}
-            toolTipText="Sequential sub-stages, each run in order."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Normalize', true)} fullWidth={true}>
         <NormalizeEditor
           entries={values.normalize}
           onChange={(normalize) => set('normalize', normalize)}

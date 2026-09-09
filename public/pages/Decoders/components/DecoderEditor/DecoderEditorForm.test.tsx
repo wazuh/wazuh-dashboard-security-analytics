@@ -27,6 +27,15 @@ const subj = (wrapper: ReactWrapper, name: string) =>
   wrapper.find(`[data-test-subj="${name}"]`).hostNodes();
 
 describe('DecoderEditorForm', () => {
+  it('marks optional fields the way the filter form does', () => {
+    const wrapper = render(mapDecoderToForm(document));
+    // Filters render `Label - <em>optional</em>`; FormFieldHeader's own marker adds a
+    // trailing space that leaves a visible gap. See ./labels.tsx.
+    expect(wrapper.find('em').map((node) => node.text())).toContain('optional');
+    expect(wrapper.text()).toContain('Documentation - optional');
+    expect(wrapper.text()).not.toContain('optional  ');
+  });
+
   it('renders one slot per normalize entry, in document order', () => {
     const wrapper = render(mapDecoderToForm(document));
     expect(subj(wrapper, 'normalize-entry-0').length).toBeGreaterThan(0);
@@ -96,21 +105,25 @@ describe('DecoderEditorForm', () => {
     // Guards the decision recorded in TERMINOLOGY.md: a field that also appears on a
     // sibling editor is never renamed here just because its document key differs.
     const wrapper = render(mapDecoderToForm(document));
-    const labels = wrapper.find('FormFieldHeader').map((header) => header.prop('headerTitle'));
+    const text = wrapper.text();
 
-    expect(labels).toEqual(
-      expect.arrayContaining(['Title', 'Author', 'Description', 'Documentation', 'References'])
+    ['Title', 'Author', 'Description', 'Documentation', 'References'].forEach((label) =>
+      expect(text).toContain(label)
     );
-    expect(labels).not.toEqual(expect.arrayContaining(['title', 'author', 'description']));
   });
 
   it('orders its fields on the KVDB spine', () => {
     // Identity, the metadata block both siblings order identically, then the
     // decoder grammar in document order. See TERMINOLOGY.md and the component doc.
     const wrapper = render(mapDecoderToForm(document));
-    const labels = wrapper.find('FormFieldHeader').map((header) => header.prop('headerTitle'));
+    const labels = wrapper
+      .find('strong')
+      .map((node) => node.text())
+      .filter(
+        (label) => !label.startsWith('Normalize ') && label !== 'Field' && label !== 'Expressions'
+      );
 
-    expect(labels.filter((label) => label !== 'Field' && label !== 'Expressions')).toEqual([
+    expect(labels).toEqual([
       'ID',
       'Name',
       'Title',

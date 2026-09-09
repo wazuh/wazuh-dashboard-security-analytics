@@ -21,6 +21,7 @@ import { CheckEditor } from './CheckEditor';
 import { MapRows } from './MapRows';
 import { ParseRows } from './ParseRows';
 import { YamlSlot } from './YamlSlot';
+import { MAP_HINT, PARSE_HINT } from '../hints';
 
 export interface NormalizeEntryEditorProps {
   /** Formik path of the entry, e.g. `normalize[0]`. */
@@ -110,6 +111,7 @@ export const NormalizeEntryEditor: React.FC<NormalizeEntryEditorProps> = ({
             <CheckEditor
               label="Check"
               path={`${path}.check`}
+              nested
               model={entry.check}
               onChange={(check) => onChange({ ...entry, check })}
               errors={errors}
@@ -129,6 +131,7 @@ export const NormalizeEntryEditor: React.FC<NormalizeEntryEditorProps> = ({
               rows={entry.parsers}
               onChange={(parsers) => onChange({ ...entry, parsers })}
               errors={errors}
+              helpText={PARSE_HINT}
             />
             <EuiSpacer size="m" />
           </EuiAccordion>
@@ -149,6 +152,7 @@ export const NormalizeEntryEditor: React.FC<NormalizeEntryEditorProps> = ({
               valuePlaceholder="Value (text, JSON, $field or a helper)"
               addLabel="Add mapping"
               emptyLabel="No mappings. A mapping assigns a value to a field."
+              helpText={MAP_HINT}
             />
             <EuiSpacer size="m" />
           </EuiAccordion>

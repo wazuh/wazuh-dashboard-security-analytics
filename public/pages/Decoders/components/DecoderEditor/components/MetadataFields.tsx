@@ -10,9 +10,9 @@ import {
   EuiCompressedTextArea,
   EuiSpacer,
 } from '@elastic/eui';
-import FormFieldHeader from '../../../../../components/FormFieldHeader';
 import { FormFieldArray } from '../../../../../components/FormFieldArray';
 import { DecoderMetadataModel } from '../DecoderEditorFormModel';
+import { fieldLabel } from '../labels';
 
 export interface MetadataFieldsProps {
   metadata: DecoderMetadataModel;
@@ -50,7 +50,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
   return (
     <>
       <EuiCompressedFormRow
-        label={<FormFieldHeader headerTitle={'Title'} />}
+        label={fieldLabel('Title')}
         fullWidth={true}
         isInvalid={!!errors['metadata.title']}
         error={errors['metadata.title']}
@@ -67,7 +67,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
       <EuiSpacer size="m" />
 
       <EuiCompressedFormRow
-        label={<FormFieldHeader headerTitle={'Author'} />}
+        label={fieldLabel('Author')}
         fullWidth={true}
         isInvalid={!!errors['metadata.author']}
         error={errors['metadata.author']}
@@ -86,7 +86,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
       {afterAuthor}
 
       <EuiCompressedFormRow
-        label={<FormFieldHeader headerTitle={'Description'} />}
+        label={fieldLabel('Description')}
         fullWidth={true}
         isInvalid={!!errors['metadata.description']}
         error={errors['metadata.description']}
@@ -102,10 +102,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={<FormFieldHeader headerTitle={'Documentation'} optionalField={true} />}
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Documentation', true)} fullWidth={true}>
         <EuiCompressedTextArea
           placeholder="Enter documentation"
           value={metadata.documentation}
@@ -116,7 +113,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
       <EuiSpacer size="m" />
 
       <FormFieldArray
-        label={<FormFieldHeader headerTitle={'References'} optionalField={true} />}
+        label={fieldLabel('References', true)}
         values={metadata.references.length ? metadata.references : ['']}
         placeholder="https://example.com/reference"
         addButtonLabel="Add reference"
@@ -124,14 +121,14 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
       />
 
       <FormFieldArray
-        label={<FormFieldHeader headerTitle={'Supports'} optionalField={true} />}
+        label={fieldLabel('Supports', true)}
         values={metadata.supports.length ? metadata.supports : ['']}
         addButtonLabel="Add support"
         onChange={(supports) => set('supports', supports)}
       />
 
       <FormFieldArray
-        label={<FormFieldHeader headerTitle={'Compatibility'} optionalField={true} />}
+        label={fieldLabel('Compatibility', true)}
         values={metadata.compatibility.length ? metadata.compatibility : ['']}
         addButtonLabel="Add compatibility"
         onChange={(compatibility) => set('compatibility', compatibility)}

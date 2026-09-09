@@ -15,7 +15,7 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
-import FormFieldHeader from '../../../../../components/FormFieldHeader';
+import { fieldLabel } from '../labels';
 import { FormFieldArray } from '../../../../../components/FormFieldArray';
 import { ParserRow } from '../DecoderEditorFormModel';
 
@@ -25,6 +25,8 @@ export interface ParseRowsProps {
   rows: ParserRow[];
   onChange: (rows: ParserRow[]) => void;
   errors?: Record<string, string>;
+  /** Shown once under the list — say what a parser is for and show a real example. */
+  helpText?: React.ReactNode;
 }
 
 /**
@@ -36,7 +38,13 @@ export interface ParseRowsProps {
  * the same reason `map` becomes rows: a target like `parse|event.original` would
  * otherwise be read by Formik as nesting.
  */
-export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, errors = {} }) => {
+export const ParseRows: React.FC<ParseRowsProps> = ({
+  path,
+  rows,
+  onChange,
+  errors = {},
+  helpText,
+}) => {
   const update = (index: number, patch: Partial<ParserRow>) =>
     onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
 
@@ -92,8 +100,8 @@ export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, erro
             >
               <EuiSpacer size="s" />
               <EuiCompressedFormRow
-                label={<FormFieldHeader headerTitle={'Field'} />}
-                helpText="The field the parser reads."
+                label={fieldLabel('Field')}
+                helpText="The field this parser reads, for example message or event.original."
                 fullWidth={true}
                 isInvalid={missingField || !!errors[rowPath]}
                 error={missingField ? 'A parser needs the field it reads' : errors[rowPath]}
@@ -110,17 +118,15 @@ export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, erro
               <EuiSpacer size="m" />
 
               <FormFieldArray
-                label={
-                  <FormFieldHeader
-                    headerTitle={'Expressions'}
-                    toolTipText="Evaluated in order until one succeeds."
-                  />
-                }
+                label={fieldLabel('Expressions')}
                 values={row.expressions.length ? row.expressions : ['']}
-                placeholder="<~>"
+                placeholder="<~timestamp/RFC3339> <~host> <~message>"
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />
+              <EuiText size="xs" color="subdued">
+                <p>Tried in order until one succeeds.</p>
+              </EuiText>
               <EuiSpacer size="m" />
             </EuiAccordion>
           </div>
@@ -136,6 +142,15 @@ export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, erro
       >
         Add parser
       </EuiButtonEmpty>
+
+      {helpText && (
+        <>
+          <EuiSpacer size="xs" />
+          <EuiText size="xs" color="subdued">
+            {helpText}
+          </EuiText>
+        </>
+      )}
     </div>
   );
 };

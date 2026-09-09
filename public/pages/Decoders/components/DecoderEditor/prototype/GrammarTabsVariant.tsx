@@ -25,6 +25,7 @@ import { DecoderFormModel, emptyNormalizeEntry } from '../DecoderEditorFormModel
 import { modelToNormalizeEntry, normalizeEntryToModel, textToValue } from '../mappers';
 import { GrammarVariantProps } from './GrammarVariantProps';
 import YAML from 'yaml';
+import { DEFINITIONS_HINT, MAP_HINT, PARSE_HINT } from '../hints';
 
 const countErrors = (errors: Record<string, string>, prefix: string) =>
   Object.keys(errors).filter(
@@ -109,6 +110,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
             rows={values.parsers}
             onChange={(parsers) => set('parsers', parsers)}
             errors={fieldErrors}
+            helpText={PARSE_HINT}
           />
         </>
       ),
@@ -187,6 +189,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
                   <>
                     <CheckEditor
                       path={`normalize[${index}].check`}
+                      nested
                       model={entry.check}
                       onChange={(check) => setEntry(index, { ...entry, check })}
                       errors={fieldErrors}
@@ -197,6 +200,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
                       rows={entry.parsers}
                       onChange={(parsers) => setEntry(index, { ...entry, parsers })}
                       errors={fieldErrors}
+                      helpText={PARSE_HINT}
                     />
                     <EuiSpacer size="m" />
                     <MapRows
@@ -208,6 +212,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
                       valuePlaceholder="Value (text, JSON, $field or a helper)"
                       addLabel="Add mapping"
                       emptyLabel="No mappings. A mapping assigns a value to a field."
+                      helpText={MAP_HINT}
                     />
                   </>
                 </YamlSlot>
@@ -246,6 +251,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
             valuePlaceholder="Value (text or JSON)"
             addLabel="Add definition"
             emptyLabel="No definitions."
+            helpText={DEFINITIONS_HINT}
           />
         </>
       ),

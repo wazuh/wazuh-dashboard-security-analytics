@@ -12,7 +12,8 @@ import {
   EuiSpacer,
   EuiText,
 } from '@elastic/eui';
-import FormFieldHeader from '../../../../../components/FormFieldHeader';
+import { fieldLabel } from '../labels';
+import { CHECK_HINT, NORMALIZE_CHECK_HINT } from '../hints';
 import { CheckModel } from '../DecoderEditorFormModel';
 import { checkToModel, modelToCheck, textToValue } from '../mappers';
 import { MapRows } from './MapRows';
@@ -29,6 +30,8 @@ export interface CheckEditorProps {
   path: string;
   /** What this check is called on screen. */
   label?: string;
+  /** A nested check gets a shorter hint than the decoder-level one. */
+  nested?: boolean;
   model: CheckModel;
   onChange: (model: CheckModel) => void;
   errors?: Record<string, string>;
@@ -51,6 +54,7 @@ const checkToYamlText = (model: CheckModel): string => {
 export const CheckEditor: React.FC<CheckEditorProps> = ({
   path,
   label = 'Check',
+  nested = false,
   model,
   onChange,
   errors = {},
@@ -91,9 +95,9 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
     >
       <>
         <EuiCompressedFormRow
-          label={<FormFieldHeader headerTitle={'Type'} />}
+          label={fieldLabel('Type')}
           fullWidth={true}
-          helpText="A check is either a single expression or a list of conditions."
+          helpText={nested ? NORMALIZE_CHECK_HINT : CHECK_HINT}
         >
           <EuiCompressedSelect
             options={CHECK_MODE_OPTIONS}
@@ -112,11 +116,11 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
 
         {model.mode === 'expression' && (
           <EuiCompressedFormRow
-            label={<FormFieldHeader headerTitle={'Expression'} />}
+            label={fieldLabel('Expression')}
             fullWidth={true}
             isInvalid={!!errors[path]}
             error={errors[path]}
-            helpText="A condition over $fields, optionally with NOT, AND, OR or comparison operators."
+            helpText="Combine with NOT, AND, OR or a comparison operator, e.g. $event.module == syslog AND NOT $error.code"
           >
             <EuiCompressedFieldText
               placeholder="$event.module == syslog"
@@ -142,6 +146,12 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
             errors={errors}
             fieldPlaceholder="Field (e.g. event.module)"
             valuePlaceholder="Condition (e.g. syslog, $other.field, exists())"
+            helpText={
+              <>
+                Every condition must pass, in order. A condition can be a literal, a field reference
+                such as <code>$other.field</code>, or a helper such as <code>exists()</code>.
+              </>
+            }
             addLabel="Add condition"
             emptyLabel="No conditions. All of them must pass, in order."
           />

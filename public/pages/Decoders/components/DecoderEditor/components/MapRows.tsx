@@ -12,7 +12,7 @@ import {
   EuiCompressedTextArea,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiFormRow,
+  EuiCompressedFormRow,
   EuiSpacer,
   EuiText,
   EuiToolTip,
@@ -31,6 +31,8 @@ export interface MapRowsProps {
   emptyLabel: string;
   fieldPlaceholder: string;
   valuePlaceholder: string;
+  /** Shown once under the list — say what a row is for and show a real example. */
+  helpText?: React.ReactNode;
   /** Renders the value as a single line instead of a growing textarea. */
   singleLineValue?: boolean;
 }
@@ -54,6 +56,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
   emptyLabel,
   fieldPlaceholder,
   valuePlaceholder,
+  helpText,
   singleLineValue = false,
 }) => {
   const update = (index: number, patch: Partial<FieldValueRow>) =>
@@ -98,7 +101,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
             {index > 0 && <EuiSpacer size="s" />}
             <EuiFlexGroup alignItems="flexStart" gutterSize="s" responsive={false}>
               <EuiFlexItem grow={3}>
-                <EuiFormRow
+                <EuiCompressedFormRow
                   isInvalid={missingField || !!rowError}
                   error={missingField ? 'A value needs a field to go in' : rowError}
                   fullWidth
@@ -112,11 +115,11 @@ export const MapRows: React.FC<MapRowsProps> = ({
                     fullWidth
                     data-test-subj={`${rowPath}.field`}
                   />
-                </EuiFormRow>
+                </EuiCompressedFormRow>
               </EuiFlexItem>
 
               <EuiFlexItem grow={6}>
-                <EuiFormRow fullWidth>
+                <EuiCompressedFormRow fullWidth>
                   {singleLineValue ? (
                     <EuiCompressedFieldText
                       style={{ height: '37px', padding: '6px 8px' }}
@@ -136,11 +139,11 @@ export const MapRows: React.FC<MapRowsProps> = ({
                       data-test-subj={`${rowPath}.value`}
                     />
                   )}
-                </EuiFormRow>
+                </EuiCompressedFormRow>
               </EuiFlexItem>
 
               <EuiFlexItem grow={false}>
-                <EuiFormRow>
+                <EuiCompressedFormRow>
                   <EuiToolTip content="Remove entry">
                     <EuiButtonIcon
                       iconType="trash"
@@ -150,7 +153,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
                       data-test-subj={`${rowPath}.delete`}
                     />
                   </EuiToolTip>
-                </EuiFormRow>
+                </EuiCompressedFormRow>
               </EuiFlexItem>
             </EuiFlexGroup>
           </div>
@@ -166,6 +169,15 @@ export const MapRows: React.FC<MapRowsProps> = ({
       >
         {addLabel}
       </EuiButtonEmpty>
+
+      {helpText && (
+        <>
+          <EuiSpacer size="xs" />
+          <EuiText size="xs" color="subdued">
+            {helpText}
+          </EuiText>
+        </>
+      )}
     </div>
   );
 };

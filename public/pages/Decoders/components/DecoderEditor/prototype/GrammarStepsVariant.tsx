@@ -16,15 +16,16 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
-import FormFieldHeader from '../../../../../components/FormFieldHeader';
 import { CheckEditor } from '../components/CheckEditor';
 import { MapRows } from '../components/MapRows';
 import { ParseRows } from '../components/ParseRows';
 import { YamlSlot } from '../components/YamlSlot';
+import { fieldLabel } from '../labels';
 import { DecoderFormModel, emptyNormalizeEntry } from '../DecoderEditorFormModel';
 import { modelToNormalizeEntry, normalizeEntryToModel, textToValue } from '../mappers';
 import { GrammarVariantProps } from './GrammarVariantProps';
 import YAML from 'yaml';
+import { DEFINITIONS_HINT, MAP_HINT, PARSE_HINT } from '../hints';
 
 /**
  * The sequence *is* the layout.
@@ -80,12 +81,10 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
           }
         >
           <>
-            <EuiCompressedFormRow
-              label={<FormFieldHeader headerTitle={'Check'} optionalField={true} />}
-              fullWidth={true}
-            >
+            <EuiCompressedFormRow label={fieldLabel('Check', true)} fullWidth={true}>
               <CheckEditor
                 path={`normalize[${index}].check`}
+                nested
                 model={entry.check}
                 onChange={(check) => setEntry(index, { ...entry, check })}
                 errors={fieldErrors}
@@ -93,23 +92,18 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
             </EuiCompressedFormRow>
             <EuiSpacer size="m" />
 
-            <EuiCompressedFormRow
-              label={<FormFieldHeader headerTitle={'Parsers'} optionalField={true} />}
-              fullWidth={true}
-            >
+            <EuiCompressedFormRow label={fieldLabel('Parsers', true)} fullWidth={true}>
               <ParseRows
                 path={`normalize[${index}].parsers`}
                 rows={entry.parsers}
                 onChange={(parsers) => setEntry(index, { ...entry, parsers })}
                 errors={fieldErrors}
+                helpText={PARSE_HINT}
               />
             </EuiCompressedFormRow>
             <EuiSpacer size="m" />
 
-            <EuiCompressedFormRow
-              label={<FormFieldHeader headerTitle={'Map'} optionalField={true} />}
-              fullWidth={true}
-            >
+            <EuiCompressedFormRow label={fieldLabel('Map', true)} fullWidth={true}>
               <MapRows
                 path={`normalize[${index}].map`}
                 rows={entry.map}
@@ -119,6 +113,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
                 valuePlaceholder="Value (text, JSON, $field or a helper)"
                 addLabel="Add mapping"
                 emptyLabel="No mappings. A mapping assigns a value to a field."
+                helpText={MAP_HINT}
               />
             </EuiCompressedFormRow>
           </>
@@ -173,6 +168,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
             rows={values.parsers}
             onChange={(parsers) => set('parsers', parsers)}
             errors={fieldErrors}
+            helpText={PARSE_HINT}
           />
         </>
       ),
@@ -194,16 +190,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
 
       <EuiHorizontalRule margin="l" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Definitions'}
-            optionalField={true}
-            toolTipText="Build-time typed macros, expanded by interpolation. Not part of the pipeline."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Definitions', true)} fullWidth={true}>
         <MapRows
           path="definitions"
           rows={values.definitions}
@@ -213,6 +200,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
           valuePlaceholder="Value (text or JSON)"
           addLabel="Add definition"
           emptyLabel="No definitions."
+          helpText={DEFINITIONS_HINT}
         />
       </EuiCompressedFormRow>
     </EuiPanel>
