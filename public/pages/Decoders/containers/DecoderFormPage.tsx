@@ -55,6 +55,12 @@ import {
   collectStructuralErrors,
   hasStructuralErrors,
 } from '../components/DecoderEditor/structuralValidation';
+// PROTOTYPE — remove with ../components/DecoderEditor/prototype once a layout wins.
+import {
+  GRAMMAR_VARIANTS,
+  PrototypeVariantSwitcher,
+  resolveGrammarVariant,
+} from '../components/DecoderEditor/prototype';
 
 const EDITOR_TYPE = {
   VISUAL: 'visual',
@@ -88,6 +94,18 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const { notifications, history, action } = props;
   const idDecoder = props.match.params.id;
   const spaceDecoder = new URLSearchParams(props.location?.search).get('space') ?? '';
+  // PROTOTYPE — ?variant= selects the decoder-specific block's layout.
+  const grammarVariant = resolveGrammarVariant(
+    new URLSearchParams(props.location?.search).get('variant')
+  ).key;
+  const selectPrototypeVariant = useCallback(
+    (key: string) => {
+      const params = new URLSearchParams(history.location.search);
+      params.set('variant', key);
+      history.replace({ ...history.location, search: `?${params.toString()}` });
+    },
+    [history]
+  );
   // Wazuh: back to the Decoders list, unless the form was opened from elsewhere
   // (the Integration details Decoders tab) and that page asked for a return path.
   const returnTo = getReturnTo(history.location.search, ROUTES.DECODERS);
@@ -343,6 +361,8 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
               onIntegrationCreateSuccess={onIntegrationCreateSuccess}
               notifications={notifications}
               handleOnClick={handleOnClick}
+              grammarVariant={grammarVariant}
+              onSelectVariant={selectPrototypeVariant}
             />
           )}
         </Formik>
@@ -371,6 +391,10 @@ interface DecoderFormBodyProps {
   onIntegrationCreateSuccess: (option: { id: string }) => void;
   notifications: NotificationsStart;
   handleOnClick: (values: DecoderFormModel) => Promise<void>;
+  /** PROTOTYPE */
+  grammarVariant: string;
+  /** PROTOTYPE */
+  onSelectVariant: (key: string) => void;
 }
 
 const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
@@ -393,6 +417,8 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
   onIntegrationCreateSuccess,
   notifications,
   handleOnClick,
+  grammarVariant,
+  onSelectVariant,
 }) => {
   const values: DecoderFormModel = formikProps.values;
   const validationSeq = useRef(0);
@@ -502,6 +528,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
 
         {selectedEditorType === EDITOR_TYPE.VISUAL && (
           <DecoderEditorForm
+            variant={grammarVariant}
             values={values}
             onChange={onVisualChange}
             fieldErrors={{ ...schemaWarnings.fields, ...structuralErrors }}
@@ -524,6 +551,12 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
           />
         )}
       </EuiPanel>
+
+      <PrototypeVariantSwitcher
+        variants={GRAMMAR_VARIANTS.map(({ key, name }) => ({ key, name }))}
+        current={grammarVariant}
+        onSelect={onSelectVariant}
+      />
 
       <EuiBottomBar>
         <EuiFlexGroup

@@ -15,10 +15,9 @@ import FormFieldHeader from '../../../../components/FormFieldHeader';
 import { FormFieldArray } from '../../../../components/FormFieldArray';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { MetadataFields } from './components/MetadataFields';
-import { CheckEditor } from './components/CheckEditor';
-import { NormalizeEditor } from './components/NormalizeEditor';
-import { ParseRows } from './components/ParseRows';
-import { MapRows } from './components/MapRows';
+// PROTOTYPE — the decoder-specific block is swappable while its layout is being
+// decided. Remove this, the `variant` prop and ./prototype once a winner lands.
+import { resolveGrammarVariant } from './prototype';
 
 export interface DecoderEditorFormProps {
   values: DecoderFormModel;
@@ -27,6 +26,8 @@ export interface DecoderEditorFormProps {
   fieldErrors?: Record<string, string>;
   /** Schema errors with no field to land on. */
   documentErrors?: string[];
+  /** PROTOTYPE — which rendering of the decoder-specific block to show. */
+  variant?: string;
 }
 
 /**
@@ -49,11 +50,13 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
   onChange,
   fieldErrors = {},
   documentErrors = [],
+  variant,
 }) => {
   const set = <K extends keyof DecoderFormModel>(key: K, value: DecoderFormModel[K]) =>
     onChange({ ...values, [key]: value });
 
   const preservedKeys = Object.keys(values.__preserved);
+  const Grammar = resolveGrammarVariant(variant).Component;
 
   return (
     <div data-test-subj="decoder-visual-editor">
@@ -160,83 +163,8 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
         onChange={(parents) => set('parents', parents)}
       />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Definitions'}
-            optionalField={true}
-            toolTipText="Build-time typed macros, expanded by interpolation."
-          />
-        }
-        fullWidth={true}
-      >
-        <MapRows
-          path="definitions"
-          rows={values.definitions}
-          onChange={(definitions) => set('definitions', definitions)}
-          errors={fieldErrors}
-          fieldPlaceholder="Name (e.g. _threshold)"
-          valuePlaceholder="Value (text or JSON)"
-          addLabel="Add definition"
-          emptyLabel="No definitions."
-        />
-      </EuiCompressedFormRow>
-      <EuiSpacer size="m" />
-
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Check'}
-            optionalField={true}
-            toolTipText="Decides whether this decoder accepts the event at all."
-          />
-        }
-        fullWidth={true}
-      >
-        <CheckEditor
-          path="check"
-          model={values.check}
-          onChange={(check) => set('check', check)}
-          errors={fieldErrors}
-        />
-      </EuiCompressedFormRow>
-      <EuiSpacer size="m" />
-
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Parsers'}
-            optionalField={true}
-            toolTipText="Parsers applied at the top level, before normalize runs."
-          />
-        }
-        fullWidth={true}
-      >
-        <ParseRows
-          path="parsers"
-          rows={values.parsers}
-          onChange={(parsers) => set('parsers', parsers)}
-          errors={fieldErrors}
-        />
-      </EuiCompressedFormRow>
-      <EuiSpacer size="m" />
-
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Normalize'}
-            optionalField={true}
-            toolTipText="Sequential sub-stages, each run in order."
-          />
-        }
-        fullWidth={true}
-      >
-        <NormalizeEditor
-          entries={values.normalize}
-          onChange={(normalize) => set('normalize', normalize)}
-          errors={fieldErrors}
-        />
-      </EuiCompressedFormRow>
+      {/* PROTOTYPE — decoder-specific block, swappable via ?variant= */}
+      <Grammar values={values} onChange={onChange} fieldErrors={fieldErrors} />
     </div>
   );
 };
