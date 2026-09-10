@@ -204,7 +204,9 @@ describe('DecoderEditorForm', () => {
 
     it('still says inline what to type into the normalize editor', () => {
       // The popover is reference material; an empty editor must never be unexplained.
-      expect(render(mapDecoderToForm(document)).text()).toContain('Start each entry with');
+      expect(render(mapDecoderToForm(document)).text()).toContain(
+        'Each entry can check a condition'
+      );
     });
 
     it('keeps syntax guidance inline, where it is needed while typing', () => {
@@ -267,7 +269,7 @@ describe('DecoderEditorForm', () => {
       });
       wrapper.update();
 
-      expect(wrapper.text()).toContain('must be a list of entries');
+      expect(wrapper.text()).toContain('Normalize must be a list');
       expect(onChange).not.toHaveBeenCalled();
     });
 
@@ -289,7 +291,7 @@ describe('DecoderEditorForm', () => {
       expect(editor(wrapper).prop('placeholder')).toBeUndefined();
 
       const text = wrapper.text();
-      expect(text).toContain('Start each entry with');
+      expect(text).toContain('Each entry can check a condition');
       expect(text).toContain("- check: $event.code == '4624'");
       expect(text).toContain('  map:');
     });

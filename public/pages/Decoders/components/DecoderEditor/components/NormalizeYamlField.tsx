@@ -26,8 +26,7 @@ const examplePreStyle: React.CSSProperties = { margin: '4px 0 0 0' };
 
 const STRUCTURE_HELP = (
   <div style={{ maxWidth: '600px' }}>
-    Start each entry with <code>- </code>. An entry can check a condition, parse a field, and set
-    fields:
+    Each entry can check a condition, parse a field, and set fields:
     <pre style={examplePreStyle}>{`- check: $event.code == '4624'
   parse|event.original:
     - <_tmp.date/date/%y%m%d %T> <_tmp.message>
@@ -36,8 +35,7 @@ const STRUCTURE_HELP = (
   </div>
 );
 
-const NOT_A_LIST =
-  'normalize must be a list of entries, each starting with "- ". For example: "- map:".';
+const NOT_A_LIST = 'Normalize must be a list. Start each entry with a dash and a space.';
 
 /**
  * `normalize`, edited as YAML.

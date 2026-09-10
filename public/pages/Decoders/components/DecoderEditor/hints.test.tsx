@@ -9,6 +9,7 @@ import Ajv from 'ajv';
 import decoderSchema from '../../../../../common/schemas/wazuh-decoders.schema.json';
 import {
   CHECK_EXPRESSION_HINT,
+  CHECK_LIST_HINT,
   DEFINITIONS_HINT,
   MAP_HINT,
   NAME_HINT,
@@ -110,6 +111,29 @@ describe('placeholders', () => {
     // a generic prompt — the same call the filter form makes for filter/prefilter/0.
     expect(read('DecoderEditorForm.tsx')).toContain('decoder/core-wazuh-message/0');
     expect(read('components/CheckEditor.tsx')).toContain("$process.name == 'haproxy'");
+  });
+});
+
+describe('hint copy reads as prose', () => {
+  const rendered = (hint: React.ReactNode) => mount(<div>{hint}</div>).text();
+
+  const HINTS: Array<[string, React.ReactNode]> = [
+    ['NAME_HINT', NAME_HINT],
+    ['PARENTS_HINT', PARENTS_HINT],
+    ['NORMALIZE_CHECK_HINT', NORMALIZE_CHECK_HINT],
+    ['CHECK_EXPRESSION_HINT', CHECK_EXPRESSION_HINT],
+    ['CHECK_LIST_HINT', CHECK_LIST_HINT],
+    ['PARSE_HINT', PARSE_HINT],
+    ['MAP_HINT', MAP_HINT],
+    ['DEFINITIONS_HINT', DEFINITIONS_HINT],
+  ];
+
+  it.each(HINTS)('%s does not strand punctuation after a code token', (_name, hint) => {
+    // `<code>- </code>.` renders as "- ." and reads like a typo. Keep code tokens
+    // away from the end of a sentence, or say the character in words.
+    const text = typeof hint === 'string' ? hint : rendered(hint);
+    const upToExample = text.split(/[\n]/)[0];
+    expect(upToExample).not.toMatch(/\s[.,;]/);
   });
 });
 

@@ -61,9 +61,9 @@ export const CHECK_EXPRESSION_HINT = (
 
 export const CHECK_LIST_HINT = (
   <div style={wrap}>
-    Every condition must pass, in order. The field must be a known field name, or a custom one
-    starting with <code>_</code>. Shipped decoders mostly test for presence with{' '}
-    <code>exists()</code>, but a literal or a field reference works too.
+    Every condition must pass, in order. Use a known field name, or start a custom name with an
+    underscore. Shipped decoders mostly test for presence with <code>exists()</code>, but a literal
+    or a field reference works too.
   </div>
 );
 
@@ -79,9 +79,8 @@ export const PARSE_HINT = (
 
 export const MAP_HINT = (
   <div style={wrap}>
-    Assigns a value to a field. The field must be a known field name, or a custom one starting with{' '}
-    <code>_</code>. The value can be a helper call, a reference to a field already set, or a
-    literal:
+    Assigns a value to a field. Use a known field name, or start a custom name with an underscore.
+    The value can be a helper call, a reference to a field already set, or a literal:
     <pre
       style={preStyle}
     >{`- event.category: array_append(network)\n- source.ip: $_tmp_json.src_ip\n- event.kind: event`}</pre>
