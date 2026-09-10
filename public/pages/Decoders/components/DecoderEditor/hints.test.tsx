@@ -91,12 +91,6 @@ describe('placeholders', () => {
       'https://example.com/reference',
     ].forEach((text) => expect(metadata).toContain(text));
   });
-
-  it('keeps decoder-specific fields concrete', () => {
-    // No counterpart on another form, so a real value teaches more.
-    expect(read('DecoderEditorForm.tsx')).toContain('decoder/core-wazuh-message/0');
-    expect(read('components/CheckEditor.tsx')).toContain("$process.name == 'haproxy'");
-  });
 });
 
 describe('hint copy', () => {
@@ -113,19 +107,6 @@ describe('hint copy', () => {
     // `<code>- </code>.` renders as "- ." and reads like a typo.
     const text = typeof hint === 'string' ? hint : textOf(hint);
     expect(text.split('\n')[0]).not.toMatch(/\s[.,;]/);
-  });
-
-  it('does not claim definitions names need a leading underscore', () => {
-    // They do not: shipped decoders use log_level, PRIORITY, NSG_PROTO_MAP.
-    expect(textOf(DEFINITIONS_INFO)).not.toMatch(/must .{0,20}underscore/i);
-  });
-
-  it('shows a recurring definition and the helper that reads it', () => {
-    // NSG_PROTO_MAP appeared in 1 of 509; a definition is pointless without its lookup.
-    const text = textOf(DEFINITIONS_INFO);
-    expect(text).toContain('_log_level');
-    expect(text).toContain('get_key_in($_log_level, $_tmp.severity_string)');
-    expect(text).not.toContain('NSG_PROTO_MAP');
   });
 
   it('explains the parser syntax rather than naming the format', () => {

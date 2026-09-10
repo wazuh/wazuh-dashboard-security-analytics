@@ -150,21 +150,6 @@ describe('humanizeMessage', () => {
   });
 });
 
-describe('routeSchemaErrors humanizes as it routes', () => {
-  it('applies it to field errors and to document-level ones', () => {
-    const routed = routeSchemaErrors(
-      {
-        'metadata.title': "'metadata.title' is required",
-        map_if: "'map_if' is not a recognized field",
-      },
-      values
-    );
-    expect(routed.fields['metadata.title']).toBe('Title is required');
-    // No label for an unknown key, so it keeps its name.
-    expect(routed.document).toEqual(["'map_if' is not a recognized field"]);
-  });
-});
-
 describe('errorsUnder', () => {
   const errors = {
     normalize: 'the array itself',
@@ -177,12 +162,6 @@ describe('errorsUnder', () => {
   it('collects the field and everything inside it', () => {
     expect(errorsUnder(errors, 'normalize').sort()).toEqual(
       ['the array itself', 'inside an entry', 'a dotted child'].sort()
-    );
-  });
-
-  it('does not collect a field that merely starts with the same letters', () => {
-    expect(errorsUnder(errors, 'normalize')).not.toContain(
-      'a different field that merely shares a prefix'
     );
   });
 

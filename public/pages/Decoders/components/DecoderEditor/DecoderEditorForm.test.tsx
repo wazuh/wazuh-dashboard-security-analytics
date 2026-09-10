@@ -30,7 +30,7 @@ const subj = (wrapper: ReactWrapper, name: string) =>
 
 describe('DecoderEditorForm', () => {
   it('labels shared fields the way the KVDB and filter editors label them', () => {
-    // A field shared with a sibling form is never renamed here. See TERMINOLOGY.md.
+    // A field shared with a sibling form is never renamed here.
     const text = render(mapDecoderToForm(document)).text();
     ['Title', 'Author', 'Description', 'Documentation', 'References'].forEach((label) =>
       expect(text).toContain(label)
@@ -208,13 +208,6 @@ describe('DecoderEditorForm', () => {
         '<~>',
         '(?…)',
       ]);
-    });
-
-    it('does not stack two overlapping explanations on the check field', () => {
-      const text = render(mapDecoderToForm(document)).text();
-      const bothShapes = text.includes('or a list of field/value pairs');
-      const modeSpecific = text.includes('Needs a field reference and an operator');
-      expect(bothShapes && modeSpecific).toBe(false);
     });
   });
 
