@@ -7,7 +7,6 @@ import React from 'react';
 import {
   EuiFlexItem,
   EuiFlexGroup,
-  EuiPanel,
   EuiFormHelpText,
   EuiHorizontalRule,
   EuiButtonEmpty,
@@ -33,18 +32,9 @@ export interface ParseRowsProps {
   helpText?: React.ReactNode;
   /** Called with a row's path when the user leaves it, to gate its error. */
   onBlurPath?: (path: string) => void;
-  /**
-   * Render each parser without its panel, for a layout that gets its hierarchy from
-   * typography rather than from containers (see the `outline` prototype). Avoids a
-   * card inside a card.
-   */
-  flat?: boolean;
 }
 
-/**
- * `parse|<field>` keys, split into `{ field, expressions }` for the same reason
- * `map` becomes rows: a target like `parse|event.original` would read as nesting.
- */
+/** `parse|<field>` keys, split into rows because Formik splits paths on dots. */
 export const ParseRows: React.FC<ParseRowsProps> = ({
   path,
   rows,
@@ -52,7 +42,6 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
   errors = {},
   helpText,
   onBlurPath,
-  flat = false,
 }) => {
   const update = (index: number, patch: Partial<ParserRow>) =>
     onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -60,16 +49,6 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
   const remove = (index: number) => onChange(rows.filter((_, i) => i !== index));
 
   const sectionError = errors[path];
-
-  // `flat` drops the card, for layouts that have none.
-  const Shell = ({ children }: { children: React.ReactNode }) =>
-    flat ? (
-      <>{children}</>
-    ) : (
-      <EuiPanel paddingSize="m" hasShadow={false} hasBorder>
-        {children}
-      </EuiPanel>
-    );
 
   return (
     <div data-test-subj={`parse-rows-${path}`}>
@@ -105,8 +84,8 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
         return (
           <div key={index}>
-            {index > 0 && (flat ? <EuiHorizontalRule margin="m" /> : <EuiSpacer size="m" />)}
-            <Shell>
+            {index > 0 && <EuiHorizontalRule margin="m" />}
+            <>
               <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
                 <EuiFlexItem grow={true}>
                   <EuiText size={'s'}>
@@ -156,7 +135,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />
-            </Shell>
+            </>
           </div>
         );
       })}

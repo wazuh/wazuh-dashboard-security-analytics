@@ -40,10 +40,7 @@ export interface MapRowsProps {
   singleLineValue?: boolean;
 }
 
-/**
- * `{ <field>: <value> }` pairs, laid out like the KVDB content editor. The form
- * holds rows rather than keys because Formik splits paths on dots.
- */
+/** `{ <field>: <value> }` pairs, laid out like the KVDB content editor. */
 export const MapRows: React.FC<MapRowsProps> = ({
   path,
   rows,

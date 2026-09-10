@@ -7,10 +7,8 @@ import { validateYamlSyntax } from '../../../../components/YamlForm';
 import { CheckModel, DecoderFormModel, FieldValueRow, ParserRow } from './DecoderEditorFormModel';
 
 /**
- * The blocking tier: problems that mean no document can be produced.
- *
- * Schema violations only warn — the schema is downloaded at install time and can
- * be stale, so refusing on it would refuse decoders the engine accepts.
+ * The blocking tier: no document can be produced. Schema violations only warn —
+ * the schema is downloaded at install time and can be stale.
  */
 
 /** A value with no field name cannot be written. */

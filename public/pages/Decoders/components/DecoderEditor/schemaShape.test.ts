@@ -49,7 +49,7 @@ describe('engine decoder grammar', () => {
   });
 
   it('still uses the field catalog only as a catalog, not as grammar', () => {
-    // ~99% of the file, and only a list of field names. Grammar here would matter.
+    // ~99% of the file, and only field names. Grammar here would matter.
     const fields = schema.definitions?._fieldsDecoder;
     expect(fields?.additionalProperties).toBe(false);
     expect(Object.keys(fields?.patternProperties ?? {})).toEqual(['^_.+']);

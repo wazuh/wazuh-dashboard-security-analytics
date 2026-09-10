@@ -25,10 +25,8 @@ export interface LabelWithInfoProps {
 }
 
 /**
- * The filter form's info button beside a label, opening a popover on click.
- *
- * For reference material — what an option means. Guidance needed while typing
- * stays inline as `helpText`, which is the split the filter form makes.
+ * The filter form's info button beside a label. For reference material; guidance
+ * needed while typing stays inline as `helpText`.
  */
 export const LabelWithInfo: React.FC<LabelWithInfoProps> = ({
   label,

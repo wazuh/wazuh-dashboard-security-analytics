@@ -6,12 +6,10 @@
 import React from 'react';
 
 /**
- * Hints for the decoder-specific fields, shaped like the filter form's: say what
- * the field is for, then show a worked example.
+ * Hints for the decoder-specific fields: what the field is for, then an example.
  *
- * Examples are taken from the decoders the engine ships and checked against the
- * schema by hints.test.tsx. Parser syntax comes from the engine reference
- * ("logpar"); the schema only requires a non-empty string.
+ * Examples come from the decoders the engine ships and are schema-checked by
+ * hints.test. Parser syntax comes from the engine reference, not the schema.
  */
 
 // Matches the filter form's example block: no fill, no border.
@@ -23,13 +21,6 @@ export const NAME_HINT =
 
 export const PARENTS_HINT =
   'Decoders evaluated before this one. Most decoders extend decoder/core-wazuh-message/0.';
-
-export const NORMALIZE_CHECK_HINT = (
-  <div style={wrap}>
-    Condition for this entry only. Events that fail it skip the entry and continue to the next one
-    (e.g. <code>exists($_tmp.session_id)</code>).
-  </div>
-);
 
 export const CHECK_EXPRESSION_HINT = (
   <div style={wrap}>

@@ -8,12 +8,9 @@ import { DecoderFormModel } from './DecoderEditorFormModel';
 import { FIELD_LABELS } from './labels';
 
 /**
- * Routes schema errors onto form fields.
- *
- * Messages are keyed by document path, which Formik also understands — except
- * where the document uses field names as keys (`map` entries, `check` items).
- * Those paths do not exist in the form, so the error attaches to the longest
- * prefix that does.
+ * Routes schema errors onto form fields. Messages are keyed by document path,
+ * which Formik also understands — except where the document uses field names as
+ * keys, so the error attaches to the longest prefix that exists.
  */
 
 /** `a.b[0].c` -> ['a','b','0','c'] */
@@ -93,11 +90,7 @@ export const routeSchemaErrors = (
   return { fields, document };
 };
 
-/**
- * Errors for `field` or anything inside it. A field rendered as one control —
- * `normalize` is the whole array in one editor — has nowhere to put an error
- * routed to `normalize[1].map`, so it collects them itself.
- */
+/** Errors for `field` or anything inside it, for a field rendered as one control. */
 export const errorsUnder = (errors: Record<string, string>, field: string): string[] =>
   Object.entries(errors)
     .filter(

@@ -14,9 +14,8 @@ beforeAll(() => {
   setupCoreStart();
 });
 
-// The visual editor validates against the real schema through a Web Worker, which
-// jsdom has no equivalent for. Reporting "no errors" keeps these tests about the
-// page's own behaviour; the schema wiring is covered in jsonSchemaValidation.test.
+// Schema validation runs in a Web Worker jsdom has no equivalent for; it is
+// covered in jsonSchemaValidation.test.
 jest.mock('../../../utils/jsonSchemaValidation', () => ({
   validateWithJsonSchemaAsync: jest.fn().mockResolvedValue({}),
 }));

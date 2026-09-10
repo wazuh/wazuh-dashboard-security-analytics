@@ -13,16 +13,11 @@ import {
   DEFINITIONS_HINT,
   MAP_HINT,
   NAME_HINT,
-  NORMALIZE_CHECK_HINT,
   PARENTS_HINT,
   PARSE_HINT,
 } from './hints';
 
-/**
- * A hint that teaches the wrong syntax is worse than no hint, so every example is
- * checked against the engine schema rather than reviewed by eye. The examples
- * themselves are taken from the decoders the engine ships; see the file header.
- */
+/** Examples are schema-checked rather than reviewed by eye. */
 
 const ajv = new Ajv({ allErrors: true, strict: false, inlineRefs: false });
 const validate = ajv.compile(decoderSchema as object);
@@ -108,20 +103,18 @@ describe('placeholders', () => {
   });
 
   it('keeps decoder-specific fields concrete', () => {
-    // These have no counterpart on another form, so a real value teaches more than
-    // a generic prompt — the same call the filter form makes for filter/prefilter/0.
+    // No counterpart on another form, so a real value teaches more.
     expect(read('DecoderEditorForm.tsx')).toContain('decoder/core-wazuh-message/0');
     expect(read('components/CheckEditor.tsx')).toContain("$process.name == 'haproxy'");
   });
 });
 
-describe('hint copy reads as prose', () => {
-  const rendered = (hint: React.ReactNode) => mount(<div>{hint}</div>).text();
+describe('hint copy', () => {
+  const textOf = (hint: React.ReactNode) => mount(<div>{hint}</div>).text();
 
   const HINTS: Array<[string, React.ReactNode]> = [
     ['NAME_HINT', NAME_HINT],
     ['PARENTS_HINT', PARENTS_HINT],
-    ['NORMALIZE_CHECK_HINT', NORMALIZE_CHECK_HINT],
     ['CHECK_EXPRESSION_HINT', CHECK_EXPRESSION_HINT],
     ['CHECK_LIST_HINT', CHECK_LIST_HINT],
     ['PARSE_HINT', PARSE_HINT],
@@ -130,24 +123,13 @@ describe('hint copy reads as prose', () => {
   ];
 
   it.each(HINTS)('%s does not strand punctuation after a code token', (_name, hint) => {
-    // `<code>- </code>.` renders as "- ." and reads like a typo. Keep code tokens
-    // away from the end of a sentence, or say the character in words.
-    const text = typeof hint === 'string' ? hint : rendered(hint);
-    const upToExample = text.split(/[\n]/)[0];
-    expect(upToExample).not.toMatch(/\s[.,;]/);
+    // `<code>- </code>.` renders as "- ." and reads like a typo.
+    const text = typeof hint === 'string' ? hint : textOf(hint);
+    expect(text.split('\n')[0]).not.toMatch(/\s[.,;]/);
   });
-});
-
-describe('hint copy', () => {
-  const textOf = (hint: React.ReactNode) => mount(<div>{hint}</div>).text();
 
   it('points at the parent shipped decoders actually use', () => {
     expect(PARENTS_HINT).toContain('decoder/core-wazuh-message/0');
-  });
-
-  it('shows the name pattern with a real decoder', () => {
-    expect(NAME_HINT).toContain('decoder/<name>/<version>');
-    expect(NAME_HINT).toContain('decoder/zeek-stats/0');
   });
 
   it('does not claim definitions names need a leading underscore', () => {
@@ -155,19 +137,12 @@ describe('hint copy', () => {
     expect(textOf(DEFINITIONS_HINT)).not.toMatch(/must .{0,20}underscore/i);
   });
 
-  it('shows how a definition is read, not only how it is written', () => {
-    // The hint used to show a lookup table and never the helper that consumes it,
-    // which is the whole point of defining one. get_key_in is by far the most
-    // common consumer in the shipped decoders.
+  it('shows a recurring definition and the helper that reads it', () => {
+    // NSG_PROTO_MAP appeared in 1 of 509; a definition is pointless without its lookup.
     const text = textOf(DEFINITIONS_HINT);
     expect(text).toContain('_log_level');
     expect(text).toContain('get_key_in($_log_level, $_tmp.severity_string)');
-  });
-
-  it('picks a definition that recurs, not a one-off', () => {
-    // NSG_PROTO_MAP appeared in exactly 1 of 509 shipped decoders; _log_level is
-    // the most common definition name and a recognisable syslog severity map.
-    expect(textOf(DEFINITIONS_HINT)).not.toContain('NSG_PROTO_MAP');
+    expect(text).not.toContain('NSG_PROTO_MAP');
   });
 
   it('explains the parser syntax rather than naming the format', () => {

@@ -4,11 +4,9 @@
  */
 
 /**
- * The form model.
- *
- * Isomorphic with the document where its keys are fixed, and `{ field, value }`
- * rows where the document uses field names as keys (`map`, `check` items,
- * `parse|<field>`) — Formik splits paths on dots, and ECS names are full of them.
+ * The form model. Mirrors the document, except where the document uses field
+ * names as keys — Formik splits paths on dots, and ECS names are full of them,
+ * so `map`, `check` items and `parse|<field>` become `{ field, value }` rows.
  */
 
 /** A `{ <field>: <value> }` pair, held as text so any value survives. */

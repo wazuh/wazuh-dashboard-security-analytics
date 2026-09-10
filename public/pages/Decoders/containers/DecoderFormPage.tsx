@@ -108,7 +108,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     decoderEditorStateDefaultValue
   );
   // Values are the document; the YAML editor is a view of them. Decoders persist
-  // an object, so raw text has no privileged status. See docs/adr/0002.
+  // an object, so raw text has no privileged status.
   const [yamlSyntaxError, setYamlSyntaxError] = useState<string | null>(null);
   const [schemaWarnings, setSchemaWarnings] = useState<{
     fields: Record<string, string>;

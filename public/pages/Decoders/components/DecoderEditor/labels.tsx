@@ -20,9 +20,8 @@ export const fieldLabel = (title: string, optional = false): React.ReactNode => 
 );
 
 /**
- * Document path to the label the form shows, so a schema message can name the
- * field the way the user sees it. A path absent here keeps its path — inside
- * `normalize` there is no field to name.
+ * Document path to the label the form shows, so a message can name the field the
+ * user sees. Absent here means the path stays — inside `normalize` there is no field.
  */
 export const FIELD_LABELS: Record<string, string> = {
   id: 'ID',

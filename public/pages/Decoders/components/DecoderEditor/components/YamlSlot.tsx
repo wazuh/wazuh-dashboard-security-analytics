@@ -36,13 +36,7 @@ export interface YamlSlotProps {
   parseDebounceMs?: number;
 }
 
-/**
- * A field in either of its two views, with an inline link to switch — the way the
- * rules detection editor offers its YAML escape. A decoder has several of these,
- * and a button group on each is what makes the form feel busy.
- *
- * The view is local state: it never reaches the form values.
- */
+/** A field in either of its two views. The view is local state, never a value. */
 export const YamlSlot: React.FC<YamlSlotProps> = ({
   slotId,
   label,

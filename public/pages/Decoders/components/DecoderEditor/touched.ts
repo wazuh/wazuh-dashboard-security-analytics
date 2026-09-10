@@ -3,12 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-/**
- * Which fields have been visited, so a freshly opened form stays quiet.
- *
- * The filter and KVDB forms get this from Formik's own `touched`; these errors
- * come from the JSON Schema, so the gate is applied by hand.
- */
+/** Which fields have been visited. Schema errors are not Formik's, so this is by hand. */
 export interface TouchedState {
   paths: Set<string>;
   /** True once submission was attempted; every error shows from then on. */

@@ -30,8 +30,7 @@ const subj = (wrapper: ReactWrapper, name: string) =>
 
 describe('DecoderEditorForm', () => {
   it('labels shared fields the way the KVDB and filter editors label them', () => {
-    // Guards the decision in TERMINOLOGY.md: a field that also appears on a sibling
-    // editor is never renamed here just because its document key differs.
+    // A field shared with a sibling form is never renamed here. See TERMINOLOGY.md.
     const text = render(mapDecoderToForm(document)).text();
     ['Title', 'Author', 'Description', 'Documentation', 'References'].forEach((label) =>
       expect(text).toContain(label)
@@ -45,8 +44,7 @@ describe('DecoderEditorForm', () => {
   });
 
   it('orders its fields on the KVDB spine, then the decoder fields by intent', () => {
-    // Identity, the metadata block both siblings order identically, then the
-    // decoder's own fields the way an event travels, definitions last.
+    // Identity, metadata, then the decoder fields as an event travels them.
     const all = render(mapDecoderToForm(document))
       .find('strong')
       .map((node) => node.text());
@@ -154,12 +152,8 @@ describe('DecoderEditorForm', () => {
   });
 
   describe('info popovers', () => {
-    // The filter form puts the blue info button beside its `Type` field for
-    // reference material — what an option means — while keeping syntax guidance
-    // inline. The same split applies here.
-    //
-    // EuiPopover renders its panel through a portal, which enzyme's `.text()` does
-    // not traverse, so the content is asserted on the popover's own subtree.
+    // EuiPopover renders through a portal, which enzyme's `.text()` does not
+    // traverse, so assert on the popover's own subtree.
     const popover = (wrapper: ReactWrapper, aria: string) =>
       wrapper
         .find('EuiPopover')
@@ -203,8 +197,7 @@ describe('DecoderEditorForm', () => {
     });
 
     it('keeps syntax guidance inline, where it is needed while typing', () => {
-      // The filter form keeps its own check-syntax hint, example block and all, on
-      // the page rather than behind a click. Parsers follow that.
+      // Syntax guidance is needed while typing, so it stays on the page.
       expect(render(mapDecoderToForm(document)).text()).toContain('captures into that field');
     });
 
@@ -277,9 +270,8 @@ describe('DecoderEditorForm', () => {
     });
 
     it('shows the structure inline, the way the filter form does beside its editor', () => {
-      // No EuiCodeEditor anywhere in this plugin or the platform sets a placeholder,
-      // so the structure goes in helpText with a <pre> block — which is exactly how
-      // the filter form shows the shape of its own check field.
+      // No EuiCodeEditor here sets a placeholder; the shape goes in helpText,
+      // as the filter form does for its check field.
       const wrapper = render(mapDecoderToForm(document));
       expect(editor(wrapper).prop('placeholder')).toBeUndefined();
 
@@ -290,8 +282,7 @@ describe('DecoderEditorForm', () => {
     });
 
     it('surfaces schema errors from inside the array, which have no field of their own', () => {
-      // normalize is one editor, so an error routed to normalize[1].map has nowhere
-      // to render unless this field collects it. It used to be swallowed.
+      // normalize is one editor; without collecting these they render nowhere.
       const wrapper = render(mapDecoderToForm(document), jest.fn(), {
         fieldErrors: {
           'normalize[1].map': "'normalize[1].map' must NOT have fewer than 1 items",

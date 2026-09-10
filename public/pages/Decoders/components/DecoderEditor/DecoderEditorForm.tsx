@@ -181,7 +181,6 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
           errors={shownErrors}
           onBlurPath={onBlurPath}
           helpText={PARSE_HINT}
-          flat
         />
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />

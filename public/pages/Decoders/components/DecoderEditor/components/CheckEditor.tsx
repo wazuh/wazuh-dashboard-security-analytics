@@ -14,7 +14,7 @@ import {
 } from '@elastic/eui';
 import { fieldLabel } from '../labels';
 import { InfoItem, LabelWithInfo } from './LabelWithInfo';
-import { CHECK_EXPRESSION_HINT, CHECK_LIST_HINT, NORMALIZE_CHECK_HINT } from '../hints';
+import { CHECK_EXPRESSION_HINT, CHECK_LIST_HINT } from '../hints';
 import { CheckModel } from '../DecoderEditorFormModel';
 import { checkToModel, modelToCheck, textToValue } from '../mappers';
 import { MapRows } from './MapRows';
@@ -29,10 +29,6 @@ const CHECK_MODE_OPTIONS = [
 export interface CheckEditorProps {
   /** Formik path of the check, e.g. `check` or `normalize[0].check`. Not user-facing. */
   path: string;
-  /** What this check is called on screen. */
-  label?: string;
-  /** A nested check gets a shorter hint than the decoder-level one. */
-  nested?: boolean;
   /** Called with a path when the user leaves a control, to gate its error. */
   onBlurPath?: (path: string) => void;
   model: CheckModel;
@@ -47,15 +43,11 @@ const checkToYamlText = (model: CheckModel): string => {
 };
 
 /**
- * `check` — an expression or a list of `{ field: condition }` items.
- *
- * Anything else is carried as YAML rather than reshaped. The selector is labelled
- * `Format`, not `Type`: the filter form already uses `Type` for its own field.
+ * `check` — an expression or a list of `{ field: condition }`. Anything else is
+ * carried as YAML. Labelled `Format`, since the filter form owns `Type`.
  */
 export const CheckEditor: React.FC<CheckEditorProps> = ({
   path,
-  label = 'Check',
-  nested = false,
   model,
   onChange,
   errors = {},
@@ -85,7 +77,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
   return (
     <YamlSlot
       slotId={path}
-      label={label}
+      label="Check"
       yamlValue={checkToYamlText(model)}
       onYamlChange={onYamlChange}
       error={errors[path]}
@@ -116,7 +108,6 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
             </LabelWithInfo>
           }
           fullWidth={true}
-          helpText={nested ? NORMALIZE_CHECK_HINT : undefined}
         >
           <EuiCompressedSelect
             options={CHECK_MODE_OPTIONS}

@@ -40,12 +40,10 @@ const STRUCTURE_HELP = (
 const NOT_A_LIST = 'Normalize must be a list. Start each entry with a dash and a space.';
 
 /**
- * `normalize`, edited as YAML — the one construct the issue calls too complex to
- * model, at five `oneOf` shapes with its own nested check/parse/map.
+ * `normalize`, edited as YAML — too complex to model, at five `oneOf` shapes.
  *
- * It shows the entries themselves, round-trips anything it is given through the
- * same mappers as the rest of the form, and leaves the document alone when the
- * text does not parse.
+ * Shows the entries themselves, round-trips anything through the same mappers as
+ * the rest of the form, and leaves the document alone when the text will not parse.
  */
 export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
   entries,

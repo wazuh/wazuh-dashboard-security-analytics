@@ -23,11 +23,7 @@ export interface MetadataFieldsProps {
   afterAuthor?: React.ReactNode;
 }
 
-/**
- * `metadata`. Labels match the KVDB and filter editors word for word.
- *
- * `date` and `modified` are engine-owned: carried by the mappers, not editable.
- */
+/** `metadata`. `date` and `modified` are engine-owned: carried, not editable. */
 export const MetadataFields: React.FC<MetadataFieldsProps> = ({
   metadata,
   onChange,
