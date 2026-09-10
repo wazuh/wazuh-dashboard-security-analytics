@@ -95,6 +95,26 @@ and rules, and means nothing else.
 `Visual Editor` and `YAML Editor` are the canonical labels for the two views, at
 page level and at field level, matching the existing KVDB, filter and rule editors.
 
+### Where guidance goes
+
+Every decoder-specific field carries at most two pieces of guidance, and each has
+one fixed home:
+
+- **One sentence under the control**, as EUI `helpText` — what the field is for.
+  No examples, no code blocks, no second sentence.
+- **The reference material behind an info button on the label**, as the filter
+  form does for its `Type` field — the parts of the syntax, then one worked
+  example.
+
+A growable list (`FormFieldArray`) has no usable inline slot: EUI renders
+`helpText` after the Add button, where it reads as orphaned. Those fields put
+their guidance behind the label's info button instead.
+
+Guidance never renders above the control it explains, and a worked example never
+renders on the page — only inside a popover. Copy states what the grammar allows,
+never how common something is in the decoders that ship: those change, and the
+statement then becomes wrong.
+
 ### The cost this accepts
 
 Validation messages come from the JSON Schema via

@@ -19,6 +19,7 @@ import {
   EuiToolTip,
 } from '@elastic/eui';
 import { fieldLabel } from '../labels';
+import { PARSE_FIELD_HELP } from '../hints';
 import { FormFieldArray } from '../../../../../components/FormFieldArray';
 import { ParserRow } from '../DecoderEditorFormModel';
 
@@ -90,7 +91,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                 <EuiFlexItem grow={true}>
                   <EuiCompressedFormRow
                     label={fieldLabel('Field')}
-                    helpText="The field this parser reads, for example message or event.original."
+                    helpText={PARSE_FIELD_HELP}
                     fullWidth={true}
                     isInvalid={missingField || !!errors[rowPath]}
                     error={missingField ? 'A parser needs the field it reads' : errors[rowPath]}
@@ -123,7 +124,6 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
               <FormFieldArray
                 label={fieldLabel('Expressions')}
-                helpText="Tried in order until one succeeds."
                 values={row.expressions}
                 placeholder="<_tmp.date/date/%y%m%d %T> <_tmp.message>"
                 addButtonLabel="Add expression"

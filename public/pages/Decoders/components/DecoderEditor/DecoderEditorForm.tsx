@@ -10,12 +10,18 @@ import {
   EuiCompressedFormRow,
   EuiCompressedSwitch,
   EuiSpacer,
-  EuiText,
 } from '@elastic/eui';
 import { FormFieldArray } from '../../../../components/FormFieldArray';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { fieldLabel } from './labels';
-import { NAME_HINT, PARSE_HINT, DEFINITIONS_HINT } from './hints';
+import {
+  NAME_HELP,
+  PARENTS_INFO,
+  PARSE_HELP,
+  PARSE_INFO,
+  DEFINITIONS_HELP,
+  DEFINITIONS_INFO,
+} from './hints';
 import { errorsUnder } from './errorRouting';
 import { TouchedState, emptyTouched, visibleErrors, withTouched } from './touched';
 import { MetadataFields } from './components/MetadataFields';
@@ -113,7 +119,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
         fullWidth={true}
         isInvalid={!!shownErrors.name}
         error={shownErrors.name}
-        helpText={!shownErrors.name ? NAME_HINT : undefined}
+        helpText={!shownErrors.name ? NAME_HELP : undefined}
       >
         <EuiCompressedFieldText
           placeholder="decoder/zeek-stats/0"
@@ -153,12 +159,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
             title="Parents"
             ariaLabel="Parents information"
           >
-            <EuiText size="xs">
-              <p>
-                Decoders evaluated before this one. Most decoders extend{' '}
-                <code>decoder/core-wazuh-message/0</code>.
-              </p>
-            </EuiText>
+            {PARENTS_INFO}
           </LabelWithInfo>
         }
         values={values.parents}
@@ -178,14 +179,25 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow label={fieldLabel('Parsers', true)} fullWidth={true}>
+      <EuiCompressedFormRow
+        label={
+          <LabelWithInfo
+            label={fieldLabel('Parsers', true)}
+            title="Parser expressions"
+            ariaLabel="Parsers information"
+          >
+            {PARSE_INFO}
+          </LabelWithInfo>
+        }
+        fullWidth={true}
+      >
         <ParseRows
           path="parsers"
           rows={values.parsers}
           onChange={(parsers) => set('parsers', parsers)}
           errors={shownErrors}
           onBlurPath={onBlurPath}
-          helpText={PARSE_HINT}
+          helpText={PARSE_HELP}
         />
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
@@ -198,7 +210,18 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       />
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow label={fieldLabel('Definitions', true)} fullWidth={true}>
+      <EuiCompressedFormRow
+        label={
+          <LabelWithInfo
+            label={fieldLabel('Definitions', true)}
+            title="Definitions"
+            ariaLabel="Definitions information"
+          >
+            {DEFINITIONS_INFO}
+          </LabelWithInfo>
+        }
+        fullWidth={true}
+      >
         <MapRows
           path="definitions"
           rows={values.definitions}
@@ -209,7 +232,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
           valuePlaceholder="{ '3': error, '4': warning }"
           addLabel="Add definition"
           emptyLabel="No definitions yet."
-          helpText={DEFINITIONS_HINT}
+          helpText={DEFINITIONS_HELP}
         />
       </EuiCompressedFormRow>
     </div>

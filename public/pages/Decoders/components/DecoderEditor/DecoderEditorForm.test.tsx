@@ -196,9 +196,18 @@ describe('DecoderEditorForm', () => {
       ]);
     });
 
-    it('keeps syntax guidance inline, where it is needed while typing', () => {
-      // Syntax guidance is needed while typing, so it stays on the page.
-      expect(render(mapDecoderToForm(document)).text()).toContain('captures into that field');
+    it('puts the parser syntax behind its info button, leaving one sentence inline', () => {
+      const wrapper = render(mapDecoderToForm(document));
+      expect(wrapper.text()).not.toContain('Captures into that field');
+      expect(wrapper.text()).toContain('A pattern that matches the raw text of a field');
+
+      const panel = open(wrapper, 'Parsers information');
+      expect(panel.find('InfoItem').map((item) => item.prop('term'))).toEqual([
+        'Literal text',
+        '<field.name>',
+        '<~>',
+        '(?…)',
+      ]);
     });
 
     it('does not stack two overlapping explanations on the check field', () => {
@@ -269,16 +278,12 @@ describe('DecoderEditorForm', () => {
       expect(onChange.mock.calls[0][0].normalize).toEqual([]);
     });
 
-    it('shows the structure inline, the way the filter form does beside its editor', () => {
-      // No EuiCodeEditor here sets a placeholder; the shape goes in helpText,
-      // as the filter form does for its check field.
+    it('keeps the example in the label popover, not under the editor', () => {
+      // No EuiCodeEditor here sets a placeholder, and every worked example in
+      // this form lives behind the label's info button.
       const wrapper = render(mapDecoderToForm(document));
       expect(editor(wrapper).prop('placeholder')).toBeUndefined();
-
-      const text = wrapper.text();
-      expect(text).toContain('Each entry can check a condition');
-      expect(text).toContain("- check: $event.code == '4624'");
-      expect(text).toContain('  map:');
+      expect(wrapper.text()).not.toContain("- check: $event.code == '4624'");
     });
 
     it('surfaces schema errors from inside the array, which have no field of their own', () => {

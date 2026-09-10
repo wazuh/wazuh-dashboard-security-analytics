@@ -55,7 +55,7 @@ export const LabelWithInfo: React.FC<LabelWithInfoProps> = ({
           closePopover={() => setIsOpen(false)}
           anchorPosition="downRight"
         >
-          <div style={{ width: '300px' }}>
+          <div style={{ minWidth: '300px', maxWidth: '480px' }}>
             <EuiText size="s">
               <strong>{title}</strong>
             </EuiText>
@@ -67,6 +67,14 @@ export const LabelWithInfo: React.FC<LabelWithInfoProps> = ({
     </EuiFlexGroup>
   );
 };
+
+/**
+ * A worked example inside a popover. Kept outside `EuiText` so it does not pick
+ * up the code-block fill.
+ */
+export const Example: React.FC<{ children: string }> = ({ children }) => (
+  <pre style={{ margin: '4px 0 8px 0', fontSize: '12px', whiteSpace: 'pre-wrap' }}>{children}</pre>
+);
 
 /** One labelled paragraph inside a popover. */
 export const InfoItem: React.FC<{ term: string; children: React.ReactNode }> = ({

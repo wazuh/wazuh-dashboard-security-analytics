@@ -14,7 +14,7 @@ import {
 } from '@elastic/eui';
 import { fieldLabel } from '../labels';
 import { InfoItem, LabelWithInfo } from './LabelWithInfo';
-import { CHECK_EXPRESSION_HINT, CHECK_LIST_HINT } from '../hints';
+import { CHECK_EXPRESSION_HELP, CHECK_EXPRESSION_INFO, CHECK_LIST_HELP } from '../hints';
 import { CheckModel } from '../DecoderEditorFormModel';
 import { checkToModel, modelToCheck, textToValue } from '../mappers';
 import { MapRows } from './MapRows';
@@ -103,7 +103,8 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
                 <code>$process.name == &apos;haproxy&apos;</code>.
               </InfoItem>
               <InfoItem term="List">
-                Several field/value conditions that must all pass, in order.
+                Several field/value conditions that must all pass, in order. A condition can be a
+                helper call, a field reference, or a literal value.
               </InfoItem>
             </LabelWithInfo>
           }
@@ -126,11 +127,19 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
 
         {model.mode === 'expression' && (
           <EuiCompressedFormRow
-            label={fieldLabel('Expression')}
+            label={
+              <LabelWithInfo
+                label={fieldLabel('Expression')}
+                title="Check expressions"
+                ariaLabel="Check expression information"
+              >
+                {CHECK_EXPRESSION_INFO}
+              </LabelWithInfo>
+            }
             fullWidth={true}
             isInvalid={!!errors[path]}
             error={errors[path]}
-            helpText={CHECK_EXPRESSION_HINT}
+            helpText={CHECK_EXPRESSION_HELP}
           >
             <EuiCompressedFieldText
               placeholder="$process.name == 'haproxy'"
@@ -158,7 +167,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
             onBlurPath={onBlurPath}
             fieldPlaceholder="_tmp_json.accountId"
             valuePlaceholder="exists()"
-            helpText={CHECK_LIST_HINT}
+            helpText={CHECK_LIST_HELP}
             addLabel="Add condition"
             emptyLabel="No conditions yet."
           />

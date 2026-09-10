@@ -4,68 +4,70 @@
  */
 
 import React from 'react';
+import { EuiText } from '@elastic/eui';
+import { Example, InfoItem } from './components/LabelWithInfo';
 
 /**
- * Hints for the decoder-specific fields: what the field is for, then an example.
+ * Copy for the decoder-specific fields.
  *
- * Examples come from the decoders the engine ships and are schema-checked by
- * hints.test. Parser syntax comes from the engine reference, not the schema.
+ * `*_HELP` is the one sentence under the control; `*_INFO` is the reference
+ * material behind the label's info button — what the parts mean, then a worked
+ * example. Examples are schema-checked by hints.test.
  */
 
-// Matches the filter form's example block: no fill, no border.
-const preStyle: React.CSSProperties = { margin: '4px 0 0 0' };
-const wrap: React.CSSProperties = { maxWidth: '600px' };
+export const NAME_HELP = 'Must follow the pattern decoder/<name>/<version>';
 
-export const NAME_HINT =
-  'Must follow the pattern decoder/<name>/<version> (e.g. decoder/zeek-stats/0)';
-
-export const CHECK_EXPRESSION_HINT = (
-  <div style={wrap}>
-    Needs a field reference and an operator, or a helper call on its own. Quote string values, and
-    combine with <code>AND</code>, <code>OR</code> and <code>NOT</code> — for example{' '}
-    <code>exists($_tmp_json.ts) AND $event.code == &apos;4624&apos;</code>.
-  </div>
+export const PARENTS_INFO = (
+  <EuiText size="xs">
+    <p>Decoders evaluated before this one. This decoder only runs on events a parent accepted.</p>
+  </EuiText>
 );
 
-export const CHECK_LIST_HINT = (
-  <div style={wrap}>
-    Every condition must pass, in order. Use a known field name, or start a custom name with an
-    underscore. Shipped decoders mostly test for presence with <code>exists()</code>, but a literal
-    or a field reference works too.
-  </div>
+export const CHECK_EXPRESSION_HELP =
+  'Needs a field reference and an operator, or a helper call on its own.';
+
+export const CHECK_EXPRESSION_INFO = (
+  <>
+    <InfoItem term="Values">Quote string values.</InfoItem>
+    <InfoItem term="Operators">
+      Combine conditions with <code>AND</code>, <code>OR</code> and <code>NOT</code>.
+    </InfoItem>
+    <Example>{`exists($_tmp_json.ts) AND $event.code == '4624'`}</Example>
+  </>
 );
 
-export const PARSE_HINT = (
-  <div style={wrap}>
-    A pattern that matches the raw text of a field and captures parts of it into other fields. Text
-    outside <code>&lt;&gt;</code> must match literally; <code>&lt;field.name&gt;</code> captures
-    into that field, <code>&lt;~&gt;</code> matches without capturing, and <code>(?…)</code> marks a
-    part optional. Each expression is tried in order until one matches:
-    <pre style={preStyle}>{`<_tmp.date/date/%y%m%d %T> <_tmp.message>`}</pre>
-  </div>
+export const CHECK_LIST_HELP = 'Every condition must pass, in order.';
+
+export const PARSE_HELP =
+  'A pattern that matches the raw text of a field and captures parts of it into other fields.';
+
+export const PARSE_INFO = (
+  <>
+    <InfoItem term="Literal text">Text outside &lt;&gt; must match exactly.</InfoItem>
+    <InfoItem term="&lt;field.name&gt;">Captures into that field.</InfoItem>
+    <InfoItem term="&lt;~&gt;">Matches without capturing.</InfoItem>
+    <InfoItem term="(?…)">Marks a part optional.</InfoItem>
+    <EuiText size="xs">
+      <p>Expressions are tried in order until one matches.</p>
+    </EuiText>
+    <Example>{`<_tmp.date/date/%y%m%d %T> <_tmp.message>`}</Example>
+  </>
 );
 
-export const MAP_HINT = (
-  <div style={wrap}>
-    Assigns a value to a field. Use a known field name, or start a custom name with an underscore.
-    The value can be a helper call, a reference to a field already set, or a literal:
-    <pre
-      style={preStyle}
-    >{`- event.category: array_append(network)\n- source.ip: $_tmp_json.src_ip\n- event.kind: event`}</pre>
-  </div>
-);
+export const PARSE_FIELD_HELP = 'The field this parser reads.';
 
-export const DEFINITIONS_HINT = (
-  <div style={wrap}>
-    Named values you can reuse elsewhere in the decoder. Most are lookup tables:
-    <pre style={preStyle}>{`_log_level:\n  '3': error\n  '4': warning`}</pre>
-    Read one with <code>get_key_in($_log_level, $_tmp.severity_string)</code>.
-  </div>
-);
+export const DEFINITIONS_HELP = 'Named values you can reuse elsewhere in the decoder.';
 
-export const NORMALIZE_HINT = (
-  <div style={wrap}>
-    Runs in order on every event this decoder accepts, so an entry can use fields an earlier one
-    set. Each entry needs at least one parser or mapping.
-  </div>
+export const DEFINITIONS_INFO = (
+  <>
+    <EuiText size="xs">
+      <p>A definition can be a single value or a lookup table.</p>
+    </EuiText>
+    <Example>{`_log_level:\n  '3': error\n  '4': warning`}</Example>
+    <EuiText size="xs">
+      <p>
+        Read one with <code>get_key_in($_log_level, $_tmp.severity_string)</code>.
+      </p>
+    </EuiText>
+  </>
 );

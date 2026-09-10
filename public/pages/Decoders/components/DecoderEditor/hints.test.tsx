@@ -7,14 +7,7 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Ajv from 'ajv';
 import decoderSchema from '../../../../../common/schemas/wazuh-decoders.schema.json';
-import {
-  CHECK_EXPRESSION_HINT,
-  CHECK_LIST_HINT,
-  DEFINITIONS_HINT,
-  MAP_HINT,
-  NAME_HINT,
-  PARSE_HINT,
-} from './hints';
+import { CHECK_EXPRESSION_INFO, DEFINITIONS_INFO, NAME_HELP, PARSE_INFO } from './hints';
 
 /** Examples are schema-checked rather than reviewed by eye. */
 
@@ -65,15 +58,13 @@ describe('hint examples are accepted by the engine schema', () => {
     ...base,
     normalize: [{ 'parse|event.original': ['<_tmp.date/date/%y%m%d %T> <_tmp.message>'] }],
   });
-  accept('map assignments', {
+  accept('the normalize entry shown in the Normalize popover', {
     ...base,
     normalize: [
       {
-        map: [
-          { 'event.category': 'array_append(network)' },
-          { 'source.ip': '$_tmp_json.src_ip' },
-          { 'event.kind': 'event' },
-        ],
+        check: "$event.code == '4624'",
+        'parse|event.original': ['<_tmp.date/date/%y%m%d %T> <_tmp.message>'],
+        map: [{ 'user.name': '$_tmp.user' }],
       },
     ],
   });
@@ -112,12 +103,10 @@ describe('hint copy', () => {
   const textOf = (hint: React.ReactNode) => mount(<div>{hint}</div>).text();
 
   const HINTS: Array<[string, React.ReactNode]> = [
-    ['NAME_HINT', NAME_HINT],
-    ['CHECK_EXPRESSION_HINT', CHECK_EXPRESSION_HINT],
-    ['CHECK_LIST_HINT', CHECK_LIST_HINT],
-    ['PARSE_HINT', PARSE_HINT],
-    ['MAP_HINT', MAP_HINT],
-    ['DEFINITIONS_HINT', DEFINITIONS_HINT],
+    ['NAME_HELP', NAME_HELP],
+    ['CHECK_EXPRESSION_INFO', CHECK_EXPRESSION_INFO],
+    ['PARSE_INFO', PARSE_INFO],
+    ['DEFINITIONS_INFO', DEFINITIONS_INFO],
   ];
 
   it.each(HINTS)('%s does not strand punctuation after a code token', (_name, hint) => {
@@ -128,20 +117,20 @@ describe('hint copy', () => {
 
   it('does not claim definitions names need a leading underscore', () => {
     // They do not: shipped decoders use log_level, PRIORITY, NSG_PROTO_MAP.
-    expect(textOf(DEFINITIONS_HINT)).not.toMatch(/must .{0,20}underscore/i);
+    expect(textOf(DEFINITIONS_INFO)).not.toMatch(/must .{0,20}underscore/i);
   });
 
   it('shows a recurring definition and the helper that reads it', () => {
     // NSG_PROTO_MAP appeared in 1 of 509; a definition is pointless without its lookup.
-    const text = textOf(DEFINITIONS_HINT);
+    const text = textOf(DEFINITIONS_INFO);
     expect(text).toContain('_log_level');
     expect(text).toContain('get_key_in($_log_level, $_tmp.severity_string)');
     expect(text).not.toContain('NSG_PROTO_MAP');
   });
 
   it('explains the parser syntax rather than naming the format', () => {
-    const text = textOf(PARSE_HINT);
+    const text = textOf(PARSE_INFO);
     expect(text).not.toMatch(/logpar/i);
-    expect(text).toContain('captures into that field');
+    expect(text).toContain('Captures into that field');
   });
 });

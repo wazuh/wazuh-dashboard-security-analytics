@@ -9,7 +9,7 @@ import { EuiCallOut, EuiCodeEditor, EuiCompressedFormRow, EuiSpacer, EuiText } f
 import { validateYamlSyntax } from '../../../../../components/YamlForm';
 import { NormalizeEntryModel } from '../DecoderEditorFormModel';
 import { fieldLabel } from '../labels';
-import { InfoItem, LabelWithInfo } from './LabelWithInfo';
+import { Example, InfoItem, LabelWithInfo } from './LabelWithInfo';
 import { mapDecoderToForm, mapFormToDecoder, textToValue } from '../mappers';
 
 export interface NormalizeYamlFieldProps {
@@ -22,20 +22,6 @@ export interface NormalizeYamlFieldProps {
   errors?: string[];
   onBlur?: () => void;
 }
-
-// Matches the filter form's example block: no fill, no border.
-const examplePreStyle: React.CSSProperties = { margin: '4px 0 0 0' };
-
-const STRUCTURE_HELP = (
-  <div style={{ maxWidth: '600px' }}>
-    Each entry can check a condition, parse a field, and set fields:
-    <pre style={examplePreStyle}>{`- check: $event.code == '4624'
-  parse|event.original:
-    - <_tmp.date/date/%y%m%d %T> <_tmp.message>
-  map:
-    - user.name: $_tmp.user`}</pre>
-  </div>
-);
 
 const NOT_A_LIST = 'Normalize must be a list. Start each entry with a dash and a space.';
 
@@ -149,10 +135,14 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
                 least one parser or mapping.
               </p>
             </EuiText>
+            <Example>{`- check: $event.code == '4624'
+  parse|event.original:
+    - <_tmp.date/date/%y%m%d %T> <_tmp.message>
+  map:
+    - user.name: $_tmp.user`}</Example>
           </LabelWithInfo>
         }
         fullWidth={true}
-        helpText={STRUCTURE_HELP}
       >
         <EuiCodeEditor
           mode="yaml"
