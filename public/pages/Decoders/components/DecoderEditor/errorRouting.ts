@@ -8,25 +8,15 @@ import { DecoderFormModel } from './DecoderEditorFormModel';
 import { FIELD_LABELS } from './labels';
 
 /**
- * Routes JSON Schema validation errors onto form fields.
+ * Routes schema errors onto form fields.
  *
- * `jsonSchemaValidation.formatValidationErrors` already keys its messages by
- * document path — `metadata.title`, `normalize[2].map`, `check[0]` — and Formik
- * reads exactly that syntax, so most keys are usable as field paths unchanged.
- *
- * The exception is the places where the document uses **field names as keys**.
- * A `map` entry `{ 'source.ip': '$ip' }` produces the error key
- * `normalize[2].map[0].source.ip`, which is not a path in the form model (the row
- * is `{ field, value }`). Rather than drop such an error, walk the key down to the
- * longest prefix that *does* resolve and attach it there — the row shows the error.
- *
- * Doing it by resolution rather than by a hard-coded list of known shapes means an
- * error at a path this editor has never heard of still lands on the nearest thing
- * the user can see, which matters because the schema is downloaded and can be
- * ahead of this code.
+ * Messages are keyed by document path, which Formik also understands — except
+ * where the document uses field names as keys (`map` entries, `check` items).
+ * Those paths do not exist in the form, so the error attaches to the longest
+ * prefix that does.
  */
 
-/** Splits a Formik-style path into segments: `a.b[0].c` -> ['a','b','0','c']. */
+/** `a.b[0].c` -> ['a','b','0','c'] */
 export const pathSegments = (path: string): string[] =>
   path
     .replace(/\[(\d+)\]/g, '.$1')
@@ -39,15 +29,13 @@ const joinSegments = (segments: string[]): string =>
     return /^\d+$/.test(segment) ? `${path}[${segment}]` : `${path}.${segment}`;
   }, '');
 
-/** Walks `segments` into `values`, returning false as soon as a step is missing. */
+/** Does this path exist in the form? */
 const resolves = (values: unknown, segments: string[]): boolean => {
   let node: any = values;
   for (const segment of segments) {
     if (node === null || node === undefined) return false;
     if (Array.isArray(node)) {
-      // `in` rather than a plain index read: an out-of-range index must fail, or
-      // an error on `map[3]` of an empty `map` would "resolve" to a row that is
-      // not on screen.
+      // `in`, so an out-of-range index fails rather than resolving to undefined.
       if (!/^\d+$/.test(segment) || !(Number(segment) in node)) return false;
       node = node[Number(segment)];
       continue;
@@ -59,11 +47,7 @@ const resolves = (values: unknown, segments: string[]): boolean => {
   return true;
 };
 
-/**
- * The longest prefix of `path` that exists in `values`, or `''` when even the
- * first segment does not (a document-level error, or a key this form has no field
- * for at all).
- */
+/** The longest prefix of `path` that exists in `values`, or `''` if none does. */
 export const nearestFormPath = (path: string, values: DecoderFormModel): string => {
   const segments = pathSegments(path);
   for (let length = segments.length; length > 0; length--) {
@@ -73,26 +57,18 @@ export const nearestFormPath = (path: string, values: DecoderFormModel): string 
   return '';
 };
 
-// Every path the schema validator names is wrapped in single quotes by
-// `jsonSchemaValidation.humanLabel`, so swapping one for its label is a lookup
-// rather than a parse. A quoted token that is not a known path — a pattern, a
-// value, a path inside `normalize` — is left exactly as it was.
+// The validator single-quotes every path it names, so this is a lookup. A quoted
+// token with no entry — a pattern, a value, a path inside `normalize` — is left be.
 const QUOTED = /'([^']+)'/g;
 
-/**
- * Rewrites `'metadata.title' is required` as `Title is required`, so a decoder
- * error reads the way the same error reads on the filter and KVDB forms.
- */
+/** `'metadata.title' is required` -> `Title is required`. */
 export const humanizeMessage = (message: string): string =>
   message.replace(QUOTED, (quoted, path) => FIELD_LABELS[path] ?? quoted);
 
 export interface RoutedErrors {
-  /** Errors that reached a field, keyed by Formik path. */
+  /** Keyed by Formik path. */
   fields: Record<string, string>;
-  /**
-   * Errors with no field to land on — shown in the form-level summary so they are
-   * never silently swallowed.
-   */
+  /** No field to land on; shown in the form-level summary. */
   document: string[];
 }
 
@@ -111,7 +87,6 @@ export const routeSchemaErrors = (
       document.push(humanizeMessage(message));
       return;
     }
-    // First message wins, matching formatValidationErrors' own precedence.
     if (!fields[target]) fields[target] = humanizeMessage(message);
   });
 
@@ -119,11 +94,9 @@ export const routeSchemaErrors = (
 };
 
 /**
- * The errors that belong to `field` or to anything inside it.
- *
- * A field rendered as one control — `normalize` is the whole array in a single
- * editor — has no place to put an error routed to `normalize[1].map`, so it has
- * to collect them itself or they are never shown.
+ * Errors for `field` or anything inside it. A field rendered as one control —
+ * `normalize` is the whole array in one editor — has nowhere to put an error
+ * routed to `normalize[1].map`, so it collects them itself.
  */
 export const errorsUnder = (errors: Record<string, string>, field: string): string[] =>
   Object.entries(errors)

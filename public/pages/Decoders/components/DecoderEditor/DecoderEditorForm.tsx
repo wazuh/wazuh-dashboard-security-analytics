@@ -39,19 +39,11 @@ export interface DecoderEditorFormProps {
 /**
  * The decoder visual editor.
  *
- * Controls, labels, spacing and field order follow the KVDB and filter editors —
- * `fieldLabel` inside `EuiCompressedFormRow`, `fullWidth` on the row and never on
- * the input, a single column, `EuiSpacer size="m"` between fields — so the four
- * entity forms read as one application. See the decoder section of TERMINOLOGY.md.
+ * Controls, labels, spacing and field order follow the KVDB and filter editors.
+ * Field order is the KVDB spine — identity, metadata, then the decoder's own
+ * fields the way an event travels, definitions last.
  *
- * Field order follows KVDBs: identity, the metadata block both siblings order
- * identically, then the decoder's own fields. Those last are ordered the way an
- * event travels — `check` decides whether the decoder runs, parsers pull values
- * out, `normalize` maps them — with `definitions` last, since it is build-time
- * constants rather than part of the event's path.
- *
- * `normalize` is a YAML field rather than a set of controls; see
- * `NormalizeYamlField` for why.
+ * `normalize` is a YAML field; see NormalizeYamlField.
  */
 export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
   values,
@@ -60,10 +52,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
   documentErrors = [],
   submitAttempted = false,
 }) => {
-  // Errors come from the JSON Schema rather than Formik's own validation, so the
-  // `touched` gate the filter and KVDB forms get for free has to be applied here:
-  // a form opened for the first time must be quiet, even though validation has
-  // already run against the loaded document.
+  // Schema errors are not Formik's, so the touched gate is applied by hand.
   const [touched, setTouched] = useState<TouchedState>(emptyTouched);
   const onBlurPath = useCallback(
     (path: string) => setTouched((current) => withTouched(current, path)),

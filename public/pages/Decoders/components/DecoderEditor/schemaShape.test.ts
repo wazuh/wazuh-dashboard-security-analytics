@@ -8,17 +8,10 @@ import decoderSchema from '../../../../../common/schemas/wazuh-decoders.schema.j
 /**
  * Grammar guard.
  *
- * `common/schemas/*.schema.json` is gitignored and refetched from `wazuh/wazuh` on
- * every `yarn install` and `prebuild`, so the decoder grammar can change with no
- * diff and no review — while the visual editor models that grammar by hand.
- *
- * The snapshot below is therefore the only version-controlled record of the grammar
- * in this repository. When it fails, the engine changed shape: read the diff, decide
- * whether `DecoderEditor` needs to model something new, then update the snapshot.
- * A failure on a PR that did not touch decoders is expected and is the point.
- *
- * It deliberately captures *shape* only — key names, required sets, branch shapes —
- * and not the ECS field catalog, which changes constantly and is not modelled here.
+ * `common/schemas/*.schema.json` is gitignored and refetched on install, so the
+ * grammar can change with no diff. This snapshot is the only version-controlled
+ * record of it. A failure means the engine changed shape: read the diff, decide
+ * whether the editor needs to model something new, then update it.
  */
 
 const schema = decoderSchema as any;
@@ -56,8 +49,7 @@ describe('engine decoder grammar', () => {
   });
 
   it('still uses the field catalog only as a catalog, not as grammar', () => {
-    // `_fieldsDecoder` is ~99% of the file and is a list of ECS field names. If it
-    // ever grows grammar of its own, the editor's assumptions need revisiting.
+    // ~99% of the file, and only a list of field names. Grammar here would matter.
     const fields = schema.definitions?._fieldsDecoder;
     expect(fields?.additionalProperties).toBe(false);
     expect(Object.keys(fields?.patternProperties ?? {})).toEqual(['^_.+']);

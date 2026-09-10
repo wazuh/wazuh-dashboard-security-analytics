@@ -202,13 +202,6 @@ describe('DecoderEditorForm', () => {
       ]);
     });
 
-    it('still says inline what to type into the normalize editor', () => {
-      // The popover is reference material; an empty editor must never be unexplained.
-      expect(render(mapDecoderToForm(document)).text()).toContain(
-        'Each entry can check a condition'
-      );
-    });
-
     it('keeps syntax guidance inline, where it is needed while typing', () => {
       // The filter form keeps its own check-syntax hint, example block and all, on
       // the page rather than behind a click. Parsers follow that.

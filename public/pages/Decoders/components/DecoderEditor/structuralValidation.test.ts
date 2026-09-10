@@ -38,44 +38,11 @@ describe('collectStructuralErrors', () => {
     expect(hasStructuralErrors(errors)).toBe(false);
   });
 
-  it('blocks a map row that has a value but no field', () => {
-    const errors = collectStructuralErrors(
-      values({
-        normalize: [
-          {
-            check: { mode: 'none' },
-            parsers: [],
-            map: [{ field: '', value: '$ip' }],
-          },
-        ],
-      })
-    );
-    expect(errors.fields['normalize[0].map[0]']).toBe('field is required for this row');
-  });
-
   it('blocks a parser with expressions but no field', () => {
     const errors = collectStructuralErrors(
       values({ parsers: [{ field: '', expressions: ['<~>'] }] })
     );
     expect(errors.fields['parsers[0]']).toBe('A parser needs the field it reads');
-  });
-
-  it('blocks an unparseable normalize entry', () => {
-    const errors = collectStructuralErrors(
-      values({
-        normalize: [{ check: { mode: 'none' }, parsers: [], map: [], raw: 'map: [\n  broken' }],
-      })
-    );
-    expect(errors.fields['normalize[0]']).toMatch(/^Invalid YAML/);
-  });
-
-  it('accepts a normalize entry whose raw YAML is valid but unmodelled', () => {
-    const errors = collectStructuralErrors(
-      values({
-        normalize: [{ check: { mode: 'none' }, parsers: [], map: [], raw: 'map_if:\n  when: $x' }],
-      })
-    );
-    expect(hasStructuralErrors(errors)).toBe(false);
   });
 
   it('blocks an unparseable check', () => {

@@ -7,17 +7,13 @@ import { validateYamlSyntax } from '../../../../components/YamlForm';
 import { CheckModel, DecoderFormModel, FieldValueRow, ParserRow } from './DecoderEditorFormModel';
 
 /**
- * The blocking tier of validation: problems that mean **no document can be
- * produced at all**.
+ * The blocking tier: problems that mean no document can be produced.
  *
- * The other tier — JSON Schema violations — only warns. The schema is downloaded
- * from `wazuh/wazuh` at install time and can be stale or resolved from a fallback
- * ref, so refusing to save on it would mean refusing decoders the engine would
- * accept. What is collected here is different in kind: text that does not parse, or
- * a value with no key to write it under.
+ * Schema violations only warn — the schema is downloaded at install time and can
+ * be stale, so refusing on it would refuse decoders the engine accepts.
  */
 
-/** A row carrying a value but no field name cannot be written to the document. */
+/** A value with no field name cannot be written. */
 export const rowNeedsField = (row: FieldValueRow): boolean =>
   row.field.trim() === '' && row.value.trim() !== '';
 
@@ -71,24 +67,6 @@ export const collectStructuralErrors = (values: DecoderFormModel): StructuralErr
     if (parserNeedsField(row)) {
       fields[`parsers[${index}]`] = 'A parser needs the field it reads';
     }
-  });
-
-  values.normalize.forEach((entry, index) => {
-    const path = `normalize[${index}]`;
-
-    if (entry.raw !== undefined) {
-      const syntaxError = validateYamlSyntax(entry.raw);
-      if (syntaxError) fields[path] = `Invalid YAML: ${syntaxError}`;
-      return;
-    }
-
-    collectCheckErrors(entry.check, `${path}.check`, fields);
-    collectRowErrors(entry.map, `${path}.map`, 'field', fields);
-    entry.parsers.forEach((row, rowIndex) => {
-      if (parserNeedsField(row)) {
-        fields[`${path}.parsers[${rowIndex}]`] = 'A parser needs the field it reads';
-      }
-    });
   });
 
   return { fields, document };

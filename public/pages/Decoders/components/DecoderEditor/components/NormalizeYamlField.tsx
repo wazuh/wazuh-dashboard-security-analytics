@@ -23,8 +23,7 @@ export interface NormalizeYamlFieldProps {
   onBlur?: () => void;
 }
 
-// Same shape as the filter form's own example block beside its check editor:
-// no fill, no border, just a small gap above it.
+// Matches the filter form's example block: no fill, no border.
 const examplePreStyle: React.CSSProperties = { margin: '4px 0 0 0' };
 
 const STRUCTURE_HELP = (
@@ -41,22 +40,12 @@ const STRUCTURE_HELP = (
 const NOT_A_LIST = 'Normalize must be a list. Start each entry with a dash and a space.';
 
 /**
- * `normalize`, edited as YAML.
+ * `normalize`, edited as YAML — the one construct the issue calls too complex to
+ * model, at five `oneOf` shapes with its own nested check/parse/map.
  *
- * Every other field on this form has real controls; this one does not, and that is
- * deliberate. A `normalize` entry combines an optional `check`, any number of
- * `parse|<field>` keys and a `map`, in five valid shapes — the one construct the
- * issue calls "too complex to model", where a form would need three levels of
- * nesting to say what six lines of YAML say plainly.
- *
- * What the field does guarantee:
- *
- * - it shows the **entries themselves**, so what is on screen is what the document
- *   holds, with no wrapper key to mentally strip;
- * - it round-trips anything it is given, including entries this plugin does not
- *   recognize — text goes back through the same mappers the rest of the form uses;
- * - text that does not parse leaves the document untouched and says why, rather
- *   than quietly discarding the entries.
+ * It shows the entries themselves, round-trips anything it is given through the
+ * same mappers as the rest of the form, and leaves the document alone when the
+ * text does not parse.
  */
 export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
   entries,
@@ -78,8 +67,7 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
   const [syntaxError, setSyntaxError] = useState<string | null>(null);
   const isEditingRef = useRef(false);
 
-  // Follow the document when it changes elsewhere (the page-level YAML editor, or a
-  // reload), but never rewrite text the user is in the middle of typing.
+  // Follow the document, but never while the user is typing.
   useEffect(() => {
     if (isEditingRef.current) return;
     setDraft(documentYaml);
@@ -116,9 +104,7 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
     [onChange]
   );
 
-  // A syntax error means the text never reached the document, so any schema
-  // errors still on screen describe the last version that parsed. Show the
-  // syntax error alone until the YAML is readable again.
+  // Schema errors describe the last version that parsed, so hide them meanwhile.
   const shown = syntaxError ? [syntaxError] : errors;
   const count = entries.length;
 

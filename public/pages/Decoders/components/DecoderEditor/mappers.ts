@@ -25,21 +25,14 @@ const isParseKey = (key: string): boolean => key.startsWith(PARSE_KEY_PREFIX);
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-/** A `{ field: value }` pair — the only shape `map` entries and `check` items take. */
+/** The only shape `map` entries and `check` items take. */
 const isSinglePair = (value: unknown): value is Record<string, unknown> =>
   isPlainObject(value) && Object.keys(value).length === 1;
 
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
 
-/**
- * Renders a document value as editable text.
- *
- * Scalars go through YAML so a string that would otherwise re-parse as something
- * else survives the trip — `'true'` is written `"true"`, not `true`. Objects and
- * arrays are written as indented JSON, which is valid YAML, matching what the KVDB
- * content editor does.
- */
+/** Renders a value as editable text. Scalars go through YAML so `'true'` stays a string. */
 export const valueToText = (value: unknown): string => {
   if (value === undefined) return '';
   if (value instanceof LosslessNumber) return value.toString();
@@ -55,8 +48,7 @@ export const textToValue = (text: string): unknown => {
   try {
     return mapYamlToLosslessObject<unknown>(text);
   } catch {
-    // Unparseable text blocks submission (see the form's structural validation),
-    // so carrying it through as a plain string is enough to avoid data loss here.
+    // Unparseable text is blocked before submit; keep it as a string meanwhile.
     return text;
   }
 };
@@ -103,7 +95,7 @@ export const modelToCheck = (model: CheckModel): unknown => {
   }
 };
 
-/** True when a check holds nothing worth writing to the document. */
+/** Nothing worth writing? */
 const isEmptyCheck = (model: CheckModel): boolean => {
   if (model.mode === 'none') return true;
   if (model.mode === 'expression') return model.expression.trim() === '';
@@ -141,11 +133,7 @@ const rowsToParseKeys = (rows: ParserRow[]): Record<string, string[]> => {
 
 const NORMALIZE_MODELLED_KEYS = new Set(['check', 'map']);
 
-/**
- * True when this editor can render the entry without losing anything. An entry it
- * cannot render is carried as text **in place**, because `normalize` is sequential
- * and an entry that moved would change what the decoder does.
- */
+/** Can this entry be modelled without losing anything? */
 export const isRenderableNormalizeEntry = (entry: unknown): entry is Record<string, unknown> => {
   if (!isPlainObject(entry)) return false;
 
@@ -291,9 +279,7 @@ export const mapFormToDecoder = (values: DecoderFormModel): DecoderDocument => {
     document.parents = values.parents.filter((parent) => parent.trim() !== '');
   }
 
-  // `definitions` has minProperties: 1 and `normalize` has minItems: 1, so writing
-  // an empty one back produces a document the engine rejects. Emptying the section
-  // means removing the key, even when the loaded document had it.
+  // Both have a minimum of 1 in the schema, so an empty one must drop the key.
   const definitions = values.definitions.filter((row) => row.field.trim() !== '');
   if (definitions.length > 0) {
     document.definitions = Object.fromEntries(
@@ -309,7 +295,6 @@ export const mapFormToDecoder = (values: DecoderFormModel): DecoderDocument => {
     document.normalize = values.normalize.map(modelToNormalizeEntry);
   }
 
-  // The modelled keys are all written above; the cast is over the open shape the
-  // preserved keys and `parse|<field>` entries share with it.
+  // Cast over the open shape preserved keys and `parse|<field>` add.
   return (document as unknown) as DecoderDocument;
 };

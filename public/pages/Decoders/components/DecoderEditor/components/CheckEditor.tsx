@@ -47,16 +47,10 @@ const checkToYamlText = (model: CheckModel): string => {
 };
 
 /**
- * `check` — the schema's `_check`: either a conditional expression or a list of
- * `{ field: condition }` items, both of which this editor models.
+ * `check` — an expression or a list of `{ field: condition }` items.
  *
- * The selector is labelled `Format`, not `Type`: the filter form already uses
- * `Type` for a filter's pre/post stage, and two meanings of one noun on adjacent
- * screens is the regression TERMINOLOGY.md exists to prevent.
- *
- * A `check` holding anything else is carried as YAML and the visual view is
- * disabled for it, rather than being reshaped into something the engine did not
- * mean.
+ * Anything else is carried as YAML rather than reshaped. The selector is labelled
+ * `Format`, not `Type`: the filter form already uses `Type` for its own field.
  */
 export const CheckEditor: React.FC<CheckEditorProps> = ({
   path,

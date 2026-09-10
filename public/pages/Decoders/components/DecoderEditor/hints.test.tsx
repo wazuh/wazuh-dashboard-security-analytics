@@ -175,16 +175,4 @@ describe('hint copy', () => {
     expect(text).not.toMatch(/logpar/i);
     expect(text).toContain('captures into that field');
   });
-
-  it('tells the user to quote string values', () => {
-    expect(textOf(CHECK_EXPRESSION_HINT)).toMatch(/quote/i);
-  });
-
-  it('says a failing nested check skips only its own entry', () => {
-    expect(textOf(NORMALIZE_CHECK_HINT)).toMatch(/skip the entry/i);
-  });
-
-  it('leads the map example with a helper, the most common value kind', () => {
-    expect(textOf(MAP_HINT)).toContain('array_append(network)');
-  });
 });

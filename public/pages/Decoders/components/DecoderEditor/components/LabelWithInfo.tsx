@@ -25,14 +25,10 @@ export interface LabelWithInfoProps {
 }
 
 /**
- * A field label with the blue info button the filter form puts beside its `Type`
- * field, opening a popover on click.
+ * The filter form's info button beside a label, opening a popover on click.
  *
- * Reserved for **reference material**: what an option means, consulted once and
- * then dismissed. Guidance the user needs *while typing* stays inline as
- * `helpText` — which is the same split the filter form makes, keeping its `Type`
- * explanation in a popover while its `check` syntax, example block and all, stays
- * on the page.
+ * For reference material — what an option means. Guidance needed while typing
+ * stays inline as `helpText`, which is the split the filter form makes.
  */
 export const LabelWithInfo: React.FC<LabelWithInfoProps> = ({
   label,
@@ -74,7 +70,7 @@ export const LabelWithInfo: React.FC<LabelWithInfoProps> = ({
   );
 };
 
-/** One labelled paragraph inside a popover, matching the filter form's layout. */
+/** One labelled paragraph inside a popover. */
 export const InfoItem: React.FC<{ term: string; children: React.ReactNode }> = ({
   term,
   children,

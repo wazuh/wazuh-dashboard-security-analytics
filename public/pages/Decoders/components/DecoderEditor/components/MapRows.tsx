@@ -41,18 +41,8 @@ export interface MapRowsProps {
 }
 
 /**
- * A list of `{ <field>: <value> }` pairs, laid out like the KVDB content editor so
- * the two read as the same control — minus its `height: 37px` inline override,
- * which is the *uncompressed* input height and cancels the compressed sizing.
- *
- * Vertical rhythm: `s` between rows (they are repetitions of one thing), `m`
- * between distinct fields, `l` between sections. Nothing sets its own margins.
- *
- * The document holds these with the *field name as the key*, but the form holds
- * `{ field, value }` rows: Formik splits paths on dots, and ECS field names are
- * full of them, so an isomorphic model would turn `source.ip` into nesting. Schema
- * errors reported against the document key are routed back onto the row by
- * `errorRouting.nearestFormPath`.
+ * `{ <field>: <value> }` pairs, laid out like the KVDB content editor. The form
+ * holds rows rather than keys because Formik splits paths on dots.
  */
 export const MapRows: React.FC<MapRowsProps> = ({
   path,
@@ -72,8 +62,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
 
   const remove = (index: number) => onChange(rows.filter((_, i) => i !== index));
 
-  // An error routed to the section rather than to a row — e.g. "must have at least
-  // one item", or one whose row index is out of range.
+  // Routed to the section, not a row.
   const sectionError = errors[path];
 
   return (
@@ -106,8 +95,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
       {rows.map((row, index) => {
         const rowPath = `${path}[${index}]`;
         const rowError = errors[rowPath];
-        // A value with no field name cannot be written to the document at all.
-        // Same predicate the submit gate uses, so the two can never disagree.
+        // Same predicate the submit gate uses.
         const missingField = rowNeedsField(row);
         const textareaRows = Math.min(Math.max(row.value.split('\n').length, 1), 8);
 

@@ -19,23 +19,14 @@ export interface MetadataFieldsProps {
   onChange: (metadata: DecoderMetadataModel) => void;
   onBlur?: (path: string) => void;
   errors?: Record<string, string>;
-  /**
-   * Rendered between `Author` and `Description`. The KVDB form puts the Enabled
-   * switch there, and the decoder form follows it — but `enabled` is not metadata,
-   * so it is injected rather than owned here.
-   */
+  /** Slot between Author and Description, where KVDBs put the Enabled switch. */
   afterAuthor?: React.ReactNode;
 }
 
 /**
- * `metadata`.
+ * `metadata`. Labels match the KVDB and filter editors word for word.
  *
- * Labels match the KVDB and filter editors word for word, so the same field is
- * called the same thing wherever it appears. See the decoder section of
- * TERMINOLOGY.md.
- *
- * `date` and `modified` are engine-owned: carried through a round trip by the
- * mappers, and deliberately not editable here.
+ * `date` and `modified` are engine-owned: carried by the mappers, not editable.
  */
 export const MetadataFields: React.FC<MetadataFieldsProps> = ({
   metadata,

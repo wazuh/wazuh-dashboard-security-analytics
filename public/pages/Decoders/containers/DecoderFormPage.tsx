@@ -107,19 +107,14 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   const [initialValues, setInitialValues] = useState<DecoderFormModel>(
     decoderEditorStateDefaultValue
   );
-  // Wazuh: the document is the single source of truth and the YAML editor is a view
-  // of it, matching the rules editor. Decoders are persisted as an object
-  // (`documentJson`), so raw YAML text has no privileged status the way it does for
-  // KVDBs and filters, which persist the text itself.
-  // See docs/adr/0002-editor-source-of-truth-follows-persistence-format.md
+  // Values are the document; the YAML editor is a view of them. Decoders persist
+  // an object, so raw text has no privileged status. See docs/adr/0002.
   const [yamlSyntaxError, setYamlSyntaxError] = useState<string | null>(null);
   const [schemaWarnings, setSchemaWarnings] = useState<{
     fields: Record<string, string>;
     document: string[];
   }>({ fields: {}, document: [] });
-  // Wazuh: on create the YAML view shows the starter template until something is
-  // edited, so the guidance a YAML author has today is not lost to a form that
-  // (correctly) starts empty.
+  // On create the YAML view shows the starter template until something is edited.
   const [isPristineCreate, setIsPristineCreate] = useState(action === 'create');
 
   const {
@@ -158,8 +153,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
             BREADCRUMBS.NORMALIZATION,
             BREADCRUMBS.DECODERS,
             BREADCRUMBS.DECODERS_EDIT,
-            // name the decoder in the trail. A breadcrumb has room for one
-            // string, and the identifier is already on screen inside the form.
+            // Name it in the trail; the id is already on screen.
             { text: response?.document.metadata?.title || response?.document.name },
           ]);
         } catch (error) {
@@ -285,11 +279,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
     [action, createDecoder, updateDecoder]
   );
 
-  /**
-   * The blocking tier. Formik's own errors carry only what makes a document
-   * impossible to build, so `isValid` can gate submission directly. Schema
-   * violations are the advisory tier and live in `schemaWarnings`.
-   */
+  /** Blocking tier only; schema violations live in `schemaWarnings`. */
   const validateForm = useCallback((values: DecoderFormModel) => {
     const structural = collectStructuralErrors(values);
     return (hasStructuralErrors(structural) ? (structural.fields as unknown) : {}) as FormikErrors<
@@ -397,9 +387,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
   const values: DecoderFormModel = formikProps.values;
   const validationSeq = useRef(0);
 
-  // The advisory tier: JSON Schema validation of the document the form would
-  // produce. Debounced and out of band, so it never gates typing, and only the
-  // newest result is applied.
+  // Advisory tier: schema validation, debounced, newest result wins.
   useEffect(() => {
     const seq = ++validationSeq.current;
     const timer = window.setTimeout(async () => {
@@ -424,8 +412,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
     (text: string) => {
       const syntaxError = validateYamlSyntax(text);
       setYamlSyntaxError(syntaxError);
-      // Unparseable YAML never reaches the document, matching the rules editor:
-      // toggling back to the visual editor shows the last valid state.
+      // Unparseable YAML never reaches the document, matching the rules editor.
       if (syntaxError) return;
       setIsPristineCreate(false);
       formikProps.setValues(mapDecoderToForm(mapYamlToLosslessObject<DecoderDocument>(text)));

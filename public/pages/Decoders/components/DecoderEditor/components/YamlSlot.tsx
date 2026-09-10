@@ -37,16 +37,11 @@ export interface YamlSlotProps {
 }
 
 /**
- * One editable region of the decoder, in either of its two views.
+ * A field in either of its two views, with an inline link to switch — the way the
+ * rules detection editor offers its YAML escape. A decoder has several of these,
+ * and a button group on each is what makes the form feel busy.
  *
- * The escape hatch is an inline text link, not a persistent two-button group. A
- * decoder with three normalize entries has seven of these slots, and seven button
- * groups is most of what makes the form feel busy — while the thing they toggle is
- * needed rarely. This matches how the rules detection editor offers its own YAML
- * escape (`EuiSmallButtonEmpty` inside `EuiText size="xs"`).
- *
- * The view is local state: it is a way of looking at the document, not part of it,
- * so it never reaches the form values.
+ * The view is local state: it never reaches the form values.
  */
 export const YamlSlot: React.FC<YamlSlotProps> = ({
   slotId,
@@ -64,13 +59,12 @@ export const YamlSlot: React.FC<YamlSlotProps> = ({
   const timerRef = useRef<number | null>(null);
   const isEditingRef = useRef(false);
 
-  // Content can stop being representable while the user edits it, in which case the
-  // slot has to fall back rather than render a structured view it cannot model.
+  // Content can stop being representable mid-edit.
   useEffect(() => {
     if (forced) setShowYaml(true);
   }, [forced]);
 
-  // Track the document from outside, but never yank text out from under the cursor.
+  // Follow the document, but never while the user is typing.
   useEffect(() => {
     if (isEditingRef.current) return;
     setDraft(yamlValue);

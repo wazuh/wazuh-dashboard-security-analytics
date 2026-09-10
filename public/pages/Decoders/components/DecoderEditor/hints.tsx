@@ -6,35 +6,15 @@
 import React from 'react';
 
 /**
- * Field hints for the decoder-specific fields.
+ * Hints for the decoder-specific fields, shaped like the filter form's: say what
+ * the field is for, then show a worked example.
  *
- * Written to the shape the filter form uses for its `check` field: say what the
- * field is for, then show a worked example. Each hint renders directly beneath the
- * label of the field it describes, through `EuiFormHelpText` — never inside
- * `EuiText`, whose stylesheet paints `<pre>` with a code-block fill.
- *
- * **The examples are taken from the decoders the engine actually ships** (509 of
- * them in the standard space), not invented and not merely schema-valid. What that
- * survey changed:
- *
- * - `parents` is almost always `decoder/core-wazuh-message/0` (388 of 507 shipped
- *   decoders), not an integration.
- * - `definitions` names have **no** underscore rule — real ones are `log_level`,
- *   `PRIORITY`, `NSG_PROTO_MAP` — and their values are most often lookup maps
- *   (95 maps, 69 strings, 15 lists), not scalars.
- * - `map` values are helper calls more often than anything else (8,590 helpers vs
- *   6,294 field references and 4,963 literals), so the example leads with one.
- * - `check` lists in practice test for presence (`field: exists()`), rather than
- *   comparing against literals.
- * - string literals in a `check` expression are usually quoted (82 single-quoted,
- *   31 double, 11 bare).
- *
- * Parser syntax comes from the engine reference (Wazuh docs, Engine module,
- * "logpar"); the JSON Schema constrains an expression only to a non-empty string.
+ * Examples are taken from the decoders the engine ships and checked against the
+ * schema by hints.test.tsx. Parser syntax comes from the engine reference
+ * ("logpar"); the schema only requires a non-empty string.
  */
 
-// Matches the filter form's own example block: no fill, no border, just a small
-// gap above it, so the example reads as part of the sentence.
+// Matches the filter form's example block: no fill, no border.
 const preStyle: React.CSSProperties = { margin: '4px 0 0 0' };
 const wrap: React.CSSProperties = { maxWidth: '600px' };
 

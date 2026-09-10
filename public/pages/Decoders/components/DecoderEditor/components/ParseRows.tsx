@@ -42,13 +42,8 @@ export interface ParseRowsProps {
 }
 
 /**
- * The `parse|<field>` keys of a normalize entry (or of the document root), laid out
- * with the accordion-per-item pattern the rules detection editor uses.
- *
- * In the document these are keys whose *name* carries the target field —
- * `parse|message: [<~>]`. The form splits that into `{ field, expressions }` for
- * the same reason `map` becomes rows: a target like `parse|event.original` would
- * otherwise be read by Formik as nesting.
+ * `parse|<field>` keys, split into `{ field, expressions }` for the same reason
+ * `map` becomes rows: a target like `parse|event.original` would read as nesting.
  */
 export const ParseRows: React.FC<ParseRowsProps> = ({
   path,
@@ -66,8 +61,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
   const sectionError = errors[path];
 
-  // One card per parser reads badly inside a layout that has no cards at all.
-  // React 18's types no longer give React.FC an implicit `children`.
+  // `flat` drops the card, for layouts that have none.
   const Shell = ({ children }: { children: React.ReactNode }) =>
     flat ? (
       <>{children}</>
