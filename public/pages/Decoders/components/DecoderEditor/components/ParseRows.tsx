@@ -143,7 +143,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
               >
                 <EuiCompressedFieldText
                   prepend="parse|"
-                  placeholder="message"
+                  placeholder="event.original"
                   value={row.field}
                   onChange={(e) => update(index, { field: e.target.value })}
                   onBlur={() => onBlurPath?.(rowPath)}
@@ -158,7 +158,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
               <FormFieldArray
                 label={fieldLabel('Expressions')}
                 values={row.expressions.length ? row.expressions : ['']}
-                placeholder="[<@timestamp>] <log.level>: <message>"
+                placeholder="<_tmp.date/date/%y%m%d %T> <_tmp.message>"
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />

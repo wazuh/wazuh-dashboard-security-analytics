@@ -126,7 +126,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
         helpText={!shownErrors.name ? NAME_HINT : undefined}
       >
         <EuiCompressedFieldText
-          placeholder="decoder/syslog/0"
+          placeholder="decoder/zeek-stats/0"
           value={values.name}
           onChange={(e) => set('name', e.target.value)}
           onBlur={() => onBlurPath('name')}
@@ -166,7 +166,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       <FormFieldArray
         label=""
         values={values.parents.length ? values.parents : ['']}
-        placeholder="decoder/integrations/0"
+        placeholder="decoder/core-wazuh-message/0"
         addButtonLabel="Add parent"
         onChange={(parents) => set('parents', parents)}
       />
@@ -211,8 +211,8 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
           onChange={(definitions) => set('definitions', definitions)}
           errors={shownErrors}
           onBlurPath={onBlurPath}
-          fieldPlaceholder="_threshold"
-          valuePlaceholder="5"
+          fieldPlaceholder="NSG_PROTO_MAP"
+          valuePlaceholder="{ T: tcp, U: udp }"
           addLabel="Add definition"
           emptyLabel="No definitions yet."
           helpText={DEFINITIONS_HINT}

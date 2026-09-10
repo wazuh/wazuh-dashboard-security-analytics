@@ -130,7 +130,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
             helpText={CHECK_EXPRESSION_HINT}
           >
             <EuiCompressedFieldText
-              placeholder="$event.module == syslog"
+              placeholder="$process.name == 'haproxy'"
               value={model.expression}
               onChange={(e) => onChange({ mode: 'expression', expression: e.target.value })}
               onBlur={() => onBlurPath?.(path)}
@@ -153,8 +153,8 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
             }
             errors={errors}
             onBlurPath={onBlurPath}
-            fieldPlaceholder="event.module"
-            valuePlaceholder="syslog"
+            fieldPlaceholder="_tmp_json.accountId"
+            valuePlaceholder="exists()"
             helpText={CHECK_LIST_HINT}
             addLabel="Add condition"
             emptyLabel="No conditions yet."

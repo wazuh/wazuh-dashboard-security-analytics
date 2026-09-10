@@ -56,7 +56,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
         error={errors['metadata.title']}
       >
         <EuiCompressedFieldText
-          placeholder="Enter decoder title"
+          placeholder="Zeek STATS logs decoder"
           value={metadata.title}
           onChange={(e) => set('title', e.target.value)}
           onBlur={() => onBlur?.('metadata.title')}
@@ -73,7 +73,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
         error={errors['metadata.author']}
       >
         <EuiCompressedFieldText
-          placeholder="Enter author name"
+          placeholder="Wazuh, Inc."
           value={metadata.author}
           onChange={(e) => set('author', e.target.value)}
           onBlur={() => onBlur?.('metadata.author')}
@@ -92,7 +92,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
         error={errors['metadata.description']}
       >
         <EuiCompressedTextArea
-          placeholder="Enter a description"
+          placeholder="Zeek decoder for Zeek STATS logs."
           value={metadata.description}
           onChange={(e) => set('description', e.target.value)}
           onBlur={() => onBlur?.('metadata.description')}
@@ -104,7 +104,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
 
       <EuiCompressedFormRow label={fieldLabel('Documentation', true)} fullWidth={true}>
         <EuiCompressedTextArea
-          placeholder="Enter documentation"
+          placeholder="https://docs.zeek.org/en/master/logs/stats.html"
           value={metadata.documentation}
           onChange={(e) => set('documentation', e.target.value)}
           data-test-subj="metadata.documentation"
@@ -115,7 +115,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
       <FormFieldArray
         label={fieldLabel('References', true)}
         values={metadata.references.length ? metadata.references : ['']}
-        placeholder="https://example.com/reference"
+        placeholder="https://docs.zeek.org/en/master/logs/index.html"
         addButtonLabel="Add reference"
         onChange={(references) => set('references', references)}
       />
