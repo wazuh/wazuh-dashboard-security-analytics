@@ -1,0 +1,23 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/**
+ * The normalize editor's placeholder is a structural guide, so it has to keep its
+ * line breaks.
+ *
+ * react-ace builds the placeholder as a plain `div` and assigns the text with
+ * `textContent`, and neither ace nor EUI gives `.ace_placeholder` a `white-space`
+ * rule — so by default a multi-line placeholder collapses into one run-on line.
+ * Scoped to this editor so no other Ace instance in the plugin is affected.
+ */
+.decoder-normalize-editor {
+  .ace_placeholder {
+    white-space: pre;
+    // ace sizes the placeholder from the first line; without this a multi-line
+    // guide is clipped to the scroller's single-line height.
+    height: auto;
+    opacity: 0.6;
+  }
+}

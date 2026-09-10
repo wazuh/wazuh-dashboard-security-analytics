@@ -281,6 +281,28 @@ describe('DecoderEditorForm', () => {
       expect(onChange.mock.calls[0][0].normalize).toEqual([]);
     });
 
+    it('shows a structural guide while empty, and drops it once there is content', () => {
+      // The placeholder is the only place the shape is visible rather than
+      // described, so it has to survive.
+      const empty = render(mapDecoderToForm({ ...document, normalize: undefined }));
+      const guide = editor(empty).prop('placeholder') as string;
+
+      expect(guide).toContain('- check:');
+      expect(guide).toContain('  parse|event.original:');
+      expect(guide).toContain('  map:');
+      // Ace only paints it while the editor is empty.
+      expect(editor(empty).prop('value')).toBe('');
+      expect(editor(render(mapDecoderToForm(document))).prop('value')).not.toBe('');
+    });
+
+    it('scopes the class its multi-line placeholder styling needs', () => {
+      // react-ace builds the placeholder as a div and sets textContent, so without
+      // `white-space: pre` from DecoderEditor.scss the guide collapses to one line.
+      expect(editor(render(mapDecoderToForm(document))).prop('className')).toBe(
+        'decoder-normalize-editor'
+      );
+    });
+
     it('counts the entries', () => {
       expect(render(mapDecoderToForm(document)).text()).toContain('2 entries');
       expect(

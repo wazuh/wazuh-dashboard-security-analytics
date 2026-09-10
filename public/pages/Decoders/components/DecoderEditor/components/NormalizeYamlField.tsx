@@ -20,6 +20,23 @@ export interface NormalizeYamlFieldProps {
   onBlur?: () => void;
 }
 
+/**
+ * Shown while the field is empty, so the shape is visible before anything is typed
+ * rather than only described above it. Modelled on a shipped decoder: an entry with
+ * a check, a parser and a couple of mappings.
+ */
+const STRUCTURE_PLACEHOLDER = [
+  "- check: $event.code == '4624'",
+  '  parse|event.original:',
+  '    - <_tmp.date/date/%y%m%d %T> <_tmp.message>',
+  '  map:',
+  '    - event.category: array_append(authentication)',
+  '    - user.name: $_tmp.user',
+  '',
+  '- map:',
+  '    - event.kind: event',
+].join('\n');
+
 const NOT_A_LIST =
   'normalize must be a list of entries, each starting with "- ". For example: "- map:".';
 
@@ -150,6 +167,8 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
           mode="yaml"
           width="600px"
           height="320px"
+          className="decoder-normalize-editor"
+          placeholder={STRUCTURE_PLACEHOLDER}
           value={draft}
           onChange={onEditorChange}
           onBlur={onBlur}

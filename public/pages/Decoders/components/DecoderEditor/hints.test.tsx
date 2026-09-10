@@ -88,6 +88,31 @@ describe('hint examples are accepted by the engine schema', () => {
   });
 });
 
+describe('placeholders', () => {
+  const read = (file: string) =>
+    require('fs').readFileSync(`${__dirname}/${file}`, 'utf8') as string;
+
+  it('keeps shared metadata fields generic, as the sibling forms do', () => {
+    // Title, author, description, documentation and references appear on the KVDB
+    // and filter forms too; they must not read as decoder trivia.
+    const metadata = read('components/MetadataFields.tsx');
+    [
+      'Enter decoder title',
+      'Enter author name',
+      'Brief description of what this decoder does',
+      'Enter documentation',
+      'https://example.com/reference',
+    ].forEach((text) => expect(metadata).toContain(text));
+  });
+
+  it('keeps decoder-specific fields concrete', () => {
+    // These have no counterpart on another form, so a real value teaches more than
+    // a generic prompt — the same call the filter form makes for filter/prefilter/0.
+    expect(read('DecoderEditorForm.tsx')).toContain('decoder/core-wazuh-message/0');
+    expect(read('components/CheckEditor.tsx')).toContain("$process.name == 'haproxy'");
+  });
+});
+
 describe('hint copy', () => {
   const textOf = (hint: React.ReactNode) => mount(<div>{hint}</div>).text();
 
