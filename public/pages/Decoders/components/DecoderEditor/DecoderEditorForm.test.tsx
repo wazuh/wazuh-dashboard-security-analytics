@@ -228,7 +228,7 @@ describe('DecoderEditorForm', () => {
 
       expect(yaml).toContain('map_if');
       act(() => {
-        ((editor(wrapper).prop('onChange') as unknown) as (value: string) => void)(yaml);
+        (editor(wrapper).prop('onChange') as unknown as (value: string) => void)(yaml);
       });
       expect(mapFormToDecoder(onChange.mock.calls[0][0]).normalize).toEqual(document.normalize);
     });
@@ -238,7 +238,7 @@ describe('DecoderEditorForm', () => {
       const wrapper = render(mapDecoderToForm(document), onChange);
 
       act(() => {
-        ((editor(wrapper).prop('onChange') as unknown) as (value: string) => void)('- [unclosed');
+        (editor(wrapper).prop('onChange') as unknown as (value: string) => void)('- [unclosed');
       });
       wrapper.update();
 
@@ -251,9 +251,7 @@ describe('DecoderEditorForm', () => {
       const wrapper = render(mapDecoderToForm(document), onChange);
 
       act(() => {
-        ((editor(wrapper).prop('onChange') as unknown) as (value: string) => void)(
-          'map: not-a-list'
-        );
+        (editor(wrapper).prop('onChange') as unknown as (value: string) => void)('map: not-a-list');
       });
       wrapper.update();
 
@@ -266,7 +264,7 @@ describe('DecoderEditorForm', () => {
       const wrapper = render(mapDecoderToForm(document), onChange);
 
       act(() => {
-        ((editor(wrapper).prop('onChange') as unknown) as (value: string) => void)('   ');
+        (editor(wrapper).prop('onChange') as unknown as (value: string) => void)('   ');
       });
       expect(onChange.mock.calls[0][0].normalize).toEqual([]);
     });
@@ -318,7 +316,7 @@ describe('DecoderEditorForm', () => {
         submitAttempted: true,
       });
       act(() => {
-        ((editor(wrapper).prop('onChange') as unknown) as (value: string) => void)('- [unclosed');
+        (editor(wrapper).prop('onChange') as unknown as (value: string) => void)('- [unclosed');
       });
       wrapper.update();
 

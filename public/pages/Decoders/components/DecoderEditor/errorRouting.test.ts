@@ -113,7 +113,7 @@ describe('routeSchemaErrors', () => {
   });
 
   it('ignores non-string error values', () => {
-    const routed = routeSchemaErrors({ normalize: ({} as unknown) as string }, values);
+    const routed = routeSchemaErrors({ normalize: {} as unknown as string }, values);
     expect(routed.fields).toEqual({});
     expect(routed.document).toEqual([]);
   });

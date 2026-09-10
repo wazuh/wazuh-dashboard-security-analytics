@@ -296,5 +296,5 @@ export const mapFormToDecoder = (values: DecoderFormModel): DecoderDocument => {
   }
 
   // Cast over the open shape preserved keys and `parse|<field>` add.
-  return (document as unknown) as DecoderDocument;
+  return document as unknown as DecoderDocument;
 };

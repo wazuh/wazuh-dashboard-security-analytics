@@ -61,7 +61,7 @@ const EDITOR_TYPE = {
   YAML: 'yaml',
 } as const;
 
-type EditorType = typeof EDITOR_TYPE[keyof typeof EDITOR_TYPE];
+type EditorType = (typeof EDITOR_TYPE)[keyof typeof EDITOR_TYPE];
 
 const editorTypes: Array<{ id: EditorType; label: string }> = [
   { id: EDITOR_TYPE.VISUAL, label: 'Visual Editor' },
@@ -282,9 +282,9 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
   /** Blocking tier only; schema violations live in `schemaWarnings`. */
   const validateForm = useCallback((values: DecoderFormModel) => {
     const structural = collectStructuralErrors(values);
-    return (hasStructuralErrors(structural) ? (structural.fields as unknown) : {}) as FormikErrors<
-      DecoderFormModel
-    >;
+    return (
+      hasStructuralErrors(structural) ? (structural.fields as unknown) : {}
+    ) as FormikErrors<DecoderFormModel>;
   }, []);
 
   return (

@@ -38,10 +38,10 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
   onBlur,
 }) => {
   const documentYaml = useMemo(() => {
-    const document = (mapFormToDecoder({
+    const document = mapFormToDecoder({
       ...mapDecoderToForm({}),
       normalize: entries,
-    }) as unknown) as Record<string, unknown>;
+    }) as unknown as Record<string, unknown>;
     const normalize = document.normalize;
     if (!Array.isArray(normalize) || normalize.length === 0) return '';
     return YAML.stringify(normalize, { lineWidth: 0 }).trimEnd();
