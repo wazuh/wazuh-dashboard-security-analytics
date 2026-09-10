@@ -20,22 +20,21 @@ export interface NormalizeYamlFieldProps {
   onBlur?: () => void;
 }
 
-/**
- * Shown while the field is empty, so the shape is visible before anything is typed
- * rather than only described above it. Modelled on a shipped decoder: an entry with
- * a check, a parser and a couple of mappings.
- */
-const STRUCTURE_PLACEHOLDER = [
-  "- check: $event.code == '4624'",
-  '  parse|event.original:',
-  '    - <_tmp.date/date/%y%m%d %T> <_tmp.message>',
-  '  map:',
-  '    - event.category: array_append(authentication)',
-  '    - user.name: $_tmp.user',
-  '',
-  '- map:',
-  '    - event.kind: event',
-].join('\n');
+// Same shape as the filter form's own example block beside its check editor:
+// no fill, no border, just a small gap above it.
+const examplePreStyle: React.CSSProperties = { margin: '4px 0 0 0' };
+
+const STRUCTURE_HELP = (
+  <div style={{ maxWidth: '600px' }}>
+    Start each entry with <code>- </code>. An entry can check a condition, parse a field, and set
+    fields:
+    <pre style={examplePreStyle}>{`- check: $event.code == '4624'
+  parse|event.original:
+    - <_tmp.date/date/%y%m%d %T> <_tmp.message>
+  map:
+    - user.name: $_tmp.user`}</pre>
+  </div>
+);
 
 const NOT_A_LIST =
   'normalize must be a list of entries, each starting with "- ". For example: "- map:".';
@@ -157,18 +156,12 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
           </LabelWithInfo>
         }
         fullWidth={true}
-        helpText={
-          <>
-            Written as YAML — one entry per <code>- </code>.
-          </>
-        }
+        helpText={STRUCTURE_HELP}
       >
         <EuiCodeEditor
           mode="yaml"
           width="600px"
           height="320px"
-          className="decoder-normalize-editor"
-          placeholder={STRUCTURE_PLACEHOLDER}
           value={draft}
           onChange={onEditorChange}
           onBlur={onBlur}
@@ -178,9 +171,11 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
         />
       </EuiCompressedFormRow>
 
-      <EuiText size="xs" color="subdued">
-        <p>{count === 1 ? '1 entry' : `${count} entries`}</p>
-      </EuiText>
+      {count > 0 && (
+        <EuiText size="xs" color="subdued">
+          <p>{count === 1 ? '1 entry' : `${count} entries`}</p>
+        </EuiText>
+      )}
     </>
   );
 };

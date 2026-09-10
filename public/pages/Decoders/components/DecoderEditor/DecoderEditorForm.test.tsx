@@ -204,7 +204,7 @@ describe('DecoderEditorForm', () => {
 
     it('still says inline what to type into the normalize editor', () => {
       // The popover is reference material; an empty editor must never be unexplained.
-      expect(render(mapDecoderToForm(document)).text()).toContain('Written as YAML');
+      expect(render(mapDecoderToForm(document)).text()).toContain('Start each entry with');
     });
 
     it('keeps syntax guidance inline, where it is needed while typing', () => {
@@ -281,33 +281,28 @@ describe('DecoderEditorForm', () => {
       expect(onChange.mock.calls[0][0].normalize).toEqual([]);
     });
 
-    it('shows a structural guide while empty, and drops it once there is content', () => {
-      // The placeholder is the only place the shape is visible rather than
-      // described, so it has to survive.
-      const empty = render(mapDecoderToForm({ ...document, normalize: undefined }));
-      const guide = editor(empty).prop('placeholder') as string;
+    it('shows the structure inline, the way the filter form does beside its editor', () => {
+      // No EuiCodeEditor anywhere in this plugin or the platform sets a placeholder,
+      // so the structure goes in helpText with a <pre> block — which is exactly how
+      // the filter form shows the shape of its own check field.
+      const wrapper = render(mapDecoderToForm(document));
+      expect(editor(wrapper).prop('placeholder')).toBeUndefined();
 
-      expect(guide).toContain('- check:');
-      expect(guide).toContain('  parse|event.original:');
-      expect(guide).toContain('  map:');
-      // Ace only paints it while the editor is empty.
-      expect(editor(empty).prop('value')).toBe('');
-      expect(editor(render(mapDecoderToForm(document))).prop('value')).not.toBe('');
+      const text = wrapper.text();
+      expect(text).toContain('Start each entry with');
+      expect(text).toContain("- check: $event.code == '4624'");
+      expect(text).toContain('  map:');
     });
 
-    it('scopes the class its multi-line placeholder styling needs', () => {
-      // react-ace builds the placeholder as a div and sets textContent, so without
-      // `white-space: pre` from DecoderEditor.scss the guide collapses to one line.
-      expect(editor(render(mapDecoderToForm(document))).prop('className')).toBe(
-        'decoder-normalize-editor'
-      );
-    });
-
-    it('counts the entries', () => {
+    it('counts the entries, and says nothing when there are none', () => {
       expect(render(mapDecoderToForm(document)).text()).toContain('2 entries');
       expect(
         render(mapDecoderToForm({ ...document, normalize: [{ map: [{ a: 1 }] }] })).text()
       ).toContain('1 entry');
+      // "0 entries" under an empty editor is noise.
+      expect(render(mapDecoderToForm({ ...document, normalize: undefined })).text()).not.toContain(
+        '0 entries'
+      );
     });
   });
 });
