@@ -130,7 +130,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
               <EuiFormHelpText>Tried in order until one succeeds.</EuiFormHelpText>
               <FormFieldArray
                 label={fieldLabel('Expressions')}
-                values={row.expressions.length ? row.expressions : ['']}
+                values={row.expressions}
                 placeholder="<_tmp.date/date/%y%m%d %T> <_tmp.message>"
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}

@@ -155,7 +155,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       <EuiFormHelpText>{PARENTS_HINT}</EuiFormHelpText>
       <FormFieldArray
         label=""
-        values={values.parents.length ? values.parents : ['']}
+        values={values.parents}
         placeholder="decoder/core-wazuh-message/0"
         addButtonLabel="Add parent"
         onChange={(parents) => set('parents', parents)}

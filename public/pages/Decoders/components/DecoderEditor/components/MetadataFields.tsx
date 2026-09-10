@@ -101,7 +101,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
 
       <FormFieldArray
         label={fieldLabel('References', true)}
-        values={metadata.references.length ? metadata.references : ['']}
+        values={metadata.references}
         placeholder="https://example.com/reference"
         addButtonLabel="Add reference"
         onChange={(references) => set('references', references)}
@@ -109,14 +109,14 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
 
       <FormFieldArray
         label={fieldLabel('Supports', true)}
-        values={metadata.supports.length ? metadata.supports : ['']}
+        values={metadata.supports}
         addButtonLabel="Add support"
         onChange={(supports) => set('supports', supports)}
       />
 
       <FormFieldArray
         label={fieldLabel('Compatibility', true)}
-        values={metadata.compatibility.length ? metadata.compatibility : ['']}
+        values={metadata.compatibility}
         addButtonLabel="Add compatibility"
         onChange={(compatibility) => set('compatibility', compatibility)}
       />
