@@ -9,6 +9,7 @@ import {
   EuiFlexGroup,
   EuiPanel,
   EuiFormHelpText,
+  EuiHorizontalRule,
   EuiButtonEmpty,
   EuiCallOut,
   EuiCompressedFieldText,
@@ -30,6 +31,12 @@ export interface ParseRowsProps {
   errors?: Record<string, string>;
   /** Shown once under the list — say what a parser is for and show a real example. */
   helpText?: React.ReactNode;
+  /**
+   * Render each parser without its panel, for a layout that gets its hierarchy from
+   * typography rather than from containers (see the `outline` prototype). Avoids a
+   * card inside a card.
+   */
+  flat?: boolean;
 }
 
 /**
@@ -47,6 +54,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
   onChange,
   errors = {},
   helpText,
+  flat = false,
 }) => {
   const update = (index: number, patch: Partial<ParserRow>) =>
     onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -54,6 +62,17 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
   const remove = (index: number) => onChange(rows.filter((_, i) => i !== index));
 
   const sectionError = errors[path];
+
+  // One card per parser reads badly inside a layout that has no cards at all.
+  // React 18's types no longer give React.FC an implicit `children`.
+  const Shell = ({ children }: { children: React.ReactNode }) =>
+    flat ? (
+      <>{children}</>
+    ) : (
+      <EuiPanel paddingSize="m" hasShadow={false} hasBorder>
+        {children}
+      </EuiPanel>
+    );
 
   return (
     <div data-test-subj={`parse-rows-${path}`}>
@@ -89,8 +108,8 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
         return (
           <div key={index}>
-            {index > 0 && <EuiSpacer size="m" />}
-            <EuiPanel paddingSize="m" hasShadow={false} hasBorder>
+            {index > 0 && (flat ? <EuiHorizontalRule margin="m" /> : <EuiSpacer size="m" />)}
+            <Shell>
               <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
                 <EuiFlexItem grow={true}>
                   <EuiText size={'s'}>
@@ -139,7 +158,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />
-            </EuiPanel>
+            </Shell>
           </div>
         );
       })}

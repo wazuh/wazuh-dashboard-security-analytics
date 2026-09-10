@@ -7,23 +7,19 @@
 import React from 'react';
 import {
   EuiBadge,
-  EuiButtonEmpty,
-  EuiNotificationBadge,
   EuiPanel,
-  EuiSmallButtonIcon,
+  EuiNotificationBadge,
   EuiSpacer,
   EuiTabbedContent,
   EuiText,
-  EuiToolTip,
 } from '@elastic/eui';
+import { CheckEditor } from '../components/CheckEditor';
+import { MapRows } from '../components/MapRows';
 import { NormalizeEditor } from '../components/NormalizeEditor';
 import { ParseRows } from '../components/ParseRows';
-import { YamlSlot } from '../components/YamlSlot';
-import { DecoderFormModel, emptyNormalizeEntry } from '../DecoderEditorFormModel';
-import { modelToNormalizeEntry, normalizeEntryToModel, textToValue } from '../mappers';
+import { DecoderFormModel } from '../DecoderEditorFormModel';
 import { GrammarVariantProps } from './GrammarVariantProps';
-import YAML from 'yaml';
-import { DEFINITIONS_HINT, MAP_HINT, PARSE_HINT } from '../hints';
+import { DEFINITIONS_HINT, PARSE_HINT } from '../hints';
 
 const countErrors = (errors: Record<string, string>, prefix: string) =>
   Object.keys(errors).filter(
@@ -51,18 +47,6 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
 }) => {
   const set = <K extends keyof DecoderFormModel>(key: K, value: DecoderFormModel[K]) =>
     onChange({ ...values, [key]: value });
-
-  const setEntry = (index: number, next: any) =>
-    set(
-      'normalize',
-      values.normalize.map((entry, i) => (i === index ? next : entry))
-    );
-
-  const entryYaml = (index: number) => {
-    const entry = values.normalize[index];
-    if (entry.raw !== undefined) return entry.raw;
-    return YAML.stringify(modelToNormalizeEntry(entry), { lineWidth: 0 }).trimEnd();
-  };
 
   const badge = (count: number, prefix: string) => (
     <>

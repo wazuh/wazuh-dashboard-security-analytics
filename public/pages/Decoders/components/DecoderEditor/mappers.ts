@@ -309,5 +309,7 @@ export const mapFormToDecoder = (values: DecoderFormModel): DecoderDocument => {
     document.normalize = values.normalize.map(modelToNormalizeEntry);
   }
 
-  return document as DecoderDocument;
+  // The modelled keys are all written above; the cast is over the open shape the
+  // preserved keys and `parse|<field>` entries share with it.
+  return (document as unknown) as DecoderDocument;
 };

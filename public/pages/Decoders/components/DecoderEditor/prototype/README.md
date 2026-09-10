@@ -15,11 +15,30 @@ bottom of the screen; arrow keys work too):
 | `steps`    | Pipeline steps      | `normalize` as `EuiSteps` — the sequence *is* the layout, so numbering and order stop needing their own furniture. |
 | `tabs`     | Grammar tabs        | `EuiTabbedContent` splits Check / Parsers / Normalize, so only one concern is on screen at a time and the page stops being a tall stack. |
 | `table`    | Summary + flyout    | `normalize` collapses to an `EuiBasicTable` of one-line summaries; editing opens an `EuiFlyout`. The form itself stays short. |
+| `outline`  | Outline, no cards   | **No panels at all.** `EuiDescribedFormGroup` puts each section's name and purpose in a left column and its controls in a right one, so hierarchy comes from typography and position instead of nested boxes. Normalize entries are separated by a single rule rather than wrapped individually. |
+
+Measured container nesting, in each variant's default view (`EuiPanel` count and
+maximum nesting depth, from a mounted two-entry decoder):
+
+| variant | panels | max depth |
+| --- | --- | --- |
+| `baseline` | 3 | 2 |
+| `steps` | 2 | 2 |
+| `tabs` | 1 | 1 |
+| `table` | 1 | 1 |
+| `outline` | **0** | **0** |
+
+`tabs` and `table` understate: their entries sit behind an unselected tab and a
+closed flyout, and reach depth 3 once opened. `outline` is the only one that is
+card-free however you open it.
 
 Only components already used elsewhere in this plugin are used here
 (`EuiSteps` ×3, `EuiTabbedContent` ×4, `EuiBasicTable` ×11, `EuiFlyout` ×18,
-`EuiBadge` ×19). `EuiListGroup` and `EuiSplitPanel` are deliberately avoided —
-nothing in the plugin uses them.
+`EuiBadge` ×19), with one deliberate exception: `EuiDescribedFormGroup` in
+`outline` is new to this plugin, but it is EUI's own pattern for exactly this and
+is what OpenSearch Dashboards uses for its settings forms. `EuiListGroup` and
+`EuiSplitPanel` are avoided — nothing in the plugin uses them and neither earns
+its way in.
 
 The switcher renders only outside production builds.
 

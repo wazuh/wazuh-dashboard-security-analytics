@@ -9,6 +9,7 @@ import { GrammarBaseline } from './GrammarBaseline';
 import { GrammarStepsVariant } from './GrammarStepsVariant';
 import { GrammarTabsVariant } from './GrammarTabsVariant';
 import { GrammarTableFlyoutVariant } from './GrammarTableFlyoutVariant';
+import { GrammarOutlineVariant } from './GrammarOutlineVariant';
 import { GrammarVariantProps } from './GrammarVariantProps';
 
 export { PrototypeVariantSwitcher } from './PrototypeVariantSwitcher';
@@ -23,6 +24,7 @@ export const GRAMMAR_VARIANTS: Array<{
   { key: 'steps', name: 'Pipeline steps', Component: GrammarStepsVariant },
   { key: 'tabs', name: 'Grammar tabs', Component: GrammarTabsVariant },
   { key: 'table', name: 'Summary + flyout', Component: GrammarTableFlyoutVariant },
+  { key: 'outline', name: 'Outline, no cards', Component: GrammarOutlineVariant },
 ];
 
 export const DEFAULT_GRAMMAR_VARIANT = 'baseline';
