@@ -84,13 +84,27 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
         return (
           <div key={index}>
-            {index > 0 && <EuiSpacer size="s" />}
-            <EuiPanel paddingSize="s" hasShadow={false} hasBorder>
+            {index > 0 && <EuiSpacer size="m" />}
+            <EuiPanel hasShadow={false} hasBorder data-test-subj={`${rowPath}.panel`}>
               <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
                 <EuiFlexItem grow={true}>
-                  <EuiText size={'xs'} color="subdued">
-                    <strong>{`Parser ${index + 1}`}</strong>
-                  </EuiText>
+                  <EuiCompressedFormRow
+                    label={fieldLabel('Field')}
+                    helpText="The field this parser reads, for example message or event.original."
+                    fullWidth={true}
+                    isInvalid={missingField || !!errors[rowPath]}
+                    error={missingField ? 'A parser needs the field it reads' : errors[rowPath]}
+                  >
+                    <EuiCompressedFieldText
+                      prepend="parse|"
+                      placeholder="event.original"
+                      value={row.field}
+                      onChange={(e) => update(index, { field: e.target.value })}
+                      onBlur={() => onBlurPath?.(rowPath)}
+                      isInvalid={missingField}
+                      data-test-subj={`${rowPath}.field`}
+                    />
+                  </EuiCompressedFormRow>
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
                   <EuiToolTip content={'Remove parser'}>
@@ -105,26 +119,6 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                 </EuiFlexItem>
               </EuiFlexGroup>
 
-              <EuiSpacer size="s" />
-
-              <EuiCompressedFormRow
-                label={fieldLabel('Field')}
-                helpText="The field this parser reads, for example message or event.original."
-                fullWidth={true}
-                isInvalid={missingField || !!errors[rowPath]}
-                error={missingField ? 'A parser needs the field it reads' : errors[rowPath]}
-              >
-                <EuiCompressedFieldText
-                  prepend="parse|"
-                  placeholder="event.original"
-                  value={row.field}
-                  onChange={(e) => update(index, { field: e.target.value })}
-                  onBlur={() => onBlurPath?.(rowPath)}
-                  isInvalid={missingField}
-                  data-test-subj={`${rowPath}.field`}
-                />
-              </EuiCompressedFormRow>
-
               <EuiSpacer size="m" />
 
               <FormFieldArray
@@ -134,13 +128,14 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                 placeholder="<_tmp.date/date/%y%m%d %T> <_tmp.message>"
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
+                bottomSpacing={false}
               />
             </EuiPanel>
           </div>
         );
       })}
 
-      <EuiSpacer size="s" />
+      <EuiSpacer size="m" />
       <EuiButtonEmpty
         size="s"
         iconType="plusInCircle"

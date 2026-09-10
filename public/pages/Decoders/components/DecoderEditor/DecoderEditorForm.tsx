@@ -10,6 +10,7 @@ import {
   EuiCompressedFormRow,
   EuiCompressedSwitch,
   EuiSpacer,
+  EuiText,
 } from '@elastic/eui';
 import { FormFieldArray } from '../../../../components/FormFieldArray';
 import { DecoderFormModel } from './DecoderEditorFormModel';
@@ -22,6 +23,7 @@ import { CheckEditor } from './components/CheckEditor';
 import { MapRows } from './components/MapRows';
 import { NormalizeYamlField } from './components/NormalizeYamlField';
 import { ParseRows } from './components/ParseRows';
+import { LabelWithInfo } from './components/LabelWithInfo';
 
 export interface DecoderEditorFormProps {
   values: DecoderFormModel;
@@ -143,16 +145,27 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
           </>
         }
       />
-      <EuiSpacer size="m" />
 
       <FormFieldArray
-        label={fieldLabel('Parents', true)}
+        label={
+          <LabelWithInfo
+            label={fieldLabel('Parents', true)}
+            title="Parents"
+            ariaLabel="Parents information"
+          >
+            <EuiText size="xs">
+              <p>
+                Decoders evaluated before this one. Most decoders extend{' '}
+                <code>decoder/core-wazuh-message/0</code>.
+              </p>
+            </EuiText>
+          </LabelWithInfo>
+        }
         values={values.parents}
         placeholder="decoder/core-wazuh-message/0"
         addButtonLabel="Add parent"
         onChange={(parents) => set('parents', parents)}
       />
-      <EuiSpacer size="m" />
 
       <EuiCompressedFormRow label={fieldLabel('Check', true)} fullWidth={true}>
         <CheckEditor

@@ -23,6 +23,8 @@ export interface FormFieldArrayProps {
   readOnly?: boolean;
   addButtonLabel?: string;
   helpText?: React.ReactNode;
+  /** Trailing spacer. Off when the caller owns the spacing below. */
+  bottomSpacing?: boolean;
 }
 
 export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
@@ -33,6 +35,7 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
   readOnly = false,
   addButtonLabel = 'Add item',
   helpText,
+  bottomSpacing = true,
 }) => {
   return (
     <>
@@ -85,7 +88,7 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
           )}
         </>
       </EuiCompressedFormRow>
-      <EuiSpacer />
+      {bottomSpacing && <EuiSpacer />}
     </>
   );
 };
