@@ -133,3 +133,13 @@ describe('schema registration', () => {
     expect(errors).toEqual({});
   });
 });
+
+describe('message format', () => {
+  it('wraps the field path in single quotes', async () => {
+    // The decoder editor rewrites these paths into the labels its form shows
+    // (see DecoderEditor/errorRouting.humanizeMessage), and it finds them by the
+    // quoting. Change the quoting here and that rewrite silently stops working.
+    const errors = await validateWithJsonSchemaAsync(schema, {});
+    expect(errors).toEqual({ name: "'name' is required" });
+  });
+});

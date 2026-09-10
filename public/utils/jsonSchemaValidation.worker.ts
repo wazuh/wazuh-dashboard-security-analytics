@@ -63,7 +63,9 @@ export function handleValidateRequest({
       if (!registered) {
         return { id, valid: false, errors: null, unknownSchema: true };
       }
-      const valid = registered(data);
+      // getSchema's type admits an async validator; ours are all synchronous
+      // (no $async in these schemas), so the result is a boolean.
+      const valid = registered(data) as boolean;
       return { id, valid, errors: valid ? null : registered.errors ?? null };
     }
 

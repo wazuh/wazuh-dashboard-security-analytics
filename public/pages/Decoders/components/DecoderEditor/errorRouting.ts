@@ -5,6 +5,7 @@
 
 import { FormikErrors } from 'formik';
 import { DecoderFormModel } from './DecoderEditorFormModel';
+import { FIELD_LABELS } from './labels';
 
 /**
  * Routes JSON Schema validation errors onto form fields.
@@ -72,6 +73,19 @@ export const nearestFormPath = (path: string, values: DecoderFormModel): string 
   return '';
 };
 
+// Every path the schema validator names is wrapped in single quotes by
+// `jsonSchemaValidation.humanLabel`, so swapping one for its label is a lookup
+// rather than a parse. A quoted token that is not a known path — a pattern, a
+// value, a path inside `normalize` — is left exactly as it was.
+const QUOTED = /'([^']+)'/g;
+
+/**
+ * Rewrites `'metadata.title' is required` as `Title is required`, so a decoder
+ * error reads the way the same error reads on the filter and KVDB forms.
+ */
+export const humanizeMessage = (message: string): string =>
+  message.replace(QUOTED, (quoted, path) => FIELD_LABELS[path] ?? quoted);
+
 export interface RoutedErrors {
   /** Errors that reached a field, keyed by Formik path. */
   fields: Record<string, string>;
@@ -94,11 +108,11 @@ export const routeSchemaErrors = (
 
     const target = nearestFormPath(path, values);
     if (target === '') {
-      document.push(message);
+      document.push(humanizeMessage(message));
       return;
     }
     // First message wins, matching formatValidationErrors' own precedence.
-    if (!fields[target]) fields[target] = message;
+    if (!fields[target]) fields[target] = humanizeMessage(message);
   });
 
   return { fields, document };

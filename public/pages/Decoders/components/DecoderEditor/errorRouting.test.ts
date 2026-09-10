@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { nearestFormPath, pathSegments, routeSchemaErrors } from './errorRouting';
+import { humanizeMessage, nearestFormPath, pathSegments, routeSchemaErrors } from './errorRouting';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { mapDecoderToForm } from './mappers';
 
@@ -75,7 +75,8 @@ describe('routeSchemaErrors', () => {
     );
 
     expect(routed.fields).toEqual({
-      'metadata.title': "'metadata.title' is required",
+      // Named the way the form labels it; see humanizeMessage.
+      'metadata.title': 'Title is required',
       'normalize[0].map[0]': "'source.ip' must be a string",
     });
     expect(routed.document).toEqual(["'map_if' is not a recognized field"]);
@@ -96,5 +97,51 @@ describe('routeSchemaErrors', () => {
     const routed = routeSchemaErrors({ normalize: ({} as unknown) as string }, values);
     expect(routed.fields).toEqual({});
     expect(routed.document).toEqual([]);
+  });
+});
+
+describe('humanizeMessage', () => {
+  it('names the field the way the form labels it', () => {
+    // The sibling forms say "Title is required"; the schema says
+    // "'metadata.title' is required". Same error, same words now.
+    expect(humanizeMessage("'metadata.title' is required")).toBe('Title is required');
+    expect(humanizeMessage("'metadata.author' is required")).toBe('Author is required');
+    expect(humanizeMessage('\'name\' must match pattern "^decoder\\/"')).toBe(
+      'Name must match pattern "^decoder\\/"'
+    );
+  });
+
+  it('leaves paths inside normalize alone, since no field is named there', () => {
+    // The path is how the user finds the problem in the YAML.
+    const message = "'normalize[2].map' must NOT have fewer than 1 items";
+    expect(humanizeMessage(message)).toBe(message);
+  });
+
+  it('leaves quoted text that is not a path alone', () => {
+    const message = "'check' must match one of the valid formats: (1) 'a', (2) 'b'";
+    expect(humanizeMessage(message)).toBe(
+      "Check must match one of the valid formats: (1) 'a', (2) 'b'"
+    );
+  });
+
+  it('rewrites every path in a message that names two', () => {
+    expect(humanizeMessage("'metadata.title' is required when 'metadata.author' is present")).toBe(
+      'Title is required when Author is present'
+    );
+  });
+});
+
+describe('routeSchemaErrors humanizes as it routes', () => {
+  it('applies it to field errors and to document-level ones', () => {
+    const routed = routeSchemaErrors(
+      {
+        'metadata.title': "'metadata.title' is required",
+        map_if: "'map_if' is not a recognized field",
+      },
+      values
+    );
+    expect(routed.fields['metadata.title']).toBe('Title is required');
+    // No label for an unknown key, so it keeps its name.
+    expect(routed.document).toEqual(["'map_if' is not a recognized field"]);
   });
 });
