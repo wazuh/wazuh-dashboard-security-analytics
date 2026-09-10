@@ -158,7 +158,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
               <FormFieldArray
                 label={fieldLabel('Expressions')}
                 values={row.expressions.length ? row.expressions : ['']}
-                placeholder="Logpar expression"
+                placeholder="[<@timestamp>] <log.level>: <message>"
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />

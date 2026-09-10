@@ -26,12 +26,10 @@ import React from 'react';
  * - a `check` expression needs a `$field` or helper *and* an operator, or must be
  *   a bare helper call — `$event.module` on its own is rejected.
  *
- * The one thing NOT verifiable here is logpar's own grammar: the schema says only
- * "List of parser expressions (e.g., logpar)" and constrains an expression to a
- * non-empty string, and there is no logpar example anywhere in this repository. So
- * `PARSE_HINT` describes what the field does and deliberately shows no invented
- * token syntax. Add a real example here once one can be sourced from the engine
- * documentation.
+ * The parser syntax is taken from the engine reference (Wazuh docs, Engine module,
+ * "logpar"), not from the JSON Schema, which constrains an expression only to a
+ * non-empty string. The example below is the one the engine documentation gives
+ * for an Apache error log, shortened.
  */
 
 // Matches the filter form's own example block: no fill, no border, just a small
@@ -76,8 +74,13 @@ export const CHECK_LIST_HINT = (
 
 export const PARSE_HINT = (
   <div style={wrap}>
-    Reads one field and pulls values out of it, writing what it captures to the fields it names.
-    Each expression is a logpar expression, and they are tried in order until one matches.
+    A pattern that matches the raw text of a field and captures parts of it into other fields. Text
+    outside <code>&lt;&gt;</code> must match literally; <code>&lt;field.name&gt;</code> captures
+    into that field, <code>&lt;~&gt;</code> matches without capturing, and <code>(?…)</code> marks a
+    part optional. Each expression is tried in order until one matches:
+    <pre
+      style={preStyle}
+    >{`[<@timestamp>] [<log.level>] [client <source.address>(?:<source.port>)] <message>`}</pre>
   </div>
 );
 
