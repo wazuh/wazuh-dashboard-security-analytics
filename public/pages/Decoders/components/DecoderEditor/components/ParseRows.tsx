@@ -6,9 +6,9 @@
 import React from 'react';
 import {
   EuiFlexItem,
+  EuiPanel,
   EuiFlexGroup,
   EuiFormHelpText,
-  EuiHorizontalRule,
   EuiButtonEmpty,
   EuiCallOut,
   EuiCompressedFieldText,
@@ -84,11 +84,11 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
         return (
           <div key={index}>
-            {index > 0 && <EuiHorizontalRule margin="m" />}
-            <>
+            {index > 0 && <EuiSpacer size="s" />}
+            <EuiPanel paddingSize="s" hasShadow={false} hasBorder>
               <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
                 <EuiFlexItem grow={true}>
-                  <EuiText size={'s'}>
+                  <EuiText size={'xs'} color="subdued">
                     <strong>{`Parser ${index + 1}`}</strong>
                   </EuiText>
                 </EuiFlexItem>
@@ -105,7 +105,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                 </EuiFlexItem>
               </EuiFlexGroup>
 
-              <EuiSpacer size="m" />
+              <EuiSpacer size="s" />
 
               <EuiCompressedFormRow
                 label={fieldLabel('Field')}
@@ -127,15 +127,15 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
               <EuiSpacer size="m" />
 
-              <EuiFormHelpText>Tried in order until one succeeds.</EuiFormHelpText>
               <FormFieldArray
                 label={fieldLabel('Expressions')}
+                helpText="Tried in order until one succeeds."
                 values={row.expressions}
                 placeholder="<_tmp.date/date/%y%m%d %T> <_tmp.message>"
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />
-            </>
+            </EuiPanel>
           </div>
         );
       })}

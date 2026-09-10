@@ -22,6 +22,7 @@ export interface FormFieldArrayProps {
   placeholder?: string;
   readOnly?: boolean;
   addButtonLabel?: string;
+  helpText?: React.ReactNode;
 }
 
 export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
@@ -31,10 +32,11 @@ export const FormFieldArray: React.FC<FormFieldArrayProps> = ({
   placeholder = '',
   readOnly = false,
   addButtonLabel = 'Add item',
+  helpText,
 }) => {
   return (
     <>
-      <EuiCompressedFormRow label={label}>
+      <EuiCompressedFormRow label={label} helpText={helpText}>
         <>
           {values.map((value: string, index: number) => {
             return (

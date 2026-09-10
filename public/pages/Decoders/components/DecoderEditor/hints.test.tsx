@@ -13,7 +13,6 @@ import {
   DEFINITIONS_HINT,
   MAP_HINT,
   NAME_HINT,
-  PARENTS_HINT,
   PARSE_HINT,
 } from './hints';
 
@@ -114,7 +113,6 @@ describe('hint copy', () => {
 
   const HINTS: Array<[string, React.ReactNode]> = [
     ['NAME_HINT', NAME_HINT],
-    ['PARENTS_HINT', PARENTS_HINT],
     ['CHECK_EXPRESSION_HINT', CHECK_EXPRESSION_HINT],
     ['CHECK_LIST_HINT', CHECK_LIST_HINT],
     ['PARSE_HINT', PARSE_HINT],
@@ -126,10 +124,6 @@ describe('hint copy', () => {
     // `<code>- </code>.` renders as "- ." and reads like a typo.
     const text = typeof hint === 'string' ? hint : textOf(hint);
     expect(text.split('\n')[0]).not.toMatch(/\s[.,;]/);
-  });
-
-  it('points at the parent shipped decoders actually use', () => {
-    expect(PARENTS_HINT).toContain('decoder/core-wazuh-message/0');
   });
 
   it('does not claim definitions names need a leading underscore', () => {

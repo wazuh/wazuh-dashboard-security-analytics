@@ -19,9 +19,6 @@ const wrap: React.CSSProperties = { maxWidth: '600px' };
 export const NAME_HINT =
   'Must follow the pattern decoder/<name>/<version> (e.g. decoder/zeek-stats/0)';
 
-export const PARENTS_HINT =
-  'Decoders evaluated before this one. Most decoders extend decoder/core-wazuh-message/0.';
-
 export const CHECK_EXPRESSION_HINT = (
   <div style={wrap}>
     Needs a field reference and an operator, or a helper call on its own. Quote string values, and

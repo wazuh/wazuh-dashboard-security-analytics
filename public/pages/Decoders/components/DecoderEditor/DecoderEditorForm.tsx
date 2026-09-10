@@ -9,14 +9,12 @@ import {
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSwitch,
-  EuiFormHelpText,
   EuiSpacer,
-  EuiText,
 } from '@elastic/eui';
 import { FormFieldArray } from '../../../../components/FormFieldArray';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { fieldLabel } from './labels';
-import { NAME_HINT, PARENTS_HINT, PARSE_HINT, DEFINITIONS_HINT } from './hints';
+import { NAME_HINT, PARSE_HINT, DEFINITIONS_HINT } from './hints';
 import { errorsUnder } from './errorRouting';
 import { TouchedState, emptyTouched, visibleErrors, withTouched } from './touched';
 import { MetadataFields } from './components/MetadataFields';
@@ -147,14 +145,8 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       />
       <EuiSpacer size="m" />
 
-      <EuiText size={'s'}>
-        <strong>Parents</strong>
-        {' - '}
-        <em>optional</em>
-      </EuiText>
-      <EuiFormHelpText>{PARENTS_HINT}</EuiFormHelpText>
       <FormFieldArray
-        label=""
+        label={fieldLabel('Parents', true)}
         values={values.parents}
         placeholder="decoder/core-wazuh-message/0"
         addButtonLabel="Add parent"
