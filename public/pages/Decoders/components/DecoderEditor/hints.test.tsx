@@ -9,7 +9,6 @@ import Ajv from 'ajv';
 import decoderSchema from '../../../../../common/schemas/wazuh-decoders.schema.json';
 import {
   CHECK_EXPRESSION_HINT,
-  CHECK_HINT,
   DEFINITIONS_HINT,
   MAP_HINT,
   NAME_HINT,
@@ -110,12 +109,6 @@ describe('hint copy', () => {
     const text = textOf(PARSE_HINT);
     expect(text).not.toMatch(/logpar/i);
     expect(text).toContain('captures into that field');
-  });
-
-  it('shows both check shapes', () => {
-    const text = textOf(CHECK_HINT);
-    expect(text).toMatch(/expression/i);
-    expect(text).toContain('exists()');
   });
 
   it('tells the user to quote string values', () => {

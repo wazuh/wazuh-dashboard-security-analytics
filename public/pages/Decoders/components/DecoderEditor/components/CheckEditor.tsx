@@ -6,7 +6,6 @@
 import React, { useCallback } from 'react';
 import YAML from 'yaml';
 import {
-  EuiFormHelpText,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSelect,
@@ -14,7 +13,8 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { fieldLabel } from '../labels';
-import { CHECK_EXPRESSION_HINT, CHECK_HINT, CHECK_LIST_HINT, NORMALIZE_CHECK_HINT } from '../hints';
+import { InfoItem, LabelWithInfo } from './LabelWithInfo';
+import { CHECK_EXPRESSION_HINT, CHECK_LIST_HINT, NORMALIZE_CHECK_HINT } from '../hints';
 import { CheckModel } from '../DecoderEditorFormModel';
 import { checkToModel, modelToCheck, textToValue } from '../mappers';
 import { MapRows } from './MapRows';
@@ -102,10 +102,28 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
       }
     >
       <>
-        <EuiFormHelpText>{nested ? NORMALIZE_CHECK_HINT : CHECK_HINT}</EuiFormHelpText>
-        <EuiSpacer size="s" />
-
-        <EuiCompressedFormRow label={fieldLabel('Format')} fullWidth={true}>
+        <EuiCompressedFormRow
+          label={
+            <LabelWithInfo
+              label={fieldLabel('Format')}
+              title="Check formats"
+              ariaLabel="Check format information"
+            >
+              <InfoItem term="None">
+                No check. Every event that reaches this point is accepted.
+              </InfoItem>
+              <InfoItem term="Expression">
+                A single condition over the event&apos;s fields, for example{' '}
+                <code>$process.name == &apos;haproxy&apos;</code>.
+              </InfoItem>
+              <InfoItem term="List">
+                Several field/value conditions that must all pass, in order.
+              </InfoItem>
+            </LabelWithInfo>
+          }
+          fullWidth={true}
+          helpText={nested ? NORMALIZE_CHECK_HINT : undefined}
+        >
           <EuiCompressedSelect
             options={CHECK_MODE_OPTIONS}
             value={model.mode === 'yaml' ? 'none' : model.mode}

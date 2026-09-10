@@ -153,6 +153,74 @@ describe('DecoderEditorForm', () => {
     });
   });
 
+  describe('info popovers', () => {
+    // The filter form puts the blue info button beside its `Type` field for
+    // reference material — what an option means — while keeping syntax guidance
+    // inline. The same split applies here.
+    //
+    // EuiPopover renders its panel through a portal, which enzyme's `.text()` does
+    // not traverse, so the content is asserted on the popover's own subtree.
+    const popover = (wrapper: ReactWrapper, aria: string) =>
+      wrapper
+        .find('EuiPopover')
+        .filterWhere((node) => {
+          const button = node.prop('button') as React.ReactElement;
+          return button?.props?.['aria-label'] === aria;
+        })
+        .first();
+
+    const open = (wrapper: ReactWrapper, aria: string) => {
+      wrapper.find(`button[aria-label="${aria}"]`).first().simulate('click');
+      wrapper.update();
+      return popover(wrapper, aria);
+    };
+
+    it('puts the check formats behind the info button, not on the page', () => {
+      const wrapper = render(mapDecoderToForm(document));
+
+      expect(popover(wrapper, 'Check format information').prop('isOpen')).toBe(false);
+      // Closed, the page does not carry the both-shapes explanation.
+      expect(wrapper.text()).not.toContain('Every event that reaches this point is accepted');
+
+      const panel = open(wrapper, 'Check format information');
+      expect(panel.prop('isOpen')).toBe(true);
+
+      const terms = panel.find('InfoItem').map((item) => item.prop('term'));
+      expect(terms).toEqual(['None', 'Expression', 'List']);
+    });
+
+    it('puts what a normalize entry can contain behind its info button', () => {
+      const wrapper = render(mapDecoderToForm(document));
+      expect(wrapper.text()).not.toContain('needs at least one parser or mapping');
+
+      const panel = open(wrapper, 'Normalize information');
+      expect(panel.prop('isOpen')).toBe(true);
+      expect(panel.find('InfoItem').map((item) => item.prop('term'))).toEqual([
+        'check',
+        'parse|<field>',
+        'map',
+      ]);
+    });
+
+    it('still says inline what to type into the normalize editor', () => {
+      // The popover is reference material; an empty editor must never be unexplained.
+      expect(render(mapDecoderToForm(document)).text()).toContain('Written as YAML');
+    });
+
+    it('keeps syntax guidance inline, where it is needed while typing', () => {
+      // The filter form keeps its own check-syntax hint, example block and all, on
+      // the page rather than behind a click. Parsers follow that.
+      expect(render(mapDecoderToForm(document)).text()).toContain('captures into that field');
+    });
+
+    it('does not stack two overlapping explanations on the check field', () => {
+      const text = render(mapDecoderToForm(document)).text();
+      const bothShapes = text.includes('or a list of field/value pairs');
+      const modeSpecific = text.includes('Needs a field reference and an operator');
+      expect(bothShapes && modeSpecific).toBe(false);
+    });
+  });
+
   describe('normalize', () => {
     const editor = (wrapper: ReactWrapper) =>
       wrapper.find('EuiCodeEditor[data-test-subj="normalize-yaml"]').first();

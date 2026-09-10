@@ -9,6 +9,7 @@ import { EuiCallOut, EuiCodeEditor, EuiCompressedFormRow, EuiSpacer, EuiText } f
 import { validateYamlSyntax } from '../../../../../components/YamlForm';
 import { NormalizeEntryModel } from '../DecoderEditorFormModel';
 import { fieldLabel } from '../labels';
+import { InfoItem, LabelWithInfo } from './LabelWithInfo';
 import { mapDecoderToForm, mapFormToDecoder, textToValue } from '../mappers';
 
 export interface NormalizeYamlFieldProps {
@@ -116,13 +117,32 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
       )}
 
       <EuiCompressedFormRow
-        label={fieldLabel('Normalize', true)}
+        label={
+          <LabelWithInfo
+            label={fieldLabel('Normalize', true)}
+            title="Normalize entries"
+            ariaLabel="Normalize information"
+          >
+            <InfoItem term="check">
+              Optional condition. An event that fails it skips this entry and continues to the next
+              one.
+            </InfoItem>
+            <InfoItem term="parse|&lt;field&gt;">
+              Reads one field and captures parts of it into other fields.
+            </InfoItem>
+            <InfoItem term="map">Assigns values to fields.</InfoItem>
+            <EuiText size="xs">
+              <p>
+                Entries run in order, so one can use fields an earlier one set. An entry needs at
+                least one parser or mapping.
+              </p>
+            </EuiText>
+          </LabelWithInfo>
+        }
         fullWidth={true}
         helpText={
           <>
-            Sequential sub-stages, written as YAML. Each entry starts with <code>- </code> and can
-            combine a <code>check</code>, any number of <code>parse|&lt;field&gt;</code> keys and a{' '}
-            <code>map</code>. They run in order, so an entry can use fields an earlier one set.
+            Written as YAML — one entry per <code>- </code>.
           </>
         }
       >

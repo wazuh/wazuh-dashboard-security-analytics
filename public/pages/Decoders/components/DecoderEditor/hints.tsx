@@ -44,14 +44,6 @@ export const NAME_HINT =
 export const PARENTS_HINT =
   'Decoders evaluated before this one. Most decoders extend decoder/core-wazuh-message/0.';
 
-export const CHECK_HINT = (
-  <div style={wrap}>
-    Expression evaluated to determine if the decoder applies (e.g.{' '}
-    <code>$process.name == &apos;haproxy&apos;</code>) or a list of field/value pairs:
-    <pre style={preStyle}>{`- _tmp_json.accountId: exists()\n- _tmp_json.id: exists()`}</pre>
-  </div>
-);
-
 export const NORMALIZE_CHECK_HINT = (
   <div style={wrap}>
     Condition for this entry only. Events that fail it skip the entry and continue to the next one
