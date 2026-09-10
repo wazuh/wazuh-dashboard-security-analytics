@@ -87,14 +87,25 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
           <div key={index}>
             {index > 0 && <EuiSpacer size="m" />}
             <EuiPanel hasShadow={false} hasBorder data-test-subj={`${rowPath}.panel`}>
+              {!missingField && errors[rowPath] && (
+                <>
+                  <EuiCallOut
+                    size="s"
+                    color="warning"
+                    title={errors[rowPath]}
+                    data-test-subj={`${rowPath}.error`}
+                  />
+                  <EuiSpacer size="s" />
+                </>
+              )}
               <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
                 <EuiFlexItem grow={true}>
                   <EuiCompressedFormRow
                     label={fieldLabel('Field')}
                     helpText={PARSE_FIELD_HELP}
                     fullWidth={true}
-                    isInvalid={missingField || !!errors[rowPath]}
-                    error={missingField ? 'A parser needs the field it reads' : errors[rowPath]}
+                    isInvalid={missingField}
+                    error={missingField ? 'A parser needs the field it reads' : undefined}
                   >
                     <EuiCompressedFieldText
                       prepend="parse|"

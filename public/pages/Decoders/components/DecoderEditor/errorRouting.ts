@@ -6,6 +6,7 @@
 import { FormikErrors } from 'formik';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { FIELD_LABELS } from './labels';
+import { PARSE_KEY_PREFIX } from './mappers';
 
 /**
  * Routes schema errors onto form fields. Messages are keyed by document path,
@@ -58,9 +59,23 @@ export const nearestFormPath = (path: string, values: DecoderFormModel): string 
 // token with no entry — a pattern, a value, a path inside `normalize` — is left be.
 const QUOTED = /'([^']+)'/g;
 
+const labelFor = (path: string): string | undefined =>
+  path.startsWith(PARSE_KEY_PREFIX) ? 'Expressions' : FIELD_LABELS[path];
+
 /** `'metadata.title' is required` -> `Title is required`. */
 export const humanizeMessage = (message: string): string =>
-  message.replace(QUOTED, (quoted, path) => FIELD_LABELS[path] ?? quoted);
+  message.replace(QUOTED, (quoted, path) => labelFor(path) ?? quoted);
+
+/**
+ * `parse|<field>` is a document key, so no prefix of it exists in the form. Find
+ * the parser row that produced it.
+ */
+const parserPath = (path: string, values: DecoderFormModel): string => {
+  if (!path.startsWith(PARSE_KEY_PREFIX)) return '';
+  const field = path.slice(PARSE_KEY_PREFIX.length).replace(/\[\d+\]$/, '');
+  const index = values.parsers.findIndex((row) => row.field === field);
+  return index === -1 ? '' : `parsers[${index}]`;
+};
 
 export interface RoutedErrors {
   /** Keyed by Formik path. */
@@ -79,7 +94,7 @@ export const routeSchemaErrors = (
   Object.entries(schemaErrors).forEach(([path, message]) => {
     if (typeof message !== 'string') return;
 
-    const target = nearestFormPath(path, values);
+    const target = parserPath(path, values) || nearestFormPath(path, values);
     if (target === '') {
       document.push(humanizeMessage(message));
       return;

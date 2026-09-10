@@ -199,7 +199,7 @@ describe('DecoderEditorForm', () => {
     it('puts the parser syntax behind its info button, leaving one sentence inline', () => {
       const wrapper = render(mapDecoderToForm(document));
       expect(wrapper.text()).not.toContain('Captures into that field');
-      expect(wrapper.text()).toContain('A pattern that matches the raw text of a field');
+      expect(wrapper.text()).toContain('Each parser reads one field');
 
       const panel = open(wrapper, 'Parsers information');
       expect(panel.find('InfoItem').map((item) => item.prop('term'))).toEqual([

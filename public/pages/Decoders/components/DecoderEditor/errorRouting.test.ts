@@ -99,6 +99,19 @@ describe('routeSchemaErrors', () => {
     expect(routed.fields['normalize[0].map[0]']).toBe('first');
   });
 
+  it('lands a top-level parser error on its row instead of the summary', () => {
+    const withParser = { ...values, parsers: [{ field: 'event.original', expressions: [] }] };
+    const routed = routeSchemaErrors(
+      { 'parse|event.original': "'parse|event.original' must NOT have fewer than 1 items" },
+      withParser
+    );
+
+    expect(routed.fields).toEqual({
+      'parsers[0]': 'Expressions must NOT have fewer than 1 items',
+    });
+    expect(routed.document).toEqual([]);
+  });
+
   it('ignores non-string error values', () => {
     const routed = routeSchemaErrors({ normalize: ({} as unknown) as string }, values);
     expect(routed.fields).toEqual({});

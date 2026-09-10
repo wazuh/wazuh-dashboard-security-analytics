@@ -38,8 +38,7 @@ export const CHECK_EXPRESSION_INFO = (
 
 export const CHECK_LIST_HELP = 'Every condition must pass, in order.';
 
-export const PARSE_HELP =
-  'A pattern that matches the raw text of a field and captures parts of it into other fields.';
+export const PARSE_HELP = 'Each parser reads one field and captures parts of it into other fields.';
 
 export const PARSE_INFO = (
   <>
@@ -61,13 +60,15 @@ export const DEFINITIONS_HELP = 'Named values you can reuse elsewhere in the dec
 export const DEFINITIONS_INFO = (
   <>
     <EuiText size="xs">
-      <p>A definition can be a single value or a lookup table.</p>
+      <p>A definition holds a single value or a lookup table, under a name of your choosing.</p>
     </EuiText>
-    <Example>{`_log_level:\n  '3': error\n  '4': warning`}</Example>
+    <Example caption="Definition">{`_log_level:\n  '3': error\n  '4': warning`}</Example>
     <EuiText size="xs">
       <p>
-        Read one with <code>get_key_in($_log_level, $_tmp.severity_string)</code>.
+        Reference it by name, prefixed with <code>$</code>, anywhere the decoder takes a value — a
+        check condition or a mapping.
       </p>
     </EuiText>
+    <Example caption="Read in a normalize mapping">{`- log.level: get_key_in($_log_level, $_tmp.severity_string)`}</Example>
   </>
 );

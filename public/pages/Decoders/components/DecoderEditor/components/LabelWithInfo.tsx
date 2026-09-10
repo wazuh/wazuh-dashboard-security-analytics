@@ -69,11 +69,22 @@ export const LabelWithInfo: React.FC<LabelWithInfoProps> = ({
 };
 
 /**
- * A worked example inside a popover. Kept outside `EuiText` so it does not pick
- * up the code-block fill.
+ * A worked example inside a popover. Captioned, so it does not read as a
+ * sentence that lost its verb, and kept outside `EuiText` so it does not pick up
+ * the code-block fill.
  */
-export const Example: React.FC<{ children: string }> = ({ children }) => (
-  <pre style={{ margin: '4px 0 8px 0', fontSize: '12px', whiteSpace: 'pre-wrap' }}>{children}</pre>
+export const Example: React.FC<{ caption?: string; children: string }> = ({
+  caption = 'Example',
+  children,
+}) => (
+  <>
+    <EuiText size="xs" color="subdued" style={{ marginTop: '6px' }}>
+      <strong>{caption}</strong>
+    </EuiText>
+    <pre style={{ margin: '2px 0 8px 0', fontSize: '12px', whiteSpace: 'pre-wrap' }}>
+      {children}
+    </pre>
+  </>
 );
 
 /** One labelled paragraph inside a popover. */

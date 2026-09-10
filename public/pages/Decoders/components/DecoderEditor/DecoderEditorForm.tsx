@@ -122,7 +122,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
         helpText={!shownErrors.name ? NAME_HELP : undefined}
       >
         <EuiCompressedFieldText
-          placeholder="decoder/zeek-stats/0"
+          placeholder="decoder/my-decoder/0"
           value={values.name}
           onChange={(e) => set('name', e.target.value)}
           onBlur={() => onBlurPath('name')}
