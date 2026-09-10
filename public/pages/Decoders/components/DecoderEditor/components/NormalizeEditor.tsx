@@ -12,6 +12,7 @@ export interface NormalizeEditorProps {
   entries: NormalizeEntryModel[];
   onChange: (entries: NormalizeEntryModel[]) => void;
   errors?: Record<string, string>;
+  onBlurPath?: (path: string) => void;
 }
 
 /**
@@ -28,6 +29,7 @@ export const NormalizeEditor: React.FC<NormalizeEditorProps> = ({
   entries,
   onChange,
   errors = {},
+  onBlurPath,
 }) => (
   <div data-test-subj="normalize-editor">
     {entries.length === 0 && (
@@ -44,6 +46,7 @@ export const NormalizeEditor: React.FC<NormalizeEditorProps> = ({
           index={index}
           entry={entry}
           errors={errors}
+          onBlurPath={onBlurPath}
           onChange={(next) => onChange(entries.map((e, i) => (i === index ? next : e)))}
           onRemove={() => onChange(entries.filter((_, i) => i !== index))}
         />

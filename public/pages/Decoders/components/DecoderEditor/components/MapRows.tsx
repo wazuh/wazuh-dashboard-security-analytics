@@ -34,6 +34,8 @@ export interface MapRowsProps {
   valuePlaceholder: string;
   /** Shown once under the list — say what a row is for and show a real example. */
   helpText?: React.ReactNode;
+  /** Called with a row's path when the user leaves it, to gate its error. */
+  onBlurPath?: (path: string) => void;
   /** Renders the value as a single line instead of a growing textarea. */
   singleLineValue?: boolean;
 }
@@ -62,6 +64,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
   fieldPlaceholder,
   valuePlaceholder,
   helpText,
+  onBlurPath,
   singleLineValue = false,
 }) => {
   const update = (index: number, patch: Partial<FieldValueRow>) =>
@@ -122,6 +125,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
                     placeholder={fieldPlaceholder}
                     value={row.field}
                     onChange={(e) => update(index, { field: e.target.value })}
+                    onBlur={() => onBlurPath?.(rowPath)}
                     isInvalid={missingField}
                     fullWidth
                     data-test-subj={`${rowPath}.field`}
@@ -136,6 +140,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
                       placeholder={valuePlaceholder}
                       value={row.value}
                       onChange={(e) => update(index, { value: e.target.value })}
+                      onBlur={() => onBlurPath?.(rowPath)}
                       fullWidth
                       data-test-subj={`${rowPath}.value`}
                     />
@@ -144,6 +149,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
                       placeholder={valuePlaceholder}
                       value={row.value}
                       onChange={(e) => update(index, { value: e.target.value })}
+                      onBlur={() => onBlurPath?.(rowPath)}
                       rows={textareaRows}
                       fullWidth
                       data-test-subj={`${rowPath}.value`}

@@ -88,9 +88,35 @@ describe('DecoderEditorForm', () => {
     expect(subj(creating, 'id')).toHaveLength(0);
   });
 
+  it('stays quiet on a form the user has not touched yet', () => {
+    // Matches the filter and KVDB forms: validation has already run against the
+    // loaded document, but nothing is shown until a field is left or submit tried.
+    const wrapper = render(mapDecoderToForm(document), jest.fn(), {
+      fieldErrors: { 'metadata.title': "'metadata.title' is required" },
+    });
+    expect(wrapper.text()).not.toContain("'metadata.title' is required");
+  });
+
+  it('shows a field its error once that field is blurred', () => {
+    const wrapper = render(mapDecoderToForm(document), jest.fn(), {
+      fieldErrors: { 'metadata.title': "'metadata.title' is required" },
+    });
+    subj(wrapper, 'metadata.title').simulate('blur');
+    expect(wrapper.text()).toContain("'metadata.title' is required");
+  });
+
+  it('shows every error once submission has been attempted', () => {
+    const wrapper = render(mapDecoderToForm(document), jest.fn(), {
+      fieldErrors: { 'metadata.title': "'metadata.title' is required" },
+      submitAttempted: true,
+    });
+    expect(wrapper.text()).toContain("'metadata.title' is required");
+  });
+
   it('routes a schema error reported against a document key onto its row', () => {
     const wrapper = render(mapDecoderToForm(document), jest.fn(), {
       fieldErrors: { 'normalize[0].map[0]': "'source.ip' must be a string" },
+      submitAttempted: true,
     });
     expect(wrapper.text()).toContain("'source.ip' must be a string");
   });

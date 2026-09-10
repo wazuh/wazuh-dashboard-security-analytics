@@ -30,6 +30,7 @@ export interface NormalizeEntryEditorProps {
   onChange: (entry: NormalizeEntryModel) => void;
   onRemove: () => void;
   errors?: Record<string, string>;
+  onBlurPath?: (path: string) => void;
 }
 
 const entryToYamlText = (entry: NormalizeEntryModel): string => {
@@ -58,6 +59,7 @@ export const NormalizeEntryEditor: React.FC<NormalizeEntryEditorProps> = ({
   onChange,
   onRemove,
   errors = {},
+  onBlurPath,
 }) => {
   const onYamlChange = useCallback(
     (text: string) => {
@@ -117,6 +119,7 @@ export const NormalizeEntryEditor: React.FC<NormalizeEntryEditorProps> = ({
             model={entry.check}
             onChange={(check) => onChange({ ...entry, check })}
             errors={errors}
+            onBlurPath={onBlurPath}
           />
 
           <EuiSpacer size="l" />
@@ -131,6 +134,7 @@ export const NormalizeEntryEditor: React.FC<NormalizeEntryEditorProps> = ({
             path={`${path}.parsers`}
             rows={entry.parsers}
             onChange={(parsers) => onChange({ ...entry, parsers })}
+            onBlurPath={onBlurPath}
             errors={errors}
             helpText={PARSE_HINT}
           />
@@ -147,6 +151,7 @@ export const NormalizeEntryEditor: React.FC<NormalizeEntryEditorProps> = ({
             path={`${path}.map`}
             rows={entry.map}
             onChange={(map) => onChange({ ...entry, map })}
+            onBlurPath={onBlurPath}
             errors={errors}
             fieldPlaceholder="event.kind"
             valuePlaceholder="event"

@@ -11,4 +11,6 @@ export interface GrammarVariantProps {
   values: DecoderFormModel;
   onChange: (values: DecoderFormModel) => void;
   fieldErrors: Record<string, string>;
+  /** Records that the user has left a field, so its error may be shown. */
+  onBlurPath?: (path: string) => void;
 }

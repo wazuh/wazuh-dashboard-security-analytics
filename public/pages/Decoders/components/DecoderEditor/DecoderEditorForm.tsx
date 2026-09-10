@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   EuiFormHelpText,
   EuiCallOut,
@@ -15,6 +15,7 @@ import {
 } from '@elastic/eui';
 import { FormFieldArray } from '../../../../components/FormFieldArray';
 import { fieldLabel } from './labels';
+import { TouchedState, emptyTouched, visibleErrors, withTouched } from './touched';
 import { NAME_HINT, PARENTS_HINT } from './hints';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { MetadataFields } from './components/MetadataFields';
@@ -31,6 +32,8 @@ export interface DecoderEditorFormProps {
   documentErrors?: string[];
   /** PROTOTYPE — which rendering of the decoder-specific block to show. */
   variant?: string;
+  /** True once submission has been attempted; every error shows from then on. */
+  submitAttempted?: boolean;
 }
 
 /**
@@ -54,7 +57,18 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
   fieldErrors = {},
   documentErrors = [],
   variant,
+  submitAttempted = false,
 }) => {
+  // Errors come from the JSON Schema rather than Formik's own validation, so the
+  // `touched` gate the filter and KVDB forms get for free has to be applied here:
+  // a form opened for the first time must be quiet, even though validation has
+  // already run against the loaded document.
+  const [touched, setTouched] = useState<TouchedState>(emptyTouched);
+  const onBlurPath = useCallback(
+    (path: string) => setTouched((current) => withTouched(current, path)),
+    []
+  );
+  const shownErrors = visibleErrors(fieldErrors, { ...touched, submitted: submitAttempted });
   const set = <K extends keyof DecoderFormModel>(key: K, value: DecoderFormModel[K]) =>
     onChange({ ...values, [key]: value });
 
@@ -103,15 +117,16 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       <EuiCompressedFormRow
         label={fieldLabel('Name')}
         fullWidth={true}
-        isInvalid={!!fieldErrors.name}
-        error={fieldErrors.name}
-        helpText={!fieldErrors.name ? NAME_HINT : undefined}
+        isInvalid={!!shownErrors.name}
+        error={shownErrors.name}
+        helpText={!shownErrors.name ? NAME_HINT : undefined}
       >
         <EuiCompressedFieldText
           placeholder="decoder/syslog/0"
           value={values.name}
           onChange={(e) => set('name', e.target.value)}
-          isInvalid={!!fieldErrors.name}
+          onBlur={() => onBlurPath('name')}
+          isInvalid={!!shownErrors.name}
           data-test-subj="name"
         />
       </EuiCompressedFormRow>
@@ -120,7 +135,8 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       <MetadataFields
         metadata={values.metadata}
         onChange={(metadata) => set('metadata', metadata)}
-        errors={fieldErrors}
+        errors={shownErrors}
+        onBlur={onBlurPath}
         afterAuthor={
           <>
             <EuiCompressedFormRow label={fieldLabel('Enabled')} fullWidth={true}>
@@ -153,7 +169,12 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       <EuiSpacer size="m" />
 
       {/* PROTOTYPE — decoder-specific block, swappable via ?variant= */}
-      <Grammar values={values} onChange={onChange} fieldErrors={fieldErrors} />
+      <Grammar
+        values={values}
+        onChange={onChange}
+        fieldErrors={shownErrors}
+        onBlurPath={onBlurPath}
+      />
     </div>
   );
 };

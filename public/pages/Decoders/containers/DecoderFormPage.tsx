@@ -528,6 +528,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
 
         {selectedEditorType === EDITOR_TYPE.VISUAL && (
           <DecoderEditorForm
+            submitAttempted={formikProps.submitCount > 0}
             variant={grammarVariant}
             values={values}
             onChange={onVisualChange}

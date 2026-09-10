@@ -41,6 +41,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
   values,
   onChange,
   fieldErrors,
+  onBlurPath,
 }) => {
   const set = <K extends keyof DecoderFormModel>(key: K, value: DecoderFormModel[K]) =>
     onChange({ ...values, [key]: value });
@@ -88,6 +89,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
                 model={entry.check}
                 onChange={(check) => setEntry(index, { ...entry, check })}
                 errors={fieldErrors}
+                onBlurPath={onBlurPath}
               />
             </EuiCompressedFormRow>
             <EuiSpacer size="m" />
@@ -98,6 +100,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
                 rows={entry.parsers}
                 onChange={(parsers) => setEntry(index, { ...entry, parsers })}
                 errors={fieldErrors}
+                onBlurPath={onBlurPath}
                 helpText={PARSE_HINT}
               />
             </EuiCompressedFormRow>
@@ -109,6 +112,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
                 rows={entry.map}
                 onChange={(map) => setEntry(index, { ...entry, map })}
                 errors={fieldErrors}
+                onBlurPath={onBlurPath}
                 fieldPlaceholder="event.kind"
                 valuePlaceholder="event"
                 addLabel="Add mapping"
@@ -151,6 +155,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
             model={values.check}
             onChange={(check) => set('check', check)}
             errors={fieldErrors}
+            onBlurPath={onBlurPath}
           />
         </>
       ),
@@ -168,6 +173,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
             rows={values.parsers}
             onChange={(parsers) => set('parsers', parsers)}
             errors={fieldErrors}
+            onBlurPath={onBlurPath}
             helpText={PARSE_HINT}
           />
         </>
@@ -196,6 +202,7 @@ export const GrammarStepsVariant: React.FC<GrammarVariantProps> = ({
           rows={values.definitions}
           onChange={(definitions) => set('definitions', definitions)}
           errors={fieldErrors}
+          onBlurPath={onBlurPath}
           fieldPlaceholder="_threshold"
           valuePlaceholder="5"
           addLabel="Add definition"

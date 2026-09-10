@@ -10,6 +10,7 @@ import { GrammarStepsVariant } from './GrammarStepsVariant';
 import { GrammarTabsVariant } from './GrammarTabsVariant';
 import { GrammarTableFlyoutVariant } from './GrammarTableFlyoutVariant';
 import { GrammarOutlineVariant } from './GrammarOutlineVariant';
+import { GrammarIssueVariant } from './GrammarIssueVariant';
 import { GrammarVariantProps } from './GrammarVariantProps';
 
 export { PrototypeVariantSwitcher } from './PrototypeVariantSwitcher';
@@ -25,6 +26,7 @@ export const GRAMMAR_VARIANTS: Array<{
   { key: 'tabs', name: 'Grammar tabs', Component: GrammarTabsVariant },
   { key: 'table', name: 'Summary + flyout', Component: GrammarTableFlyoutVariant },
   { key: 'outline', name: 'Outline, no cards', Component: GrammarOutlineVariant },
+  { key: 'issue', name: 'Curated + YAML fallback', Component: GrammarIssueVariant },
 ];
 
 export const DEFAULT_GRAMMAR_VARIANT = 'baseline';

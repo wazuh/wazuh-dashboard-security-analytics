@@ -44,6 +44,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
   values,
   onChange,
   fieldErrors,
+  onBlurPath,
 }) => {
   const set = <K extends keyof DecoderFormModel>(key: K, value: DecoderFormModel[K]) =>
     onChange({ ...values, [key]: value });
@@ -78,6 +79,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
             model={values.check}
             onChange={(check) => set('check', check)}
             errors={fieldErrors}
+            onBlurPath={onBlurPath}
           />
         </>
       ),
@@ -97,6 +99,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
             rows={values.parsers}
             onChange={(parsers) => set('parsers', parsers)}
             errors={fieldErrors}
+            onBlurPath={onBlurPath}
             helpText={PARSE_HINT}
           />
         </>
@@ -117,6 +120,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
             entries={values.normalize}
             onChange={(normalize) => set('normalize', normalize)}
             errors={fieldErrors}
+            onBlurPath={onBlurPath}
           />
         </>
       ),
@@ -136,6 +140,7 @@ export const GrammarTabsVariant: React.FC<GrammarVariantProps> = ({
             rows={values.definitions}
             onChange={(definitions) => set('definitions', definitions)}
             errors={fieldErrors}
+            onBlurPath={onBlurPath}
             fieldPlaceholder="_threshold"
             valuePlaceholder="5"
             addLabel="Add definition"

@@ -6,8 +6,10 @@
 
 import React from 'react';
 import { mount } from 'enzyme';
+import { act } from '@testing-library/react';
 import { GRAMMAR_VARIANTS } from './index';
-import { mapDecoderToForm } from '../mappers';
+import { mapDecoderToForm, mapFormToDecoder } from '../mappers';
+import { GrammarIssueVariant } from './GrammarIssueVariant';
 
 /**
  * The one test the prototype keeps.
@@ -76,5 +78,58 @@ describe('tabs variant', () => {
     tabs.forEach((tab) => {
       expect(() => mount(<div>{tab.content}</div>)).not.toThrow();
     });
+  });
+});
+
+describe('issue variant: normalize as a YAML block', () => {
+  const withNormalize = {
+    ...decoder,
+    normalize: [
+      { check: '$event.action == login', 'parse|message': ['e'], map: [{ 'source.ip': '$_ip' }] },
+      { map_if: { when: '$x' } },
+    ],
+  };
+
+  const mountIssue = () => {
+    let latest = mapDecoderToForm(withNormalize);
+    const wrapper = mount(
+      <GrammarIssueVariant
+        values={latest}
+        onChange={(next) => {
+          latest = next;
+        }}
+        fieldErrors={{}}
+      />
+    );
+    return { wrapper, current: () => latest };
+  };
+
+  it('round-trips normalize through the block, unrenderable entries included', () => {
+    const { wrapper, current } = mountIssue();
+    const editor = wrapper.find('EuiCodeEditor[data-test-subj="normalize-yaml"]').first();
+    const yaml = editor.prop('value') as string;
+
+    // The block shows the entries themselves, with no wrapper key to strip.
+    expect(yaml.startsWith('- ')).toBe(true);
+    expect(yaml).toContain('map_if');
+
+    act(() => {
+      (editor.prop('onChange') as any)(yaml);
+    });
+    expect(mapFormToDecoder(current()).normalize).toEqual(withNormalize.normalize);
+  });
+
+  it('reports a syntax error and leaves the document alone', () => {
+    const { wrapper, current } = mountIssue();
+    act(() => {
+      (wrapper
+        .find('EuiCodeEditor[data-test-subj="normalize-yaml"]')
+        .first()
+        .prop('onChange') as any)('- [unclosed');
+    });
+    wrapper.update();
+
+    expect(wrapper.find('[data-test-subj="normalize-yaml-error"]').length).toBeGreaterThan(0);
+    expect(mapFormToDecoder(current()).normalize).toEqual(withNormalize.normalize);
   });
 });

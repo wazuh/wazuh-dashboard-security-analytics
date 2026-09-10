@@ -31,6 +31,8 @@ export interface ParseRowsProps {
   errors?: Record<string, string>;
   /** Shown once under the list — say what a parser is for and show a real example. */
   helpText?: React.ReactNode;
+  /** Called with a row's path when the user leaves it, to gate its error. */
+  onBlurPath?: (path: string) => void;
   /**
    * Render each parser without its panel, for a layout that gets its hierarchy from
    * typography rather than from containers (see the `outline` prototype). Avoids a
@@ -54,6 +56,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
   onChange,
   errors = {},
   helpText,
+  onBlurPath,
   flat = false,
 }) => {
   const update = (index: number, patch: Partial<ParserRow>) =>
@@ -143,6 +146,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
                   placeholder="message"
                   value={row.field}
                   onChange={(e) => update(index, { field: e.target.value })}
+                  onBlur={() => onBlurPath?.(rowPath)}
                   isInvalid={missingField}
                   data-test-subj={`${rowPath}.field`}
                 />

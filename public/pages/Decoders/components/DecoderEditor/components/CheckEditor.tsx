@@ -33,6 +33,8 @@ export interface CheckEditorProps {
   label?: string;
   /** A nested check gets a shorter hint than the decoder-level one. */
   nested?: boolean;
+  /** Called with a path when the user leaves a control, to gate its error. */
+  onBlurPath?: (path: string) => void;
   model: CheckModel;
   onChange: (model: CheckModel) => void;
   errors?: Record<string, string>;
@@ -63,6 +65,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
   model,
   onChange,
   errors = {},
+  onBlurPath,
 }) => {
   const onYamlChange = useCallback(
     (text: string) => {
@@ -130,6 +133,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
               placeholder="$event.module == syslog"
               value={model.expression}
               onChange={(e) => onChange({ mode: 'expression', expression: e.target.value })}
+              onBlur={() => onBlurPath?.(path)}
               isInvalid={!!errors[path]}
               data-test-subj={`${path}.expression`}
             />
@@ -148,6 +152,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
               })
             }
             errors={errors}
+            onBlurPath={onBlurPath}
             fieldPlaceholder="event.module"
             valuePlaceholder="syslog"
             helpText={CHECK_LIST_HINT}

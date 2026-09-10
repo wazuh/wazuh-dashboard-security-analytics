@@ -15,6 +15,7 @@ bottom of the screen; arrow keys work too):
 | `steps`    | Pipeline steps      | `normalize` as `EuiSteps` — the sequence *is* the layout, so numbering and order stop needing their own furniture. |
 | `tabs`     | Grammar tabs        | `EuiTabbedContent` splits Check / Parsers / Normalize, so only one concern is on screen at a time and the page stops being a tall stack. |
 | `table`    | Summary + flyout    | `normalize` collapses to an `EuiBasicTable` of one-line summaries; editing opens an `EuiFlyout`. The form itself stays short. |
+| `issue`    | Curated + YAML fallback | **What the issue actually proposes:** real controls for `check`, the top-level parsers and `definitions`, and `normalize` — the one genuinely complex construct — as a single YAML code block. Shortest form by far; the trade is that the user still hand-writes the part that does the work. |
 | `outline`  | Outline, no cards   | **No panels at all.** `EuiDescribedFormGroup` puts each section's name and purpose in a left column and its controls in a right one, so hierarchy comes from typography and position instead of nested boxes. Normalize entries are separated by a single rule rather than wrapped individually. |
 
 Measured container nesting, in each variant's default view (`EuiPanel` count and
@@ -27,6 +28,7 @@ maximum nesting depth, from a mounted two-entry decoder):
 | `tabs` | 1 | 1 |
 | `table` | 1 | 1 |
 | `outline` | **0** | **0** |
+| `issue` | 0 | 0 |
 
 `tabs` and `table` understate: their entries sit behind an unselected tab and a
 closed flyout, and reach depth 3 once opened. `outline` is the only one that is
@@ -89,6 +91,13 @@ another one doesn't have:
 - **One spacing rhythm:** `s` between repetitions of one thing, `m` between distinct
   fields, `l` between sections, `xs` between a label and its control. No component
   sets its own margins.
+
+## Error timing
+
+All variants now stay quiet until a field is left or submit is attempted, matching
+the filter and KVDB forms. Those get it free from Formik's `touched`; these errors
+come from the JSON Schema instead, so `touched.ts` applies the same gate by hand —
+including for errors routed to a row inside a section the user has visited.
 
 ## Ordering by intent
 

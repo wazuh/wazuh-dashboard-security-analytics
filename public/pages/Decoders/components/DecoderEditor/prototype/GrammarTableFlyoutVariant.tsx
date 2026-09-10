@@ -63,6 +63,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
   values,
   onChange,
   fieldErrors,
+  onBlurPath,
 }) => {
   const [editing, setEditing] = useState<number | null>(null);
 
@@ -159,6 +160,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
           model={values.check}
           onChange={(check) => set('check', check)}
           errors={fieldErrors}
+          onBlurPath={onBlurPath}
         />
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
@@ -169,6 +171,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
           rows={values.parsers}
           onChange={(parsers) => set('parsers', parsers)}
           errors={fieldErrors}
+          onBlurPath={onBlurPath}
           helpText={PARSE_HINT}
         />
       </EuiCompressedFormRow>
@@ -209,6 +212,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
           rows={values.definitions}
           onChange={(definitions) => set('definitions', definitions)}
           errors={fieldErrors}
+          onBlurPath={onBlurPath}
           fieldPlaceholder="_threshold"
           valuePlaceholder="5"
           addLabel="Add definition"
@@ -264,6 +268,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
                     model={entry.check}
                     onChange={(check) => setEntry(editing, { ...entry, check })}
                     errors={fieldErrors}
+                    onBlurPath={onBlurPath}
                   />
                 </EuiCompressedFormRow>
                 <EuiSpacer size="m" />
@@ -274,6 +279,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
                     rows={entry.parsers}
                     onChange={(parsers) => setEntry(editing, { ...entry, parsers })}
                     errors={fieldErrors}
+                    onBlurPath={onBlurPath}
                     helpText={PARSE_HINT}
                   />
                 </EuiCompressedFormRow>
@@ -285,6 +291,7 @@ export const GrammarTableFlyoutVariant: React.FC<GrammarVariantProps> = ({
                     rows={entry.map}
                     onChange={(map) => setEntry(editing, { ...entry, map })}
                     errors={fieldErrors}
+                    onBlurPath={onBlurPath}
                     fieldPlaceholder="event.kind"
                     valuePlaceholder="event"
                     addLabel="Add mapping"
