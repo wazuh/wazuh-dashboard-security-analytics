@@ -117,3 +117,17 @@ export const routeSchemaErrors = (
 
   return { fields, document };
 };
+
+/**
+ * The errors that belong to `field` or to anything inside it.
+ *
+ * A field rendered as one control — `normalize` is the whole array in a single
+ * editor — has no place to put an error routed to `normalize[1].map`, so it has
+ * to collect them itself or they are never shown.
+ */
+export const errorsUnder = (errors: Record<string, string>, field: string): string[] =>
+  Object.entries(errors)
+    .filter(
+      ([path]) => path === field || path.startsWith(`${field}[`) || path.startsWith(`${field}.`)
+    )
+    .map(([, message]) => message);

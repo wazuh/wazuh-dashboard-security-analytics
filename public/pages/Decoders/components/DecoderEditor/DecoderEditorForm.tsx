@@ -17,6 +17,7 @@ import { FormFieldArray } from '../../../../components/FormFieldArray';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { fieldLabel } from './labels';
 import { NAME_HINT, PARENTS_HINT, PARSE_HINT, DEFINITIONS_HINT } from './hints';
+import { errorsUnder } from './errorRouting';
 import { TouchedState, emptyTouched, visibleErrors, withTouched } from './touched';
 import { MetadataFields } from './components/MetadataFields';
 import { CheckEditor } from './components/CheckEditor';
@@ -199,7 +200,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       <NormalizeYamlField
         entries={values.normalize}
         onChange={(normalize) => set('normalize', normalize)}
-        error={shownErrors.normalize}
+        errors={errorsUnder(shownErrors, 'normalize')}
         onBlur={() => onBlurPath('normalize')}
       />
       <EuiSpacer size="m" />

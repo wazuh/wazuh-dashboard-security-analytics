@@ -15,8 +15,11 @@ import { mapDecoderToForm, mapFormToDecoder, textToValue } from '../mappers';
 export interface NormalizeYamlFieldProps {
   entries: NormalizeEntryModel[];
   onChange: (entries: NormalizeEntryModel[]) => void;
-  /** A schema error reported against `normalize` or anything inside it. */
-  error?: string;
+  /**
+   * Schema errors for `normalize` or anything inside it. They keep their paths —
+   * `normalize[2].map` is how the user finds the entry in the YAML.
+   */
+  errors?: string[];
   onBlur?: () => void;
 }
 
@@ -58,7 +61,7 @@ const NOT_A_LIST = 'Normalize must be a list. Start each entry with a dash and a
 export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
   entries,
   onChange,
-  error,
+  errors = [],
   onBlur,
 }) => {
   const documentYaml = useMemo(() => {
@@ -113,19 +116,30 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
     [onChange]
   );
 
-  const shownError = syntaxError ?? error;
+  // A syntax error means the text never reached the document, so any schema
+  // errors still on screen describe the last version that parsed. Show the
+  // syntax error alone until the YAML is readable again.
+  const shown = syntaxError ? [syntaxError] : errors;
   const count = entries.length;
 
   return (
     <>
-      {shownError && (
+      {shown.length > 0 && (
         <>
           <EuiCallOut
             size="s"
-            color="danger"
-            title={shownError}
+            color={syntaxError ? 'danger' : 'warning'}
+            title={shown.length === 1 ? shown[0] : 'Please address the highlighted errors.'}
             data-test-subj="normalize-yaml-error"
-          />
+          >
+            {shown.length > 1 && (
+              <ul>
+                {shown.map((message, index) => (
+                  <li key={index}>{message}</li>
+                ))}
+              </ul>
+            )}
+          </EuiCallOut>
           <EuiSpacer size="s" />
         </>
       )}

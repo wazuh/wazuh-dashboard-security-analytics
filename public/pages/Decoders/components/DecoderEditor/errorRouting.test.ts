@@ -3,7 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { humanizeMessage, nearestFormPath, pathSegments, routeSchemaErrors } from './errorRouting';
+import {
+  errorsUnder,
+  humanizeMessage,
+  nearestFormPath,
+  pathSegments,
+  routeSchemaErrors,
+} from './errorRouting';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { mapDecoderToForm } from './mappers';
 
@@ -143,5 +149,31 @@ describe('routeSchemaErrors humanizes as it routes', () => {
     expect(routed.fields['metadata.title']).toBe('Title is required');
     // No label for an unknown key, so it keeps its name.
     expect(routed.document).toEqual(["'map_if' is not a recognized field"]);
+  });
+});
+
+describe('errorsUnder', () => {
+  const errors = {
+    normalize: 'the array itself',
+    'normalize[1].map': 'inside an entry',
+    'normalize.weird': 'a dotted child',
+    normalized: 'a different field that merely shares a prefix',
+    'metadata.title': 'unrelated',
+  };
+
+  it('collects the field and everything inside it', () => {
+    expect(errorsUnder(errors, 'normalize').sort()).toEqual(
+      ['the array itself', 'inside an entry', 'a dotted child'].sort()
+    );
+  });
+
+  it('does not collect a field that merely starts with the same letters', () => {
+    expect(errorsUnder(errors, 'normalize')).not.toContain(
+      'a different field that merely shares a prefix'
+    );
+  });
+
+  it('returns nothing when the field is clean', () => {
+    expect(errorsUnder(errors, 'check')).toEqual([]);
   });
 });

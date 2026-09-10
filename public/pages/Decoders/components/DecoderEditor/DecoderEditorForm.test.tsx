@@ -296,6 +296,55 @@ describe('DecoderEditorForm', () => {
       expect(text).toContain('  map:');
     });
 
+    it('surfaces schema errors from inside the array, which have no field of their own', () => {
+      // normalize is one editor, so an error routed to normalize[1].map has nowhere
+      // to render unless this field collects it. It used to be swallowed.
+      const wrapper = render(mapDecoderToForm(document), jest.fn(), {
+        fieldErrors: {
+          'normalize[1].map': "'normalize[1].map' must NOT have fewer than 1 items",
+        },
+        submitAttempted: true,
+      });
+      expect(wrapper.text()).toContain("'normalize[1].map' must NOT have fewer than 1 items");
+    });
+
+    it('lists several schema errors together', () => {
+      const wrapper = render(mapDecoderToForm(document), jest.fn(), {
+        fieldErrors: {
+          'normalize[0].map': 'first problem',
+          'normalize[1]': 'second problem',
+        },
+        submitAttempted: true,
+      });
+      const text = wrapper.text();
+      expect(text).toContain('Please address the highlighted errors.');
+      expect(text).toContain('first problem');
+      expect(text).toContain('second problem');
+    });
+
+    it('keeps the paths in those messages, since no field is named there', () => {
+      const wrapper = render(mapDecoderToForm(document), jest.fn(), {
+        fieldErrors: { 'normalize[2].map': "'normalize[2].map' is invalid" },
+        submitAttempted: true,
+      });
+      expect(wrapper.text()).toContain('normalize[2].map');
+    });
+
+    it('shows a syntax error alone, since schema errors would be stale', () => {
+      const wrapper = render(mapDecoderToForm(document), jest.fn(), {
+        fieldErrors: { 'normalize[0].map': 'a schema complaint' },
+        submitAttempted: true,
+      });
+      act(() => {
+        ((editor(wrapper).prop('onChange') as unknown) as (value: string) => void)('- [unclosed');
+      });
+      wrapper.update();
+
+      const text = wrapper.text();
+      expect(text).not.toContain('a schema complaint');
+      expect(subj(wrapper, 'normalize-yaml-error').length).toBeGreaterThan(0);
+    });
+
     it('counts the entries, and says nothing when there are none', () => {
       expect(render(mapDecoderToForm(document)).text()).toContain('2 entries');
       expect(
