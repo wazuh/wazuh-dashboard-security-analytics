@@ -4,7 +4,7 @@
  */
 
 export { DecoderEditorForm } from './DecoderEditorForm';
-export { decoderEditorStateDefaultValue, emptyNormalizeEntry } from './DecoderEditorFormModel';
+export { decoderEditorStateDefaultValue } from './DecoderEditorFormModel';
 export type {
   CheckModel,
   DecoderFormModel,
@@ -15,4 +15,3 @@ export type {
 } from './DecoderEditorFormModel';
 export { mapDecoderToForm, mapFormToDecoder } from './mappers';
 export { routeSchemaErrors } from './errorRouting';
-export type { RoutedErrors } from './errorRouting';

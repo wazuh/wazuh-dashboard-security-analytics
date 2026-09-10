@@ -5,7 +5,11 @@
 
 import React from 'react';
 import {
-  EuiAccordion,
+  EuiFlexItem,
+  EuiFlexGroup,
+  EuiPanel,
+  EuiFormHelpText,
+  EuiHorizontalRule,
   EuiButtonEmpty,
   EuiCallOut,
   EuiCompressedFieldText,
@@ -15,7 +19,7 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
-import FormFieldHeader from '../../../../../components/FormFieldHeader';
+import { fieldLabel } from '../labels';
 import { FormFieldArray } from '../../../../../components/FormFieldArray';
 import { ParserRow } from '../DecoderEditorFormModel';
 
@@ -25,6 +29,16 @@ export interface ParseRowsProps {
   rows: ParserRow[];
   onChange: (rows: ParserRow[]) => void;
   errors?: Record<string, string>;
+  /** Shown once under the list — say what a parser is for and show a real example. */
+  helpText?: React.ReactNode;
+  /** Called with a row's path when the user leaves it, to gate its error. */
+  onBlurPath?: (path: string) => void;
+  /**
+   * Render each parser without its panel, for a layout that gets its hierarchy from
+   * typography rather than from containers (see the `outline` prototype). Avoids a
+   * card inside a card.
+   */
+  flat?: boolean;
 }
 
 /**
@@ -36,7 +50,15 @@ export interface ParseRowsProps {
  * the same reason `map` becomes rows: a target like `parse|event.original` would
  * otherwise be read by Formik as nesting.
  */
-export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, errors = {} }) => {
+export const ParseRows: React.FC<ParseRowsProps> = ({
+  path,
+  rows,
+  onChange,
+  errors = {},
+  helpText,
+  onBlurPath,
+  flat = false,
+}) => {
   const update = (index: number, patch: Partial<ParserRow>) =>
     onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
 
@@ -44,8 +66,26 @@ export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, erro
 
   const sectionError = errors[path];
 
+  // One card per parser reads badly inside a layout that has no cards at all.
+  // React 18's types no longer give React.FC an implicit `children`.
+  const Shell = ({ children }: { children: React.ReactNode }) =>
+    flat ? (
+      <>{children}</>
+    ) : (
+      <EuiPanel paddingSize="m" hasShadow={false} hasBorder>
+        {children}
+      </EuiPanel>
+    );
+
   return (
     <div data-test-subj={`parse-rows-${path}`}>
+      {helpText && (
+        <>
+          <EuiFormHelpText>{helpText}</EuiFormHelpText>
+          <EuiSpacer size="s" />
+        </>
+      )}
+
       {sectionError && (
         <>
           <EuiCallOut
@@ -60,7 +100,7 @@ export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, erro
 
       {rows.length === 0 && (
         <EuiText size="s" color="subdued">
-          <p>No parsers. A parser reads a field and extracts values from it.</p>
+          <p>No parsers yet.</p>
         </EuiText>
       )}
 
@@ -71,29 +111,32 @@ export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, erro
 
         return (
           <div key={index}>
-            {index > 0 && <EuiSpacer size="m" />}
-            <EuiAccordion
-              className="euiAccordionForm"
-              id={rowPath}
-              data-test-subj={rowPath}
-              initialIsOpen={true}
-              buttonContent={<EuiText size="m">{`Parser ${index + 1}`}</EuiText>}
-              extraAction={
-                <EuiToolTip title={'Delete parser'}>
-                  <EuiSmallButtonIcon
-                    aria-label={'Delete parser'}
-                    iconType={'trash'}
-                    color="danger"
-                    onClick={() => remove(index)}
-                    data-test-subj={`${rowPath}.delete`}
-                  />
-                </EuiToolTip>
-              }
-            >
-              <EuiSpacer size="s" />
+            {index > 0 && (flat ? <EuiHorizontalRule margin="m" /> : <EuiSpacer size="m" />)}
+            <Shell>
+              <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
+                <EuiFlexItem grow={true}>
+                  <EuiText size={'s'}>
+                    <strong>{`Parser ${index + 1}`}</strong>
+                  </EuiText>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiToolTip content={'Remove parser'}>
+                    <EuiSmallButtonIcon
+                      aria-label={`Remove parser ${index + 1}`}
+                      iconType={'trash'}
+                      color="danger"
+                      onClick={() => remove(index)}
+                      data-test-subj={`${rowPath}.delete`}
+                    />
+                  </EuiToolTip>
+                </EuiFlexItem>
+              </EuiFlexGroup>
+
+              <EuiSpacer size="m" />
+
               <EuiCompressedFormRow
-                label={<FormFieldHeader headerTitle={'Field'} />}
-                helpText="The field the parser reads."
+                label={fieldLabel('Field')}
+                helpText="The field this parser reads, for example message or event.original."
                 fullWidth={true}
                 isInvalid={missingField || !!errors[rowPath]}
                 error={missingField ? 'A parser needs the field it reads' : errors[rowPath]}
@@ -103,26 +146,23 @@ export const ParseRows: React.FC<ParseRowsProps> = ({ path, rows, onChange, erro
                   placeholder="message"
                   value={row.field}
                   onChange={(e) => update(index, { field: e.target.value })}
+                  onBlur={() => onBlurPath?.(rowPath)}
                   isInvalid={missingField}
                   data-test-subj={`${rowPath}.field`}
                 />
               </EuiCompressedFormRow>
+
               <EuiSpacer size="m" />
 
+              <EuiFormHelpText>Tried in order until one succeeds.</EuiFormHelpText>
               <FormFieldArray
-                label={
-                  <FormFieldHeader
-                    headerTitle={'Expressions'}
-                    toolTipText="Evaluated in order until one succeeds."
-                  />
-                }
+                label={fieldLabel('Expressions')}
                 values={row.expressions.length ? row.expressions : ['']}
-                placeholder="<~>"
+                placeholder="Logpar expression"
                 addButtonLabel="Add expression"
                 onChange={(expressions) => update(index, { expressions })}
               />
-              <EuiSpacer size="m" />
-            </EuiAccordion>
+            </Shell>
           </div>
         );
       })}

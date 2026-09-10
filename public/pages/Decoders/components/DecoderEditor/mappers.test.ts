@@ -196,6 +196,21 @@ describe('mapFormToDecoder', () => {
     expect('check' in document).toBe(false);
   });
 
+  it('drops normalize and definitions when emptied, rather than writing an invalid empty one', () => {
+    // The schema sets minItems: 1 on `normalize` and minProperties: 1 on
+    // `definitions`, so `normalize: []` is rejected by the engine. Emptying the
+    // section has to remove the key, even though the loaded document had it.
+    const loaded = mapDecoderToForm({
+      ...baseDocument,
+      normalize: [{ map: [{ 'event.kind': 'event' }] }],
+      definitions: { _threshold: '5' },
+    });
+    const emptied = mapFormToDecoder({ ...loaded, normalize: [], definitions: [] });
+
+    expect('normalize' in emptied).toBe(false);
+    expect('definitions' in emptied).toBe(false);
+  });
+
   it('does not invent optional keys that were never in the document', () => {
     const document = mapFormToDecoder(form());
     expect('parents' in document).toBe(false);

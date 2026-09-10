@@ -145,7 +145,7 @@ describe('DecoderFormPage', () => {
     const wrapper = await renderPage('edit', { id: 'abc' });
     expect(subj(wrapper, 'name').prop('value')).toBe('decoder/syslog/0');
     expect(subj(wrapper, 'metadata.title').prop('value')).toBe('Syslog');
-    expect(subj(wrapper, 'normalize-entry-0').length).toBeGreaterThan(0);
+    expect(subj(wrapper, 'normalize-yaml').length).toBeGreaterThan(0);
   });
 
   it('submits the document built from the form, not raw YAML', async () => {
@@ -169,7 +169,9 @@ describe('DecoderFormPage', () => {
     await switchTo(wrapper, 'yaml');
 
     await act(async () => {
-      wrapper.find('YamlForm').first().prop('change')('name: [unclosed');
+      (wrapper.find('YamlForm').first().prop('change') as (value: string) => void)(
+        'name: [unclosed'
+      );
     });
     wrapper.update();
 
@@ -183,7 +185,9 @@ describe('DecoderFormPage', () => {
     await switchTo(wrapper, 'yaml');
 
     await act(async () => {
-      wrapper.find('YamlForm').first().prop('change')('name: [unclosed');
+      (wrapper.find('YamlForm').first().prop('change') as (value: string) => void)(
+        'name: [unclosed'
+      );
     });
     wrapper.update();
     await switchTo(wrapper, 'visual');

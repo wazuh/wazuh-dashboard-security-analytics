@@ -3,22 +3,26 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   EuiCallOut,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSwitch,
+  EuiFormHelpText,
   EuiSpacer,
+  EuiText,
 } from '@elastic/eui';
-import FormFieldHeader from '../../../../components/FormFieldHeader';
 import { FormFieldArray } from '../../../../components/FormFieldArray';
 import { DecoderFormModel } from './DecoderEditorFormModel';
+import { fieldLabel } from './labels';
+import { NAME_HINT, PARENTS_HINT, PARSE_HINT, DEFINITIONS_HINT } from './hints';
+import { TouchedState, emptyTouched, visibleErrors, withTouched } from './touched';
 import { MetadataFields } from './components/MetadataFields';
 import { CheckEditor } from './components/CheckEditor';
-import { NormalizeEditor } from './components/NormalizeEditor';
-import { ParseRows } from './components/ParseRows';
 import { MapRows } from './components/MapRows';
+import { NormalizeYamlField } from './components/NormalizeYamlField';
+import { ParseRows } from './components/ParseRows';
 
 export interface DecoderEditorFormProps {
   values: DecoderFormModel;
@@ -27,29 +31,45 @@ export interface DecoderEditorFormProps {
   fieldErrors?: Record<string, string>;
   /** Schema errors with no field to land on. */
   documentErrors?: string[];
+  /** True once submission has been attempted; every error shows from then on. */
+  submitAttempted?: boolean;
 }
 
 /**
  * The decoder visual editor.
  *
- * Laid out with the same controls, labels, spacing and field order as the KVDB
- * editor — `FormFieldHeader` inside `EuiCompressedFormRow`, `fullWidth` on the row
- * and never on the input, a single column, and an `EuiSpacer size="m"` between
- * fields — so the four forms read as one application.
+ * Controls, labels, spacing and field order follow the KVDB and filter editors —
+ * `fieldLabel` inside `EuiCompressedFormRow`, `fullWidth` on the row and never on
+ * the input, a single column, `EuiSpacer size="m"` between fields — so the four
+ * entity forms read as one application. See the decoder section of TERMINOLOGY.md.
  *
- * Field order follows KVDBs rather than filters: identity, the metadata block both
- * siblings already order identically, then the decoder grammar in document order.
- * Filters can afford to put `check` second because it is one small editor; a
- * decoder's `normalize` is tall enough to bury everything under it.
+ * Field order follows KVDBs: identity, the metadata block both siblings order
+ * identically, then the decoder's own fields. Those last are ordered the way an
+ * event travels — `check` decides whether the decoder runs, parsers pull values
+ * out, `normalize` maps them — with `definitions` last, since it is build-time
+ * constants rather than part of the event's path.
  *
- * See the decoder section of TERMINOLOGY.md.
+ * `normalize` is a YAML field rather than a set of controls; see
+ * `NormalizeYamlField` for why.
  */
 export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
   values,
   onChange,
   fieldErrors = {},
   documentErrors = [],
+  submitAttempted = false,
 }) => {
+  // Errors come from the JSON Schema rather than Formik's own validation, so the
+  // `touched` gate the filter and KVDB forms get for free has to be applied here:
+  // a form opened for the first time must be quiet, even though validation has
+  // already run against the loaded document.
+  const [touched, setTouched] = useState<TouchedState>(emptyTouched);
+  const onBlurPath = useCallback(
+    (path: string) => setTouched((current) => withTouched(current, path)),
+    []
+  );
+  const shownErrors = visibleErrors(fieldErrors, { ...touched, submitted: submitAttempted });
+
   const set = <K extends keyof DecoderFormModel>(key: K, value: DecoderFormModel[K]) =>
     onChange({ ...values, [key]: value });
 
@@ -88,13 +108,9 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       {values.id && (
         <>
           <EuiCompressedFormRow
-            label={
-              <FormFieldHeader
-                headerTitle={'ID'}
-                toolTipText="Assigned by the engine and not editable."
-              />
-            }
+            label={fieldLabel('ID')}
             fullWidth={true}
+            helpText="Assigned by the engine and not editable."
           >
             <EuiCompressedFieldText readOnly value={values.id} data-test-subj="id" />
           </EuiCompressedFormRow>
@@ -103,21 +119,18 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       )}
 
       <EuiCompressedFormRow
-        label={<FormFieldHeader headerTitle={'Name'} />}
+        label={fieldLabel('Name')}
         fullWidth={true}
-        isInvalid={!!fieldErrors.name}
-        error={fieldErrors.name}
-        helpText={
-          !fieldErrors.name
-            ? 'Must follow the pattern decoder/<name>/<version> (e.g. decoder/syslog/0)'
-            : undefined
-        }
+        isInvalid={!!shownErrors.name}
+        error={shownErrors.name}
+        helpText={!shownErrors.name ? NAME_HINT : undefined}
       >
         <EuiCompressedFieldText
           placeholder="decoder/syslog/0"
           value={values.name}
           onChange={(e) => set('name', e.target.value)}
-          isInvalid={!!fieldErrors.name}
+          onBlur={() => onBlurPath('name')}
+          isInvalid={!!shownErrors.name}
           data-test-subj="name"
         />
       </EuiCompressedFormRow>
@@ -126,13 +139,11 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       <MetadataFields
         metadata={values.metadata}
         onChange={(metadata) => set('metadata', metadata)}
-        errors={fieldErrors}
+        errors={shownErrors}
+        onBlur={onBlurPath}
         afterAuthor={
           <>
-            <EuiCompressedFormRow
-              label={<FormFieldHeader headerTitle={'Enabled'} />}
-              fullWidth={true}
-            >
+            <EuiCompressedFormRow label={fieldLabel('Enabled')} fullWidth={true}>
               <EuiCompressedSwitch
                 label={values.enabled ? 'Enabled' : 'Disabled'}
                 checked={values.enabled}
@@ -146,95 +157,65 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       />
       <EuiSpacer size="m" />
 
+      <EuiText size={'s'}>
+        <strong>Parents</strong>
+        {' - '}
+        <em>optional</em>
+      </EuiText>
+      <EuiFormHelpText>{PARENTS_HINT}</EuiFormHelpText>
       <FormFieldArray
-        label={
-          <FormFieldHeader
-            headerTitle={'Parents'}
-            optionalField={true}
-            toolTipText="Parent decoders evaluated before this one."
-          />
-        }
+        label=""
         values={values.parents.length ? values.parents : ['']}
         placeholder="decoder/integrations/0"
         addButtonLabel="Add parent"
         onChange={(parents) => set('parents', parents)}
       />
-
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Definitions'}
-            optionalField={true}
-            toolTipText="Build-time typed macros, expanded by interpolation."
-          />
-        }
-        fullWidth={true}
-      >
-        <MapRows
-          path="definitions"
-          rows={values.definitions}
-          onChange={(definitions) => set('definitions', definitions)}
-          errors={fieldErrors}
-          fieldPlaceholder="Name (e.g. _threshold)"
-          valuePlaceholder="Value (text or JSON)"
-          addLabel="Add definition"
-          emptyLabel="No definitions."
-        />
-      </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Check'}
-            optionalField={true}
-            toolTipText="Decides whether this decoder accepts the event at all."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Check', true)} fullWidth={true}>
         <CheckEditor
           path="check"
           model={values.check}
           onChange={(check) => set('check', check)}
-          errors={fieldErrors}
+          errors={shownErrors}
+          onBlurPath={onBlurPath}
         />
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Parsers'}
-            optionalField={true}
-            toolTipText="Parsers applied at the top level, before normalize runs."
-          />
-        }
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Parsers', true)} fullWidth={true}>
         <ParseRows
           path="parsers"
           rows={values.parsers}
           onChange={(parsers) => set('parsers', parsers)}
-          errors={fieldErrors}
+          errors={shownErrors}
+          onBlurPath={onBlurPath}
+          helpText={PARSE_HINT}
+          flat
         />
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={
-          <FormFieldHeader
-            headerTitle={'Normalize'}
-            optionalField={true}
-            toolTipText="Sequential sub-stages, each run in order."
-          />
-        }
-        fullWidth={true}
-      >
-        <NormalizeEditor
-          entries={values.normalize}
-          onChange={(normalize) => set('normalize', normalize)}
-          errors={fieldErrors}
+      <NormalizeYamlField
+        entries={values.normalize}
+        onChange={(normalize) => set('normalize', normalize)}
+        error={shownErrors.normalize}
+        onBlur={() => onBlurPath('normalize')}
+      />
+      <EuiSpacer size="m" />
+
+      <EuiCompressedFormRow label={fieldLabel('Definitions', true)} fullWidth={true}>
+        <MapRows
+          path="definitions"
+          rows={values.definitions}
+          onChange={(definitions) => set('definitions', definitions)}
+          errors={shownErrors}
+          onBlurPath={onBlurPath}
+          fieldPlaceholder="_threshold"
+          valuePlaceholder="5"
+          addLabel="Add definition"
+          emptyLabel="No definitions yet."
+          helpText={DEFINITIONS_HINT}
         />
       </EuiCompressedFormRow>
     </div>

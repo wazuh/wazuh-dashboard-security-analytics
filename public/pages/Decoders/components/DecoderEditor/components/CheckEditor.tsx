@@ -6,13 +6,15 @@
 import React, { useCallback } from 'react';
 import YAML from 'yaml';
 import {
+  EuiFormHelpText,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSelect,
   EuiSpacer,
   EuiText,
 } from '@elastic/eui';
-import FormFieldHeader from '../../../../../components/FormFieldHeader';
+import { fieldLabel } from '../labels';
+import { CHECK_EXPRESSION_HINT, CHECK_HINT, CHECK_LIST_HINT, NORMALIZE_CHECK_HINT } from '../hints';
 import { CheckModel } from '../DecoderEditorFormModel';
 import { checkToModel, modelToCheck, textToValue } from '../mappers';
 import { MapRows } from './MapRows';
@@ -29,6 +31,10 @@ export interface CheckEditorProps {
   path: string;
   /** What this check is called on screen. */
   label?: string;
+  /** A nested check gets a shorter hint than the decoder-level one. */
+  nested?: boolean;
+  /** Called with a path when the user leaves a control, to gate its error. */
+  onBlurPath?: (path: string) => void;
   model: CheckModel;
   onChange: (model: CheckModel) => void;
   errors?: Record<string, string>;
@@ -44,6 +50,10 @@ const checkToYamlText = (model: CheckModel): string => {
  * `check` — the schema's `_check`: either a conditional expression or a list of
  * `{ field: condition }` items, both of which this editor models.
  *
+ * The selector is labelled `Format`, not `Type`: the filter form already uses
+ * `Type` for a filter's pre/post stage, and two meanings of one noun on adjacent
+ * screens is the regression TERMINOLOGY.md exists to prevent.
+ *
  * A `check` holding anything else is carried as YAML and the visual view is
  * disabled for it, rather than being reshaped into something the engine did not
  * mean.
@@ -51,9 +61,11 @@ const checkToYamlText = (model: CheckModel): string => {
 export const CheckEditor: React.FC<CheckEditorProps> = ({
   path,
   label = 'Check',
+  nested = false,
   model,
   onChange,
   errors = {},
+  onBlurPath,
 }) => {
   const onYamlChange = useCallback(
     (text: string) => {
@@ -90,11 +102,10 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
       }
     >
       <>
-        <EuiCompressedFormRow
-          label={<FormFieldHeader headerTitle={'Type'} />}
-          fullWidth={true}
-          helpText="A check is either a single expression or a list of conditions."
-        >
+        <EuiFormHelpText>{nested ? NORMALIZE_CHECK_HINT : CHECK_HINT}</EuiFormHelpText>
+        <EuiSpacer size="s" />
+
+        <EuiCompressedFormRow label={fieldLabel('Format')} fullWidth={true}>
           <EuiCompressedSelect
             options={CHECK_MODE_OPTIONS}
             value={model.mode === 'yaml' ? 'none' : model.mode}
@@ -112,16 +123,17 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
 
         {model.mode === 'expression' && (
           <EuiCompressedFormRow
-            label={<FormFieldHeader headerTitle={'Expression'} />}
+            label={fieldLabel('Expression')}
             fullWidth={true}
             isInvalid={!!errors[path]}
             error={errors[path]}
-            helpText="A condition over $fields, optionally with NOT, AND, OR or comparison operators."
+            helpText={CHECK_EXPRESSION_HINT}
           >
             <EuiCompressedFieldText
               placeholder="$event.module == syslog"
               value={model.expression}
               onChange={(e) => onChange({ mode: 'expression', expression: e.target.value })}
+              onBlur={() => onBlurPath?.(path)}
               isInvalid={!!errors[path]}
               data-test-subj={`${path}.expression`}
             />
@@ -140,10 +152,12 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
               })
             }
             errors={errors}
-            fieldPlaceholder="Field (e.g. event.module)"
-            valuePlaceholder="Condition (e.g. syslog, $other.field, exists())"
+            onBlurPath={onBlurPath}
+            fieldPlaceholder="event.module"
+            valuePlaceholder="syslog"
+            helpText={CHECK_LIST_HINT}
             addLabel="Add condition"
-            emptyLabel="No conditions. All of them must pass, in order."
+            emptyLabel="No conditions yet."
           />
         )}
       </>

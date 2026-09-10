@@ -78,11 +78,17 @@ never renamed just because its document key differs.
 
 Fields with no counterpart elsewhere take the humanized form of their document key:
 `Check`, `Map`, `Parsers`, `Normalize`, `Parents`, `Definitions`, `Compatibility`,
-`ID`, `Expression`, `Expressions`, `Field`, `Type`.
+`ID`, `Expression`, `Expressions`, `Field`.
 
-Entries of the `normalize` array are numbered from 1 — `Normalize 1`, `Normalize 2`
-— following the `Map 1` / `Map 2` numbering the rules detection editor already uses
-for its repeated sub-items. Do not call them steps, stages or blocks.
+The one exception is the control that chooses between a `check` expression and a
+`check` list: it is labelled **`Format`**, not `Type`. The filter form already uses
+`Type` for a filter's pre-filter/post-filter stage, and the same noun meaning two
+things on adjacent screens is exactly the regression this document exists to
+prevent.
+
+Entries of the `normalize` array are not labelled at all: the field is edited as
+YAML, so they are only ever the entries the user wrote. Where they must be referred
+to in prose or in an error, call them entries — not steps, stages or blocks.
 `Normalization` remains the navigation group that contains decoders, KVDBs, filters
 and rules, and means nothing else.
 

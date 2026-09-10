@@ -4,22 +4,20 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { EuiButtonGroup, EuiCallOut, EuiCodeEditor, EuiSpacer } from '@elastic/eui';
-
-export const SLOT_VIEW = {
-  STRUCTURED: 'structured',
-  YAML: 'yaml',
-} as const;
-
-export type SlotView = typeof SLOT_VIEW[keyof typeof SLOT_VIEW];
+import {
+  EuiCallOut,
+  EuiCodeEditor,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiSmallButtonEmpty,
+  EuiSpacer,
+  EuiText,
+} from '@elastic/eui';
 
 export interface YamlSlotProps {
   /** Identifies the slot for test hooks and input ids. Not user-facing. */
   slotId: string;
-  /**
-   * What this slot is called on screen, used for the toggle's accessible legend.
-   * Defaults to `slotId`, which is only acceptable when the two are the same.
-   */
+  /** What this slot is called on screen. Defaults to `slotId`. */
   label?: string;
   /** Rendered when the slot is showing its structured view. */
   children: React.ReactNode;
@@ -41,13 +39,14 @@ export interface YamlSlotProps {
 /**
  * One editable region of the decoder, in either of its two views.
  *
- * Every slot has both a structured view and a YAML view, and content the structured
- * view cannot model simply *starts* in the YAML one — that is what makes the escape
- * hatch a property of every slot rather than a page-level trapdoor, and it is what
- * keeps an unrenderable `normalize` entry in its original position.
+ * The escape hatch is an inline text link, not a persistent two-button group. A
+ * decoder with three normalize entries has seven of these slots, and seven button
+ * groups is most of what makes the form feel busy — while the thing they toggle is
+ * needed rarely. This matches how the rules detection editor offers its own YAML
+ * escape (`EuiSmallButtonEmpty` inside `EuiText size="xs"`).
  *
- * The view itself is local state: it is a way of looking at the document, not part
- * of it, so it never reaches the form values.
+ * The view is local state: it is a way of looking at the document, not part of it,
+ * so it never reaches the form values.
  */
 export const YamlSlot: React.FC<YamlSlotProps> = ({
   slotId,
@@ -60,16 +59,15 @@ export const YamlSlot: React.FC<YamlSlotProps> = ({
   parseDebounceMs = 400,
 }) => {
   const forced = Boolean(structuredUnavailableReason);
-  const [view, setView] = useState<SlotView>(forced ? SLOT_VIEW.YAML : SLOT_VIEW.STRUCTURED);
+  const [showYaml, setShowYaml] = useState(forced);
   const [draft, setDraft] = useState(yamlValue);
   const timerRef = useRef<number | null>(null);
   const isEditingRef = useRef(false);
 
   // Content can stop being representable while the user edits it, in which case the
-  // slot has to fall back rather than render a structured view of something it
-  // cannot model.
+  // slot has to fall back rather than render a structured view it cannot model.
   useEffect(() => {
-    if (forced) setView(SLOT_VIEW.YAML);
+    if (forced) setShowYaml(true);
   }, [forced]);
 
   // Track the document from outside, but never yank text out from under the cursor.
@@ -98,29 +96,10 @@ export const YamlSlot: React.FC<YamlSlotProps> = ({
     [onYamlChange, parseDebounceMs]
   );
 
-  const options = [
-    {
-      id: SLOT_VIEW.STRUCTURED,
-      label: 'Visual Editor',
-      isDisabled: forced,
-      // EuiButtonGroup has no tooltip slot, so the reason rides on the title.
-      title: structuredUnavailableReason,
-    },
-    { id: SLOT_VIEW.YAML, label: 'YAML Editor' },
-  ];
+  const name = label ?? slotId;
 
   return (
     <>
-      <EuiButtonGroup
-        buttonSize="compressed"
-        legend={`Editor type for ${label ?? slotId}`}
-        data-test-subj={`slot-editor-type-${slotId}`}
-        options={options}
-        idSelected={view}
-        onChange={(id) => setView(id as SlotView)}
-      />
-      <EuiSpacer size="s" />
-
       {forced && (
         <>
           <EuiCallOut
@@ -145,9 +124,7 @@ export const YamlSlot: React.FC<YamlSlotProps> = ({
         </>
       )}
 
-      {view === SLOT_VIEW.STRUCTURED ? (
-        children
-      ) : (
+      {showYaml ? (
         <EuiCodeEditor
           mode="yaml"
           width="600px"
@@ -157,6 +134,29 @@ export const YamlSlot: React.FC<YamlSlotProps> = ({
           setOptions={{ showLineNumbers: false, tabSize: 2 }}
           data-test-subj={`slot-yaml-${slotId}`}
         />
+      ) : (
+        children
+      )}
+
+      {!forced && (
+        <>
+          <EuiSpacer size="xs" />
+          <EuiFlexGroup justifyContent="flexStart" gutterSize="none" responsive={false}>
+            <EuiFlexItem grow={false}>
+              <EuiText size="xs">
+                <EuiSmallButtonEmpty
+                  flush="left"
+                  onClick={() => setShowYaml(!showYaml)}
+                  data-test-subj={`slot-toggle-${slotId}`}
+                >
+                  <EuiText size="xs">
+                    {showYaml ? `Back to the form for ${name}` : `Edit ${name} as YAML`}
+                  </EuiText>
+                </EuiSmallButtonEmpty>
+              </EuiText>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </>
       )}
     </>
   );

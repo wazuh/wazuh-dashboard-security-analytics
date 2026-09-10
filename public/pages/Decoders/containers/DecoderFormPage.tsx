@@ -502,6 +502,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
 
         {selectedEditorType === EDITOR_TYPE.VISUAL && (
           <DecoderEditorForm
+            submitAttempted={formikProps.submitCount > 0}
             values={values}
             onChange={onVisualChange}
             fieldErrors={{ ...schemaWarnings.fields, ...structuralErrors }}

@@ -5,6 +5,7 @@
 
 import React from 'react';
 import {
+  EuiFormHelpText,
   EuiButtonEmpty,
   EuiButtonIcon,
   EuiCallOut,
@@ -12,7 +13,7 @@ import {
   EuiCompressedTextArea,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiFormRow,
+  EuiCompressedFormRow,
   EuiSpacer,
   EuiText,
   EuiToolTip,
@@ -31,13 +32,21 @@ export interface MapRowsProps {
   emptyLabel: string;
   fieldPlaceholder: string;
   valuePlaceholder: string;
+  /** Shown once under the list — say what a row is for and show a real example. */
+  helpText?: React.ReactNode;
+  /** Called with a row's path when the user leaves it, to gate its error. */
+  onBlurPath?: (path: string) => void;
   /** Renders the value as a single line instead of a growing textarea. */
   singleLineValue?: boolean;
 }
 
 /**
  * A list of `{ <field>: <value> }` pairs, laid out like the KVDB content editor so
- * the two read as the same control.
+ * the two read as the same control — minus its `height: 37px` inline override,
+ * which is the *uncompressed* input height and cancels the compressed sizing.
+ *
+ * Vertical rhythm: `s` between rows (they are repetitions of one thing), `m`
+ * between distinct fields, `l` between sections. Nothing sets its own margins.
  *
  * The document holds these with the *field name as the key*, but the form holds
  * `{ field, value }` rows: Formik splits paths on dots, and ECS field names are
@@ -54,6 +63,8 @@ export const MapRows: React.FC<MapRowsProps> = ({
   emptyLabel,
   fieldPlaceholder,
   valuePlaceholder,
+  helpText,
+  onBlurPath,
   singleLineValue = false,
 }) => {
   const update = (index: number, patch: Partial<FieldValueRow>) =>
@@ -67,6 +78,13 @@ export const MapRows: React.FC<MapRowsProps> = ({
 
   return (
     <div data-test-subj={`map-rows-${path}`}>
+      {helpText && (
+        <>
+          <EuiFormHelpText>{helpText}</EuiFormHelpText>
+          <EuiSpacer size="s" />
+        </>
+      )}
+
       {sectionError && (
         <>
           <EuiCallOut
@@ -98,31 +116,31 @@ export const MapRows: React.FC<MapRowsProps> = ({
             {index > 0 && <EuiSpacer size="s" />}
             <EuiFlexGroup alignItems="flexStart" gutterSize="s" responsive={false}>
               <EuiFlexItem grow={3}>
-                <EuiFormRow
+                <EuiCompressedFormRow
                   isInvalid={missingField || !!rowError}
                   error={missingField ? 'A value needs a field to go in' : rowError}
                   fullWidth
                 >
                   <EuiCompressedFieldText
-                    style={{ height: '37px', padding: '6px 8px' }}
                     placeholder={fieldPlaceholder}
                     value={row.field}
                     onChange={(e) => update(index, { field: e.target.value })}
+                    onBlur={() => onBlurPath?.(rowPath)}
                     isInvalid={missingField}
                     fullWidth
                     data-test-subj={`${rowPath}.field`}
                   />
-                </EuiFormRow>
+                </EuiCompressedFormRow>
               </EuiFlexItem>
 
               <EuiFlexItem grow={6}>
-                <EuiFormRow fullWidth>
+                <EuiCompressedFormRow fullWidth>
                   {singleLineValue ? (
                     <EuiCompressedFieldText
-                      style={{ height: '37px', padding: '6px 8px' }}
                       placeholder={valuePlaceholder}
                       value={row.value}
                       onChange={(e) => update(index, { value: e.target.value })}
+                      onBlur={() => onBlurPath?.(rowPath)}
                       fullWidth
                       data-test-subj={`${rowPath}.value`}
                     />
@@ -131,16 +149,17 @@ export const MapRows: React.FC<MapRowsProps> = ({
                       placeholder={valuePlaceholder}
                       value={row.value}
                       onChange={(e) => update(index, { value: e.target.value })}
+                      onBlur={() => onBlurPath?.(rowPath)}
                       rows={textareaRows}
                       fullWidth
                       data-test-subj={`${rowPath}.value`}
                     />
                   )}
-                </EuiFormRow>
+                </EuiCompressedFormRow>
               </EuiFlexItem>
 
               <EuiFlexItem grow={false}>
-                <EuiFormRow>
+                <EuiCompressedFormRow>
                   <EuiToolTip content="Remove entry">
                     <EuiButtonIcon
                       iconType="trash"
@@ -150,7 +169,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
                       data-test-subj={`${rowPath}.delete`}
                     />
                   </EuiToolTip>
-                </EuiFormRow>
+                </EuiCompressedFormRow>
               </EuiFlexItem>
             </EuiFlexGroup>
           </div>

@@ -26,9 +26,10 @@ bound that risk, and none of them should be removed without replacing it:
    nothing invalid is produced and nothing is mis-validated.
 2. **Unmodelled content is preserved, never dropped.** `mapDecoderToForm` splits the
    document into modelled fields plus an untouched remainder that `mapFormToDecoder`
-   merges back, and any content whose shape the structured view doesn't model renders
-   in a per-slot YAML sub-editor in its original position. A decoder is never silently
-   truncated by being opened in the visual editor.
+   merges back. `normalize` — the one construct the issue calls "too complex to
+   model" — is edited as YAML rather than as controls, so an entry this plugin does
+   not recognize round-trips through the same mappers as any other. A decoder is
+   never silently truncated by being opened in the visual editor.
 3. **`schemaShape.test.ts` snapshots a distilled grammar fingerprint** — top-level
    keys, `metadata` keys and required sets, `name`'s pattern, the required-key sets of
    each `_normalizeBlock.oneOf` branch. Its committed snapshot is the only
