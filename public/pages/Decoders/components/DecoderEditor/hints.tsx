@@ -89,9 +89,9 @@ export const MAP_HINT = (
 
 export const DEFINITIONS_HINT = (
   <div style={wrap}>
-    Constants expanded wherever they are referenced, resolved when the decoder is built rather than
-    per event. Most are lookup tables:
-    <pre style={preStyle}>{`NSG_PROTO_MAP:\n  T: tcp\n  U: udp`}</pre>
+    Named values you can reuse elsewhere in the decoder. Most are lookup tables:
+    <pre style={preStyle}>{`_log_level:\n  '3': error\n  '4': warning`}</pre>
+    Read one with <code>get_key_in($_log_level, $_tmp.severity_string)</code>.
   </div>
 );
 

@@ -83,9 +83,10 @@ describe('hint examples are accepted by the engine schema', () => {
       },
     ],
   });
-  accept('definitions lookup table', {
+  accept('definitions lookup table, and the helper that reads it', {
     ...base,
-    definitions: { NSG_PROTO_MAP: { T: 'tcp', U: 'udp' } },
+    definitions: { _log_level: { '3': 'error', '4': 'warning' } },
+    normalize: [{ map: [{ 'log.level': 'get_key_in($_log_level, $_tmp.severity_string)' }] }],
   });
 });
 
@@ -151,7 +152,22 @@ describe('hint copy', () => {
 
   it('does not claim definitions names need a leading underscore', () => {
     // They do not: shipped decoders use log_level, PRIORITY, NSG_PROTO_MAP.
-    expect(textOf(DEFINITIONS_HINT)).not.toMatch(/underscore/i);
+    expect(textOf(DEFINITIONS_HINT)).not.toMatch(/must .{0,20}underscore/i);
+  });
+
+  it('shows how a definition is read, not only how it is written', () => {
+    // The hint used to show a lookup table and never the helper that consumes it,
+    // which is the whole point of defining one. get_key_in is by far the most
+    // common consumer in the shipped decoders.
+    const text = textOf(DEFINITIONS_HINT);
+    expect(text).toContain('_log_level');
+    expect(text).toContain('get_key_in($_log_level, $_tmp.severity_string)');
+  });
+
+  it('picks a definition that recurs, not a one-off', () => {
+    // NSG_PROTO_MAP appeared in exactly 1 of 509 shipped decoders; _log_level is
+    // the most common definition name and a recognisable syslog severity map.
+    expect(textOf(DEFINITIONS_HINT)).not.toContain('NSG_PROTO_MAP');
   });
 
   it('explains the parser syntax rather than naming the format', () => {

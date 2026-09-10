@@ -211,8 +211,8 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
           onChange={(definitions) => set('definitions', definitions)}
           errors={shownErrors}
           onBlurPath={onBlurPath}
-          fieldPlaceholder="NSG_PROTO_MAP"
-          valuePlaceholder="{ T: tcp, U: udp }"
+          fieldPlaceholder="_log_level"
+          valuePlaceholder="{ '3': error, '4': warning }"
           addLabel="Add definition"
           emptyLabel="No definitions yet."
           helpText={DEFINITIONS_HINT}
