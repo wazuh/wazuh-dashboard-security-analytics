@@ -1,6 +1,6 @@
 import { ErrorObject } from 'ajv';
 import { FormikErrors } from 'formik';
-import type { ValidateResponse } from './jsonSchemaValidation.worker';
+import type { ValidateRequest, ValidateResponse } from './jsonSchemaValidation.worker';
 import { createValidatorWorker } from './createValidatorWorker';
 
 // Showing these top level errors adds noise without helping the user fix anything.
@@ -310,20 +310,59 @@ function getWorker(): Worker {
   return worker;
 }
 
+// $ids the worker has already been given. postMessage structured-clones whatever
+// it is handed, and the decoder schema is ~2.4 MB — cloning it on every keystroke
+// of a form is the difference between a responsive editor and a janky one. Once a
+// schema is registered, later calls send only its $id.
+const registeredSchemaIds = new Set<string>();
+
+function postValidateRequest(request: ValidateRequest): void {
+  getWorker().postMessage(request);
+}
+
 export function validateWithJsonSchemaAsync<T extends object>(
   schema: object,
   data: T,
   options?: ValidateOptions
 ): Promise<FormikErrors<T>> {
   const id = nextRequestId++;
+  const schemaId = (schema as { $id?: string })?.$id;
+  // A schema with no $id can't be looked up in the worker, so it always travels.
+  const canReuse = Boolean(schemaId) && registeredSchemaIds.has(schemaId!);
+
   return new Promise((resolve) => {
-    pendingRequests.set(id, (response) => {
+    const settle = (response: ValidateResponse) => {
       if (response.valid) {
         resolve({});
       } else {
         resolve(formatValidationErrors<T>(schema, response.errors ?? [], options));
       }
+    };
+
+    pendingRequests.set(id, (response) => {
+      // The worker lost the schema (it was never registered, or the worker was
+      // replaced). Re-send it in full, once.
+      if (response.unknownSchema) {
+        registeredSchemaIds.delete(schemaId!);
+        const retryId = nextRequestId++;
+        pendingRequests.set(retryId, settle);
+        registeredSchemaIds.add(schemaId!);
+        postValidateRequest({ id: retryId, schema, data });
+        return;
+      }
+      settle(response);
     });
-    getWorker().postMessage({ id, schema, data });
+
+    if (canReuse) {
+      postValidateRequest({ id, schemaId, data });
+    } else {
+      if (schemaId) registeredSchemaIds.add(schemaId);
+      postValidateRequest({ id, schema, data });
+    }
   });
+}
+
+// Exported for tests: the registry is module state that outlives a single test.
+export function resetRegisteredSchemasForTesting(): void {
+  registeredSchemaIds.clear();
 }
