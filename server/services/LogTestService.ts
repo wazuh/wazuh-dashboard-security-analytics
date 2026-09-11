@@ -12,8 +12,8 @@ import {
 } from 'opensearch-dashboards/server';
 import { ServerResponse } from '../models/types';
 import { LogTestApiRequest, LogTestResponse } from '../../types';
-import { CLIENT_LOG_TEST_METHODS } from '../utils/constants';
-import { extractErrorMessage } from '../utils/helpers';
+import { CLIENT_LOG_TEST_METHODS, LOGTEST_ERROR_KIND_BY_STATUS } from '../utils/constants';
+import { extractErrorKind, extractErrorMessage } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 
 export class LogTestService extends MDSEnabledClientService {
@@ -87,6 +87,7 @@ export class LogTestService extends MDSEnabledClientService {
         body: {
           ok: false,
           error: extractErrorMessage(error, 'Log test failed due to an unexpected error.'),
+          errorKind: extractErrorKind(error, LOGTEST_ERROR_KIND_BY_STATUS),
         },
       });
     }

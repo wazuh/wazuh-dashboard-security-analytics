@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Formik, Form, FormikErrors } from 'formik';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
@@ -112,6 +112,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   const [selectedEditorType, setSelectedEditorType] = useState(
     parseMitreYmlWithErrors(initialValue.mitre).errors.length ? 'yaml' : 'visual'
   );
+  const yamlFlushRef = useRef<(() => Promise<unknown> | null) | null>(null);
   const [isDetectionInvalid, setIsDetectionInvalid] = useState(false);
   const [integrationId, setIntegrationId] = useState('');
 
@@ -150,9 +151,12 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         const errors: FormikErrors<RuleEditorFormModel> = {};
 
         if (!values.metadata.title) {
-          errors.metadata = { ...(errors.metadata ?? {}), title: 'Rule name is required' };
+          errors.metadata = {
+            ...(errors.metadata ?? {}),
+            title: 'A title under metadata is required',
+          };
         } else if (!validateName(values.metadata.title, RULE_NAME_REGEX)) {
-          errors.metadata = { ...(errors.metadata ?? {}), title: 'Invalid rule name.' };
+          errors.metadata = { ...(errors.metadata ?? {}), title: 'Invalid rule title.' };
         }
 
         if (
@@ -312,6 +316,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                   )}
                   <YamlRuleEditorComponent
                     rule={mapFormToRule(props.values)}
+                    flushRef={yamlFlushRef}
                     isInvalid={Object.keys(props.errors).length > 0}
                     errors={Object.values(props.errors).flatMap((v) =>
                       typeof v === 'string'
@@ -322,7 +327,8 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                     )}
                     change={(e) => {
                       const formState = mapRuleToForm(e);
-                      props.setValues(formState);
+                      // Returned so a submit can wait for Formik to revalidate.
+                      return props.setValues(formState);
                     }}
                   />
                 </>
@@ -829,7 +835,22 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                         (mode === 'create' && !integrationId) ||
                         Object.keys(props.errors).length > 0
                       }
-                      onClick={() => props.handleSubmit()}
+                      onClick={() => {
+                        const applied =
+                          selectedEditorType === 'yaml' ? yamlFlushRef.current?.() : null;
+                        if (applied) {
+                          // Formik revalidates asynchronously, so submit only once the
+                          // flushed content has been applied and validated.
+                          // Submit anyway if the flush rejects: a click that silently
+                          // does nothing is worse than one that validates stale content.
+                          applied.then(
+                            () => props.submitForm(),
+                            () => props.submitForm()
+                          );
+                          return;
+                        }
+                        props.handleSubmit();
+                      }}
                       data-test-subj={'submit_rule_form_button'}
                     >
                       {mode === 'create' ? 'Create rule' : 'Edit rule'}
