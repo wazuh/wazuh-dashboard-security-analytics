@@ -208,7 +208,8 @@ export const extractErrorMessage = (
       extractFromErrorBody(error?.body) ??
         extractFromErrorBody(error?.response) ??
         asTrimmedString(error?.message) ??
-        fallback
+        fallback,
+      error
     );
   } catch (_e) {
     return fallback;

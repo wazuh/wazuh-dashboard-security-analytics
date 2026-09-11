@@ -83,8 +83,8 @@ describe('getErrorMessage sanitization', () => {
 
   it('replaces a denial raised in the browser with plain-language copy', () => {
     expect(getErrorMessage(new Error(denial))).toBe(
-      'You do not have permission to perform this action. Contact your administrator. ' +
-        'Missing permission: cluster:admin/content_manager/integration/create.'
+      'You do not have permission to perform this action. ' +
+        'Missing indexer permission: cluster:admin/content_manager/integration/create.'
     );
   });
 
@@ -93,6 +93,12 @@ describe('getErrorMessage sanitization', () => {
 
     expect(message).not.toContain('wazuh-readonly');
     expect(message).not.toContain('backend_roles');
+  });
+
+  it('replaces a 403 raised by core.http even when its wording is unrecognized', () => {
+    expect(getErrorMessage({ body: { message: 'Forbidden' }, response: { status: 403 } })).toBe(
+      'You do not have permission to perform this action.'
+    );
   });
 
   it('does not touch an ordinary message', () => {
@@ -123,8 +129,8 @@ describe('errorNotificationToast', () => {
       expect.objectContaining({
         title: 'Failed to create integration:',
         text:
-          'You do not have permission to perform this action. Contact your administrator. ' +
-          'Missing permission: cluster:admin/content_manager/integration/create.',
+          'You do not have permission to perform this action. ' +
+          'Missing indexer permission: cluster:admin/content_manager/integration/create.',
       })
     );
     expect(consoleError).toHaveBeenCalledWith('Failed to create integration:', error);

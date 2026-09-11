@@ -264,8 +264,8 @@ describe('extractErrorMessage with an authorization denial', () => {
     });
 
     expect(message).toBe(
-      'You do not have permission to perform this action. Contact your administrator. ' +
-        'Missing permission: cluster:admin/content_manager/integration/create.'
+      'You do not have permission to perform this action. ' +
+        'Missing indexer permission: cluster:admin/content_manager/integration/create.'
     );
     expect(message).not.toContain('wazuh-readonly');
     expect(message).not.toContain('backend_roles');
@@ -273,8 +273,17 @@ describe('extractErrorMessage with an authorization denial', () => {
 
   it('sanitizes a denial that only reaches the client on error.message', () => {
     expect(extractErrorMessage(new Error(denial))).toContain(
-      'Missing permission: cluster:admin/content_manager/integration/create.'
+      'Missing indexer permission: cluster:admin/content_manager/integration/create.'
     );
+  });
+
+  it('catches a 403 even when the backend rephrases the exception', () => {
+    expect(
+      extractErrorMessage({
+        statusCode: 403,
+        body: { message: 'Forbidden for User [name=qauser]' },
+      })
+    ).toBe('You do not have permission to perform this action.');
   });
 
   it('redacts the identity block of a non-denial error without losing its detail', () => {

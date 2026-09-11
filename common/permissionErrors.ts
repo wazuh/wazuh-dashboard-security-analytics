@@ -17,15 +17,23 @@
  * (`getErrorMessage`) for errors raised in the browser. Callers log the raw error first.
  */
 
-/** Fixed opening line for every authorization denial. */
-export const PERMISSION_DENIED_MESSAGE =
-  'You do not have permission to perform this action. Contact your administrator.';
+/**
+ * Fixed opening line for every authorization denial. Kept character-for-character identical to
+ * `PERMISSION_DENIED_MESSAGE` in wazuh-dashboard-plugins
+ * (`plugins/wazuh-ai-assistant/server/routes/route-helpers.ts`) so the same denial reads the same
+ * way wherever the user meets it.
+ */
+export const PERMISSION_DENIED_MESSAGE = 'You do not have permission to perform this action.';
 
 /**
  * Guards what {@link permissionDeniedMessage} is allowed to quote back: an action name, nothing
  * else. The identity block's `name=...` and `backend_roles=[...]` entries do not match.
+ *
+ * `plugin` is in the alternation because a denial can name either an indexer action
+ * (`cluster:admin/content_manager/integration/create`) or a plugin action group
+ * (`plugin:wazuh/ai_assistant/settings/write`), and an administrator grants them separately.
  */
-const ACTION_SHAPE = /^(?:cluster|indices):[\w/*.-]+$/;
+const ACTION_SHAPE = /^(?:cluster|indices|plugin):[\w/*.-]+$/;
 
 /** Recognizes the denial exception regardless of which wrapper carried it. */
 const DENIAL_SHAPE = /no permissions for \[[^\]]/;
@@ -54,7 +62,7 @@ export const permissionDeniedMessage = (message: string): string => {
   ];
 
   return actions.length > 0
-    ? `${PERMISSION_DENIED_MESSAGE} Missing permission: ${actions.join(', ')}.`
+    ? `${PERMISSION_DENIED_MESSAGE} Missing indexer permission: ${actions.join(', ')}.`
     : PERMISSION_DENIED_MESSAGE;
 };
 
@@ -68,10 +76,42 @@ export const redactIdentityDetail = (message: string): string =>
   message.replace(/User \[(?:[^[\]]|\[[^\]]*\])*\]/g, 'User [redacted]');
 
 /**
- * Single entry point for both layers: a denial becomes plain-language copy, anything else keeps
- * its text with the identity block redacted.
+ * Recognizes a denial by transport status rather than by wording, so a backend that rephrases its
+ * exception still gets caught. Reads all four shapes because each hop exposes the status
+ * differently: `statusCode` on an OpenSearch `ResponseError`, `meta.statusCode` on the client's
+ * own wrapper, `body.status` on a parsed error body, and `response.status` on the
+ * `IHttpFetchError` that `core.http` raises in the browser. Follows `cause` one level because a
+ * service may rethrow a bare `Error` around the original.
  */
-export const sanitizeErrorMessage = (message: string): string =>
-  isPermissionDeniedMessage(message)
-    ? permissionDeniedMessage(message)
-    : redactIdentityDetail(message);
+export const isPermissionDeniedStatus = (error: unknown): boolean => {
+  const statusOf = (candidate: unknown): unknown => {
+    const e = candidate as {
+      statusCode?: unknown;
+      meta?: { statusCode?: unknown };
+      body?: { status?: unknown };
+      response?: { status?: unknown };
+    };
+    return e?.statusCode ?? e?.meta?.statusCode ?? e?.body?.status ?? e?.response?.status;
+  };
+
+  return statusOf(error) === 403 || statusOf((error as { cause?: unknown })?.cause) === 403;
+};
+
+/**
+ * Single entry point for both layers. `error` is the object the message was extracted from, when
+ * the caller still has it.
+ *
+ * The wording is checked before the status so a recognized denial keeps its action name — the one
+ * piece an administrator can act on. A 403 the wording does not recognize still yields the fixed
+ * line, which is why the status is consulted at all: it is the durable signal, the wording is not.
+ * Anything else keeps its text with the identity block redacted.
+ */
+export const sanitizeErrorMessage = (message: string, error?: unknown): string => {
+  if (isPermissionDeniedMessage(message)) {
+    return permissionDeniedMessage(message);
+  }
+  if (error !== undefined && isPermissionDeniedStatus(error)) {
+    return PERMISSION_DENIED_MESSAGE;
+  }
+  return redactIdentityDetail(message);
+};

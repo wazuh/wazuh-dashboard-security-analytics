@@ -309,7 +309,7 @@ export const getErrorMessage = (error: unknown, fallback: string = ''): string =
         asTrimmedString(e.reason) ??
         asTrimmedString(e.message);
       if (message) {
-        return sanitizeErrorMessage(message);
+        return sanitizeErrorMessage(message, error);
       }
     } catch (_e) {
       // Never let a malformed error object (e.g. throwing getters) crash the caller.
