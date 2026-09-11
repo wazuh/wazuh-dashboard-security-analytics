@@ -273,30 +273,6 @@ export class IntegrationStore {
     }
   }
 
-  public async hasPromotableContentChanges(space: PromoteSpaces): Promise<boolean> {
-    try {
-      const [ok, data] = await this.getPromote({ space }, { showErrorToast: false });
-      if (!ok || !data?.promote?.changes) {
-        return false;
-      }
-      return Object.values(data.promote.changes).some((items) => (items?.length ?? 0) > 0);
-    } catch {
-      return false;
-    }
-  }
-
-  public async hasPromotableContentChanges(space: PromoteSpaces): Promise<boolean> {
-    try {
-      const [ok, data] = await this.getPromote({ space }, { showErrorToast: false });
-      if (!ok || !data?.promote?.changes) {
-        return false;
-      }
-      return Object.values(data.promote.changes).some((items) => (items?.length ?? 0) > 0);
-    } catch {
-      return false;
-    }
-  }
-
   public async promoteIntegration(data: PromoteIntegrationRequestBody) {
     try {
       const promoteRes = await this.service.promoteIntegration(data);
