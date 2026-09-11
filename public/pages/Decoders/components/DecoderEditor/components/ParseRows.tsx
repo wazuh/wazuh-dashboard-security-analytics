@@ -13,6 +13,8 @@ import {
   EuiCallOut,
   EuiCompressedFieldText,
   EuiCompressedFormRow,
+  EuiCompressedTextArea,
+  EuiSmallButton,
   EuiSmallButtonIcon,
   EuiSpacer,
   EuiText,
@@ -20,8 +22,22 @@ import {
 } from '@elastic/eui';
 import { fieldLabel } from '../labels';
 import { PARSE_FIELD_HELP } from '../hints';
-import { FormFieldArray } from '../../../../../components/FormFieldArray';
 import { ParserRow } from '../DecoderEditorFormModel';
+
+/**
+ * Shipped decoders carry expressions of two hundred characters and more, so one
+ * line hides most of them. The box opens on two lines and grows with the text,
+ * estimating how many lines it wraps onto at the widths this form is used at.
+ */
+const CHARACTERS_PER_LINE = 90;
+const MIN_EXPRESSION_ROWS = 2;
+const MAX_EXPRESSION_ROWS = 8;
+
+const expressionRows = (expression: string): number =>
+  Math.min(
+    Math.max(Math.ceil(expression.length / CHARACTERS_PER_LINE), MIN_EXPRESSION_ROWS),
+    MAX_EXPRESSION_ROWS
+  );
 
 export interface ParseRowsProps {
   /** Formik path of the array, e.g. `normalize[0].parsers`. */
@@ -133,14 +149,59 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
 
               <EuiSpacer size="m" />
 
-              <FormFieldArray
-                label={fieldLabel('Expressions')}
-                values={row.expressions}
-                placeholder="<_tmp.date/date/%y%m%d %T> <_tmp.message>"
-                addButtonLabel="Add expression"
-                onChange={(expressions) => update(index, { expressions })}
-                bottomSpacing={false}
-              />
+              <EuiCompressedFormRow label={fieldLabel('Expressions')} fullWidth={true}>
+                <>
+                  {row.expressions.map((expression, expressionIndex) => (
+                    <React.Fragment key={expressionIndex}>
+                      {expressionIndex > 0 && <EuiSpacer size="s" />}
+                      <EuiFlexGroup gutterSize="s" alignItems="flexStart" responsive={false}>
+                        <EuiFlexItem>
+                          <EuiCompressedTextArea
+                            placeholder="<_tmp.date/date/%y%m%d %T> <_tmp.message>"
+                            value={expression}
+                            rows={expressionRows(expression)}
+                            resize="vertical"
+                            onChange={(e) =>
+                              update(index, {
+                                expressions: row.expressions.map((current, i) =>
+                                  i === expressionIndex ? e.target.value : current
+                                ),
+                              })
+                            }
+                            fullWidth
+                            data-test-subj={`${rowPath}.expressions[${expressionIndex}]`}
+                          />
+                        </EuiFlexItem>
+                        <EuiFlexItem grow={false}>
+                          <EuiToolTip content={'Remove expression'}>
+                            <EuiSmallButtonIcon
+                              aria-label={`Remove expression ${expressionIndex + 1}`}
+                              iconType={'trash'}
+                              color="danger"
+                              onClick={() =>
+                                update(index, {
+                                  expressions: row.expressions.filter(
+                                    (_, i) => i !== expressionIndex
+                                  ),
+                                })
+                              }
+                              data-test-subj={`${rowPath}.expressions[${expressionIndex}].delete`}
+                            />
+                          </EuiToolTip>
+                        </EuiFlexItem>
+                      </EuiFlexGroup>
+                    </React.Fragment>
+                  ))}
+                  {row.expressions.length > 0 && <EuiSpacer size="m" />}
+                  <EuiSmallButton
+                    type="button"
+                    onClick={() => update(index, { expressions: [...row.expressions, ''] })}
+                    data-test-subj={`${rowPath}.expressions.add`}
+                  >
+                    Add expression
+                  </EuiSmallButton>
+                </>
+              </EuiCompressedFormRow>
             </EuiPanel>
           </div>
         );

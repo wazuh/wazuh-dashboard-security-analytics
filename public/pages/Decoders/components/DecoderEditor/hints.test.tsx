@@ -58,6 +58,16 @@ describe('hint examples are accepted by the engine schema', () => {
     ...base,
     normalize: [{ 'parse|event.original': ['<_tmp.date/date/%y%m%d %T> <_tmp.message>'] }],
   });
+  accept('the parser expression shown in the Parsers popover', {
+    ...base,
+    normalize: [
+      {
+        'parse|event.original': [
+          '[<@timestamp/%a %b %d %T %Y>] [<log.level>] [client <source.address>(?:<source.port>)] <message>',
+        ],
+      },
+    ],
+  });
   accept('the normalize entry shown in the Normalize popover', {
     ...base,
     normalize: [
@@ -112,6 +122,6 @@ describe('hint copy', () => {
   it('explains the parser syntax rather than naming the format', () => {
     const text = textOf(PARSE_INFO);
     expect(text).not.toMatch(/logpar/i);
-    expect(text).toContain('Captures into that field');
+    expect(text).toContain('Captures the next part of the value into that field');
   });
 });

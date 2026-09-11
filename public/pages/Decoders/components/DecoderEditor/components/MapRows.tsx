@@ -40,6 +40,12 @@ export interface MapRowsProps {
   singleLineValue?: boolean;
 }
 
+/**
+ * A compressed control is 32px tall; a one-row textarea is a couple of pixels
+ * taller. Pinning the height keeps a single-line value level with its field.
+ */
+const COMPRESSED_CONTROL_HEIGHT = '32px';
+
 /** `{ <field>: <value> }` pairs, laid out like the KVDB content editor. */
 export const MapRows: React.FC<MapRowsProps> = ({
   path,
@@ -136,6 +142,7 @@ export const MapRows: React.FC<MapRowsProps> = ({
                       onChange={(e) => update(index, { value: e.target.value })}
                       onBlur={() => onBlurPath?.(rowPath)}
                       rows={textareaRows}
+                      style={textareaRows === 1 ? { height: COMPRESSED_CONTROL_HEIGHT } : undefined}
                       fullWidth
                       data-test-subj={`${rowPath}.value`}
                     />

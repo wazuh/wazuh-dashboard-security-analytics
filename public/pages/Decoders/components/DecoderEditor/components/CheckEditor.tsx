@@ -8,22 +8,68 @@ import YAML from 'yaml';
 import {
   EuiCompressedFieldText,
   EuiCompressedFormRow,
-  EuiCompressedSelect,
+  EuiCompressedSuperSelect,
   EuiSpacer,
   EuiText,
 } from '@elastic/eui';
 import { fieldLabel } from '../labels';
-import { InfoItem, LabelWithInfo } from './LabelWithInfo';
+import { LabelWithInfo } from './LabelWithInfo';
 import { CHECK_EXPRESSION_HELP, CHECK_EXPRESSION_INFO, CHECK_LIST_HELP } from '../hints';
 import { CheckModel } from '../DecoderEditorFormModel';
 import { checkToModel, modelToCheck, textToValue } from '../mappers';
 import { MapRows } from './MapRows';
 import { YamlSlot } from './YamlSlot';
 
-const CHECK_MODE_OPTIONS = [
-  { value: 'none', text: 'None' },
-  { value: 'expression', text: 'Expression' },
-  { value: 'list', text: 'List' },
+/** Each format carries its own description, the way the log test trace level does. */
+const CHECK_MODE_OPTIONS: Array<{
+  value: string;
+  inputDisplay: string;
+  dropdownDisplay: JSX.Element;
+}> = [
+  {
+    value: 'none',
+    inputDisplay: 'None',
+    dropdownDisplay: (
+      <>
+        <strong>None</strong>
+        <EuiText size="s" color="subdued">
+          <p className="ouiTextColor--subdued">
+            No check. Every event that reaches this point is accepted.
+          </p>
+        </EuiText>
+      </>
+    ),
+  },
+  {
+    value: 'expression',
+    inputDisplay: 'Expression',
+    dropdownDisplay: (
+      <>
+        <strong>Expression</strong>
+        <EuiText size="s" color="subdued">
+          <p className="ouiTextColor--subdued">
+            A single condition over the event&apos;s fields, for example $process.name ==
+            &apos;haproxy&apos;.
+          </p>
+        </EuiText>
+      </>
+    ),
+  },
+  {
+    value: 'list',
+    inputDisplay: 'List',
+    dropdownDisplay: (
+      <>
+        <strong>List</strong>
+        <EuiText size="s" color="subdued">
+          <p className="ouiTextColor--subdued">
+            Several field/value conditions that must all pass, in order. A condition can be a helper
+            call, a field reference, or a literal value.
+          </p>
+        </EuiText>
+      </>
+    ),
+  },
 ];
 
 export interface CheckEditorProps {
@@ -88,32 +134,13 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
       }
     >
       <>
-        <EuiCompressedFormRow
-          label={
-            <LabelWithInfo
-              label={fieldLabel('Format')}
-              title="Check formats"
-              ariaLabel="Check format information"
-            >
-              <InfoItem term="None">
-                No check. Every event that reaches this point is accepted.
-              </InfoItem>
-              <InfoItem term="Expression">
-                A single condition over the event&apos;s fields, for example{' '}
-                <code>$process.name == &apos;haproxy&apos;</code>.
-              </InfoItem>
-              <InfoItem term="List">
-                Several field/value conditions that must all pass, in order. A condition can be a
-                helper call, a field reference, or a literal value.
-              </InfoItem>
-            </LabelWithInfo>
-          }
-          fullWidth={true}
-        >
-          <EuiCompressedSelect
+        <EuiCompressedFormRow label={fieldLabel('Format')} fullWidth={true}>
+          <EuiCompressedSuperSelect
             options={CHECK_MODE_OPTIONS}
-            value={model.mode === 'yaml' ? 'none' : model.mode}
-            onChange={(e) => onModeChange(e.target.value)}
+            valueOfSelected={model.mode === 'yaml' ? 'none' : model.mode}
+            onChange={onModeChange}
+            hasDividers
+            itemLayoutAlign="top"
             data-test-subj={`${path}.mode`}
           />
         </EuiCompressedFormRow>

@@ -9,6 +9,7 @@ import { act } from '@testing-library/react';
 import { DecoderEditorForm } from './DecoderEditorForm';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { mapDecoderToForm, mapFormToDecoder } from './mappers';
+import { CUSTOM_DECODERS_DOCUMENTATION_URL } from '../../../../utils/constants';
 
 const document = {
   id: '3f2504e0-4f89-41d3-9a0c-0305e82c3301',
@@ -169,18 +170,30 @@ describe('DecoderEditorForm', () => {
       return popover(wrapper, aria);
     };
 
-    it('puts the check formats behind the info button, not on the page', () => {
+    it('describes each check format on its own option, as the log test form does', () => {
       const wrapper = render(mapDecoderToForm(document));
 
-      expect(popover(wrapper, 'Check format information').prop('isOpen')).toBe(false);
-      // Closed, the page does not carry the both-shapes explanation.
-      expect(wrapper.text()).not.toContain('Every event that reaches this point is accepted');
+      const options = wrapper.find('EuiCompressedSuperSelect').first().prop('options') as Array<{
+        value: string;
+        inputDisplay: string;
+        dropdownDisplay: React.ReactElement;
+      }>;
 
-      const panel = open(wrapper, 'Check format information');
-      expect(panel.prop('isOpen')).toBe(true);
+      expect(options.map((option) => option.value)).toEqual(['none', 'expression', 'list']);
 
-      const terms = panel.find('InfoItem').map((item) => item.prop('term'));
-      expect(terms).toEqual(['None', 'Expression', 'List']);
+      const descriptions: Record<string, string> = {
+        none: 'Every event that reaches this point is accepted',
+        expression: "A single condition over the event's fields",
+        list: 'Several field/value conditions that must all pass, in order',
+      };
+
+      options.forEach((option) => {
+        // Each dropdownDisplay is a fragment of two nodes, and enzyme's `text()`
+        // only runs on a single node, so it is mounted wrapped.
+        const dropdownDisplay = mount(<div>{option.dropdownDisplay}</div>);
+        expect(dropdownDisplay.text()).toContain(option.inputDisplay);
+        expect(dropdownDisplay.text()).toContain(descriptions[option.value]);
+      });
     });
 
     it('puts what a normalize entry can contain behind its info button', () => {
@@ -198,16 +211,21 @@ describe('DecoderEditorForm', () => {
 
     it('puts the parser syntax behind its info button, leaving one sentence inline', () => {
       const wrapper = render(mapDecoderToForm(document));
-      expect(wrapper.text()).not.toContain('Captures into that field');
+      expect(wrapper.text()).not.toContain('Captures the next part of the value into that field');
       expect(wrapper.text()).toContain('Each parser reads one field');
 
       const panel = open(wrapper, 'Parsers information');
       expect(panel.find('InfoItem').map((item) => item.prop('term'))).toEqual([
         'Literal text',
         '<field.name>',
+        '<field/parser/parameter>',
         '<~>',
+        '<?field>',
+        '<a>?<b>',
         '(?…)',
+        'Where a part ends',
       ]);
+      expect(panel.find('DocsLink').first().prop('href')).toBe(CUSTOM_DECODERS_DOCUMENTATION_URL);
     });
   });
 

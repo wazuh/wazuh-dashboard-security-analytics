@@ -8,6 +8,7 @@ import {
   EuiButtonIcon,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiLink,
   EuiPopover,
   EuiSpacer,
   EuiText,
@@ -55,7 +56,9 @@ export const LabelWithInfo: React.FC<LabelWithInfoProps> = ({
           closePopover={() => setIsOpen(false)}
           anchorPosition="downRight"
         >
-          <div style={{ minWidth: '300px', maxWidth: '480px' }}>
+          <div
+            style={{ minWidth: '300px', maxWidth: '480px', maxHeight: '60vh', overflowY: 'auto' }}
+          >
             <EuiText size="s">
               <strong>{title}</strong>
             </EuiText>
@@ -85,6 +88,20 @@ export const Example: React.FC<{ caption?: string; children: string }> = ({
       {children}
     </pre>
   </>
+);
+
+/** Sends the reader to the documentation for what the popover only summarizes. */
+export const DocsLink: React.FC<{ href: string; children: React.ReactNode }> = ({
+  href,
+  children,
+}) => (
+  <EuiText size="xs">
+    <p>
+      <EuiLink href={href} target="_blank" external>
+        {children}
+      </EuiLink>
+    </p>
+  </EuiText>
 );
 
 /** One labelled paragraph inside a popover. */
