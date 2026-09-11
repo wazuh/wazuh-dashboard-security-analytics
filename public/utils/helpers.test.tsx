@@ -3,7 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { getLogTypeFilterOptions, getLogTypeFilterOptionsFlat } from './helpers';
+import {
+  errorNotificationToast,
+  getErrorMessage,
+  getLogTypeFilterOptions,
+  getLogTypeFilterOptionsFlat,
+} from './helpers';
 import { logTypeCategories, logTypesByCategories } from './constants';
 import { LogType } from '../../types';
 
@@ -68,5 +73,61 @@ describe('getLogTypeFilterOptionsFlat', () => {
       expect(option).toHaveProperty('view');
       expect(option).not.toHaveProperty('name');
     });
+  });
+});
+
+describe('getErrorMessage sanitization', () => {
+  const denial =
+    'no permissions for [cluster:admin/content_manager/integration/create] and ' +
+    'User [name=wazuh-readonly, backend_roles=[], requestedTenant=null]';
+
+  it('replaces a denial raised in the browser with plain-language copy', () => {
+    expect(getErrorMessage(new Error(denial))).toBe(
+      'You do not have permission to perform this action. Contact your administrator. ' +
+        'Missing permission: cluster:admin/content_manager/integration/create.'
+    );
+  });
+
+  it('sanitizes a denial that arrives as a plain string', () => {
+    const message = getErrorMessage(denial);
+
+    expect(message).not.toContain('wazuh-readonly');
+    expect(message).not.toContain('backend_roles');
+  });
+
+  it('does not touch an ordinary message', () => {
+    expect(getErrorMessage({ body: { message: 'Integration not found.' } })).toBe(
+      'Integration not found.'
+    );
+  });
+
+  it('still falls back when there is nothing to extract', () => {
+    expect(getErrorMessage(undefined, 'Failed to create integration.')).toBe(
+      'Failed to create integration.'
+    );
+  });
+});
+
+describe('errorNotificationToast', () => {
+  it('shows the sanitized text and keeps the raw error only in the console', () => {
+    const addDanger = jest.fn();
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const error = new Error(
+      'no permissions for [cluster:admin/content_manager/integration/create] and ' +
+        'User [name=wazuh-readonly, backend_roles=[], requestedTenant=null]'
+    );
+
+    errorNotificationToast({ toasts: { addDanger } } as any, 'create', 'integration', error);
+
+    expect(addDanger).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Failed to create integration:',
+        text:
+          'You do not have permission to perform this action. Contact your administrator. ' +
+          'Missing permission: cluster:admin/content_manager/integration/create.',
+      })
+    );
+    expect(consoleError).toHaveBeenCalledWith('Failed to create integration:', error);
+    consoleError.mockRestore();
   });
 });

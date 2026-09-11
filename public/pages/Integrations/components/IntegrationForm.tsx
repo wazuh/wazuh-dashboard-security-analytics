@@ -151,9 +151,12 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(editingIntegration);
 
     if (titleInvalid || categoryInvalid || authorInvalid) {
+      // Wazuh: `isEditMode` means "the fields are editable", and the create flows
+      // (CreateIntegration, CreateIntegrationFlyout) pass it as true, so it cannot tell which
+      // action is being attempted. An integration that has no id yet is being created.
       errorNotificationToast(
         notifications,
-        isEditMode ? 'update' : 'create',
+        editingIntegration.id ? 'update' : 'create',
         'integration',
         'Fix the marked errors.'
       );
@@ -165,7 +168,7 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingIntegration, notifications, isEditMode, onConfirm, isSubmitting]);
+  }, [editingIntegration, notifications, onConfirm, isSubmitting]);
 
   const onCancelClicked = useCallback(() => {
     setEditingIntegration(integrationDetails);

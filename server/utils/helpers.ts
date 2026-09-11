@@ -6,6 +6,7 @@
 import { Props, schema } from '@osd/config-schema';
 import YAML from 'yaml';
 import { CONTENT_INDICES } from './constants';
+import { sanitizeErrorMessage } from '../../common/permissionErrors';
 
 export function createQueryValidationSchema(fieldSchemaObj?: Props) {
   return schema.object({
@@ -195,16 +196,19 @@ const extractFromStringBody = (raw: string): string | undefined => {
   return trimmed;
 };
 
+// Wazuh: every service catch() logs the raw error and then sends this string to the browser, so
+// it is the last place the content manager's authorization exception can be stripped of the
+// action name, username and role bindings it quotes. See common/permissionErrors.ts.
 export const extractErrorMessage = (
   error: any,
   fallback: string = 'An unexpected error occurred.'
 ): string => {
   try {
-    return (
+    return sanitizeErrorMessage(
       extractFromErrorBody(error?.body) ??
-      extractFromErrorBody(error?.response) ??
-      asTrimmedString(error?.message) ??
-      fallback
+        extractFromErrorBody(error?.response) ??
+        asTrimmedString(error?.message) ??
+        fallback
     );
   } catch (_e) {
     return fallback;
