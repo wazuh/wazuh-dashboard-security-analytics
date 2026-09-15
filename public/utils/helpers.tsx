@@ -65,6 +65,7 @@ import { euiThemeVars } from '@osd/ui-shared-deps/theme';
 import dateMath from '@elastic/datemath';
 // Wazuh: shared date formatter that honors the `dateFormat`/`dateFormat:tz` advanced settings.
 import { formatUIDate } from './dateFormat';
+import { sanitizeErrorMessage } from '../../common/permissionErrors';
 import {
   getBreadCrumbsSetter,
   getBrowserServices,
@@ -283,9 +284,12 @@ export const capitalizeFirstLetter = (str: string) => {
 const asTrimmedString = (value: unknown): string | undefined =>
   typeof value === 'string' && value.trim() ? value.trim() : undefined;
 
+// Wazuh: the extracted text goes straight into a toast, so it is sanitized here too — the server
+// already strips its own responses (server/utils/helpers.ts), but errors raised in the browser
+// never pass through that. See common/permissionErrors.ts.
 export const getErrorMessage = (error: unknown, fallback: string = ''): string => {
   if (typeof error === 'string') {
-    return error.trim() || fallback;
+    return error.trim() ? sanitizeErrorMessage(error.trim()) : fallback;
   }
   if (error && typeof error === 'object') {
     try {
@@ -305,7 +309,7 @@ export const getErrorMessage = (error: unknown, fallback: string = ''): string =
         asTrimmedString(e.reason) ??
         asTrimmedString(e.message);
       if (message) {
-        return message;
+        return sanitizeErrorMessage(message, error);
       }
     } catch (_e) {
       // Never let a malformed error object (e.g. throwing getters) crash the caller.
