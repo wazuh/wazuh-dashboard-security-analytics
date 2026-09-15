@@ -13,9 +13,17 @@ export interface DecoderDocument {
   enabled?: boolean;
   metadata: DecoderMetadata;
   definitions?: Record<string, unknown>;
-  check?: Record<string, unknown>;
+  /** Either a conditional expression or a list of `{ field: condition }` items. */
+  check?: string | Array<Record<string, unknown>>;
   parents?: string[];
-  normalize?: Record<string, unknown>;
+  /** Sequential sub-stages, each combining `check`, `parse|<field>` and `map`. */
+  normalize?: Array<Record<string, unknown>>;
+  // The schema also allows top-level `parse|<field>` keys alongside `normalize`.
+  // They are not declared here: a template-literal index signature is not parseable
+  // by the prettier version this repo formats with (2.1.1, which predates TS 4.4),
+  // and a plain `[key: string]: unknown` would silence real typos everywhere this
+  // type is used. The decoder editor's mappers handle those keys explicitly and
+  // cover them with a round-trip test instead.
 }
 
 export interface DecoderSource {
