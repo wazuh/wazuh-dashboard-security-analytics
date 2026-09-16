@@ -517,6 +517,10 @@ export default class Main extends Component<MainProps, MainState> {
                   getApplication().navigateToApp(DECODERS_NAV_ID, {
                     path: generateAppPath(ROUTES.DECODERS),
                   });
+                  // This fixes a navigation problem when viewing a decoder and using the sidebar menu to navigate to Decoders
+                  if (history.location.pathname !== ROUTES.DECODERS) {
+                    history.push(ROUTES.DECODERS);
+                  }
                 },
                 isSelected: selectedNavItemId === Navigation.Decoders,
               },
@@ -530,6 +534,10 @@ export default class Main extends Component<MainProps, MainState> {
                   getApplication().navigateToApp(KVDBS_NAV_ID, {
                     path: generateAppPath(ROUTES.KVDBS),
                   });
+                  // This fixes a navigation problem when viewing a KVDB and using the sidebar menu to navigate to KVDBs
+                  if (history.location.pathname !== ROUTES.KVDBS) {
+                    history.push(ROUTES.KVDBS);
+                  }
                 },
                 isSelected: selectedNavItemId === Navigation.KVDBS,
               },
@@ -576,6 +584,10 @@ export default class Main extends Component<MainProps, MainState> {
                   getApplication().navigateToApp(DETECTION_RULE_NAV_ID, {
                     path: generateAppPath(ROUTES.RULES),
                   });
+                  // This fixes a navigation problem when viewing a rule and using the sidebar menu to navigate to Rules
+                  if (history.location.pathname !== ROUTES.RULES) {
+                    history.push(ROUTES.RULES);
+                  }
                 },
                 isSelected: selectedNavItemId === Navigation.Rules,
               },
@@ -602,6 +614,10 @@ export default class Main extends Component<MainProps, MainState> {
               getApplication().navigateToApp(LOG_TEST_NAV_ID, {
                 path: generateAppPath(ROUTES.LOG_TEST),
               });
+              // This fixes a navigation problem when viewing the log test view and using the sidebar menu to navigate to Log test
+              if (history.location.pathname !== ROUTES.LOG_TEST) {
+                history.push(ROUTES.LOG_TEST);
+              }
             },
             isSelected: selectedNavItemId === Navigation.LogTest,
           },
