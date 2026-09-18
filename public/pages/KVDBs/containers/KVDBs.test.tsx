@@ -59,7 +59,10 @@ const mountKVDBs = async () => {
   return wrapper;
 };
 
-const triggerSearchChange = async (wrapper: any, payload: { query?: any; error?: any }) => {
+const triggerSearchChange = async (
+  wrapper: any,
+  payload: { query?: any; queryText?: string; error?: any }
+) => {
   await act(async () => {
     wrapper.find('EuiSearchBar').first().prop('onChange')(payload);
   });
@@ -114,5 +117,90 @@ describe('<KVDBs /> search bar strict schema', () => {
     const wrapper = await mountKVDBs();
     await triggerSearchChange(wrapper, { query: VALID_QUERY, error: undefined });
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
+  });
+});
+
+describe('<KVDBs /> search does not refetch per keystroke', () => {
+  // Wazuh: the fetch callback depended on `selectedIntegrations`, a useMemo on
+  // `searchQuery` returning a fresh array per keystroke, so the fetch effect fired
+  // per keystroke. Measured before the fix: 4 keystrokes produced 5 requests.
+  it('fires no request while the free text is still debouncing', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountKVDBs();
+      const callsAfterMount = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+      for (const text of ['t', 'th', 'thr', 'thre']) {
+        await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse(text) });
+      }
+
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(callsAfterMount);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('fires exactly one request once the debounce elapses', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountKVDBs();
+      const callsAfterMount = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+      for (const text of ['t', 'th', 'thr', 'thre']) {
+        await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse(text) });
+      }
+      await act(async () => {
+        jest.advanceTimersByTime(400);
+      });
+      wrapper.update();
+
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(callsAfterMount + 1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('<KVDBs /> search error guidance', () => {
+  // Wazuh: the callout's guidance props are wired per container. A missing prop is a
+  // runtime blank, not a type error while tsc cannot check this tree, so assert the
+  // rendered text.
+  it("names this list's searchable fields and selectors on an unknown field", async () => {
+    const wrapper = await mountKVDBs();
+    await triggerSearchChange(wrapper, {
+      error: { message: 'Unknown field `document.id`' },
+      queryText: 'document.id:abc',
+    });
+
+    const guidance = wrapper
+      .find('[data-test-subj="entitySearchErrorCallOutGuidance"]')
+      .hostNodes();
+    expect(guidance.text()).toContain('id, title or author');
+    expect(guidance.text()).toContain('Status and Integration');
+  });
+});
+
+describe('<KVDBs /> typed filter clauses', () => {
+  it('debounces a typed filter value and applies a popover clause at once', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountKVDBs();
+      const before = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+      await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse('integration:wazuh') });
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(before);
+
+      await act(async () => {
+        jest.advanceTimersByTime(400);
+      });
+      wrapper.update();
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(before + 1);
+
+      const afterTyped = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+      await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse('integration:(aws)') });
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(afterTyped + 1);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
