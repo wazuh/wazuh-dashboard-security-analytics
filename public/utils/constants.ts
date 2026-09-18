@@ -32,6 +32,10 @@ export const LOG_TEST_DOCUMENTATION_URL = webDocumentationLink(
   'user-manual/wazuh-dashboard/wazuh-dashboard-configurations.html#log-test'
 );
 
+export const CUSTOM_DECODERS_DOCUMENTATION_URL = webDocumentationLink(
+  'user-manual/data-analysis/detection-workflow.html#create-custom-decoders'
+);
+
 // Wazuh: page headers top-align their columns so the description wraps under the title,
 // which would leave the controls hanging at the top of a two-line header.
 export const OVERVIEW_NAV_ID = `sa_overview`;

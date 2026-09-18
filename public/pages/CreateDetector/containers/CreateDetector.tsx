@@ -39,11 +39,11 @@ import {
   DataSourceProps,
   Detector,
   DetectorCreationStep,
-} from '../../../../types';
-import { DataStore } from '../../../store/DataStore';
-import { errorNotificationToast, getErrorMessage, setBreadcrumbs } from '../../../utils/helpers';
-import { MetricsContext } from '../../../metrics/MetricsContext';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
+} from "../../../../types";
+import { DataStore } from "../../../store/DataStore";
+import { errorNotificationToast, getErrorMessage, setBreadcrumbs } from "../../../utils/helpers";
+import { MetricsContext } from "../../../metrics/MetricsContext";
+import { PageHeader } from "../../../components/PageHeader/PageHeader";
 
 interface CreateDetectorProps extends RouteComponentProps, DataSourceProps, DataSourceManagerProps {
   isEdit: boolean;
@@ -161,9 +161,9 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     if (!fieldMappingRes.ok) {
       errorNotificationToast(
         this.props.notifications,
-        'create',
-        'detector',
-        getErrorMessage(fieldMappingRes.error, 'Invalid field mappings.')
+        "create",
+        "detector",
+        getErrorMessage(fieldMappingRes.error, "Invalid field mappings.")
       );
       this.setState({ creatingDetector: false });
       return;
