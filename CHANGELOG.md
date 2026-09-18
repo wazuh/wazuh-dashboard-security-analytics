@@ -35,6 +35,7 @@
 | [#354](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/354) | Removed the getLogTypeLabel usage across Ruleset management |
 | [#447](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/447) | Improved the Ruleset management UX: unified the user-facing terminology and documented it in `TERMINOLOGY.md`, said what each entity and space is for, added a "How ruleset management works" flyout, told the user what to do next on empty lists, replaced the log test status code with a plain-language verdict, gave the remaining dead ends a cause, paired asset identifiers with their name so the root decoder reads as a name instead of `decoder/core-wazuh-message/0`, labelled each compliance framework's values with its own unit, and made the space policy panel legible: consistent booleans, enrichments as badges, and a hint on every setting saying what it affects |
 | [#471](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/471) | Renamed the user-facing "Security Analytics" references to "Ruleset management", including the navigation group label, the app title, the root breadcrumb and the "How ruleset management works" flyout |
+| [wazuh-dashboard#1605](https://github.com/wazuh/wazuh-dashboard/issues/1605) | Changed the Prettier check to skip the files that were already unformatted on the base branch |
 
 ### Removed
 
