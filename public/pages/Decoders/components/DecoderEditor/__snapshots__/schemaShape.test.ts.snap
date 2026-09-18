@@ -1,0 +1,98 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`engine decoder grammar has the shape the visual editor models 1`] = `
+Object {
+  "checkBranches": Array [
+    "#/definitions/_checkExpression",
+    "#/definitions/_checkList",
+  ],
+  "metadataAdditionalProperties": false,
+  "metadataKeys": Array [
+    "author",
+    "compatibility",
+    "date",
+    "description",
+    "documentation",
+    "modified",
+    "references",
+    "supports",
+    "title",
+  ],
+  "metadataRequired": Array [
+    "author",
+    "description",
+    "title",
+  ],
+  "namePattern": "^decoder\\\\/[^\\\\/]+\\\\/[^\\\\/]+$",
+  "normalizeBlockBranches": Array [
+    Object {
+      "minProperties": undefined,
+      "patternProperties": Array [
+        "^parse\\\\|\\\\S+$",
+      ],
+      "properties": Array [
+        "map",
+      ],
+      "required": Array [
+        "map",
+      ],
+    },
+    Object {
+      "minProperties": undefined,
+      "patternProperties": Array [
+        "^parse\\\\|\\\\S+$",
+      ],
+      "properties": Array [
+        "check",
+        "map",
+      ],
+      "required": Array [
+        "check",
+        "map",
+      ],
+    },
+    Object {
+      "minProperties": 2,
+      "patternProperties": Array [
+        "^parse\\\\|\\\\S+$",
+      ],
+      "properties": Array [
+        "check",
+      ],
+      "required": Array [
+        "check",
+      ],
+    },
+    Object {
+      "minProperties": 1,
+      "patternProperties": Array [
+        "^parse\\\\|\\\\S+$",
+      ],
+      "properties": Array [],
+      "required": Array [],
+    },
+  ],
+  "normalizeItemRef": "#/definitions/_normalizeBlock",
+  "parseItemsType": "string",
+  "rootAdditionalProperties": false,
+  "rootKeys": Array [
+    "check",
+    "definitions",
+    "enabled",
+    "id",
+    "metadata",
+    "name",
+    "normalize",
+    "parents",
+  ],
+  "rootPatternProperties": Array [
+    "parse\\\\|\\\\S+",
+  ],
+  "rootRequired": Array [
+    "enabled",
+    "id",
+    "metadata",
+    "name",
+  ],
+}
+`;

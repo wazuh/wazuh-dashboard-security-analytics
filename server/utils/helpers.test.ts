@@ -251,3 +251,50 @@ describe('extractErrorMessage with a 413 body', () => {
     );
   });
 });
+
+describe('extractErrorMessage with an authorization denial', () => {
+  const denial =
+    'no permissions for [cluster:admin/content_manager/integration/create] and ' +
+    'User [name=wazuh-readonly, backend_roles=[], requestedTenant=null]';
+
+  it('never sends the username or role bindings to the browser', () => {
+    const message = extractErrorMessage({
+      statusCode: 403,
+      body: { error: { reason: denial, type: 'security_exception' } },
+    });
+
+    expect(message).toBe(
+      'You do not have permission to perform this action. ' +
+        'Missing indexer permission: cluster:admin/content_manager/integration/create.'
+    );
+    expect(message).not.toContain('wazuh-readonly');
+    expect(message).not.toContain('backend_roles');
+  });
+
+  it('sanitizes a denial that only reaches the client on error.message', () => {
+    expect(extractErrorMessage(new Error(denial))).toContain(
+      'Missing indexer permission: cluster:admin/content_manager/integration/create.'
+    );
+  });
+
+  it('catches a 403 even when the backend rephrases the exception', () => {
+    expect(
+      extractErrorMessage({
+        statusCode: 403,
+        body: { message: 'Forbidden for User [name=qauser]' },
+      })
+    ).toBe('You do not have permission to perform this action.');
+  });
+
+  it('redacts the identity block of a non-denial error without losing its detail', () => {
+    expect(
+      extractErrorMessage({ body: { message: 'Write rejected for User [name=qauser]' } })
+    ).toBe('Write rejected for User [redacted]');
+  });
+
+  it('leaves an unrelated error message untouched', () => {
+    expect(extractErrorMessage({ body: { message: 'Integration not found.' } })).toBe(
+      'Integration not found.'
+    );
+  });
+});
