@@ -42,6 +42,30 @@ const notifications: any = {
   },
 };
 
+// Wazuh: a fake `history` whose `replace` notifies `listen` subscribers, so a
+// same-route URL change reaches useUrlFilterParams. Mirrors useUrlFilterParams.test.
+const createFakeHistory = (pathname: string, search: string) => {
+  let location = { pathname, search, hash: '', state: undefined as any };
+  const listeners: Array<(loc: typeof location) => void> = [];
+  return {
+    get location() {
+      return location;
+    },
+    replace: jest.fn((next: { search: string }) => {
+      location = { ...location, search: next.search };
+      listeners.forEach((listener) => listener(location));
+    }),
+    push: jest.fn(),
+    listen: jest.fn((listener: (loc: typeof location) => void) => {
+      listeners.push(listener);
+      return () => {
+        const idx = listeners.indexOf(listener);
+        if (idx >= 0) listeners.splice(idx, 1);
+      };
+    }),
+  };
+};
+
 const buildHistory = () =>
   ({
     push: jest.fn(),
@@ -59,7 +83,10 @@ const mountDecoders = async () => {
   return wrapper;
 };
 
-const triggerSearchChange = async (wrapper: any, payload: { query?: any; error?: any }) => {
+const triggerSearchChange = async (
+  wrapper: any,
+  payload: { query?: any; queryText?: string; error?: any }
+) => {
   await act(async () => {
     wrapper.find('EuiSearchBar').first().prop('onChange')(payload);
   });
@@ -121,5 +148,77 @@ describe('<Decoders /> search bar strict schema', () => {
     const wrapper = await mountDecoders();
     await triggerSearchChange(wrapper, { query: VALID_QUERY, error: undefined });
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
+  });
+});
+
+describe('<Decoders /> search error guidance', () => {
+  // Wazuh: the callout's guidance props are wired per container. A missing prop is a
+  // runtime blank, not a type error while tsc cannot check this tree, so assert the
+  // rendered text.
+  it("names this list's searchable fields and selectors on an unknown field", async () => {
+    const wrapper = await mountDecoders();
+    await triggerSearchChange(wrapper, {
+      error: { message: 'Unknown field `document.id`' },
+      queryText: 'document.id:abc',
+    });
+
+    const guidance = wrapper
+      .find('[data-test-subj="entitySearchErrorCallOutGuidance"]')
+      .hostNodes();
+    expect(guidance.text()).toContain('id, name, title or author');
+    expect(guidance.text()).toContain('Status and Integration');
+  });
+});
+
+describe('<Decoders /> URL resync', () => {
+  // Wazuh: the resync effect skips its first run, since the initializers already read
+  // the URL. A same-route URL change (an Integration popover CTA while already on this
+  // page) must still hydrate the search bar and refetch.
+  it('hydrates the search bar and refetches on a same-route URL change', async () => {
+    const history = createFakeHistory('/decoders', '?space=standard');
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<Decoders history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+    const callsBefore = DataStore.decoders.searchDecoders.mock.calls.length;
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=wazuh-core' });
+    });
+    wrapper.update();
+
+    expect(wrapper.find('EuiSearchBar').first().prop('query').text).toContain(
+      'integration:(wazuh-core)'
+    );
+    expect(DataStore.decoders.searchDecoders.mock.calls.length).toBeGreaterThan(callsBefore);
+    expect(JSON.stringify(DataStore.decoders.searchDecoders.mock.calls.at(-1)[0])).toContain(
+      'wazuh-core'
+    );
+  });
+});
+
+describe('<Decoders /> typed filter clauses', () => {
+  it('debounces a typed filter value and applies a popover clause at once', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountDecoders();
+      const before = DataStore.decoders.searchDecoders.mock.calls.length;
+
+      await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse('integration:wazuh') });
+      expect(DataStore.decoders.searchDecoders.mock.calls.length).toBe(before);
+
+      await act(async () => {
+        jest.advanceTimersByTime(400);
+      });
+      wrapper.update();
+      expect(DataStore.decoders.searchDecoders.mock.calls.length).toBe(before + 1);
+
+      const afterTyped = DataStore.decoders.searchDecoders.mock.calls.length;
+      await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse('integration:(aws)') });
+      expect(DataStore.decoders.searchDecoders.mock.calls.length).toBe(afterTyped + 1);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
