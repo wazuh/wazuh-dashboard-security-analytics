@@ -71,7 +71,7 @@ const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
       const prevItems = isNewSearch ? [] : state.data?.items ?? [];
       const size = itemsPerPage;
       const from = isNewSearch ? 0 : state.data?.nextFrom ?? 0;
-      const query = buildDecodersSearchQuery(currentSearch); // FIXME: this query does not match with the format of the decoders name, it can not find a substring in the name, it needs to be an exact match, we need to change the query builder to make it work with the name field or change the search field to be the keyword version of the name
+      const query = buildDecodersSearchQuery(currentSearch);
       const response = await DataStore.decoders.searchDecoders(
         {
           from,

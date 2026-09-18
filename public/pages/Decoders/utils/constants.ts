@@ -3,11 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const KEYWORD_SEARCH_FIELDS = ['document.id', 'document.name', 'document.metadata.author'];
+import { buildEntitySearchQuery } from '../../../utils/entitySearchQuery';
 
-const TEXT_SEARCH_FIELDS = ['document.metadata.title', 'document.metadata.description'];
+// Wazuh: cti-decoders maps `document.metadata.title` as `keyword`, like the id, name
+// and author, so it belongs in this group and not in the text one.
+const KEYWORD_SEARCH_FIELDS = [
+  'document.id',
+  'document.name',
+  'document.metadata.title',
+  'document.metadata.author',
+];
 
-const escapeWildcard = (str: string) => str.replace(/[*?]/g, '\\$&');
+const TEXT_SEARCH_FIELDS = ['document.metadata.description'];
+
+// Wazuh: fields the free text matches, worded for the search error callout. Keep in
+// step with KEYWORD_SEARCH_FIELDS.
+export const DECODERS_SEARCHABLE_FIELDS_LABEL = 'id, name, title or author';
 
 export const decoderFormDefaultValue: string = `name: decoder/<name>/<version>
 enabled: true
@@ -19,30 +30,8 @@ metadata:
   documentation: ''
   supports: []`;
 
-export const buildDecodersSearchQuery = (searchText: string) => {
-  const trimmed = searchText.trim();
-  if (!trimmed) {
-    return { match_all: {} };
-  }
-
-  return {
-    bool: {
-      should: [
-        ...KEYWORD_SEARCH_FIELDS.map((field) => ({
-          wildcard: {
-            [field]: {
-              value: `*${escapeWildcard(trimmed)}*`,
-              case_insensitive: true,
-            },
-          },
-        })),
-        ...TEXT_SEARCH_FIELDS.map((field) => ({
-          match_phrase: {
-            [field]: trimmed,
-          },
-        })),
-      ],
-      minimum_should_match: 1,
-    },
-  };
-};
+export const buildDecodersSearchQuery = (searchText: string) =>
+  buildEntitySearchQuery(searchText, {
+    keywordFields: KEYWORD_SEARCH_FIELDS,
+    textFields: TEXT_SEARCH_FIELDS,
+  });
