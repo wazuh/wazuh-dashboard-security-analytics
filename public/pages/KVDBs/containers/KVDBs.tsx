@@ -54,6 +54,7 @@ import {
   ENTITY_SEARCH_SCHEMA,
   buildStatusIntegrationFilters,
   buildStatusIntegrationQueryFromUrl,
+  decodeEnabledValues,
   encodeEnabledValues,
   decodeMultiValue,
   encodeMultiValue,
@@ -97,8 +98,12 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const [searchError, setSearchError] = useState<any>(null);
   // Wazuh: the free-text portion of `searchQuery` debounces into `appliedQueryText`
   // (matching Rules/Decoders) so buildQuery/fetchKVDBs don't fire an ES round-trip
-  // on every keystroke — only status/integration checkboxes apply immediately.
+  // on every keystroke; popover filter clauses apply at once, typed ones debounce.
   const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
+  const [appliedStatus, setAppliedStatus] = useState<'enabled' | 'disabled' | undefined>(() => {
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    return statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined;
+  });
   const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
   const {
     component: spaceSelector,
@@ -146,14 +151,15 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     }
     setSearchQuery(buildQueryFromUrl());
     setAppliedQueryText(urlFilters.values.query);
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
     urlFilters.setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
 
   // Wazuh: debounce the free-text portion of `searchQuery` into `appliedQueryText`
-  // (used by buildQuery below) — matches Rules/Decoders. Status/integration
-  // checkboxes are read directly off `searchQuery` (selectedStatuses/
-  // selectedIntegrations below) and apply immediately, without this delay.
+  // (used by buildQuery below) — matches Rules/Decoders. Filter clauses go through
+  // the effect further down: at once from the popover, debounced when typed.
   const isFirstSearchRender = useRef(true);
   useEffect(() => {
     if (isFirstSearchRender.current) {
@@ -203,6 +209,9 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       return;
     }
     const apply = () => {
+      setAppliedStatus(
+        selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
+      );
       setAppliedIntegrationNames(selectedIntegrations);
       skipNextUrlSync.current = true;
       urlFilters.setParams({
@@ -221,12 +230,10 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatuses.join(','), selectedIntegrations.join(',')]);
 
-  // Wazuh: built from the debounced `appliedQueryText` (not `searchQuery` directly)
-  // so typing doesn't trigger an ES round-trip on every keystroke — status/
-  // integration are read from the live `searchQuery` via selectedStatuses/
-  // selectedIntegrations above, applying immediately. Status and integration
-  // are resolved server-side (see KVDBsService.searchKVDBs, applyEntityFilters),
-  // matching the Rules/Decoders pattern — not composed into the query here.
+  // Wazuh: built from the debounced `appliedQueryText`, not `searchQuery`, so typing
+  // does not fire a request per keystroke. Status and integration travel as explicit
+  // params (appliedStatus/appliedIntegrationNames) and resolve server-side, see
+  // KVDBsService.searchKVDBs and applyEntityFilters, matching Rules/Decoders.
   const buildQuery = useCallback(() => {
     const query = buildKVDBsSearchQuery(appliedQueryText ?? '');
 
@@ -234,9 +241,6 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       ? { bool: { must: [query], filter: [{ term: { 'space.name': spaceFilter } }] } }
       : query;
   }, [appliedQueryText, spaceFilter]);
-
-  // Wazuh: both/neither selected => no status filter (matches everything).
-  const appliedStatus = selectedStatuses.length === 1 ? selectedStatuses[0] : undefined;
 
   const fetchKVDBs = useCallback(async () => {
     setLoading(true);

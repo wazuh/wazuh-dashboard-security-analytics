@@ -200,4 +200,25 @@ describe('<KVDBs /> typed filter clauses', () => {
       jest.useRealTimers();
     }
   });
+
+  it('debounces a typed status value the same way', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountKVDBs();
+      const before = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+      for (const text of ['status:e', 'status:en', 'status:ena']) {
+        await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse(text) });
+      }
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(before);
+
+      await act(async () => {
+        jest.advanceTimersByTime(400);
+      });
+      wrapper.update();
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(before + 1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });
