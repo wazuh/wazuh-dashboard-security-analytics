@@ -60,10 +60,14 @@ describe('buildDecodersSearchQuery', () => {
     expect(query.bool.minimum_should_match).toBe(1);
   });
 
-  it('only names fields the query searches', () => {
+  it('only names fields the query searches, or the server-side integration join', () => {
     const fields = searchedFields(buildDecodersSearchQuery('anything')).join(' ').toLowerCase();
+    // Wazuh: DecodersService.fetchDecoderIdsByIntegrationName matches the text against
+    // integration titles and folds the decoder ids in, so `integration` has no clause here.
+    const serverJoined = ['integration'];
 
     labelledFields(DECODERS_SEARCHABLE_FIELDS_LABEL).forEach((named) => {
+      if (serverJoined.includes(named)) return;
       expect(fields).toContain(named);
     });
   });

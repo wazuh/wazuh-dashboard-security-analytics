@@ -60,12 +60,21 @@ describe('buildRulesSearchQuery', () => {
     expect(query.bool.minimum_should_match).toBe(1);
   });
 
-  it('only names fields the query searches', () => {
+  it('only names fields the query searches, or the server-side integration join', () => {
     const fields = searchedFields(buildRulesSearchQuery('anything')).join(' ').toLowerCase();
+    // Wazuh: WazuhRuleService.fetchRuleIdsByIntegrationName matches the text against
+    // integration titles and folds the rule ids in, so `integration` has no clause here.
+    const serverJoined = ['integration'];
 
     labelledFields(RULES_SEARCHABLE_FIELDS_LABEL).forEach((named) => {
+      if (serverJoined.includes(named)) return;
       expect(fields).toContain(named);
     });
+  });
+
+  it('names integration, not the unsurfaced Sigma log source fields', () => {
+    expect(RULES_SEARCHABLE_FIELDS_LABEL).toContain('integration');
+    expect(RULES_SEARCHABLE_FIELDS_LABEL).not.toMatch(/log ?source/i);
   });
 
   it('names one selector per field its search schema declares', () => {

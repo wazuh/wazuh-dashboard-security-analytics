@@ -165,7 +165,7 @@ describe('<Decoders /> search error guidance', () => {
     const guidance = wrapper
       .find('[data-test-subj="entitySearchErrorCallOutGuidance"]')
       .hostNodes();
-    expect(guidance.text()).toContain('id, name, title or author');
+    expect(guidance.text()).toContain('id, name, title, author or integration');
     expect(guidance.text()).toContain('Status and Integration');
   });
 });

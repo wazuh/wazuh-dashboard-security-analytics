@@ -17,8 +17,10 @@ const KEYWORD_SEARCH_FIELDS = [
 const TEXT_SEARCH_FIELDS = ['document.metadata.description'];
 
 // Wazuh: fields the free text matches, worded for the search error callout. Keep in
-// step with KEYWORD_SEARCH_FIELDS.
-export const DECODERS_SEARCHABLE_FIELDS_LABEL = 'id, name, title or author';
+// step with KEYWORD_SEARCH_FIELDS. `integration` is matched server-side, where
+// DecodersService.fetchDecoderIdsByIntegrationName folds in decoders whose
+// integration title matches the text.
+export const DECODERS_SEARCHABLE_FIELDS_LABEL = 'id, name, title, author or integration';
 
 export const decoderFormDefaultValue: string = `name: decoder/<name>/<version>
 enabled: true
