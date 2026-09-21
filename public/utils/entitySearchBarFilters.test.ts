@@ -14,8 +14,7 @@ import {
 } from './entitySearchBarFilters';
 import { IntegrationOption } from '../components/IntegrationComboBox/useIntegrationSelector';
 
-// Wazuh: #502 left rules declaring three filter fields while the copy named two
-// selectors. One selector named per declared field.
+// Wazuh: one selector named per field the search schema declares.
 const namedSelectors = (label: string): string[] =>
   label
     .split(/,| and /)

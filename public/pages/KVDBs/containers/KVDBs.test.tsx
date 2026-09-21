@@ -121,9 +121,6 @@ describe('<KVDBs /> search bar strict schema', () => {
 });
 
 describe('<KVDBs /> search does not refetch per keystroke', () => {
-  // Wazuh: the fetch callback depended on `selectedIntegrations`, a useMemo on
-  // `searchQuery` returning a fresh array per keystroke, so the fetch effect fired
-  // per keystroke. Measured before the fix: 4 keystrokes produced 5 requests.
   it('fires no request while the free text is still debouncing', async () => {
     jest.useFakeTimers();
     try {

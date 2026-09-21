@@ -21,8 +21,7 @@ const labelledFields = (label: string): string[] =>
     .map((part) => part.trim().replace(/\s+/g, ''))
     .filter(Boolean);
 
-// Wazuh: #502 left rules declaring three filter fields while the copy named two
-// selectors. One selector named per declared field.
+// Wazuh: one selector named per field the search schema declares.
 const namedSelectors = (label: string): string[] =>
   label
     .split(/,| and /)

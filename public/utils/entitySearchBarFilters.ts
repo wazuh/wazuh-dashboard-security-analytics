@@ -30,12 +30,10 @@ export const decodeMultiValue = (param: string): string[] =>
 // It needs no list of the field's possible values, so a stale one (a renamed or
 // deleted integration) round-trips too.
 //
-// EUI stores a field clause in two shapes. The filter popover calls addOrFieldValue,
-// which produces an ARRAY value printed as `integration:(auditd)`; a hand-typed
-// `level:high` produces a SCALAR value. Reading only getOrFieldClause dropped typed
-// clauses silently: the strict schema accepted the field name, getFreeText excluded
-// it from the free text, and the list returned unfiltered. Both shapes are read here
-// so the typed and the clicked form mean the same thing.
+// EUI stores a field clause in two shapes: the filter popover's addOrFieldValue
+// produces an ARRAY value, printed as `integration:(auditd)`; a hand-typed
+// `level:high` produces a SCALAR value. Both are read here, so the typed and the
+// clicked form mean the same thing.
 export const getOrSelectedValues = (query: Query, field: string): string[] => {
   const clauses = (query as any).ast?.getFieldClauses?.(field);
   if (!Array.isArray(clauses)) {

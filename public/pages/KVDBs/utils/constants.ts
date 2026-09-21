@@ -8,12 +8,9 @@ import { buildEntitySearchQuery } from '../../../utils/entitySearchQuery';
 export const KVDBS_PAGE_SIZE = 25;
 export const KVDBS_SORT_FIELD = 'document.metadata.title';
 
-// Wazuh: KVDBs previously sent the box through EuiSearchBar.Query.toESQuery, whose
-// `simple_query_string` compares whole tokens against these `keyword` fields, so
-// `thre` never matched `Threat intel lookup`. The strict schema
-// (ENTITY_SEARCH_SCHEMA, in entitySearchBarFilters.ts) is shared as-is with
-// Rules/Decoders, and getFreeText strips every `field:value` clause before this
-// builder runs, so no structured-query capability is lost.
+// Wazuh: shares ENTITY_SEARCH_SCHEMA (entitySearchBarFilters.ts) as-is with
+// Rules/Decoders. getFreeText strips every `field:value` clause before this
+// builder runs, so structured queries still work.
 const KVDB_KEYWORD_SEARCH_FIELDS = [
   'document.id',
   'document.metadata.title',

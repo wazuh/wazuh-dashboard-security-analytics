@@ -29,9 +29,8 @@ export const RULES_SEARCHABLE_FIELDS_LABEL = 'id, title, author, level or integr
 // (multiSelect 'or') on `level`, matching `document.level` server-side. Decoders and
 // KVDBs stay on the shared ENTITY_SEARCH_SCHEMA, since only rules have a level.
 //
-// The clause is `level`, not `severity`: `document.level` is the document field, and
-// the URL param, the sort key and the column all use `level` too. The toolbar reads
-// `Rule level` (see TERMINOLOGY.md).
+// `level` also names the URL param, the sort key and the column — keep them in sync
+// if this clause is renamed.
 export const RULES_SEARCH_SCHEMA = {
   strict: true,
   fields: {
@@ -41,8 +40,6 @@ export const RULES_SEARCH_SCHEMA = {
   },
 };
 
-// Wazuh: the toolbar label is `Rule level`, not `Severity` (see TERMINOLOGY.md), so
-// the search error names the control on screen.
 export const RULES_FILTER_SELECTORS_LABEL = 'Status, Integration and Rule level';
 
 export const buildRulesSearchQuery = (searchText: string) =>

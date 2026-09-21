@@ -184,9 +184,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     [searchQuery]
   );
   // Wazuh: `selectedIntegrations` is a fresh array on every `searchQuery` change.
-  // Passing it to fetchKVDBs re-created the callback per keystroke and the fetch
-  // effect fired with it, one request per key carrying the stale pre-debounce text.
-  // The applied copy changes only when the contents change, as on Rules/Decoders.
+  // This applied copy changes only when the contents change, matching Rules/Decoders,
+  // so fetchKVDBs' dependency stays stable between keystrokes.
   const [appliedIntegrationNames, setAppliedIntegrationNames] = useState<string[]>(() =>
     decodeMultiValue(urlFilters.values.integration)
   );

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-// Wazuh: free-text matching for the server-side lists (Rules/Decoders/KVDBs). One
-// builder, so the three cannot diverge again (#502).
+// Wazuh: free-text matching for the server-side lists (Rules/Decoders/KVDBs), in
+// one builder so the three stay in sync.
 
 export interface EntitySearchFields {
   /**
