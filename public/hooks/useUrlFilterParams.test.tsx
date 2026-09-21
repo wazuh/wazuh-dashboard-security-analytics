@@ -143,6 +143,25 @@ describe('useUrlFilterParams', () => {
 
     expect(stateRef.current?.values.enabled).toBe('');
   });
+
+  it('drops a pending debounced write when the component unmounts', () => {
+    const history = createFakeHistory('?space=standard');
+    const stateRef: { current: UrlFilterState | null } = { current: null };
+    const { unmount } = render(
+      <Harness config={{ params: ['query'] }} history={history} stateRef={stateRef} />
+    );
+
+    act(() => {
+      stateRef.current?.setParams({ query: 'z' });
+    });
+    const writesBefore = history.replace.mock.calls.length;
+    unmount();
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
+
+    expect(history.replace.mock.calls.length).toBe(writesBefore);
+  });
 });
 
 // Wazuh: a fake whose `location` never advances past the mount snapshot while

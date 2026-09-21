@@ -83,6 +83,18 @@ export const useUrlFilterParams = (
     });
   }, []);
 
+  // Wazuh: a deferred write must not outlive the component. After unmount
+  // `history.location` is another route, or a stale snapshot of this one, and the
+  // write would rewrite that URL.
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+    };
+  }, []);
+
   const writeToUrl = useCallback(
     (patch: Partial<Record<FilterParamName, string | undefined>>, resetPage: boolean) => {
       // Wazuh: read from `history.location` (live/mutable) rather than the `location`
