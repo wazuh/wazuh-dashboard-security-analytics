@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { escapeWildcard } from '../../common/helpers';
+
 // Wazuh: free-text matching for the server-side lists (Rules/Decoders/KVDBs), in
 // one builder so the three stay in sync.
 
@@ -18,11 +20,6 @@ export interface EntitySearchFields {
    */
   textFields?: string[];
 }
-
-// Wazuh: `*` stays live so `apache*log` works. `?` and `\` are escaped: they carry
-// no meaning here and occur in ordinary titles and descriptions.
-const escapeWildcard = (value: string): string =>
-  value.replace(/\\/g, '\\\\').replace(/\?/g, '\\?');
 
 /**
  * Build the free-text portion of an entity list query. Returns `match_all` when

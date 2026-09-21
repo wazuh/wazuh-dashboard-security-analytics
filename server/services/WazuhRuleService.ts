@@ -21,11 +21,11 @@ import { CLIENT_RULE_METHODS, CONTENT_INDICES } from '../utils/constants';
 import {
   applyEntityFilters,
   EntityStatus,
-  escapeWildcard,
   extractErrorMessage,
   mergeIdsClause,
   resolveIdsByIntegrationMatch,
 } from '../utils/helpers';
+import { escapeWildcard } from '../../common/helpers';
 import { ServerResponse } from '../models/types';
 import { load } from 'js-yaml';
 import { Rule } from '../../types';
