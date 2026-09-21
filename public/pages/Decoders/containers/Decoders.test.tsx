@@ -8,7 +8,7 @@ import { act } from '@testing-library/react';
 import { mount } from 'enzyme';
 import { EuiSearchBar } from '@elastic/eui';
 import { Decoders } from './Decoders';
-import { setupCoreStart } from '../../../../test/utils/helpers';
+import { createFakeHistory, setupCoreStart } from '../../../../test/utils/helpers';
 
 // Wazuh: a real parsed Query (not a plain `{}`) — `getFreeText`/the debounce
 // effect call `query.ast.getTermClauses()`, which only a genuine EuiSearchBar
@@ -40,30 +40,6 @@ const notifications: any = {
     addWarning: jest.fn(),
     addInfo: jest.fn(),
   },
-};
-
-// Wazuh: a fake `history` whose `replace` notifies `listen` subscribers, so a
-// same-route URL change reaches useUrlFilterParams. Mirrors useUrlFilterParams.test.
-const createFakeHistory = (pathname: string, search: string) => {
-  let location = { pathname, search, hash: '', state: undefined as any };
-  const listeners: Array<(loc: typeof location) => void> = [];
-  return {
-    get location() {
-      return location;
-    },
-    replace: jest.fn((next: { search: string }) => {
-      location = { ...location, search: next.search };
-      listeners.forEach((listener) => listener(location));
-    }),
-    push: jest.fn(),
-    listen: jest.fn((listener: (loc: typeof location) => void) => {
-      listeners.push(listener);
-      return () => {
-        const idx = listeners.indexOf(listener);
-        if (idx >= 0) listeners.splice(idx, 1);
-      };
-    }),
-  };
 };
 
 const buildHistory = () =>
@@ -195,6 +171,30 @@ describe('<Decoders /> URL resync', () => {
     expect(JSON.stringify(DataStore.decoders.searchDecoders.mock.calls.at(-1)[0])).toContain(
       'wazuh-core'
     );
+  });
+
+  it('hydrates again on a second same-route URL change', async () => {
+    const history = createFakeHistory('/decoders', '?space=standard');
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<Decoders history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=wazuh-core' });
+    });
+    wrapper.update();
+    const callsAfterFirst = DataStore.decoders.searchDecoders.mock.calls.length;
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=aws' });
+    });
+    wrapper.update();
+
+    expect(wrapper.find('EuiSearchBar').first().prop('query').text).toContain('integration:(aws)');
+    expect(DataStore.decoders.searchDecoders.mock.calls.length).toBeGreaterThan(callsAfterFirst);
+    expect(JSON.stringify(DataStore.decoders.searchDecoders.mock.calls.at(-1)[0])).toContain('aws');
   });
 });
 

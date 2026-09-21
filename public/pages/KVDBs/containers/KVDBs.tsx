@@ -130,9 +130,11 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
   }, []);
 
-  // Wazuh: set before a local write to urlFilters so the resync effect below
-  // doesn't rebuild `searchQuery` from a URL snapshot that can race with it.
-  const skipNextUrlSync = useRef(false);
+  // Wazuh: the URL values this container last wrote. The resync effect treats a URL
+  // change equal to them as its own write echoing back, and any other change as an
+  // external navigation to hydrate from. A one-shot flag cannot do this: a write that
+  // leaves the URL unchanged never runs the effect that would consume the flag.
+  const lastWrittenRef = useRef(urlFilters.values);
 
   // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
   // integration KVDBs" while already on KVDBs) updates the URL without remounting
@@ -145,13 +147,15 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       setSearchQuery(buildQueryFromUrl());
       return;
     }
-    if (skipNextUrlSync.current) {
-      skipNextUrlSync.current = false;
+    const { query, enabled, integration } = urlFilters.values;
+    const last = lastWrittenRef.current;
+    if (query === last.query && enabled === last.enabled && integration === last.integration) {
       return;
     }
+    lastWrittenRef.current = urlFilters.values;
     setSearchQuery(buildQueryFromUrl());
-    setAppliedQueryText(urlFilters.values.query);
-    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    setAppliedQueryText(query);
+    const statuses = decodeEnabledValues(enabled);
     setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
     urlFilters.setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,7 +173,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     const timeout = setTimeout(() => {
       const freeText = getFreeText(searchQuery);
       setAppliedQueryText(freeText);
-      skipNextUrlSync.current = true;
+      lastWrittenRef.current = { ...lastWrittenRef.current, query: freeText };
       urlFilters.setParams({ query: freeText });
     }, 300);
     return () => clearTimeout(timeout);
@@ -213,13 +217,18 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
         selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
       );
       setAppliedIntegrationNames(selectedIntegrations);
-      skipNextUrlSync.current = true;
-      urlFilters.setParams({
+      const patch = {
         enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
         integration: selectedIntegrations.length
           ? encodeMultiValue(selectedIntegrations)
           : undefined,
-      });
+      };
+      lastWrittenRef.current = {
+        ...lastWrittenRef.current,
+        enabled: patch.enabled ?? '',
+        integration: patch.integration ?? '',
+      };
+      urlFilters.setParams(patch);
     };
     if (!hasTypedFieldClause(searchQuery, Object.keys(ENTITY_SEARCH_SCHEMA.fields))) {
       apply();

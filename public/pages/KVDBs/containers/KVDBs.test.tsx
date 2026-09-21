@@ -8,7 +8,7 @@ import { act } from '@testing-library/react';
 import { mount } from 'enzyme';
 import { EuiSearchBar } from '@elastic/eui';
 import { KVDBs } from './KVDBs';
-import { setupCoreStart } from '../../../../test/utils/helpers';
+import { createFakeHistory, setupCoreStart } from '../../../../test/utils/helpers';
 
 // Wazuh: a real parsed Query (not a plain `{}`) — `getFreeText`/the debounce
 // effect call `query.ast.getTermClauses()`, which only a genuine EuiSearchBar
@@ -220,5 +220,54 @@ describe('<KVDBs /> typed filter clauses', () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+});
+
+describe('<KVDBs /> URL resync', () => {
+  it('hydrates the search bar and refetches on a same-route URL change', async () => {
+    const history = createFakeHistory('/kvdbs', '?space=standard');
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<KVDBs history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+    const callsBefore = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=wazuh-core' });
+    });
+    wrapper.update();
+
+    expect(wrapper.find('EuiSearchBar').first().prop('query').text).toContain(
+      'integration:(wazuh-core)'
+    );
+    expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBeGreaterThan(callsBefore);
+    expect(JSON.stringify(DataStore.kvdbs.searchKVDBs.mock.calls.at(-1)[0])).toContain(
+      'wazuh-core'
+    );
+  });
+
+  it('hydrates again on a second same-route URL change', async () => {
+    const history = createFakeHistory('/kvdbs', '?space=standard');
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<KVDBs history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=wazuh-core' });
+    });
+    wrapper.update();
+    const callsAfterFirst = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=aws' });
+    });
+    wrapper.update();
+
+    expect(wrapper.find('EuiSearchBar').first().prop('query').text).toContain('integration:(aws)');
+    expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBeGreaterThan(callsAfterFirst);
+    expect(JSON.stringify(DataStore.kvdbs.searchKVDBs.mock.calls.at(-1)[0])).toContain('aws');
   });
 });

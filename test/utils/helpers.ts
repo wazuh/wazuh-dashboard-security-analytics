@@ -19,3 +19,27 @@ export function setupCoreStart() {
   setUISettings(uiSettingsServiceMock.createStartContract());
   setBreadCrumbsSetter(jest.fn());
 }
+
+// Wazuh: a fake `history` whose `replace` notifies `listen` subscribers, so a
+// same-route URL change reaches useUrlFilterParams the way OSD's ScopedHistory does.
+export const createFakeHistory = (pathname: string, search: string) => {
+  let location = { pathname, search, hash: '', state: undefined as any };
+  const listeners: Array<(loc: typeof location) => void> = [];
+  return {
+    get location() {
+      return location;
+    },
+    replace: jest.fn((next: { search: string }) => {
+      location = { ...location, search: next.search };
+      listeners.forEach((listener) => listener(location));
+    }),
+    push: jest.fn(),
+    listen: jest.fn((listener: (loc: typeof location) => void) => {
+      listeners.push(listener);
+      return () => {
+        const idx = listeners.indexOf(listener);
+        if (idx >= 0) listeners.splice(idx, 1);
+      };
+    }),
+  };
+};

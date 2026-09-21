@@ -177,9 +177,11 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.RULES]);
   }, []);
 
-  // Wazuh: set before a local write to urlFilters so the resync effect below
-  // doesn't rebuild `searchQuery` from a URL snapshot that can race with it.
-  const skipNextUrlSync = useRef(false);
+  // Wazuh: the URL values this container last wrote. The resync effect treats a URL
+  // change equal to them as its own write echoing back, and any other change as an
+  // external navigation to hydrate from. A one-shot flag cannot do this: a write that
+  // leaves the URL unchanged never runs the effect that would consume the flag.
+  const lastWrittenRef = useRef(urlFilters.values);
 
   const isFirstSearchRender = useRef(true);
   useEffect(() => {
@@ -191,7 +193,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       const freeText = getFreeText(searchQuery);
       setAppliedQueryText(freeText);
       // 'query' is in resetPageOn, so this alone already resets the page.
-      skipNextUrlSync.current = true;
+      lastWrittenRef.current = { ...lastWrittenRef.current, query: freeText };
       urlFilters.setParams({ query: freeText });
     }, 300);
     return () => clearTimeout(timeout);
@@ -214,14 +216,20 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       setAppliedIntegrationNames(selectedIntegrations);
       setAppliedLevels(selectedLevels);
       // 'enabled'/'integration'/'level' are also in resetPageOn — same reasoning as above.
-      skipNextUrlSync.current = true;
-      urlFilters.setParams({
+      const patch = {
         enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
         integration: selectedIntegrations.length
           ? encodeMultiValue(selectedIntegrations)
           : undefined,
         level: selectedLevels.length ? encodeMultiValue(selectedLevels) : undefined,
-      });
+      };
+      lastWrittenRef.current = {
+        ...lastWrittenRef.current,
+        enabled: patch.enabled ?? '',
+        integration: patch.integration ?? '',
+        level: patch.level ?? '',
+      };
+      urlFilters.setParams(patch);
     };
     if (!hasTypedFieldClause(searchQuery, Object.keys(RULES_SEARCH_SCHEMA.fields))) {
       apply();
@@ -245,16 +253,23 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       isFirstUrlSync.current = false;
       return;
     }
-    if (skipNextUrlSync.current) {
-      skipNextUrlSync.current = false;
+    const { query, enabled, integration, level } = urlFilters.values;
+    const last = lastWrittenRef.current;
+    if (
+      query === last.query &&
+      enabled === last.enabled &&
+      integration === last.integration &&
+      level === last.level
+    ) {
       return;
     }
+    lastWrittenRef.current = urlFilters.values;
     setSearchQuery(buildQueryFromUrl());
-    setAppliedQueryText(urlFilters.values.query);
-    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    setAppliedQueryText(query);
+    const statuses = decodeEnabledValues(enabled);
     setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
-    setAppliedIntegrationNames(decodeMultiValue(urlFilters.values.integration));
-    setAppliedLevels(decodeMultiValue(urlFilters.values.level));
+    setAppliedIntegrationNames(decodeMultiValue(integration));
+    setAppliedLevels(decodeMultiValue(level));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     urlFilters.values.query,
