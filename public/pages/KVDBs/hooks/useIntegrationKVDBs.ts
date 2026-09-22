@@ -4,8 +4,8 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { EuiSearchBar } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
+import { buildKVDBsSearchQuery } from '../utils/constants';
 import { KVDBItem } from '../../../../types';
 
 export interface UseIntegrationKVDBsParams {
@@ -49,12 +49,8 @@ export function useIntegrationKVDBs({
     const from = pageIndex * pageSize;
     const size = pageSize;
 
-    // Wazuh: same structured-query builder (EuiSearchBar.Query.toESQuery) the main
-    // KVDBs table uses.
-    const trimmedSearch = search.trim();
-    const textQuery = trimmedSearch
-      ? EuiSearchBar.Query.toESQuery(EuiSearchBar.Query.parse(trimmedSearch))
-      : { match_all: {} };
+    // Wazuh: same free-text builder the main KVDBs table uses.
+    const textQuery = buildKVDBsSearchQuery(search);
 
     const filterClauses: any[] = [{ terms: { 'document.id': kvdbIds } }];
     if (space) {

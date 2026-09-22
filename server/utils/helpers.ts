@@ -15,8 +15,6 @@ export function createQueryValidationSchema(fieldSchemaObj?: Props) {
   });
 }
 
-export const escapeWildcard = (value: string): string => value.replace(/[*?]/g, '\\$&');
-
 // Wazuh: OR an id-based terms clause into an existing search query (used to fold in
 // ids matched via a join, e.g. rules/decoders found through an integration name search).
 export const mergeIdsClause = (query: any, field: string, ids: string[]): any => {

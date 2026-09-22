@@ -10,7 +10,6 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButtonIcon,
-  EuiCallOut,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
@@ -29,9 +28,10 @@ import { DecoderItem } from '../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
-import { buildDecodersSearchQuery } from '../utils/constants';
+import { buildDecodersSearchQuery, DECODERS_SEARCHABLE_FIELDS_LABEL } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
@@ -51,9 +51,11 @@ import {
   decodeMultiValue,
   encodeEnabledValues,
   encodeMultiValue,
+  ENTITY_FILTER_SELECTORS_LABEL,
   ENTITY_SEARCH_SCHEMA,
   getFreeText,
   getOrSelectedValues,
+  hasTypedFieldClause,
 } from '../../../utils/entitySearchBarFilters';
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
@@ -130,9 +132,11 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.DECODERS]);
   }, []);
 
-  // Wazuh: set before a local write to urlFilters so the resync effect below
-  // doesn't rebuild `searchQuery` from a URL snapshot that can race with it.
-  const skipNextUrlSync = useRef(false);
+  // Wazuh: the URL values this container last wrote. The resync effect treats a URL
+  // change equal to them as its own write echoing back, and any other change as an
+  // external navigation to hydrate from. A one-shot flag cannot do this: a write that
+  // leaves the URL unchanged never runs the effect that would consume the flag.
+  const lastWrittenRef = useRef(urlFilters.values);
 
   const isFirstSearchRender = useRef(true);
   useEffect(() => {
@@ -144,7 +148,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       const freeText = getFreeText(searchQuery);
       setAppliedQueryText(freeText);
       // 'query' is in resetPageOn, so this alone already resets the page.
-      skipNextUrlSync.current = true;
+      lastWrittenRef.current = { ...lastWrittenRef.current, query: freeText };
       urlFilters.setParams({ query: freeText });
     }, 300);
 
@@ -152,24 +156,40 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getFreeText(searchQuery)]);
 
-  // Wazuh: Status/Integration checkboxes (multiSelect 'or') apply immediately,
-  // unlike the free-text debounce above — matches the Detectors filter pattern.
+  // Wazuh: a clause the popover wrote (`integration:(x)`) applies at once; a clause
+  // being typed (`integration:x`) debounces like free text, or every keystroke of the
+  // value fires a request and rewrites the URL.
   const isFirstFilterRender = useRef(true);
   useEffect(() => {
     if (isFirstFilterRender.current) {
       isFirstFilterRender.current = false;
       return;
     }
-    setAppliedStatus(
-      selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
-    );
-    setAppliedIntegrationNames(selectedIntegrations);
-    // 'enabled'/'integration' are also in resetPageOn — same reasoning as above.
-    skipNextUrlSync.current = true;
-    urlFilters.setParams({
-      enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
-      integration: selectedIntegrations.length ? encodeMultiValue(selectedIntegrations) : undefined,
-    });
+    const apply = () => {
+      setAppliedStatus(
+        selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
+      );
+      setAppliedIntegrationNames(selectedIntegrations);
+      // 'enabled'/'integration' are also in resetPageOn — same reasoning as above.
+      const patch = {
+        enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
+        integration: selectedIntegrations.length
+          ? encodeMultiValue(selectedIntegrations)
+          : undefined,
+      };
+      lastWrittenRef.current = {
+        ...lastWrittenRef.current,
+        enabled: patch.enabled ?? '',
+        integration: patch.integration ?? '',
+      };
+      urlFilters.setParams(patch);
+    };
+    if (!hasTypedFieldClause(searchQuery, Object.keys(ENTITY_SEARCH_SCHEMA.fields))) {
+      apply();
+      return;
+    }
+    const timeout = setTimeout(apply, 300);
+    return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatuses.join(','), selectedIntegrations.join(',')]);
 
@@ -177,16 +197,26 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   // integration decoders" while already on Decoders) updates the URL without
   // remounting this component, so the search bar must resync from the URL-owned
   // value instead of relying on its mount-time initializer.
+  // Wazuh: the mount-time initializers already read these URL values, so the first
+  // run of this effect would only re-derive equal state with new array identities and
+  // re-fire the fetch callback (a second identical list request on load).
+  const isFirstUrlSync = useRef(true);
   useEffect(() => {
-    if (skipNextUrlSync.current) {
-      skipNextUrlSync.current = false;
+    if (isFirstUrlSync.current) {
+      isFirstUrlSync.current = false;
       return;
     }
+    const { query, enabled, integration } = urlFilters.values;
+    const last = lastWrittenRef.current;
+    if (query === last.query && enabled === last.enabled && integration === last.integration) {
+      return;
+    }
+    lastWrittenRef.current = urlFilters.values;
     setSearchQuery(buildQueryFromUrl());
-    setAppliedQueryText(urlFilters.values.query);
-    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    setAppliedQueryText(query);
+    const statuses = decodeEnabledValues(enabled);
     setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
-    setAppliedIntegrationNames(decodeMultiValue(urlFilters.values.integration));
+    setAppliedIntegrationNames(decodeMultiValue(integration));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
 
@@ -397,25 +427,28 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   // Wazuh: EuiSearchBar only emits `query` when parsing succeeds — on a
   // strict-schema parse error `query` is undefined, so `searchQuery` (and thus
   // the previously loaded decoders) is left untouched; only the callout shows.
-  const onSearchChange = ({ query, error }: { query: any; error: any }) => {
-    setSearchError(error ?? null);
+  const onSearchChange = ({
+    query,
+    queryText,
+    error,
+  }: {
+    query: any;
+    queryText?: string;
+    error: any;
+  }) => {
+    setSearchError(error ? { message: error.message, queryText } : null);
     if (!query) return;
     setSearchQuery(query);
   };
 
-  const renderError = () => {
-    if (!searchError) return undefined;
-    return (
-      <>
-        <EuiCallOut
-          color="warning"
-          title={`Invalid search: ${searchError.message}`}
-          data-test-subj="entitySearchErrorCallOut"
-        />
-        <EuiSpacer size="l" />
-      </>
-    );
-  };
+  const renderError = () => (
+    <EntitySearchErrorCallOut
+      error={searchError}
+      schema={ENTITY_SEARCH_SCHEMA}
+      searchableFields={DECODERS_SEARCHABLE_FIELDS_LABEL}
+      filterSelectors={ENTITY_FILTER_SELECTORS_LABEL}
+    />
+  );
 
   // Wazuh: the callout renders ABOVE the table, it does not replace it — the
   // last successfully loaded decoders stay visible while a parse error shows.

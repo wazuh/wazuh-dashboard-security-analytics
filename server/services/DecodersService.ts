@@ -17,11 +17,11 @@ import { CLIENT_DECODER_METHODS, CONTENT_INDICES } from '../utils/constants';
 import {
   applyEntityFilters,
   EntityStatus,
-  escapeWildcard,
   extractErrorMessage,
   mergeIdsClause,
   resolveIdsByIntegrationMatch,
 } from '../utils/helpers';
+import { escapeWildcard } from '../../common/helpers';
 
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',

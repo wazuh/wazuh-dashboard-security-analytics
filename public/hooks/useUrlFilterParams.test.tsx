@@ -143,4 +143,136 @@ describe('useUrlFilterParams', () => {
 
     expect(stateRef.current?.values.enabled).toBe('');
   });
+
+  it('drops a pending debounced write when the component unmounts', () => {
+    const history = createFakeHistory('?space=standard');
+    const stateRef: { current: UrlFilterState | null } = { current: null };
+    const { unmount } = render(
+      <Harness config={{ params: ['query'] }} history={history} stateRef={stateRef} />
+    );
+
+    act(() => {
+      stateRef.current?.setParams({ query: 'z' });
+    });
+    const writesBefore = history.replace.mock.calls.length;
+    unmount();
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
+
+    expect(history.replace.mock.calls.length).toBe(writesBefore);
+  });
+});
+
+// Wazuh: a fake whose `location` never advances past the mount snapshot while
+// `listen` subscribers still receive every write, the worst case of the lag OSD's
+// ScopedHistory shows for `history.location` after `replace()`.
+const createLaggingHistory = (search: string) => {
+  const snapshot = { pathname: '/decoders', search, hash: '', state: undefined as any };
+  let latest = { ...snapshot };
+  const listeners: Array<(loc: typeof latest) => void> = [];
+  return {
+    get location() {
+      return snapshot;
+    },
+    replace: jest.fn((next: { search: string }) => {
+      latest = { ...latest, search: next.search };
+      listeners.forEach((listener) => listener(latest));
+    }),
+    push: jest.fn(),
+    listen: jest.fn((listener: (loc: typeof latest) => void) => {
+      listeners.push(listener);
+      return () => {
+        const idx = listeners.indexOf(listener);
+        if (idx >= 0) listeners.splice(idx, 1);
+      };
+    }),
+  };
+};
+
+describe('useUrlFilterParams with a lagging history.location', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const lastSearch = (history: { replace: jest.Mock }) =>
+    new URLSearchParams(history.replace.mock.calls.at(-1)[0].search);
+
+  it('keeps a param an earlier write added when a deferred write runs on a stale snapshot', () => {
+    const history = createLaggingHistory('?space=standard&dataSourceId=');
+    const stateRef: { current: UrlFilterState | null } = { current: null };
+    render(
+      <Harness
+        config={{ params: ['query', 'enabled', 'integration', 'page'] }}
+        history={history as any}
+        stateRef={stateRef}
+      />
+    );
+
+    act(() => {
+      stateRef.current?.setParams({ integration: 'wazuh-core' });
+    });
+    expect(lastSearch(history).get('integration')).toBe('wazuh-core');
+
+    act(() => {
+      stateRef.current?.setParams({ query: '' });
+    });
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
+
+    const search = lastSearch(history);
+    expect(search.get('integration')).toBe('wazuh-core');
+    expect(search.get('query')).toBeNull();
+    expect(search.get('space')).toBe('standard');
+    expect(search.has('dataSourceId')).toBe(true);
+  });
+
+  it('carries a deferred write that an immediate write in the same tick cancelled', () => {
+    const history = createLaggingHistory('?space=standard&query=integration%3A');
+    const stateRef: { current: UrlFilterState | null } = { current: null };
+    render(
+      <Harness
+        config={{ params: ['query', 'enabled', 'integration', 'page'] }}
+        history={history as any}
+        stateRef={stateRef}
+      />
+    );
+
+    act(() => {
+      stateRef.current?.setParams({ query: '' });
+      stateRef.current?.setParams({ enabled: undefined, integration: 'wazuh-core' });
+    });
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
+
+    const search = lastSearch(history);
+    expect(search.get('query')).toBeNull();
+    expect(search.get('integration')).toBe('wazuh-core');
+    expect(search.get('space')).toBe('standard');
+  });
+
+  it('still lets a write remove a managed param', () => {
+    const history = createLaggingHistory('?space=standard&integration=aws');
+    const stateRef: { current: UrlFilterState | null } = { current: null };
+    render(
+      <Harness
+        config={{ params: ['query', 'enabled', 'integration', 'page'] }}
+        history={history as any}
+        stateRef={stateRef}
+      />
+    );
+
+    act(() => {
+      stateRef.current?.setParams({ integration: undefined });
+    });
+
+    expect(lastSearch(history).get('integration')).toBeNull();
+    expect(lastSearch(history).get('space')).toBe('standard');
+  });
 });

@@ -26,12 +26,28 @@ export const decodeMultiValue = (param: string): string[] =>
     .map((v) => v.trim())
     .filter(Boolean);
 
-// Wazuh: read every currently-selected value for a multiSelect 'or' field out of a
-// parsed EuiSearchBar Query — does not require knowing the field's possible values
-// up front, so a stale value (e.g. a renamed/deleted integration) round-trips too.
+// Wazuh: read every selected value for a field out of a parsed EuiSearchBar Query.
+// It needs no list of the field's possible values, so a stale one (a renamed or
+// deleted integration) round-trips too.
+//
+// EUI stores a field clause in two shapes: the filter popover's addOrFieldValue
+// produces an ARRAY value, printed as `integration:(auditd)`; a hand-typed
+// `level:high` produces a SCALAR value. Both are read here, so the typed and the
+// clicked form mean the same thing.
 export const getOrSelectedValues = (query: Query, field: string): string[] => {
-  const clause = (query as any).ast?.getOrFieldClause?.(field);
-  return clause && Array.isArray(clause.value) ? clause.value.map(String) : [];
+  const clauses = (query as any).ast?.getFieldClauses?.(field);
+  if (!Array.isArray(clauses)) {
+    return [];
+  }
+
+  return (
+    clauses
+      // Wazuh: a negated `-status:enabled` excludes the value, so it is not a selection.
+      .filter((clause: any) => clause.match === undefined || clause.match === 'must')
+      .flatMap((clause: any) => (Array.isArray(clause.value) ? clause.value : [clause.value]))
+      .filter((value: unknown) => value !== undefined && value !== null)
+      .map(String)
+  );
 };
 
 // Wazuh: build a Query carrying the given free text plus OR clauses for each
@@ -157,6 +173,44 @@ export const ENTITY_SEARCH_SCHEMA = {
     integration: { type: 'string' },
   },
 };
+
+// Wazuh: true when a clause for one of these fields has a scalar value, the shape a
+// typed `field:value` produces; the popover writes arrays (see getOrSelectedValues).
+// Callers debounce typed clauses like free text and apply popover clauses at once.
+export const hasTypedFieldClause = (query: Query, fields: string[]): boolean =>
+  fields.some((field) =>
+    ((query as any).ast?.getFieldClauses?.(field) ?? []).some(
+      (clause: any) => !Array.isArray(clause.value)
+    )
+  );
+
+export type EntitySearchErrorClass =
+  | { kind: 'unknown_field'; fields: string[] }
+  | { kind: 'syntax' };
+
+// Wazuh: EuiSearchBar reports every parse failure as the same SyntaxError with no
+// error code. Re-parsing the text without a schema separates the two classes: the
+// text still fails to parse (grammar error), or it parses and names fields the strict
+// schema does not declare (field rejection). No dependence on EUI's message wording.
+export const classifyEntitySearchError = (
+  queryText: string,
+  schema: { fields: Record<string, unknown> }
+): EntitySearchErrorClass => {
+  let query: Query;
+  try {
+    query = EuiSearchBar.Query.parse(queryText ?? '');
+  } catch {
+    return { kind: 'syntax' };
+  }
+  const fields: string[] = (query as any).ast?.getFieldNames?.() ?? [];
+  const unknown = fields.filter((field) => !(field in schema.fields));
+  return unknown.length ? { kind: 'unknown_field', fields: unknown } : { kind: 'syntax' };
+};
+
+// Wazuh: the selectors a rejected search points at, named as they read in the
+// toolbar. Kept next to the schema: a list that declares a third field (see
+// RULES_SEARCH_SCHEMA) names its third selector here too.
+export const ENTITY_FILTER_SELECTORS_LABEL = 'Status and Integration';
 
 // Wazuh: `Query.text` re-prints the WHOLE ast — including `field:(value)` filter
 // clauses — back into query syntax, it is NOT just what the user typed in the free
