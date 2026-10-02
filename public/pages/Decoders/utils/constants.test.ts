@@ -65,6 +65,8 @@ describe('buildDecodersSearchQuery', () => {
     // Wazuh: DecodersService.fetchDecoderIdsByIntegrationName matches the text against
     // integration titles and folds the decoder ids in, so `integration` has no clause here.
     const serverJoined = ['integration'];
+
+    labelledFields(DECODERS_SEARCHABLE_FIELDS_LABEL).forEach((named) => {
       if (serverJoined.includes(named)) return;
       expect(fields).toContain(named);
     });
