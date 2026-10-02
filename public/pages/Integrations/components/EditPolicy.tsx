@@ -86,24 +86,53 @@ const EditForm: React.FC<{}> = withPolicyGuard({
       fetchDecoders(debouncedSearch);
     }, [debouncedSearch]);
 
-    // If the policy has a root decoder set it as the initial value
-    const [selectedDecoder, setSelectedDecoder] = useState<
-      Array<{ label: string; value: DecoderSource }>
-    >(() => {
-      if (rootDecoder?.document) {
-        return [
-          {
-            // `root_decoder` is saved from `value.document.id`, so the label is free to name
-            // the decoder instead of addressing it.
-            label: formatAssetLabel(
-              rootDecoder.document.metadata?.title,
-              rootDecoder.document.name
-            ),
-            value: rootDecoder,
-          },
-        ];
-      }
-      return [];
+  // If the policy has a root decoder set it as the initial value
+  const [selectedDecoder, setSelectedDecoder] = useState<
+    Array<{ label: string; value: DecoderSource }>
+  >(() => {
+    if (rootDecoder?.document) {
+      return [
+        {
+          // `root_decoder` is saved from `value.document.id`, so the label is free to name
+          // the decoder instead of addressing it.
+          label: formatAssetLabel(rootDecoder.document.metadata?.title, rootDecoder.document.name),
+          value: rootDecoder,
+        },
+      ];
+    }
+    return [];
+  });
+
+  const [selectedEnrichments, setSelectedEnrichments] = useState<EnrichmentType[]>(
+    () => (policyDocumentData?.enrichments ?? []) as EnrichmentType[]
+  );
+
+  const [isEnrichmentPopoverOpen, setIsEnrichmentPopoverOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Flag to determine if the space allows editing non-enrichments fields
+  const canEditPolicy = actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY);
+  const canEditToggles =
+    canEditPolicy || actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS);
+  const canEditEnrichments = actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS);
+  const showIndexUnclassifiedEventsSetting = !isUiSettingDisabled(
+    UI_DISABLED_SETTINGS_IDS.INDEX_UNCLASSIFIED_EVENTS
+  );
+  const showIndexDiscardedEventsSetting = !isUiSettingDisabled(
+    UI_DISABLED_SETTINGS_IDS.INDEX_DISCARDED_EVENTS
+  );
+  const showAnyIndexingSetting =
+    showIndexUnclassifiedEventsSetting || showIndexDiscardedEventsSetting;
+
+  const handleEnrichmentToggle = useCallback((value: EnrichmentType) => {
+    setSelectedEnrichments((prev) => {
+      const isActive = prev.includes(value);
+      const nextSelection = isActive ? prev.filter((item) => item !== value) : [...prev, value];
+      setPolicyDetails((prevPolicy) => ({
+        ...prevPolicy,
+        enrichments: nextSelection,
+      }));
+      return nextSelection;
     });
 
     const [selectedEnrichments, setSelectedEnrichments] = useState<EnrichmentType[]>(
@@ -127,15 +156,80 @@ const EditForm: React.FC<{}> = withPolicyGuard({
     const showAnyIndexingSetting =
       showIndexUnclassifiedEventsSetting || showIndexDiscardedEventsSetting;
 
-    const handleEnrichmentToggle = useCallback((value: EnrichmentType) => {
-      setSelectedEnrichments((prev) => {
-        const isActive = prev.includes(value);
-        const nextSelection = isActive ? prev.filter((item) => item !== value) : [...prev, value];
-        setPolicyDetails((prevPolicy) => ({
-          ...prevPolicy,
-          enrichments: nextSelection,
-        }));
-        return nextSelection;
+  const renderBooleanValue = (value?: boolean) => (
+    <EuiText size="s" color="subdued">
+      {value ? 'yes' : 'no'}
+    </EuiText>
+  );
+
+  const updateErrors = (details: PolicyDocument) => {
+    const titleInvalid = !validateName(details.metadata?.title, INTEGRATION_AUTHOR_REGEX);
+    const authorInvalid = !validateName(details.metadata?.author, INTEGRATION_AUTHOR_REGEX);
+    setTitleError(titleInvalid ? 'Invalid title' : '');
+    setAuthorError(authorInvalid ? 'Invalid author' : '');
+
+    return { titleInvalid, authorInvalid };
+  };
+
+  const sanitizatePolicy = (details: PolicyDocument) => {
+    const refs = details.metadata?.references;
+    const references = Array.isArray(refs) ? refs.filter((ref) => String(ref).trim() !== '') : [];
+    return {
+      root_decoder: details.root_decoder,
+      integrations: details.integrations,
+      filters: details.filters ?? [],
+      enrichments: details.enrichments,
+      enabled: details.enabled,
+      index_unclassified_events: details.index_unclassified_events,
+      index_discarded_events: details.index_discarded_events,
+      metadata: {
+        title: details.metadata?.title ?? '',
+        author: details.metadata?.author ?? '',
+        description: details.metadata?.description ?? '',
+        documentation: details.metadata?.documentation ?? '',
+        references,
+      },
+    };
+  };
+
+  const fetchDecoders = async (search: string) => {
+    try {
+      const query = buildDecodersSearchQuery(search);
+      const response = await DataStore.decoders.searchDecoders(
+        {
+          from: 0,
+          size: DECODER_SEARCH_SIZE,
+          sort: [{ ['document.name']: { order: 'asc', unmapped_type: 'keyword' } }],
+          query,
+          // The title is what a reader recognises; the name is the identifier.
+          _source: { includes: ['document.id', 'document.name', 'document.metadata.title'] },
+        },
+        space
+      );
+      setDecoderList(
+        response.items.map((item) => ({
+          label:
+            formatAssetLabel(item?.document?.metadata?.title, item?.document?.name) ||
+            (item?.document?.id ?? ''),
+          value: item,
+        }))
+      );
+    } catch {
+      setDecoderList([]);
+    }
+  };
+
+  const onConfirmClicked = useCallback(async () => {
+    if (isSaving) {
+      return;
+    }
+    const { titleInvalid, authorInvalid } = updateErrors(policyDetails);
+
+    if (titleInvalid || authorInvalid) {
+      notifications?.toasts.addDanger({
+        title: `Failed to update`,
+        text: `Fix the marked errors.`,
+        toastLifeTimeMs: 3000,
       });
     }, []);
 
@@ -248,32 +342,211 @@ const EditForm: React.FC<{}> = withPolicyGuard({
       }
     }, [isSaving, notifications, onClose, onSuccess, policyDetails, space]);
 
-    return (
-      <>
-        <EuiFlyoutBody>
-          <EuiText size="s">
-            <h3>Details</h3>
-          </EuiText>
-          <EuiSpacer size="s" />
-          <EuiCompressedFormRow label="Title" isInvalid={!!titleError} error={titleError}>
-            {canEditPolicy ? (
-              <EuiCompressedFieldText
-                value={policyDetails.metadata?.title ?? ''}
-                onChange={(e) => {
-                  const newPolicy = {
-                    ...policyDetails,
-                    metadata: {
-                      ...policyDetails.metadata,
-                      title: e.target.value,
-                    },
-                  };
-                  setPolicyDetails(newPolicy);
-                  updateErrors(newPolicy);
-                }}
+  return (
+    <>
+      <EuiFlyoutBody>
+        <EuiText size="s">
+          <h3>Details</h3>
+        </EuiText>
+        <EuiSpacer size="s" />
+        <EuiCompressedFormRow label="Title" isInvalid={!!titleError} error={titleError}>
+          {canEditPolicy ? (
+            <EuiCompressedFieldText
+              value={policyDetails.metadata?.title ?? ''}
+              onChange={(e) => {
+                const newPolicy = {
+                  ...policyDetails,
+                  metadata: {
+                    ...policyDetails.metadata,
+                    title: e.target.value,
+                  },
+                };
+                setPolicyDetails(newPolicy);
+                updateErrors(newPolicy);
+              }}
+            />
+          ) : (
+            renderTextValue(policyDetails.metadata?.title)
+          )}
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow label="Author" isInvalid={!!authorError} error={authorError}>
+          {canEditPolicy ? (
+            <EuiCompressedFieldText
+              value={policyDetails.metadata?.author ?? ''}
+              onChange={(e) => {
+                const newPolicy = {
+                  ...policyDetails,
+                  metadata: {
+                    ...policyDetails.metadata,
+                    author: e.target.value,
+                  },
+                };
+                setPolicyDetails(newPolicy);
+                updateErrors(newPolicy);
+              }}
+            />
+          ) : (
+            renderTextValue(policyDetails.metadata?.author)
+          )}
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow
+          label={
+            <>
+              {'Description - '}
+              <em>optional</em>
+            </>
+          }
+        >
+          {canEditPolicy ? (
+            <EuiCompressedTextArea
+              value={policyDetails.metadata?.description || ''}
+              onChange={(e) => {
+                const newPolicy = {
+                  ...policyDetails,
+                  metadata: {
+                    ...policyDetails.metadata,
+                    description: e.target.value,
+                  },
+                };
+                setPolicyDetails(newPolicy);
+                updateErrors(newPolicy);
+              }}
+            />
+          ) : (
+            renderTextValue(policyDetails.metadata?.description)
+          )}
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow
+          label={
+            <>
+              {'Documentation - '}
+              <em>optional</em>
+            </>
+          }
+        >
+          {canEditPolicy ? (
+            <EuiCompressedTextArea
+              value={policyDetails.metadata?.documentation || ''}
+              onChange={(e) => {
+                const newPolicy = {
+                  ...policyDetails,
+                  metadata: {
+                    ...policyDetails.metadata,
+                    documentation: e.target.value,
+                  },
+                };
+                setPolicyDetails(newPolicy);
+                updateErrors(newPolicy);
+              }}
+            />
+          ) : (
+            renderTextValue(policyDetails.metadata?.documentation)
+          )}
+        </EuiCompressedFormRow>
+        <EuiHorizontalRule />
+        <EuiText size="s">
+          <h3>Settings</h3>
+        </EuiText>
+        <EuiSpacer size="s" />
+        <EuiCompressedFormRow label={'Status'}>
+          {canEditToggles ? (
+            <EuiSwitch
+              compressed
+              checked={policyDetails.enabled || false}
+              onChange={(e) => {
+                const newPolicy = {
+                  ...policyDetails,
+                  enabled: e.target.checked,
+                };
+                setPolicyDetails(newPolicy);
+                updateErrors(newPolicy);
+              }}
+            />
+          ) : (
+            renderBooleanValue(policyDetails.enabled)
+          )}
+        </EuiCompressedFormRow>
+        <EuiCompressedFormRow label="Root decoder">
+          {canEditPolicy ? (
+            <EuiComboBox
+              placeholder="Search and select a decoder"
+              singleSelection={{ asPlainText: true }}
+              options={decoderList}
+              selectedOptions={selectedDecoder}
+              onSearchChange={(searchValue) => setDecoderSearch(searchValue)}
+              onChange={(selected) => {
+                setSelectedDecoder(selected);
+                const newPolicy = {
+                  ...policyDetails,
+                  root_decoder: selected.length > 0 ? selected[0].value?.document?.id : '',
+                };
+                setPolicyDetails(newPolicy);
+                updateErrors(newPolicy);
+                if (selected.length === 0) {
+                  setDecoderSearch('');
+                }
+              }}
+              async
+            />
+          ) : (
+            // The same field pairs the name with the identifier when it is editable, so the
+            // read-only branch cannot show the identifier alone.
+            <EuiText size="s" color="subdued">
+              <AssetIdentity
+                title={rootDecoder?.document?.metadata?.title}
+                identifier={rootDecoder?.document?.name}
               />
-            ) : (
-              renderTextValue(policyDetails.metadata?.title)
-            )}
+            </EuiText>
+          )}
+        </EuiCompressedFormRow>
+        {showAnyIndexingSetting && (
+          <EuiCompressedFormRow>
+            <EuiFlexGroup>
+              {showIndexUnclassifiedEventsSetting && (
+                <EuiFlexItem>
+                  <EuiCompressedFormRow label={'Index unclassified events'}>
+                    {canEditToggles ? (
+                      <EuiSwitch
+                        compressed
+                        checked={policyDetails.index_unclassified_events || false}
+                        onChange={(e) => {
+                          const newPolicy = {
+                            ...policyDetails,
+                            index_unclassified_events: e.target.checked,
+                          };
+                          setPolicyDetails(newPolicy);
+                          updateErrors(newPolicy);
+                        }}
+                      />
+                    ) : (
+                      renderBooleanValue(policyDetails.index_unclassified_events)
+                    )}
+                  </EuiCompressedFormRow>
+                </EuiFlexItem>
+              )}
+              {showIndexDiscardedEventsSetting && (
+                <EuiFlexItem>
+                  <EuiCompressedFormRow label={'Index discarded events'}>
+                    {canEditToggles ? (
+                      <EuiSwitch
+                        compressed
+                        checked={policyDetails.index_discarded_events || false}
+                        onChange={(e) => {
+                          const newPolicy = {
+                            ...policyDetails,
+                            index_discarded_events: e.target.checked,
+                          };
+                          setPolicyDetails(newPolicy);
+                          updateErrors(newPolicy);
+                        }}
+                      />
+                    ) : (
+                      renderBooleanValue(policyDetails.index_discarded_events)
+                    )}
+                  </EuiCompressedFormRow>
+                </EuiFlexItem>
+              )}
+            </EuiFlexGroup>
           </EuiCompressedFormRow>
           <EuiCompressedFormRow label="Author" isInvalid={!!authorError} error={authorError}>
             {canEditPolicy ? (

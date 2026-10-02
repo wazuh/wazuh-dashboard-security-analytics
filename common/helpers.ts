@@ -121,3 +121,10 @@ export const getPreviousSpace = (space: PromoteSpaces) => {
   }
   return UserSpacesOrder[currentIndex - 1];
 };
+
+// Wazuh: escapes a free-text fragment for an OpenSearch `wildcard` value. `*` stays
+// live so `apache*log` works; `?` and `\` are escaped, since they carry no meaning
+// for the user and occur in ordinary titles. Shared by the client query builders and
+// the server integration-name joins, so one search text has one meaning per request.
+export const escapeWildcard = (value: string): string =>
+  value.replace(/\\/g, '\\\\').replace(/\?/g, '\\?');
