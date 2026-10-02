@@ -8,7 +8,7 @@ import { act } from '@testing-library/react';
 import { mount } from 'enzyme';
 import { EuiSearchBar } from '@elastic/eui';
 import { KVDBs } from './KVDBs';
-import { setupCoreStart } from '../../../../test/utils/helpers';
+import { createFakeHistory, setupCoreStart } from '../../../../test/utils/helpers';
 
 // Wazuh: a real parsed Query (not a plain `{}`) — `getFreeText`/the debounce
 // effect call `query.ast.getTermClauses()`, which only a genuine EuiSearchBar
@@ -59,7 +59,10 @@ const mountKVDBs = async () => {
   return wrapper;
 };
 
-const triggerSearchChange = async (wrapper: any, payload: { query?: any; error?: any }) => {
+const triggerSearchChange = async (
+  wrapper: any,
+  payload: { query?: any; queryText?: string; error?: any }
+) => {
   await act(async () => {
     wrapper.find('EuiSearchBar').first().prop('onChange')(payload);
   });
@@ -114,5 +117,157 @@ describe('<KVDBs /> search bar strict schema', () => {
     const wrapper = await mountKVDBs();
     await triggerSearchChange(wrapper, { query: VALID_QUERY, error: undefined });
     expect(wrapper.find('[data-test-subj="entitySearchErrorCallOut"]').length).toBe(0);
+  });
+});
+
+describe('<KVDBs /> search does not refetch per keystroke', () => {
+  it('fires no request while the free text is still debouncing', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountKVDBs();
+      const callsAfterMount = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+      for (const text of ['t', 'th', 'thr', 'thre']) {
+        await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse(text) });
+      }
+
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(callsAfterMount);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('fires exactly one request once the debounce elapses', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountKVDBs();
+      const callsAfterMount = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+      for (const text of ['t', 'th', 'thr', 'thre']) {
+        await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse(text) });
+      }
+      await act(async () => {
+        jest.advanceTimersByTime(400);
+      });
+      wrapper.update();
+
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(callsAfterMount + 1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('<KVDBs /> search error guidance', () => {
+  // Wazuh: the callout's guidance props are wired per container. A missing prop is a
+  // runtime blank, not a type error while tsc cannot check this tree, so assert the
+  // rendered text.
+  it("names this list's searchable fields and selectors on an unknown field", async () => {
+    const wrapper = await mountKVDBs();
+    await triggerSearchChange(wrapper, {
+      error: { message: 'Unknown field `document.id`' },
+      queryText: 'document.id:abc',
+    });
+
+    const guidance = wrapper
+      .find('[data-test-subj="entitySearchErrorCallOutGuidance"]')
+      .hostNodes();
+    expect(guidance.text()).toContain('id, title or author');
+    expect(guidance.text()).toContain('Status and Integration');
+  });
+});
+
+describe('<KVDBs /> typed filter clauses', () => {
+  it('debounces a typed filter value and applies a popover clause at once', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountKVDBs();
+      const before = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+      await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse('integration:wazuh') });
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(before);
+
+      await act(async () => {
+        jest.advanceTimersByTime(400);
+      });
+      wrapper.update();
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(before + 1);
+
+      const afterTyped = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+      await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse('integration:(aws)') });
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(afterTyped + 1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('debounces a typed status value the same way', async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = await mountKVDBs();
+      const before = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+      for (const text of ['status:e', 'status:en', 'status:ena']) {
+        await triggerSearchChange(wrapper, { query: EuiSearchBar.Query.parse(text) });
+      }
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(before);
+
+      await act(async () => {
+        jest.advanceTimersByTime(400);
+      });
+      wrapper.update();
+      expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBe(before + 1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('<KVDBs /> URL resync', () => {
+  it('hydrates the search bar and refetches on a same-route URL change', async () => {
+    const history = createFakeHistory('/kvdbs', '?space=standard');
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<KVDBs history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+    const callsBefore = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=wazuh-core' });
+    });
+    wrapper.update();
+
+    expect(wrapper.find('EuiSearchBar').first().prop('query').text).toContain(
+      'integration:(wazuh-core)'
+    );
+    expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBeGreaterThan(callsBefore);
+    expect(JSON.stringify(DataStore.kvdbs.searchKVDBs.mock.calls.at(-1)[0])).toContain(
+      'wazuh-core'
+    );
+  });
+
+  it('hydrates again on a second same-route URL change', async () => {
+    const history = createFakeHistory('/kvdbs', '?space=standard');
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<KVDBs history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=wazuh-core' });
+    });
+    wrapper.update();
+    const callsAfterFirst = DataStore.kvdbs.searchKVDBs.mock.calls.length;
+
+    await act(async () => {
+      history.replace({ search: '?space=standard&integration=aws' });
+    });
+    wrapper.update();
+
+    expect(wrapper.find('EuiSearchBar').first().prop('query').text).toContain('integration:(aws)');
+    expect(DataStore.kvdbs.searchKVDBs.mock.calls.length).toBeGreaterThan(callsAfterFirst);
+    expect(JSON.stringify(DataStore.kvdbs.searchKVDBs.mock.calls.at(-1)[0])).toContain('aws');
   });
 });

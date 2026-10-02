@@ -6,22 +6,11 @@
 import {
   applyEntityFilters,
   buildStatusFilter,
-  escapeWildcard,
   extractErrorKind,
   extractErrorMessage,
   mergeIdsClause,
 } from './helpers';
 import { LOGTEST_ERROR_KIND_BY_STATUS } from './constants';
-
-describe('escapeWildcard', () => {
-  it('escapes * and ? so they are treated as literals', () => {
-    expect(escapeWildcard('a*b?c')).toBe('a\\*b\\?c');
-  });
-
-  it('leaves strings without wildcard characters untouched', () => {
-    expect(escapeWildcard('windows-defender')).toBe('windows-defender');
-  });
-});
 
 describe('mergeIdsClause', () => {
   it('returns the original query unchanged when there are no ids to merge', () => {
