@@ -67,12 +67,32 @@ export const useUrlFilterParams = (
   );
   const [page, setPageState] = useState<number>(() => readPage(location.search, hasPage));
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Wazuh: latest managed values, for writeToUrl. On OSD's ScopedHistory,
+  // `history.location.search` can still return the search from BEFORE an earlier
+  // `replace()` hundreds of ms later, so a deferred write built from it dropped the
+  // param that earlier write had added (a filter applied at once, then the debounced
+  // `query` write erased it from the URL). Managed params come from here; only the
+  // params this hook does not own (space, dataSourceId) are taken from the snapshot.
+  const valuesRef = useRef(values);
+  valuesRef.current = values;
 
   useEffect(() => {
     return history.listen((loc) => {
       setValues(readValues(loc.search, cfg.params));
       setPageState(readPage(loc.search, hasPage));
     });
+  }, []);
+
+  // Wazuh: a deferred write must not outlive the component. After unmount
+  // `history.location` is another route, or a stale snapshot of this one, and the
+  // write would rewrite that URL.
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+    };
   }, []);
 
   const writeToUrl = useCallback(
@@ -83,6 +103,13 @@ export const useUrlFilterParams = (
       // stale `location` snapshot would silently clobber it back out.
       const current = history.location;
       const params = new URLSearchParams(current.search);
+      Object.entries(valuesRef.current).forEach(([name, latest]) => {
+        if (latest) {
+          params.set(name, latest);
+        } else {
+          params.delete(name);
+        }
+      });
       Object.entries(patch).forEach(([key, value]) => {
         if (key === 'page') return;
         if (value === undefined || value === '') {
@@ -104,14 +131,18 @@ export const useUrlFilterParams = (
       const patchedNames = Object.keys(patch) as FilterParamName[];
       const shouldResetPage = patchedNames.some((name) => resetPageOn.includes(name));
 
-      setValues((prev) => {
-        const next = { ...prev };
-        patchedNames.forEach((name) => {
-          if (name === 'page') return;
-          next[name] = patch[name] ?? '';
-        });
-        return next;
+      // Wazuh: update the ref here, not only on render. Two writes can land in one
+      // tick (a debounced free-text write and a filter write scheduled together): the
+      // second is immediate and cancels the first's deferred URL write, so its
+      // writeToUrl must already see the first's values or that param stays stale in
+      // the URL.
+      const next = { ...valuesRef.current };
+      patchedNames.forEach((name) => {
+        if (name === 'page') return;
+        next[name] = patch[name] ?? '';
       });
+      valuesRef.current = next;
+      setValues(next);
       if (shouldResetPage && hasPage) {
         setPageState(1);
       }
