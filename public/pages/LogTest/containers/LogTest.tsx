@@ -20,7 +20,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES, PAGE_HEADER_CONTROL_STYLE } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { DRAFT_UNAVAILABLE_IN_LOG_TEST, SpaceTypes } from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';

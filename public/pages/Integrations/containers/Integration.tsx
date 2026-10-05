@@ -41,7 +41,6 @@ import {
   integrationDetailsTabs,
   IntegrationMode,
 } from '../utils/constants';
-
 import { IntegrationDetails } from '../components/IntegrationDetails';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { IntegrationDetectionRules } from '../components/IntegrationDetectionRules';
