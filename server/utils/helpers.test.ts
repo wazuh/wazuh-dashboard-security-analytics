@@ -1,0 +1,289 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import {
+  applyEntityFilters,
+  buildStatusFilter,
+  extractErrorKind,
+  extractErrorMessage,
+  mergeIdsClause,
+} from './helpers';
+import { LOGTEST_ERROR_KIND_BY_STATUS } from './constants';
+
+describe('mergeIdsClause', () => {
+  it('returns the original query unchanged when there are no ids to merge', () => {
+    const query = { match_all: {} };
+    expect(mergeIdsClause(query, 'document.id', [])).toBe(query);
+  });
+
+  it('wraps a match_all query into a should clause with the ids', () => {
+    const result = mergeIdsClause({ match_all: {} }, 'document.id', ['rule-1', 'rule-2']);
+    expect(result).toEqual({
+      bool: {
+        should: [{ terms: { 'document.id': ['rule-1', 'rule-2'] } }],
+        minimum_should_match: 1,
+      },
+    });
+  });
+
+  it('ORs the ids clause into an existing bool/should query', () => {
+    const query = {
+      bool: {
+        should: [{ wildcard: { 'document.metadata.title': { value: '*win*' } } }],
+        minimum_should_match: 1,
+      },
+    };
+
+    const result: any = mergeIdsClause(query, 'document.id', ['rule-1']);
+
+    expect(result.bool.should).toEqual([
+      { wildcard: { 'document.metadata.title': { value: '*win*' } } },
+      { terms: { 'document.id': ['rule-1'] } },
+    ]);
+    expect(result.bool.minimum_should_match).toBe(1);
+  });
+
+  it('wraps a non-bool query alongside the ids clause', () => {
+    const query = { match_phrase: { 'document.metadata.description': 'foo' } };
+
+    const result = mergeIdsClause(query, 'document.id', ['rule-1']);
+
+    expect(result).toEqual({
+      bool: {
+        should: [query, { terms: { 'document.id': ['rule-1'] } }],
+        minimum_should_match: 1,
+      },
+    });
+  });
+});
+
+describe('buildStatusFilter', () => {
+  it('matches zero entities for an unrecognized status value, instead of silently skipping the filter', () => {
+    expect(buildStatusFilter('bogus' as any)).toEqual({
+      bool: { must_not: { match_all: {} } },
+    });
+  });
+
+  it('returns undefined when status is not provided', () => {
+    expect(buildStatusFilter(undefined)).toBeUndefined();
+  });
+
+  it('builds a plain term for status=disabled', () => {
+    expect(buildStatusFilter('disabled')).toEqual({
+      term: { 'document.enabled': false },
+    });
+  });
+
+  it('builds an enabled-or-missing-field clause for status=enabled', () => {
+    expect(buildStatusFilter('enabled')).toEqual({
+      bool: {
+        should: [
+          { term: { 'document.enabled': true } },
+          { bool: { must_not: { exists: { field: 'document.enabled' } } } },
+        ],
+        minimum_should_match: 1,
+      },
+    });
+  });
+});
+
+describe('applyEntityFilters', () => {
+  it('is byte-identical to the input query when no filters are selected', () => {
+    const query = { bool: { should: [{ match_all: {} }], minimum_should_match: 1 } };
+    expect(applyEntityFilters(query, {})).toEqual({
+      bool: { must: [query], filter: [] },
+    });
+  });
+
+  it('nests the original query under bool.must without mutating it', () => {
+    const query = { bool: { should: [{ wildcard: { field: { value: '*a*' } } }] } };
+    const result = applyEntityFilters(query, {});
+    expect(result.bool.must[0]).toBe(query);
+  });
+
+  it('adds a missing-field-as-enabled clause to bool.filter for status=enabled', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'enabled' });
+    expect(result.bool.filter).toEqual([
+      {
+        bool: {
+          should: [
+            { term: { 'document.enabled': true } },
+            { bool: { must_not: { exists: { field: 'document.enabled' } } } },
+          ],
+          minimum_should_match: 1,
+        },
+      },
+    ]);
+  });
+
+  it('adds a plain term clause to bool.filter for status=disabled', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'disabled' });
+    expect(result.bool.filter).toEqual([{ term: { 'document.enabled': false } }]);
+  });
+
+  it('adds an ids terms clause to bool.filter when integrationIds is provided', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { integrationIds: ['id-1', 'id-2'] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.id': ['id-1', 'id-2'] } }]);
+  });
+
+  it('combines status and integrationIds filters together, in order', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'disabled', integrationIds: ['id-1'] });
+    expect(result.bool.filter).toEqual([
+      { term: { 'document.enabled': false } },
+      { terms: { 'document.id': ['id-1'] } },
+    ]);
+  });
+
+  it('does not add an ids clause when integrationIds is omitted (no filter active)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, {});
+    expect(result.bool.filter).toEqual([]);
+  });
+
+  it('adds an empty ids clause (matches nothing) when integrationIds is an empty array — the filter IS active but resolved to no ids, e.g. a matched integration with no associated decoders/rules', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { integrationIds: [] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.id': [] } }]);
+  });
+
+  it('adds a matches-nothing clause for an unrecognized status value, instead of silently skipping the filter', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { status: 'bogus' as any });
+    expect(result.bool.filter).toEqual([{ bool: { must_not: { match_all: {} } } }]);
+  });
+
+  it('adds a levels terms clause to bool.filter when levels is provided (Rules-only Severity filter)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { levels: ['critical', 'high'] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.level': ['critical', 'high'] } }]);
+  });
+
+  it('does not add a levels clause when levels is omitted (no filter active)', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, {});
+    expect(result.bool.filter).toEqual([]);
+  });
+
+  it('adds an empty levels clause (matches nothing) when levels is an empty array — the filter IS active but resolved to no values', () => {
+    const query = { match_all: {} };
+    const result = applyEntityFilters(query, { levels: [] });
+    expect(result.bool.filter).toEqual([{ terms: { 'document.level': [] } }]);
+  });
+});
+
+describe('extractErrorKind', () => {
+  it('returns payload-too-large for a numeric statusCode 413', () => {
+    expect(extractErrorKind({ statusCode: 413 }, LOGTEST_ERROR_KIND_BY_STATUS)).toBe(
+      'payload-too-large'
+    );
+  });
+
+  it('returns payload-too-large when statusCode is a getter backed by body.status', () => {
+    const body = { status: 413 };
+    const error = {
+      get statusCode() {
+        return body.status;
+      },
+    };
+    expect(extractErrorKind(error, LOGTEST_ERROR_KIND_BY_STATUS)).toBe('payload-too-large');
+  });
+
+  it('returns undefined for a status not in the mapping', () => {
+    expect(extractErrorKind({ statusCode: 500 }, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined when statusCode is absent', () => {
+    expect(extractErrorKind({}, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined for a plain Error', () => {
+    expect(extractErrorKind(new Error('boom'), LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined for a thrown string', () => {
+    expect(extractErrorKind('boom', LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined for undefined or null input', () => {
+    expect(extractErrorKind(undefined, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+    expect(extractErrorKind(null, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined for a string statusCode (no numeric coercion)', () => {
+    expect(extractErrorKind({ statusCode: '413' }, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+
+  it('returns undefined when reading statusCode throws', () => {
+    const error = {
+      get statusCode(): number {
+        throw new Error('boom');
+      },
+    };
+    expect(extractErrorKind(error, LOGTEST_ERROR_KIND_BY_STATUS)).toBeUndefined();
+  });
+});
+
+describe('extractErrorMessage with a 413 body', () => {
+  it('still returns the flat message for a 413 error body', () => {
+    const error = {
+      statusCode: 413,
+      body: { status: 413, message: 'Event exceeds the maximum allowed size of 1048576 bytes.' },
+    };
+    expect(extractErrorMessage(error)).toBe(
+      'Event exceeds the maximum allowed size of 1048576 bytes.'
+    );
+  });
+});
+
+describe('extractErrorMessage with an authorization denial', () => {
+  const denial =
+    'no permissions for [cluster:admin/content_manager/integration/create] and ' +
+    'User [name=wazuh-readonly, backend_roles=[], requestedTenant=null]';
+
+  it('never sends the username or role bindings to the browser', () => {
+    const message = extractErrorMessage({
+      statusCode: 403,
+      body: { error: { reason: denial, type: 'security_exception' } },
+    });
+
+    expect(message).toBe(
+      'You do not have permission to perform this action. ' +
+        'Missing indexer permission: cluster:admin/content_manager/integration/create.'
+    );
+    expect(message).not.toContain('wazuh-readonly');
+    expect(message).not.toContain('backend_roles');
+  });
+
+  it('sanitizes a denial that only reaches the client on error.message', () => {
+    expect(extractErrorMessage(new Error(denial))).toContain(
+      'Missing indexer permission: cluster:admin/content_manager/integration/create.'
+    );
+  });
+
+  it('catches a 403 even when the backend rephrases the exception', () => {
+    expect(
+      extractErrorMessage({
+        statusCode: 403,
+        body: { message: 'Forbidden for User [name=qauser]' },
+      })
+    ).toBe('You do not have permission to perform this action.');
+  });
+
+  it('redacts the identity block of a non-denial error without losing its detail', () => {
+    expect(
+      extractErrorMessage({ body: { message: 'Write rejected for User [name=qauser]' } })
+    ).toBe('Write rejected for User [redacted]');
+  });
+
+  it('leaves an unrelated error message untouched', () => {
+    expect(extractErrorMessage({ body: { message: 'Integration not found.' } })).toBe(
+      'Integration not found.'
+    );
+  });
+});

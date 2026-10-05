@@ -6,7 +6,7 @@ exports[`<Alerts /> spec renders the component 1`] = `
     class="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--directionColumn euiFlexGroup--responsive"
   >
     <div
-      class="euiFlexItem"
+      class="euiFlexItem euiFlexItem--flexGrowZero"
     >
       <div
         class="euiFlexGroup euiFlexGroup--gutterSmall euiFlexGroup--justifyContentSpaceBetween euiFlexGroup--directionRow euiFlexGroup--responsive"
@@ -131,20 +131,6 @@ exports[`<Alerts /> spec renders the component 1`] = `
               class="euiTab__content"
             >
               Detection rules
-            </span>
-          </button>
-          <button
-            aria-controls="some_html_id"
-            aria-selected="false"
-            class="euiTab"
-            id="threat-intel"
-            role="tab"
-            type="button"
-          >
-            <span
-              class="euiTab__content"
-            >
-              Threat intel
             </span>
           </button>
           <button

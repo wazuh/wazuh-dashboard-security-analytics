@@ -3,19 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { EuiSmallButton, EuiSpacer, EuiLink, EuiIcon, EuiText, EuiCallOut } from '@elastic/eui';
+// Wazuh: EuiLink and EuiIcon dropped with the Detector dashboard field below.
+import { EuiSmallButton, EuiSpacer, EuiText, EuiToolTip } from '@elastic/eui';
 import React from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
-import { buildRouteUrl, createTextDetailsGroup, parseSchedule } from '../../../../utils/helpers';
-import moment from 'moment';
-import {
-  DEFAULT_EMPTY_DATA,
-  logTypesWithDashboards,
-  ROUTES,
-  THREAT_INTEL_NAV_ID,
-} from '../../../../utils/constants';
+import { createTextDetailsGroup, parseSchedule } from '../../../../utils/helpers';
+// Wazuh: replaced the `moment` import with formatUIDate to honor the
+// `dateFormat`/`dateFormat:tz` advanced settings (upstream imported `moment` here).
+import { formatUIDate } from '../../../../utils/dateFormat';
+// Wazuh: logTypesWithDashboards dropped with the Detector dashboard field below.
+import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
+import { isStandardSource } from '../../../../utils/detectorSource';
 import { Detector } from '../../../../../types';
-import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
+// Wazuh: remove integration title formatting
+// import { getLogTypeLabel } from '../../../LogTypes/utils/helpers';
 
 export interface DetectorBasicDetailsViewProps {
   detector: Detector;
@@ -25,6 +26,7 @@ export interface DetectorBasicDetailsViewProps {
   last_update_time?: number;
   onEditClicked: () => void;
   isEditable: boolean;
+  space?: string; // Wazuh
 }
 
 export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> = ({
@@ -33,16 +35,19 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
   last_update_time,
   rulesCanFold,
   children,
-  dashboardId,
+  // dashboardId, // Wazuh: unused since the Detector dashboard field is hidden
   onEditClicked,
   isEditable = true,
+  space, // Wazuh
 }) => {
-  const { name, detector_type, inputs, schedule, threat_intel_enabled } = detector;
+  const { name, detector_type, inputs, schedule } = detector;
   const detectorSchedule = parseSchedule(schedule);
-  const createdAt = enabled_time ? moment(enabled_time).format('YYYY-MM-DDTHH:mm') : undefined;
-  const lastUpdated = last_update_time
-    ? moment(last_update_time).format('YYYY-MM-DDTHH:mm')
-    : undefined;
+  const isStandardDetector = isStandardSource(detector.source);
+  // Wazuh: format Created / Modified with formatUIDate so they honor the
+  // `dateFormat`/`dateFormat:tz` settings. Upstream used the hardcoded
+  // `moment(...).format('YYYY-MM-DDTHH:mm')`.
+  const createdAt = enabled_time ? formatUIDate(enabled_time) : undefined;
+  const lastUpdated = last_update_time ? formatUIDate(last_update_time) : undefined;
   const totalSelected = detector.inputs.reduce((sum, inputObj) => {
     return (
       sum +
@@ -56,12 +61,17 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
       actions={
         isEditable
           ? [
-              <EuiSmallButton
-                onClick={onEditClicked}
-                data-test-subj={'edit-detector-basic-details'}
+              <EuiToolTip
+                content={isStandardDetector ? 'Only custom detectors can be edited.' : undefined}
               >
-                Edit
-              </EuiSmallButton>,
+                <EuiSmallButton
+                  onClick={onEditClicked}
+                  isDisabled={isStandardDetector}
+                  data-test-subj={'edit-detector-basic-details'}
+                >
+                  Edit
+                </EuiSmallButton>
+              </EuiToolTip>,
             ]
           : null
       }
@@ -70,10 +80,14 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
       {createTextDetailsGroup([
         { label: 'Detector name', content: name },
         {
-          label: 'Description',
-          content: inputs[0].detector_input.description || DEFAULT_EMPTY_DATA,
+          label: 'Integration', // Wazuh: reorganize props
+          content: detector_type, // Wazuh: remove integration title formatting
+        }, // Changed Log Type to Integration by Wazuh
+        {
+          // Wazuh: add space
+          label: 'Space',
+          content: space,
         },
-        { label: 'Detector schedule', content: detectorSchedule },
       ])}
       {createTextDetailsGroup([
         {
@@ -86,47 +100,38 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
             </>
           ),
         },
-        { label: 'Log type', content: getLogTypeLabel(detector_type.toLowerCase()) },
+        { label: 'Detector schedule', content: detectorSchedule }, // Wazuh: reorganize props
+        // Wazuh: hide the Detector dashboard field. `logTypesWithDashboards`
+        // (public/utils/constants.ts) only holds network, cloudtrail and s3, so a Wazuh
+        // integration name can never match it and the field is a permanent dead end.
+        // {
+        //   label: 'Detector dashboard',
+        //   content: dashboardId ? (
+        //     <EuiLink onClick={() => window.open(`dashboards#/view/${dashboardId}`, '_blank')}>
+        //       {`${name} summary`}
+        //       <EuiIcon type={'popout'} />
+        //     </EuiLink>
+        //   ) : !logTypesWithDashboards.has(detector_type) ? (
+        //     'Not available for this integration' // Changed Log Type to Integration by Wazuh
+        //   ) : (
+        //     '-'
+        //   ),
+        // },
         {
-          label: 'Detector dashboard',
-          content: dashboardId ? (
-            <EuiLink onClick={() => window.open(`dashboards#/view/${dashboardId}`, '_blank')}>
-              {`${name} summary`}
-              <EuiIcon type={'popout'} />
-            </EuiLink>
-          ) : !logTypesWithDashboards.has(detector_type) ? (
-            'Not available for this log type'
-          ) : (
-            '-'
-          ),
+          // Wazuh: reorganize props, Description takes the slot the hidden
+          // Detector dashboard field left, so the group keeps three items.
+          label: 'Description',
+          content: inputs[0].detector_input.description || DEFAULT_EMPTY_DATA,
         },
       ])}
       {createTextDetailsGroup([
-        { label: 'Detection rules', content: totalSelected },
-        { label: 'Created at', content: createdAt || DEFAULT_EMPTY_DATA },
-        { label: 'Last updated time', content: lastUpdated || DEFAULT_EMPTY_DATA },
+        { label: 'Rules', content: totalSelected }, // Wazuh: rename 'Detection rules' to 'Rules'
+        { label: 'Created', content: createdAt || DEFAULT_EMPTY_DATA },
+        {
+          label: 'Modified',
+          content: lastUpdated || DEFAULT_EMPTY_DATA,
+        },
       ])}
-      {createTextDetailsGroup([
-        { label: 'Threat intelligence', content: threat_intel_enabled ? 'Enabled' : 'Disabled' },
-      ])}
-      {threat_intel_enabled && (
-        <EuiCallOut
-          size="s"
-          title={
-            <p>
-              To match your data against known indicators of compromise we recommend configuring
-              scan using the new{' '}
-              <EuiLink
-                target="_blank"
-                href={buildRouteUrl(THREAT_INTEL_NAV_ID, ROUTES.THREAT_INTEL_OVERVIEW)}
-              >
-                Threat Intelligence
-              </EuiLink>{' '}
-              platform and disabling threat intelligence in the detector.
-            </p>
-          }
-        />
-      )}
       {rulesCanFold ? children : null}
     </ContentPanel>
   );

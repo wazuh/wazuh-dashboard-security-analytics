@@ -17,7 +17,7 @@ import {
 import React, { useMemo, useState } from 'react';
 import { DetectionRulesTable } from './DetectionRulesTable';
 import { RuleItem, RuleItemInfo } from './types/interfaces';
-import { RuleViewerFlyout } from '../../../../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
+import { RuleViewerFlyout } from '../../../../../WazuhRules/components/RuleViewerFlyout/RuleViewerFlyout';
 import { RuleTableItem } from '../../../../../Rules/utils/helpers';
 import { RuleItemInfoBase } from '../../../../../../../types';
 import { ROUTES } from '../../../../../../utils/constants';
@@ -68,10 +68,12 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
       rulesState.allRules.map((rule) => ({
         id: rule._id,
         active: rule.enabled,
-        description: rule._source.description,
+        // Wazuh: Remove duplicated fields in metadata and root: description.
+        description: rule._source.metadata?.description ?? '',
         library: rule.prePackaged ? 'Standard' : 'Custom',
         logType: rule._source.category,
-        name: rule._source.title,
+        // Wazuh: Remove duplicated fields in metadata and root: title.
+        name: rule._source.metadata?.title ?? '',
         severity: rule._source.level,
         ruleInfo: rule,
       })),
@@ -108,13 +110,15 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
           <div data-test-subj="detection-rules-btn">
             <EuiTitle size={'s'}>
               <h4>
-                {'Selected detection rules ('}
+                {/* Wazuh: rename 'detection rules' to 'rules' */}
+                {'Selected rules ('}
                 <>{enabledRulesCountDisplay}</>
                 {')'}
               </h4>
             </EuiTitle>
             <EuiText size="s" color="subdued">
-              Add or remove detection rules for this detector.
+              Add or remove rules for this detector.{' '}
+              {/* Wazuh: rename 'detection rules' to 'rules' */}
             </EuiText>
           </div>
         }
@@ -140,15 +144,17 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
           <EuiEmptyPrompt
             title={
               <EuiTitle>
-                <h1>No detection rules {detectorType ? 'to display' : 'selected'}</h1>
+                {/* Wazuh: rename 'detection rules' to 'rules' */}
+                <h1>No rules {detectorType ? 'to display' : 'selected'}</h1>
               </EuiTitle>
             }
             body={
               <EuiText size="s">
                 <p>
+                  {/* Wazuh: rename 'detection rules' to 'rules' */}
                   {detectorType
-                    ? 'There are no applicable detection rules for the selected log type. Consider creating new detection rules.'
-                    : 'Select a log type to be able to select detection rules.'}
+                    ? 'There are no applicable rules for the selected log type. Consider creating new rules.'
+                    : 'Select a log type to be able to select rules.'}
                 </p>
               </EuiText>
             }

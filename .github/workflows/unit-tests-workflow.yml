@@ -2,14 +2,19 @@ name: Unit tests workflow
 on:
   pull_request:
     branches:
-      - "*"
-  push:
-    branches:
-      - "*"
+      - '*'
+    types: [opened, synchronize, reopened, ready_for_review]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 env:
-  OPENSEARCH_DASHBOARDS_VERSION: 'main'
+  # Wazuh: pin the host to the version declared in opensearch_dashboards.json, as
+  # cypress-workflow.yml does. Building against OpenSearch-Dashboards 'main' broke
+  # the unit tests when upstream bumped jest to 30, which the plugin does not use.
+  OPENSEARCH_DASHBOARDS_VERSION: 3.9.0
 jobs:
   Get-CI-Image-Tag:
+    if: github.event.pull_request.draft == false
     uses: opensearch-project/opensearch-build/.github/workflows/get-ci-image-tag.yml@main
     with:
       product: opensearch-dashboards
@@ -27,7 +32,7 @@ jobs:
       image: ${{ needs.Get-CI-Image-Tag.outputs.ci-image-version-linux }}
       # need to switch to root so that github actions can install runner binary on container without permission issues.
       options: --user root
-
+    if: github.event.pull_request.draft == false
     steps:
       - name: Checkout OpenSearch-Dashboards
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -40,6 +45,8 @@ jobs:
         with:
           path: OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
       - name: Bootstrap plugin/OpenSearch-Dashboards and unit tests
+        env:
+          GIT_REF: 'main'
         run: |
           chown -R 1000:1000 `pwd`
           cd ./OpenSearch-Dashboards/
@@ -82,46 +89,47 @@ jobs:
           directory: coverage
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  tests-windows:
-    name: Run Tests Windows
-    strategy:
-      matrix:
-        os: [windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      # Enable longer filenames for windows
-      - name: Enable longer filenames
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: git config --system core.longpaths true
-      - name: Checkout OpenSearch-Dashboards
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          repository: opensearch-project/OpenSearch-Dashboards
-          ref: ${{ env.OPENSEARCH_DASHBOARDS_VERSION }}
-          path: OpenSearch-Dashboards
-      - name: Setup Node
-        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
-        with:
-          node-version-file: './OpenSearch-Dashboards/.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
-      - name: Install Yarn
-        # Need to use bash to avoid having a windows/linux specific step
-        shell: bash
-        run: |
-          YARN_VERSION=$(node -p "require('./OpenSearch-Dashboards/package.json').engines.yarn")
-          echo "Installing yarn@$YARN_VERSION"
-          npm i -g yarn@$YARN_VERSION
-      - run: node -v
-      - run: yarn -v
-      - name: Checkout Security Analytics Dashboards plugin
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          path: OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
-      - name: Bootstrap plugin/OpenSearch-Dashboards
-        run: |
-          cd OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
-          yarn osd bootstrap --single-version=loose
-      - name: Run tests
-        run: |
-          cd OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
-          yarn run test:jest --coverage
+  ### Commented because Windows is not currently supported by Wazuh dashboard
+  # tests-windows:
+  #   name: Run Tests Windows
+  #   strategy:
+  #     matrix:
+  #       os: [windows-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     # Enable longer filenames for windows
+  #     - name: Enable longer filenames
+  #       if: ${{ matrix.os == 'windows-latest' }}
+  #       run: git config --system core.longpaths true
+  #     - name: Checkout OpenSearch-Dashboards
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: opensearch-project/OpenSearch-Dashboards
+  #         ref: ${{ env.OPENSEARCH_DASHBOARDS_VERSION }}
+  #         path: OpenSearch-Dashboards
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version-file: './OpenSearch-Dashboards/.nvmrc'
+  #         registry-url: 'https://registry.npmjs.org'
+  #     - name: Install Yarn
+  #       # Need to use bash to avoid having a windows/linux specific step
+  #       shell: bash
+  #       run: |
+  #         YARN_VERSION=$(node -p "require('./OpenSearch-Dashboards/package.json').engines.yarn")
+  #         echo "Installing yarn@$YARN_VERSION"
+  #         npm i -g yarn@$YARN_VERSION
+  #     - run: node -v
+  #     - run: yarn -v
+  #     - name: Checkout Security Analytics Dashboards plugin
+  #       uses: actions/checkout@v2
+  #       with:
+  #         path: OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
+  #     - name: Bootstrap plugin/OpenSearch-Dashboards
+  #       run: |
+  #         cd OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
+  #         yarn osd bootstrap --single-version=loose
+  #     - name: Run tests
+  #       run: |
+  #         cd OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
+  #         yarn run test:jest --coverage

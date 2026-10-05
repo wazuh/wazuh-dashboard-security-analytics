@@ -6,6 +6,9 @@
 import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
   EuiSmallButton,
   EuiSmallButtonEmpty,
   EuiFlexGroup,
@@ -17,11 +20,13 @@ import {
 import DefineDetector from '../components/DefineDetector/containers/DefineDetector';
 import { createDetectorSteps, PENDING_DETECTOR_ID } from '../utils/constants';
 import { BREADCRUMBS, EMPTY_DEFAULT_DETECTOR, ROUTES } from '../../../utils/constants';
-import ConfigureAlerts from '../components/ConfigureAlerts';
+// Wazuh: hide Configure Alerts step in detector creation wizard.
+// import ConfigureAlerts from '../components/ConfigureAlerts';
 import { FieldMapping } from '../../../../models/interfaces';
 import { EuiContainedStepProps } from '@elastic/eui/src/components/steps/steps';
 import { BrowserServices } from '../../../models/interfaces';
-import { CreateDetectorRulesOptions } from '../../../models/types';
+// Wazuh: hide Configure Alerts step in detector creation wizard.
+// import { CreateDetectorRulesOptions } from '../../../models/types';
 import { CreateDetectorRulesState } from '../components/DefineDetector/components/DetectionRules/DetectionRules';
 import {
   RuleItem,
@@ -34,11 +39,11 @@ import {
   DataSourceProps,
   Detector,
   DetectorCreationStep,
-} from '../../../../types';
-import { DataStore } from '../../../store/DataStore';
-import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
-import { MetricsContext } from '../../../metrics/MetricsContext';
-import { PageHeader } from '../../../components/PageHeader/PageHeader';
+} from "../../../../types";
+import { DataStore } from "../../../store/DataStore";
+import { errorNotificationToast, getErrorMessage, setBreadcrumbs } from "../../../utils/helpers";
+import { MetricsContext } from "../../../metrics/MetricsContext";
+import { PageHeader } from "../../../components/PageHeader/PageHeader";
 
 interface CreateDetectorProps extends RouteComponentProps, DataSourceProps, DataSourceManagerProps {
   isEdit: boolean;
@@ -56,10 +61,13 @@ export interface CreateDetectorState {
   creatingDetector: boolean;
   rulesState: CreateDetectorRulesState;
   loadingRules: boolean;
+  /** The currently selected space (lowercase: 'standard' | 'custom') */
+  selectedSpace: string;
 }
 
 export default class CreateDetector extends Component<CreateDetectorProps, CreateDetectorState> {
-  private triggerCounter = 1;
+  // Wazuh: hide Configure Alerts step in detector creation wizard.
+  // private triggerCounter = 1;
 
   constructor(props: CreateDetectorProps) {
     super(props);
@@ -81,12 +89,18 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
       fieldMappings: [],
       stepDataValid: {
         [DetectorCreationStep.DEFINE_DETECTOR]: false,
-        [DetectorCreationStep.CONFIGURE_ALERTS]: false,
+        // Wazuh: hide Configure Alerts step in detector creation wizard.
+        // [DetectorCreationStep.CONFIGURE_ALERTS]: false,
       },
-      creatingDetector: false,
       rulesState: { page: { index: 0 }, allRules: [] },
       loadingRules: false,
+      selectedSpace: 'standard',
       ...detectorInput,
+      // Wazuh: the history snapshot is taken before the async setState resolves,
+      // so creatingDetector may be true when the user returns after a failed
+      // post-creation validation, leaving the button stuck in loading state.
+      creatingDetector: false,
+      // Wazuh END
     };
   }
 
@@ -97,7 +111,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
   }
 
   componentDidMount(): void {
-    setBreadcrumbs([BREADCRUMBS.DETECTORS, BREADCRUMBS.DETECTORS_CREATE]);
+    setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS, BREADCRUMBS.DETECTORS_CREATE]);
     if (!(this.props.history.location.state as any)?.detectorInput) {
       this.resetDependencies();
     }
@@ -147,60 +161,50 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     if (!fieldMappingRes.ok) {
       errorNotificationToast(
         this.props.notifications,
-        'create',
-        'detector',
-        'Invalid field mappings.'
+        "create",
+        "detector",
+        getErrorMessage(fieldMappingRes.error, "Invalid field mappings.")
       );
       this.setState({ creatingDetector: false });
       return;
     }
 
     const createDetectorPromise = this.props.services.detectorsService.createDetector(detector);
-    const createDetectorRes = await createDetectorPromise;
-    if (!createDetectorRes.ok) {
-      errorNotificationToast(
-        this.props.notifications,
-        'create',
-        'detector',
-        createDetectorRes.error
-      );
-      this.setState({ creatingDetector: false });
-      return;
-    }
 
-    this.setState({ creatingDetector: false }, () => {
-      // set detector pending state, this will be used in detector details page
-      DataStore.detectors.setState(
-        {
-          pendingRequests: [fieldsMappingPromise, createDetectorPromise],
-          detectorInput: { ...this.state },
-        },
-        this.props.history
-      );
-    });
+    // set detector pending state, this will be used in detector details page
+    DataStore.detectors.setState(
+      {
+        pendingRequests: [fieldsMappingPromise, createDetectorPromise],
+        detectorInput: { ...this.state },
+      },
+      this.props.history
+    );
+
+    this.setState({ creatingDetector: false });
 
     this.props.metrics.detectorMetricsManager.sendMetrics(CreateDetectorSteps.createClicked);
 
     // navigate to detector details
-    this.props.history.push(`${ROUTES.DETECTOR_DETAILS}/${createDetectorRes.response._id}`);
+    this.props.history.push(`${ROUTES.DETECTOR_DETAILS}/${PENDING_DETECTOR_ID}`);
   };
 
-  onNextClick = () => {
-    const { currentStep } = this.state;
-    this.setState({ currentStep: currentStep + 1 });
-    this.props.setDataSourceMenuReadOnly(true);
-    this.props.metrics.detectorMetricsManager.sendMetrics(CreateDetectorSteps.stepTwoInitiated);
-  };
+  // Wazuh: hide Configure Alerts step in detector creation wizard.
+  // onNextClick = () => {
+  //   const { currentStep } = this.state;
+  //   this.setState({ currentStep: currentStep + 1 });
+  //   this.props.setDataSourceMenuReadOnly(true);
+  //   this.props.metrics.detectorMetricsManager.sendMetrics(CreateDetectorSteps.stepTwoInitiated);
+  // };
 
-  onPreviousClick = () => {
-    const { currentStep } = this.state;
-    this.setState({ currentStep: currentStep - 1 });
-    this.props.setDataSourceMenuReadOnly(false);
-  };
+  // onPreviousClick = () => {
+  //   const { currentStep } = this.state;
+  //   this.setState({ currentStep: currentStep - 1 });
+  //   this.props.setDataSourceMenuReadOnly(false);
+  // };
 
-  setCurrentStep = (currentStep: DetectorCreationStep) => {
-    this.setState({ currentStep });
-  };
+  // setCurrentStep = (currentStep: DetectorCreationStep) => {
+  //   this.setState({ currentStep });
+  // };
 
   updateDataValidState = (step: DetectorCreationStep | string, isValid: boolean): void => {
     this.setState({
@@ -211,15 +215,16 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     });
   };
 
-  getRulesOptions(): CreateDetectorRulesOptions {
-    const enabledRules = this.state.rulesState.allRules.filter((rule) => rule.enabled);
-    return enabledRules.map((rule) => ({
-      id: rule._id,
-      name: rule._source.title,
-      severity: rule._source.level,
-      tags: rule._source.tags.map((tag: { value: string }) => tag.value),
-    }));
-  }
+  // Wazuh: hide Configure Alerts step in detector creation wizard.
+  // getRulesOptions(): CreateDetectorRulesOptions {
+  //   const enabledRules = this.state.rulesState.allRules.filter((rule) => rule.enabled);
+  //   return enabledRules.map((rule) => ({
+  //     id: rule._id,
+  //     name: rule._source.title,
+  //     severity: rule._source.level,
+  //     tags: rule._source.tags.map((tag: { value: string }) => tag.value),
+  //   }));
+  // }
 
   async setupRulesState() {
     const { detector_type } = this.state.detector;
@@ -231,8 +236,11 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
       'rule.category': [detector_type],
     });
 
-    const prePackagedRules = allRules.filter((rule) => rule.prePackaged);
-    const customRules = allRules.filter((rule) => !rule.prePackaged);
+    const { selectedSpace } = this.state;
+    const spaceRules = allRules.filter((rule) => rule.space === selectedSpace);
+
+    const prePackagedRules = spaceRules.filter((rule) => rule.prePackaged);
+    const customRules = spaceRules.filter((rule) => !rule.prePackaged);
 
     this.setState({
       rulesState: {
@@ -248,7 +256,9 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
           {
             detector_input: {
               ...this.state.detector.inputs[0].detector_input,
-              pre_packaged_rules: prePackagedRules.map((rule) => ({ id: rule._id })),
+              pre_packaged_rules: prePackagedRules.map((rule) => ({
+                id: rule._id,
+              })),
               custom_rules: customRules.map((rule) => ({ id: rule._id })),
             },
           },
@@ -267,9 +277,10 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     });
   };
 
-  getNextTriggerName = () => {
-    return `Trigger ${this.triggerCounter++}`;
-  };
+  // Wazuh: hide Configure Alerts step in detector creation wizard.
+  // getNextTriggerName = () => {
+  //   return `Trigger ${this.triggerCounter++}`;
+  // };
 
   getDetectorWithUpdatedRules(newRules: RuleItemInfo[]) {
     return {
@@ -350,21 +361,28 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
             changeDetector={this.changeDetector}
             replaceFieldMappings={this.replaceFieldMappings}
             updateDataValidState={this.updateDataValidState}
+            selectedSpace={this.state.selectedSpace}
+            onSpaceChange={(space) =>
+              this.setState({ selectedSpace: space }, () => this.setupRulesState())
+            }
           />
         );
-      case DetectorCreationStep.CONFIGURE_ALERTS:
-        return (
-          <ConfigureAlerts
-            {...this.props}
-            detector={this.state.detector}
-            rulesOptions={this.getRulesOptions()}
-            changeDetector={this.changeDetector}
-            updateDataValidState={this.updateDataValidState}
-            notificationsService={services.notificationsService}
-            getTriggerName={this.getNextTriggerName}
-            metricsContext={this.props.metrics}
-          />
-        );
+      // Wazuh: hide Configure Alerts step in detector creation wizard.
+      // case DetectorCreationStep.CONFIGURE_ALERTS:
+      //   return (
+      //     <ConfigureAlerts
+      //       {...this.props}
+      //       detector={this.state.detector}
+      //       rulesOptions={this.getRulesOptions()}
+      //       changeDetector={this.changeDetector}
+      //       updateDataValidState={this.updateDataValidState}
+      //       notificationsService={services.notificationsService}
+      //       getTriggerName={this.getNextTriggerName}
+      //       metricsContext={this.props.metrics}
+      //     />
+      //   );
+      default:
+        return null;
     }
   };
 
@@ -375,8 +393,8 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
         currentStep > stepData.step
           ? 'complete'
           : currentStep < stepData.step
-          ? 'disabled'
-          : undefined,
+            ? 'disabled'
+            : undefined,
       children: <></>,
     }));
   }
@@ -386,7 +404,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     const steps: EuiContainedStepProps[] = this.createStepsMetadata(currentStep);
 
     return (
-      <form onSubmit={this.onCreateClick}>
+      <form onSubmit={this.onCreateClick} style={{ paddingBottom: '60px' }}>
         <EuiFlexGroup>
           <EuiFlexItem grow={false}>
             <EuiSteps steps={steps} titleSize={'xs'} />
@@ -404,9 +422,14 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
           </EuiFlexItem>
         </EuiFlexGroup>
 
-        <EuiFlexGroup alignItems={'center'} justifyContent={'flexEnd'}>
+        {/* Wazuh: Original Cancel and Create buttons replaced by standardized
+        EuiBottomBar for UI consistency.*/}
+        {/* Wazuh: hide Configure Alerts step in detector creation wizard. */}
+        {/* <EuiFlexGroup alignItems={"center"} justifyContent={"flexEnd"}>
           <EuiFlexItem grow={false}>
-            <EuiSmallButtonEmpty href={`#${ROUTES.DETECTORS}`}>Cancel</EuiSmallButtonEmpty>
+            <EuiSmallButtonEmpty href={`#${ROUTES.DETECTORS}`}>
+              Cancel
+            </EuiSmallButtonEmpty>
           </EuiFlexItem>
 
           {currentStep > DetectorCreationStep.DEFINE_DETECTOR && (
@@ -441,7 +464,49 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
               </EuiSmallButton>
             </EuiFlexItem>
           )}
-        </EuiFlexGroup>
+
+          <EuiFlexItem grow={false}>
+            <EuiSmallButton
+              disabled={
+                creatingDetector ||
+                !stepDataValid[DetectorCreationStep.DEFINE_DETECTOR]
+              }
+              isLoading={creatingDetector}
+              fill={true}
+              onClick={this.onCreateClick}
+            >
+              Create detector
+            </EuiSmallButton>
+          </EuiFlexItem>
+        </EuiFlexGroup> */}
+
+        <EuiBottomBar>
+          <EuiFlexGroup
+            gutterSize="s"
+            justifyContent="flexEnd"
+            alignItems="center"
+            responsive={false}
+          >
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty color="ghost" size="s" iconType="cross" href={`#${ROUTES.DETECTORS}`}>
+                Cancel
+              </EuiButtonEmpty>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButton
+                color="primary"
+                fill
+                iconType="check"
+                size="s"
+                disabled={creatingDetector || !stepDataValid[DetectorCreationStep.DEFINE_DETECTOR]}
+                isLoading={creatingDetector}
+                onClick={this.onCreateClick}
+              >
+                Create detector
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiBottomBar>
       </form>
     );
   }

@@ -10,9 +10,9 @@ import {
   EuiSmallButton,
   EuiContextMenuItem,
   EuiContextMenuPanel,
-  EuiEmptyPrompt,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiHealth,
   EuiInMemoryTable,
   EuiLink,
   EuiPanel,
@@ -20,15 +20,21 @@ import {
   EuiSpacer,
   EuiText,
   EuiButtonIcon,
+  EuiToolTip,
+  EuiSearchBar,
 } from '@elastic/eui';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_EMPTY_DATA,
+  ROUTES,
+} from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
 import { getDetectorNames } from '../../utils/helpers';
 import {
   capitalizeFirstLetter,
   errorNotificationToast,
   formatRuleType,
-  getLogTypeFilterOptions,
+  getLogTypeFilterOptionsFlat,
   renderTime,
   setBreadcrumbs,
 } from '../../../../utils/helpers';
@@ -38,11 +44,21 @@ import {
   getResourceSharingAvailableTypes,
   SA_DETECTOR_RESOURCE_TYPE,
 } from '../../../../services/utils/resource_sharing';
-import { DetectorHit } from '../../../../../server/models/interfaces';
+import { DetectorHit, DetectorHitWithSpace } from '../../../../../server/models/interfaces';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { Direction } from '@opensearch-project/oui/src/services/sort/sort_direction';
 import { DataSourceOption } from 'src/plugins/data_source_management/public/components/data_source_menu/types';
-import { PageHeader } from '../../../../components/PageHeader/PageHeader';
+import { WazuhPageHeader } from '../../../../components/WazuhPageHeader';
+import { IntegrationCell } from '../../../../components/IntegrationCell/IntegrationCell';
+import { getDetectorSourceLabel, isStandardSource } from '../../../../utils/detectorSource'; // Wazuh: import functions to handle detector source and space
+import {
+  buildQueryTextWithStatus,
+  readInMemoryUrlFilterValues,
+  splitStatusFromQueryText,
+  writeInMemoryUrlFilterValues,
+} from '../../../../utils/inMemoryUrlFilterAdapter';
+import { buildStatusIntegrationFilters } from '../../../../utils/entitySearchBarFilters';
+import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -59,6 +75,10 @@ interface DetectorsState {
   resourceSharing: { dataSourceId: string | undefined; types: string[] };
 }
 
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.';
+
 export default class Detectors extends Component<DetectorsProps, DetectorsState> {
   constructor(props: DetectorsProps) {
     super(props);
@@ -71,11 +91,59 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       isPopoverOpen: false,
       resourceSharing: { dataSourceId: undefined, types: [] },
     };
+    // Wazuh: query/status/space persisted in the URL (no 'page' — Detectors is an
+    // in-memory table, per the no-goal boundary). Guarded: `history` is optional
+    // in some existing test mocks that don't pass RouteComponentProps.
+    this.urlFilters = readInMemoryUrlFilterValues(props.history?.location?.search ?? '', ['space']);
+
+    // Wazuh: '=' (exact) inside an OR-group matches what the integration filter itself
+    // produces on a checkbox click — a plain 'integration:value' token would use the
+    // default contains-match operator, reintroducing the substring-match bug
+    // fixed earlier for these filters. The `space` note below is about the one-shot
+    // `integration` param folding only: `space` is deliberately not applied there
+    // (server-side-only, in the count query).
+    const search = props.history?.location?.search ?? '';
+    this.pendingIntegrationParam = new URLSearchParams(search).get('integration') ?? undefined;
+    if (this.pendingIntegrationParam) {
+      const value = /\s/.test(this.pendingIntegrationParam)
+        ? `"${this.pendingIntegrationParam}"`
+        : this.pendingIntegrationParam;
+      const token = `integration=(${value})`;
+      this.urlFilters = {
+        ...this.urlFilters,
+        query: [this.urlFilters.query, token].filter(Boolean).join(' ').trim(),
+      };
+    }
   }
 
+  private urlFilters: { query: string; status: string; space: string };
+  private pendingIntegrationParam: string | undefined;
+
+  private onSearchChange = ({ query }: { query: any }) => {
+    const { query: withoutStatus, status } = splitStatusFromQueryText(query?.text ?? '', 'status');
+    const { query: freeText, status: space } = splitStatusFromQueryText(withoutStatus, 'space');
+    if (this.props.history) {
+      writeInMemoryUrlFilterValues(this.props.history, { query: freeText, status, space });
+    }
+    return true;
+  };
+
   async componentDidMount() {
-    setBreadcrumbs([BREADCRUMBS.DETECTORS]);
-    this.updateResourceSharingAvailableTypes();
+    setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS]);
+    if (this.pendingIntegrationParam && this.props.history) {
+      writeInMemoryUrlFilterValues(this.props.history, {
+        query: this.urlFilters.query,
+        status: this.urlFilters.status,
+        space: this.urlFilters.space,
+      });
+      // Wazuh: drop the one-shot `integration` param now that its clause has
+      // been folded into `query` — leaving it would re-seed/duplicate the
+      // token on every remount.
+      const params = new URLSearchParams(this.props.history.location.search);
+      params.delete('integration');
+      this.props.history.replace({ ...this.props.history.location, search: params.toString() });
+      this.pendingIntegrationParam = undefined;
+    }
     await this.getDetectors();
   }
 
@@ -111,13 +179,16 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         const detectors = res.response.hits.hits.map((detector) => {
           const { custom_rules, pre_packaged_rules } = detector._source.inputs[0].detector_input;
           const rulesCount = custom_rules.length + pre_packaged_rules.length;
+
           return {
             ...detector,
             detectorName: detector._source.name,
             lastUpdatedTime: detector._source.last_update_time,
-            logType: detector._source.detector_type,
+            integration: detector._source.detector_type,
             rulesCount: rulesCount,
             status: detector._source.enabled ? 'Active' : 'Inactive',
+            space: getDetectorSourceLabel(detector._source.source), // Wazuh: retrieve space from source
+            rawSpace: (detector._source.source || '').toLowerCase(),
           };
         });
         this.setState({ detectorHits: detectors });
@@ -228,13 +299,8 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
   };
 
   render() {
-    const {
-      detectorHits,
-      isDeleteModalVisible,
-      isPopoverOpen,
-      loadingDetectors,
-      selectedItems,
-    } = this.state;
+    const { detectorHits, isDeleteModalVisible, isPopoverOpen, loadingDetectors, selectedItems } =
+      this.state;
 
     const actions = [
       <EuiSmallButton
@@ -271,13 +337,32 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         name: 'Status',
         sortable: true,
         dataType: 'string',
+        render: (status: string, item: DetectorHit) => (
+          <EuiHealth color={item._source.enabled ? 'success' : 'subdued'}>{status}</EuiHealth>
+        ),
       },
       {
-        field: 'logType',
-        name: 'Log type',
+        field: 'integration',
+        name: 'Integration', // replace log type to integration by Wazuh
         sortable: true,
         dataType: 'string',
-        render: (logType: string) => formatRuleType(logType),
+        render: (integration: string, item: DetectorHit) => {
+          const row = item as DetectorHitWithSpace & { rawSpace?: string; integrationId?: string };
+          return (
+            <IntegrationCell
+              name={formatRuleType(integration)}
+              integrationId={row.integrationId}
+              space={row.rawSpace}
+              currentEntity="detectors"
+            />
+          );
+        },
+      },
+      {
+        field: 'space',
+        name: 'Space',
+        sortable: true,
+        dataType: 'string',
       },
       {
         field: 'rulesCount',
@@ -289,7 +374,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
       {
         field: 'lastUpdatedTime',
-        name: 'Last updated time',
+        name: 'Modified',
         sortable: true,
         dataType: 'date',
         render: (last_update_time: number) => renderTime(last_update_time) || DEFAULT_EMPTY_DATA,
@@ -326,22 +411,29 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     ];
 
     const renderActionsLeft = (loading: boolean, selectedItems: DetectorHit[]) => {
+      const hasStandardSelected = selectedItems.some((item) =>
+        isStandardSource(item._source.source)
+      );
       return [
-        <EuiSmallButton
-          color={'danger'}
-          iconType={'trash'}
+        <EuiToolTip
           key={'Delete'}
-          disabled={selectedItems.length === 0 || loading}
-          onClick={() => {
-            this.closeActionsPopover();
-            this.openDeleteModal();
-          }}
-          data-test-subj={'deleteButton'}
+          content={hasStandardSelected ? 'Only custom detectors can be deleted.' : undefined}
         >
-          {selectedItems.length > 0
-            ? `Delete ${selectedItems.length} detectors`
-            : 'Delete detectors'}
-        </EuiSmallButton>,
+          <EuiSmallButton
+            color={'danger'}
+            iconType={'trash'}
+            disabled={selectedItems.length === 0 || loading || hasStandardSelected}
+            onClick={() => {
+              this.closeActionsPopover();
+              this.openDeleteModal();
+            }}
+            data-test-subj={'deleteButton'}
+          >
+            {selectedItems.length > 0
+              ? `Delete ${selectedItems.length} detectors`
+              : 'Delete detectors'}
+          </EuiSmallButton>
+        </EuiToolTip>,
       ];
     };
 
@@ -382,6 +474,15 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       ];
     };
 
+    // Wazuh: Unique space labels from loaded detectors
+    const spaceOptions = [
+      ...new Set(detectorHits.map((detector) => getDetectorSourceLabel(detector._source.source))),
+    ]
+      .filter((v) => v)
+      .sort()
+      .map((space) => ({ value: space, name: space }));
+    // End Wazuh
+
     const search = {
       toolsLeft: renderActionsLeft(loadingDetectors, selectedItems),
       toolsRight: renderActionsRight(),
@@ -402,16 +503,42 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             name: capitalizeFirstLetter(status),
           })),
           multiSelect: 'or',
+          // Wazuh: EUI's default 'eq' operator matches by substring ("Active" is
+          // contained in "Inactive"), not equality — 'exact' is required so
+          // selecting one status option doesn't also match the other.
+          operator: 'exact',
         } as FieldValueSelectionFilterConfigType,
+        // Wazuh: reuse the shared Rules/Decoders/KVDBs Integration filter builder
+        // (default `integration` field) — only the Integration half is used
+        // (index 1); Detectors' own Status filter above stays inline/data-derived
+        // and must not pick up the helper's Enabled/Disabled semantics.
+        // Wazuh: use the flat `{ value, name }` option variant (not the grouped
+        // getLogTypeFilterOptions()) so this popover renders as a plain list of
+        // names, matching Rules/Decoders/KVDBs exactly.
+        buildStatusIntegrationFilters([], false, {
+          integrationFilterOptions: getLogTypeFilterOptionsFlat(),
+        })[1],
+        // Wazuh: Added new filter for space
         {
           type: 'field_value_selection',
-          field: 'logType',
-          name: 'Log type',
+          field: 'space',
+          name: 'Space',
           compressed: true,
-          options: getLogTypeFilterOptions(),
+          options: spaceOptions,
           multiSelect: 'or',
+          operator: 'exact',
         } as FieldValueSelectionFilterConfigType,
+        // End Wazuh
       ],
+      // Wazuh: persist query/status/space in the URL (see this.urlFilters / onSearchChange).
+      defaultQuery: EuiSearchBar.Query.parse(
+        buildQueryTextWithStatus(
+          buildQueryTextWithStatus(this.urlFilters.query, this.urlFilters.status, 'status'),
+          this.urlFilters.space,
+          'space'
+        )
+      ),
+      onChange: this.onSearchChange,
     };
 
     const sorting: { sort: { field: string; direction: Direction } } = {
@@ -422,32 +549,16 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     };
     return (
       <EuiFlexGroup direction="column" gutterSize={'m'}>
-        <PageHeader
+        <WazuhPageHeader
           appRightControls={actions.map((action) => ({
             renderComponent: action,
           }))}
-        >
-          <EuiFlexItem>
-            <EuiFlexGroup>
-              <EuiFlexItem>
-                <EuiText size="s">
-                  <h1>Threat detectors</h1>
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiFlexGroup justifyContent="flexEnd">
-                  {actions.map((action, idx) => {
-                    return (
-                      <EuiFlexItem key={idx} grow={false}>
-                        {action}
-                      </EuiFlexItem>
-                    );
-                  })}
-                </EuiFlexGroup>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        </PageHeader>
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          /* Wazuh modification: Changed page title to "Detectors" */
+          title="Detectors"
+          description={PAGE_DESCRIPTION}
+          controls={actions}
+        />
 
         <EuiFlexItem>
           <EuiPanel>
@@ -463,15 +574,15 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               search={search}
               loading={loadingDetectors}
               message={
-                <EuiEmptyPrompt
-                  style={{ maxWidth: '45em' }}
-                  body={
-                    <EuiText size="s">
-                      <p>There are no existing detectors.</p>
-                    </EuiText>
-                  }
-                  actions={[actions[3]]}
-                />
+                loadingDetectors ? undefined : (
+                  <ListEmptyPrompt
+                    entity="detectors"
+                    hasFilters={detectorHits.length > 0}
+                    noContentTitle="No detectors yet"
+                    emptyBody={<p>Create one to start generating findings from your log data.</p>}
+                    actions={[actions[3]]}
+                  />
+                )
               }
             />
           </EuiPanel>

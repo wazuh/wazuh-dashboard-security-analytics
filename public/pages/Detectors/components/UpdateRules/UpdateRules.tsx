@@ -3,7 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { EuiSmallButton, EuiFlexGroup, EuiFlexItem, EuiSpacer, EuiTitle } from '@elastic/eui';
+import {
+  EuiBottomBar,
+  EuiButton,
+  EuiButtonEmpty,
+  EuiCallOut,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiSpacer,
+  EuiTitle,
+  EuiSmallButton,
+} from '@elastic/eui';
 import {
   DetectorHit,
   SearchDetectorsResponse,
@@ -22,12 +32,13 @@ import {
   setBreadcrumbs,
   successNotificationToast,
 } from '../../../../utils/helpers';
-import { RuleTableItem } from '../../../Rules/utils/helpers';
-import { RuleViewerFlyout } from '../../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
+import { RuleTableItem } from '../../../WazuhRules/utils/helpers';
+import { RuleViewerFlyout } from '../../../WazuhRules/components/RuleViewerFlyout/RuleViewerFlyout';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { DataStore } from '../../../../store/DataStore';
 import ReviewFieldMappings from '../ReviewFieldMappings/ReviewFieldMappings';
 import { FieldMapping, Detector } from '../../../../../types';
+import { filterRulesByDetectorSpace } from '../../utils/helpers';
 
 export interface UpdateDetectorRulesProps
   extends RouteComponentProps<
@@ -54,9 +65,8 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
   useEffect(() => {
     const getDetector = async () => {
       setLoading(true);
-      const response = (await saContext?.services.detectorsService.getDetectors()) as ServerResponse<
-        SearchDetectorsResponse
-      >;
+      const response =
+        (await saContext?.services.detectorsService.getDetectors()) as ServerResponse<SearchDetectorsResponse>;
       if (response.ok) {
         const detectorHit = response.response.hits.hits.find(
           (detectorHit) => detectorHit._id === detectorId
@@ -65,6 +75,7 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
         setDetector(newDetector);
 
         setBreadcrumbs([
+          BREADCRUMBS.DETECTION,
           BREADCRUMBS.DETECTORS,
           BREADCRUMBS.DETECTORS_DETAILS(detectorHit._source.name, detectorHit._id),
           {
@@ -87,18 +98,24 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
       );
       enabledRuleIds = enabledRuleIds.concat(enabledCustomRuleIds);
 
-      const allRules = await DataStore.rules.getAllRules({
-        'rule.category': [detector.detector_type.toLowerCase()],
-      });
-
+      // Wazuh: keep only the rules of the detector's space, integrations with
+      // the same name can coexist in the standard and custom spaces.
+      const allRules = filterRulesByDetectorSpace(
+        await DataStore.rules.getAllRules({
+          'rule.category': [detector.detector_type.toLowerCase()],
+        }),
+        detector
+      );
       const prePackagedRules = allRules?.filter((rule) => rule.prePackaged);
       const prePackagedRuleItems = prePackagedRules?.map((rule) => ({
-        name: rule._source.title,
+        // Wazuh: Remove duplicated fields in metadata and root: title.
+        name: rule._source.metadata?.title ?? '',
         id: rule._id,
         severity: rule._source.level,
         logType: rule._source.category,
         library: 'Standard',
-        description: rule._source.description,
+        // Wazuh: Remove duplicated fields in metadata and root: description.
+        description: rule._source.metadata?.description ?? '',
         active: enabledRuleIds.includes(rule._id),
         ruleInfo: rule,
       }));
@@ -106,12 +123,14 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
 
       const customRules = allRules?.filter((rule) => !rule.prePackaged);
       const customRuleItems = customRules?.map((rule) => ({
-        name: rule._source.title,
+        // Wazuh: Remove duplicated fields in metadata and root: title.
+        name: rule._source.metadata?.title ?? '',
         id: rule._id,
         severity: rule._source.level,
         logType: rule._source.category,
         library: 'Custom',
-        description: rule._source.description,
+        // Wazuh: Remove duplicated fields in metadata and root: description.
+        description: rule._source.metadata?.description ?? '',
         active: enabledRuleIds.includes(rule._id),
         ruleInfo: rule,
       }));
@@ -207,11 +226,12 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
 
     try {
       if (fieldMappings?.length) {
-        const createMappingsResponse = await saContext?.services.fieldMappingService?.createMappings(
-          detector.inputs[0].detector_input.indices[0],
-          detector.detector_type.toLowerCase(),
-          fieldMappings
-        );
+        const createMappingsResponse =
+          await saContext?.services.fieldMappingService?.createMappings(
+            detector.inputs[0].detector_input.indices[0],
+            detector.detector_type.toLowerCase(),
+            fieldMappings
+          );
 
         if (!createMappingsResponse?.ok) {
           errorNotificationToast(
@@ -233,6 +253,10 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
   };
 
   const ruleItems = prePackagedRuleItems.concat(customRuleItems);
+
+  // Wazuh: prevent saving a detector with no active rules, consistent with the
+  // create detector form validation.
+  const activeRulesCount = ruleItems.filter((item) => item.active).length;
 
   const onRuleDetails = (ruleItem: RuleItem) => {
     setFlyoutData(() => ({
@@ -277,7 +301,7 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
   );
 
   return (
-    <div>
+    <div style={{ paddingBottom: '60px' }}>
       {flyoutData ? (
         <RuleViewerFlyout
           hideFlyout={() => setFlyoutData(() => null)}
@@ -291,10 +315,25 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
       <EuiSpacer size="xl" />
 
       <ContentPanel
-        title={`Detection rules (${
-          prePackagedRuleItems.concat(customRuleItems).filter((item) => item.active).length
+        title={`Rules (${
+          // Wazuh: rename 'Detection rules' to 'Rules'
+          activeRulesCount
         })`}
       >
+        {/* Wazuh: prevent saving a detector with no active rules */}
+        {!loading && activeRulesCount === 0 ? (
+          <>
+            <EuiCallOut
+              title="At least one rule must be enabled"
+              color="danger"
+              iconType="alert"
+              data-test-subj="no-active-rules-callout"
+            >
+              <p>Enable at least one rule to save the detector.</p>
+            </EuiCallOut>
+            <EuiSpacer size="m" />
+          </>
+        ) : null}
         <DetectionRulesTable
           loading={loading}
           ruleItems={ruleItems}
@@ -317,7 +356,9 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
 
         <EuiSpacer size="xl" />
 
-        <EuiFlexGroup justifyContent="flexEnd">
+        {/* Wazuh: Original Cancel and Create buttons replaced by standardized
+        EuiBottomBar for UI consistency.*/}
+        {/* <EuiFlexGroup justifyContent="flexEnd">
           <EuiFlexItem grow={false}>
             <EuiSmallButton disabled={submitting} onClick={onCancel}>
               Cancel
@@ -335,7 +376,43 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
               Save changes
             </EuiSmallButton>
           </EuiFlexItem>
-        </EuiFlexGroup>
+        </EuiFlexGroup> */}
+
+        <EuiBottomBar>
+          <EuiFlexGroup
+            gutterSize="s"
+            justifyContent="flexEnd"
+            alignItems="center"
+            responsive={false}
+          >
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty
+                color="ghost"
+                size="s"
+                iconType="cross"
+                disabled={submitting}
+                onClick={onCancel}
+              >
+                Cancel
+              </EuiButtonEmpty>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButton
+                color="primary"
+                fill
+                iconType="check"
+                size="s"
+                // Wazuh: prevent saving a detector with no active rules
+                disabled={loading || activeRulesCount === 0}
+                isLoading={submitting}
+                onClick={onSave}
+                data-test-subj={'save-detector-rules-edits'}
+              >
+                Edit detector rules
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiBottomBar>
       </ContentPanel>
     </div>
   );

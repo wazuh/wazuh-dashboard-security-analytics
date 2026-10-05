@@ -4,6 +4,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
 <Detectors
   detectorService={
     DetectorService {
+      "countDetectorsByIntegration": [Function],
       "createDetector": [Function],
       "dataSourceEnabled": undefined,
       "deleteDetector": [Function],
@@ -38,7 +39,14 @@ exports[`<Detectors /> spec renders the component 1`] = `
     <div
       className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--directionColumn euiFlexGroup--responsive"
     >
-      <PageHeader
+      <WazuhPageHeader
+        appDescriptionControls={
+          Array [
+            Object {
+              "description": "A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.",
+            },
+          ]
+        }
         appRightControls={
           Array [
             Object {
@@ -55,135 +63,216 @@ exports[`<Detectors /> spec renders the component 1`] = `
             },
           ]
         }
+        controls={
+          Array [
+            <EuiSmallButton
+              data-test-subj="detectorsCreateButton"
+              fill={true}
+              href="#/create-detector"
+              iconGap="s"
+              iconSide="left"
+              iconType="plus"
+            >
+              Create detector
+            </EuiSmallButton>,
+          ]
+        }
+        description="A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard."
+        title="Detectors"
       >
-        <EuiFlexItem>
-          <div
-            className="euiFlexItem"
-          >
-            <EuiFlexGroup>
-              <div
-                className="euiFlexGroup euiFlexGroup--gutterLarge euiFlexGroup--directionRow euiFlexGroup--responsive"
+        <PageHeader
+          appDescriptionControls={
+            Array [
+              Object {
+                "description": "A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.",
+              },
+            ]
+          }
+          appRightControls={
+            Array [
+              Object {
+                "renderComponent": <EuiSmallButton
+                  data-test-subj="detectorsCreateButton"
+                  fill={true}
+                  href="#/create-detector"
+                  iconGap="s"
+                  iconSide="left"
+                  iconType="plus"
+                >
+                  Create detector
+                </EuiSmallButton>,
+              },
+            ]
+          }
+        >
+          <EuiFlexItem>
+            <div
+              className="euiFlexItem"
+            >
+              <EuiFlexGroup
+                alignItems="center"
+                gutterSize="m"
+                justifyContent="spaceBetween"
+                wrap={true}
               >
-                <EuiFlexItem>
-                  <div
-                    className="euiFlexItem"
-                  >
-                    <EuiText
-                      size="s"
+                <div
+                  className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--alignItemsCenter euiFlexGroup--justifyContentSpaceBetween euiFlexGroup--directionRow euiFlexGroup--responsive euiFlexGroup--wrap"
+                >
+                  <EuiFlexItem>
+                    <div
+                      className="euiFlexItem"
                     >
-                      <div
-                        className="euiText euiText--small"
+                      <EuiText
+                        size="s"
                       >
-                        <h1>
-                          Threat detectors
-                        </h1>
-                      </div>
-                    </EuiText>
-                  </div>
-                </EuiFlexItem>
-                <EuiFlexItem>
-                  <div
-                    className="euiFlexItem"
-                  >
-                    <EuiFlexGroup
-                      justifyContent="flexEnd"
-                    >
-                      <div
-                        className="euiFlexGroup euiFlexGroup--gutterLarge euiFlexGroup--justifyContentFlexEnd euiFlexGroup--directionRow euiFlexGroup--responsive"
-                      >
-                        <EuiFlexItem
-                          grow={false}
-                          key="0"
+                        <div
+                          className="euiText euiText--small"
                         >
-                          <div
-                            className="euiFlexItem euiFlexItem--flexGrowZero"
+                          <h1>
+                            Detectors
+                          </h1>
+                        </div>
+                      </EuiText>
+                    </div>
+                  </EuiFlexItem>
+                  <EuiFlexItem
+                    grow={false}
+                    key="0"
+                    style={
+                      Object {
+                        "alignSelf": "center",
+                      }
+                    }
+                  >
+                    <div
+                      className="euiFlexItem euiFlexItem--flexGrowZero"
+                      style={
+                        Object {
+                          "alignSelf": "center",
+                        }
+                      }
+                    >
+                      <EuiSmallButton
+                        data-test-subj="detectorsCreateButton"
+                        fill={true}
+                        href="#/create-detector"
+                        iconGap="s"
+                        iconSide="left"
+                        iconType="plus"
+                      >
+                        <EuiButton
+                          data-test-subj="detectorsCreateButton"
+                          fill={true}
+                          href="#/create-detector"
+                          iconGap="s"
+                          iconSide="left"
+                          iconType="plus"
+                          size="s"
+                        >
+                          <EuiButtonDisplay
+                            baseClassName="euiButton"
+                            data-test-subj="detectorsCreateButton"
+                            element="a"
+                            fill={true}
+                            href="#/create-detector"
+                            iconGap="s"
+                            iconSide="left"
+                            iconType="plus"
+                            isDisabled={false}
+                            rel="noreferrer"
+                            size="s"
                           >
-                            <EuiSmallButton
+                            <a
+                              className="euiButton euiButton--primary euiButton--small euiButton--fill"
                               data-test-subj="detectorsCreateButton"
-                              fill={true}
+                              disabled={false}
                               href="#/create-detector"
-                              iconGap="s"
-                              iconSide="left"
-                              iconType="plus"
+                              rel="noreferrer"
+                              style={
+                                Object {
+                                  "minWidth": undefined,
+                                }
+                              }
                             >
-                              <EuiButton
-                                data-test-subj="detectorsCreateButton"
-                                fill={true}
-                                href="#/create-detector"
+                              <EuiButtonContent
+                                className="euiButton__content"
                                 iconGap="s"
                                 iconSide="left"
                                 iconType="plus"
-                                size="s"
+                                textProps={
+                                  Object {
+                                    "className": "euiButton__text",
+                                  }
+                                }
                               >
-                                <EuiButtonDisplay
-                                  baseClassName="euiButton"
-                                  data-test-subj="detectorsCreateButton"
-                                  element="a"
-                                  fill={true}
-                                  href="#/create-detector"
-                                  iconGap="s"
-                                  iconSide="left"
-                                  iconType="plus"
-                                  isDisabled={false}
-                                  rel="noreferrer"
-                                  size="s"
+                                <span
+                                  className="euiButtonContent euiButtonContent--smallIconGap euiButton__content"
                                 >
-                                  <a
-                                    className="euiButton euiButton--primary euiButton--small euiButton--fill"
-                                    data-test-subj="detectorsCreateButton"
-                                    disabled={false}
-                                    href="#/create-detector"
-                                    rel="noreferrer"
-                                    style={
-                                      Object {
-                                        "minWidth": undefined,
-                                      }
-                                    }
+                                  <EuiIcon
+                                    className="euiButtonContent__icon"
+                                    color="inherit"
+                                    size="m"
+                                    type="plus"
                                   >
-                                    <EuiButtonContent
-                                      className="euiButton__content"
-                                      iconGap="s"
-                                      iconSide="left"
-                                      iconType="plus"
-                                      textProps={
-                                        Object {
-                                          "className": "euiButton__text",
-                                        }
-                                      }
-                                    >
-                                      <span
-                                        className="euiButtonContent euiButtonContent--smallIconGap euiButton__content"
-                                      >
-                                        <EuiIcon
-                                          className="euiButtonContent__icon"
-                                          color="inherit"
-                                          size="m"
-                                          type="plus"
-                                        >
-                                          EuiIconMock
-                                        </EuiIcon>
-                                        <span
-                                          className="euiButton__text"
-                                        >
-                                          Create detector
-                                        </span>
-                                      </span>
-                                    </EuiButtonContent>
-                                  </a>
-                                </EuiButtonDisplay>
-                              </EuiButton>
-                            </EuiSmallButton>
-                          </div>
-                        </EuiFlexItem>
-                      </div>
-                    </EuiFlexGroup>
-                  </div>
-                </EuiFlexItem>
-              </div>
-            </EuiFlexGroup>
-          </div>
-        </EuiFlexItem>
-      </PageHeader>
+                                    EuiIconMock
+                                  </EuiIcon>
+                                  <span
+                                    className="euiButton__text"
+                                  >
+                                    Create detector
+                                  </span>
+                                </span>
+                              </EuiButtonContent>
+                            </a>
+                          </EuiButtonDisplay>
+                        </EuiButton>
+                      </EuiSmallButton>
+                    </div>
+                  </EuiFlexItem>
+                </div>
+              </EuiFlexGroup>
+              <EuiSpacer
+                size="xs"
+              >
+                <div
+                  className="euiSpacer euiSpacer--xs"
+                />
+              </EuiSpacer>
+              <EuiText
+                color="subdued"
+                size="s"
+                style={
+                  Object {
+                    "maxWidth": "90ch",
+                  }
+                }
+              >
+                <div
+                  className="euiText euiText--small"
+                  style={
+                    Object {
+                      "maxWidth": "90ch",
+                    }
+                  }
+                >
+                  <EuiTextColor
+                    color="subdued"
+                    component="div"
+                  >
+                    <div
+                      className="euiTextColor euiTextColor--subdued"
+                    >
+                      <p>
+                        A detector connects rules to a data source, an index or an alias, and runs continuously to identify security findings. It uses rules already active in a single space, either custom or standard.
+                      </p>
+                    </div>
+                  </EuiTextColor>
+                </div>
+              </EuiText>
+            </div>
+          </EuiFlexItem>
+        </PageHeader>
+      </WazuhPageHeader>
       <EuiFlexItem>
         <div
           className="euiFlexItem"
@@ -206,13 +295,20 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       "dataType": "string",
                       "field": "status",
                       "name": "Status",
+                      "render": [Function],
                       "sortable": true,
                     },
                     Object {
                       "dataType": "string",
-                      "field": "logType",
-                      "name": "Log type",
+                      "field": "integration",
+                      "name": "Integration",
                       "render": [Function],
+                      "sortable": true,
+                    },
+                    Object {
+                      "dataType": "string",
+                      "field": "space",
+                      "name": "Space",
                       "sortable": true,
                     },
                     Object {
@@ -226,7 +322,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     Object {
                       "dataType": "date",
                       "field": "lastUpdatedTime",
-                      "name": "Last updated time",
+                      "name": "Modified",
                       "render": [Function],
                       "sortable": true,
                     },
@@ -301,6 +397,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                             "unit": "MINUTES",
                           },
                         },
+                        "source": "custom",
                         "triggers": Array [
                           Object {
                             "actions": Array [
@@ -422,35 +519,31 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         "type": "detector",
                       },
                       "detectorName": "detector_name",
+                      "integration": "detector_type",
                       "lastUpdatedTime": 1,
-                      "logType": "detector_type",
+                      "rawSpace": "custom",
                       "rulesCount": 2,
+                      "space": "Custom",
                       "status": "Active",
                     },
                   ]
                 }
                 loading={false}
                 message={
-                  <EuiEmptyPrompt
+                  <ListEmptyPrompt
                     actions={
                       Array [
                         undefined,
                       ]
                     }
-                    body={
-                      <EuiText
-                        size="s"
-                      >
-                        <p>
-                          There are no existing detectors.
-                        </p>
-                      </EuiText>
+                    emptyBody={
+                      <p>
+                        Create one to start generating findings from your log data.
+                      </p>
                     }
-                    style={
-                      Object {
-                        "maxWidth": "45em",
-                      }
-                    }
+                    entity="detectors"
+                    hasFilters={true}
+                    noContentTitle="No detectors yet"
                   />
                 }
                 pagination={true}
@@ -463,12 +556,30 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       "placeholder": "Search threat detectors",
                       "schema": true,
                     },
+                    "defaultQuery": Query {
+                      "ast": _AST {
+                        "_clauses": Array [],
+                        "_indexedClauses": Object {
+                          "field": Object {},
+                          "group": Array [],
+                          "is": Object {},
+                          "term": Array [],
+                        },
+                      },
+                      "syntax": Object {
+                        "parse": [Function],
+                        "print": [Function],
+                        "printClause": [Function],
+                      },
+                      "text": "",
+                    },
                     "filters": Array [
                       Object {
                         "compressed": true,
                         "field": "status",
                         "multiSelect": "or",
                         "name": "Status",
+                        "operator": "exact",
                         "options": Array [
                           Object {
                             "name": "Active",
@@ -479,23 +590,45 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       },
                       Object {
                         "compressed": true,
-                        "field": "logType",
+                        "field": "integration",
+                        "loading": false,
                         "multiSelect": "or",
-                        "name": "Log type",
+                        "name": "Integration",
+                        "operator": "exact",
                         "options": Array [],
                         "type": "field_value_selection",
                       },
+                      Object {
+                        "compressed": true,
+                        "field": "space",
+                        "multiSelect": "or",
+                        "name": "Space",
+                        "operator": "exact",
+                        "options": Array [
+                          Object {
+                            "name": "Custom",
+                            "value": "Custom",
+                          },
+                        ],
+                        "type": "field_value_selection",
+                      },
                     ],
+                    "onChange": [Function],
                     "toolsLeft": Array [
-                      <EuiSmallButton
-                        color="danger"
-                        data-test-subj="deleteButton"
-                        disabled={true}
-                        iconType="trash"
-                        onClick={[Function]}
+                      <EuiToolTip
+                        delay="regular"
+                        position="top"
                       >
-                        Delete detectors
-                      </EuiSmallButton>,
+                        <EuiSmallButton
+                          color="danger"
+                          data-test-subj="deleteButton"
+                          disabled={true}
+                          iconType="trash"
+                          onClick={[Function]}
+                        >
+                          Delete detectors
+                        </EuiSmallButton>
+                      </EuiToolTip>,
                     ],
                     "toolsRight": Array [
                       <EuiSmallButton
@@ -564,14 +697,17 @@ exports[`<Detectors /> spec renders the component 1`] = `
                             "detectorName": Object {
                               "type": "string",
                             },
+                            "integration": Object {
+                              "type": "string",
+                            },
                             "lastUpdatedTime": Object {
                               "type": "date",
                             },
-                            "logType": Object {
-                              "type": "string",
-                            },
                             "rulesCount": Object {
                               "type": "number",
+                            },
+                            "space": Object {
+                              "type": "string",
                             },
                             "status": Object {
                               "type": "string",
@@ -581,6 +717,25 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         },
                       }
                     }
+                    defaultQuery={
+                      Query {
+                        "ast": _AST {
+                          "_clauses": Array [],
+                          "_indexedClauses": Object {
+                            "field": Object {},
+                            "group": Array [],
+                            "is": Object {},
+                            "term": Array [],
+                          },
+                        },
+                        "syntax": Object {
+                          "parse": [Function],
+                          "print": [Function],
+                          "printClause": [Function],
+                        },
+                        "text": "",
+                      }
+                    }
                     filters={
                       Array [
                         Object {
@@ -588,6 +743,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "field": "status",
                           "multiSelect": "or",
                           "name": "Status",
+                          "operator": "exact",
                           "options": Array [
                             Object {
                               "name": "Active",
@@ -598,10 +754,26 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         },
                         Object {
                           "compressed": true,
-                          "field": "logType",
+                          "field": "integration",
+                          "loading": false,
                           "multiSelect": "or",
-                          "name": "Log type",
+                          "name": "Integration",
+                          "operator": "exact",
                           "options": Array [],
+                          "type": "field_value_selection",
+                        },
+                        Object {
+                          "compressed": true,
+                          "field": "space",
+                          "multiSelect": "or",
+                          "name": "Space",
+                          "operator": "exact",
+                          "options": Array [
+                            Object {
+                              "name": "Custom",
+                              "value": "Custom",
+                            },
+                          ],
                           "type": "field_value_selection",
                         },
                       ]
@@ -609,15 +781,20 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     onChange={[Function]}
                     toolsLeft={
                       Array [
-                        <EuiSmallButton
-                          color="danger"
-                          data-test-subj="deleteButton"
-                          disabled={true}
-                          iconType="trash"
-                          onClick={[Function]}
+                        <EuiToolTip
+                          delay="regular"
+                          position="top"
                         >
-                          Delete detectors
-                        </EuiSmallButton>,
+                          <EuiSmallButton
+                            color="danger"
+                            data-test-subj="deleteButton"
+                            disabled={true}
+                            iconType="trash"
+                            onClick={[Function]}
+                          >
+                            Delete detectors
+                          </EuiSmallButton>
+                        </EuiToolTip>,
                       ]
                     }
                     toolsRight={
@@ -676,79 +853,99 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           <div
                             className="euiFlexItem euiFlexItem--flexGrowZero"
                           >
-                            <EuiSmallButton
-                              color="danger"
-                              data-test-subj="deleteButton"
-                              disabled={true}
-                              iconType="trash"
+                            <EuiToolTip
+                              delay="regular"
                               key="Delete"
-                              onClick={[Function]}
+                              position="top"
                             >
-                              <EuiButton
-                                color="danger"
-                                data-test-subj="deleteButton"
-                                disabled={true}
-                                iconType="trash"
-                                onClick={[Function]}
-                                size="s"
+                              <span
+                                className="euiToolTipAnchor"
+                                onKeyUp={[Function]}
+                                onMouseOut={[Function]}
+                                onMouseOver={[Function]}
                               >
-                                <EuiButtonDisplay
-                                  baseClassName="euiButton"
+                                <EuiSmallButton
                                   color="danger"
                                   data-test-subj="deleteButton"
                                   disabled={true}
-                                  element="button"
                                   iconType="trash"
-                                  isDisabled={true}
+                                  onBlur={[Function]}
                                   onClick={[Function]}
-                                  size="s"
-                                  type="button"
+                                  onFocus={[Function]}
                                 >
-                                  <button
-                                    className="euiButton euiButton--danger euiButton--small euiButton-isDisabled"
+                                  <EuiButton
+                                    color="danger"
                                     data-test-subj="deleteButton"
                                     disabled={true}
+                                    iconType="trash"
+                                    onBlur={[Function]}
                                     onClick={[Function]}
-                                    style={
-                                      Object {
-                                        "minWidth": undefined,
-                                      }
-                                    }
-                                    type="button"
+                                    onFocus={[Function]}
+                                    size="s"
                                   >
-                                    <EuiButtonContent
-                                      className="euiButton__content"
-                                      iconGap="m"
-                                      iconSide="left"
+                                    <EuiButtonDisplay
+                                      baseClassName="euiButton"
+                                      color="danger"
+                                      data-test-subj="deleteButton"
+                                      disabled={true}
+                                      element="button"
                                       iconType="trash"
-                                      textProps={
-                                        Object {
-                                          "className": "euiButton__text",
-                                        }
-                                      }
+                                      isDisabled={true}
+                                      onBlur={[Function]}
+                                      onClick={[Function]}
+                                      onFocus={[Function]}
+                                      size="s"
+                                      type="button"
                                     >
-                                      <span
-                                        className="euiButtonContent euiButton__content"
+                                      <button
+                                        className="euiButton euiButton--danger euiButton--small euiButton-isDisabled"
+                                        data-test-subj="deleteButton"
+                                        disabled={true}
+                                        onBlur={[Function]}
+                                        onClick={[Function]}
+                                        onFocus={[Function]}
+                                        style={
+                                          Object {
+                                            "minWidth": undefined,
+                                          }
+                                        }
+                                        type="button"
                                       >
-                                        <EuiIcon
-                                          className="euiButtonContent__icon"
-                                          color="inherit"
-                                          size="m"
-                                          type="trash"
+                                        <EuiButtonContent
+                                          className="euiButton__content"
+                                          iconGap="m"
+                                          iconSide="left"
+                                          iconType="trash"
+                                          textProps={
+                                            Object {
+                                              "className": "euiButton__text",
+                                            }
+                                          }
                                         >
-                                          EuiIconMock
-                                        </EuiIcon>
-                                        <span
-                                          className="euiButton__text"
-                                        >
-                                          Delete detectors
-                                        </span>
-                                      </span>
-                                    </EuiButtonContent>
-                                  </button>
-                                </EuiButtonDisplay>
-                              </EuiButton>
-                            </EuiSmallButton>
+                                          <span
+                                            className="euiButtonContent euiButton__content"
+                                          >
+                                            <EuiIcon
+                                              className="euiButtonContent__icon"
+                                              color="inherit"
+                                              size="m"
+                                              type="trash"
+                                            >
+                                              EuiIconMock
+                                            </EuiIcon>
+                                            <span
+                                              className="euiButton__text"
+                                            >
+                                              Delete detectors
+                                            </span>
+                                          </span>
+                                        </EuiButtonContent>
+                                      </button>
+                                    </EuiButtonDisplay>
+                                  </EuiButton>
+                                </EuiSmallButton>
+                              </span>
+                            </EuiToolTip>
                           </div>
                         </EuiFlexItem>
                         <EuiFlexItem
@@ -852,6 +1049,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     "field": "status",
                                     "multiSelect": "or",
                                     "name": "Status",
+                                    "operator": "exact",
                                     "options": Array [
                                       Object {
                                         "name": "Active",
@@ -862,10 +1060,26 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                   },
                                   Object {
                                     "compressed": true,
-                                    "field": "logType",
+                                    "field": "integration",
+                                    "loading": false,
                                     "multiSelect": "or",
-                                    "name": "Log type",
+                                    "name": "Integration",
+                                    "operator": "exact",
                                     "options": Array [],
+                                    "type": "field_value_selection",
+                                  },
+                                  Object {
+                                    "compressed": true,
+                                    "field": "space",
+                                    "multiSelect": "or",
+                                    "name": "Space",
+                                    "operator": "exact",
+                                    "options": Array [
+                                      Object {
+                                        "name": "Custom",
+                                        "value": "Custom",
+                                      },
+                                    ],
                                     "type": "field_value_selection",
                                   },
                                 ]
@@ -902,6 +1116,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         "field": "status",
                                         "multiSelect": "or",
                                         "name": "Status",
+                                        "operator": "exact",
                                         "options": Array [
                                           Object {
                                             "name": "Active",
@@ -1038,9 +1253,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     config={
                                       Object {
                                         "compressed": true,
-                                        "field": "logType",
+                                        "field": "integration",
+                                        "loading": false,
                                         "multiSelect": "or",
-                                        "name": "Log type",
+                                        "name": "Integration",
+                                        "operator": "exact",
                                         "options": Array [],
                                         "type": "field_value_selection",
                                       }
@@ -1078,7 +1295,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                           onClick={[Function]}
                                           size="s"
                                         >
-                                          Log type
+                                          Integration
                                         </EuiFilterButton>
                                       }
                                       closePopover={[Function]}
@@ -1153,10 +1370,150 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                     >
                                                       <span
                                                         className="euiFilterButton__textShift"
-                                                        data-text="Log type"
-                                                        title="Log type"
+                                                        data-text="Integration"
+                                                        title="Integration"
                                                       >
-                                                        Log type
+                                                        Integration
+                                                      </span>
+                                                    </span>
+                                                  </span>
+                                                </EuiButtonContent>
+                                              </button>
+                                            </EuiButtonEmpty>
+                                          </EuiFilterButton>
+                                        </div>
+                                      </div>
+                                    </EuiPopover>
+                                  </FieldValueSelectionFilter>
+                                  <FieldValueSelectionFilter
+                                    config={
+                                      Object {
+                                        "compressed": true,
+                                        "field": "space",
+                                        "multiSelect": "or",
+                                        "name": "Space",
+                                        "operator": "exact",
+                                        "options": Array [
+                                          Object {
+                                            "name": "Custom",
+                                            "value": "Custom",
+                                          },
+                                        ],
+                                        "type": "field_value_selection",
+                                      }
+                                    }
+                                    index={2}
+                                    onChange={[Function]}
+                                    query={
+                                      Query {
+                                        "ast": _AST {
+                                          "_clauses": Array [],
+                                          "_indexedClauses": Object {
+                                            "field": Object {},
+                                            "group": Array [],
+                                            "is": Object {},
+                                            "term": Array [],
+                                          },
+                                        },
+                                        "syntax": Object {
+                                          "parse": [Function],
+                                          "print": [Function],
+                                          "printClause": [Function],
+                                        },
+                                        "text": "",
+                                      }
+                                    }
+                                  >
+                                    <EuiPopover
+                                      anchorPosition="downCenter"
+                                      button={
+                                        <EuiFilterButton
+                                          grow={true}
+                                          hasActiveFilters={false}
+                                          iconSide="right"
+                                          iconType="arrowDown"
+                                          onClick={[Function]}
+                                          size="s"
+                                        >
+                                          Space
+                                        </EuiFilterButton>
+                                      }
+                                      closePopover={[Function]}
+                                      display="inlineBlock"
+                                      hasArrow={true}
+                                      id="field_value_selection_2"
+                                      isOpen={false}
+                                      ownFocus={true}
+                                      panelClassName="euiFilterGroup__popoverPanel"
+                                      panelPaddingSize="none"
+                                    >
+                                      <div
+                                        className="euiPopover euiPopover--anchorDownCenter"
+                                        id="field_value_selection_2"
+                                      >
+                                        <div
+                                          className="euiPopover__anchor"
+                                        >
+                                          <EuiFilterButton
+                                            grow={true}
+                                            hasActiveFilters={false}
+                                            iconSide="right"
+                                            iconType="arrowDown"
+                                            onClick={[Function]}
+                                            size="s"
+                                          >
+                                            <EuiButtonEmpty
+                                              className="euiFilterButton euiFilterButton--hasIcon"
+                                              color="text"
+                                              iconSide="right"
+                                              iconType="arrowDown"
+                                              onClick={[Function]}
+                                              size="s"
+                                              textProps={
+                                                Object {
+                                                  "className": "",
+                                                }
+                                              }
+                                              type="button"
+                                            >
+                                              <button
+                                                className="euiButtonEmpty euiButtonEmpty--text euiButtonEmpty--small euiFilterButton euiFilterButton--hasIcon"
+                                                disabled={false}
+                                                onClick={[Function]}
+                                                type="button"
+                                              >
+                                                <EuiButtonContent
+                                                  className="euiButtonEmpty__content"
+                                                  iconGap="m"
+                                                  iconSide="right"
+                                                  iconSize="m"
+                                                  iconType="arrowDown"
+                                                  textProps={
+                                                    Object {
+                                                      "className": "euiButtonEmpty__text",
+                                                    }
+                                                  }
+                                                >
+                                                  <span
+                                                    className="euiButtonContent euiButtonContent--iconRight euiButtonEmpty__content"
+                                                  >
+                                                    <EuiIcon
+                                                      className="euiButtonContent__icon"
+                                                      color="inherit"
+                                                      size="m"
+                                                      type="arrowDown"
+                                                    >
+                                                      EuiIconMock
+                                                    </EuiIcon>
+                                                    <span
+                                                      className="euiButtonEmpty__text"
+                                                    >
+                                                      <span
+                                                        className="euiFilterButton__textShift"
+                                                        data-text="Space"
+                                                        title="Space"
+                                                      >
+                                                        Space
                                                       </span>
                                                     </span>
                                                   </span>
@@ -1390,13 +1747,20 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           "dataType": "string",
                           "field": "status",
                           "name": "Status",
+                          "render": [Function],
                           "sortable": true,
                         },
                         Object {
                           "dataType": "string",
-                          "field": "logType",
-                          "name": "Log type",
+                          "field": "integration",
+                          "name": "Integration",
                           "render": [Function],
+                          "sortable": true,
+                        },
+                        Object {
+                          "dataType": "string",
+                          "field": "space",
+                          "name": "Space",
                           "sortable": true,
                         },
                         Object {
@@ -1410,7 +1774,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         Object {
                           "dataType": "date",
                           "field": "lastUpdatedTime",
-                          "name": "Last updated time",
+                          "name": "Modified",
                           "render": [Function],
                           "sortable": true,
                         },
@@ -1485,6 +1849,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                 "unit": "MINUTES",
                               },
                             },
+                            "source": "custom",
                             "triggers": Array [
                               Object {
                                 "actions": Array [
@@ -1606,35 +1971,31 @@ exports[`<Detectors /> spec renders the component 1`] = `
                             "type": "detector",
                           },
                           "detectorName": "detector_name",
+                          "integration": "detector_type",
                           "lastUpdatedTime": 1,
-                          "logType": "detector_type",
+                          "rawSpace": "custom",
                           "rulesCount": 2,
+                          "space": "Custom",
                           "status": "Active",
                         },
                       ]
                     }
                     loading={false}
                     noItemsMessage={
-                      <EuiEmptyPrompt
+                      <ListEmptyPrompt
                         actions={
                           Array [
                             undefined,
                           ]
                         }
-                        body={
-                          <EuiText
-                            size="s"
-                          >
-                            <p>
-                              There are no existing detectors.
-                            </p>
-                          </EuiText>
+                        emptyBody={
+                          <p>
+                            Create one to start generating findings from your log data.
+                          </p>
                         }
-                        style={
-                          Object {
-                            "maxWidth": "45em",
-                          }
-                        }
+                        entity="detectors"
+                        hasFilters={true}
+                        noContentTitle="No detectors yet"
                       />
                     }
                     onChange={[Function]}
@@ -1753,22 +2114,29 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                           Object {
                                             "isSortAscending": undefined,
                                             "isSorted": false,
-                                            "key": "_data_s_logType_2",
-                                            "name": "Log type",
+                                            "key": "_data_s_integration_2",
+                                            "name": "Integration",
                                             "onSort": [Function],
                                           },
                                           Object {
                                             "isSortAscending": undefined,
                                             "isSorted": false,
-                                            "key": "_data_s_rulesCount_3",
+                                            "key": "_data_s_space_3",
+                                            "name": "Space",
+                                            "onSort": [Function],
+                                          },
+                                          Object {
+                                            "isSortAscending": undefined,
+                                            "isSorted": false,
+                                            "key": "_data_s_rulesCount_4",
                                             "name": "Active rules",
                                             "onSort": [Function],
                                           },
                                           Object {
                                             "isSortAscending": undefined,
                                             "isSorted": false,
-                                            "key": "_data_s_lastUpdatedTime_4",
-                                            "name": "Last updated time",
+                                            "key": "_data_s_lastUpdatedTime_5",
+                                            "name": "Modified",
                                             "onSort": [Function],
                                           },
                                         ]
@@ -2060,16 +2428,16 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                   </EuiTableHeaderCell>
                                   <EuiTableHeaderCell
                                     align="left"
-                                    data-test-subj="tableHeaderCell_logType_2"
+                                    data-test-subj="tableHeaderCell_integration_2"
                                     isSorted={false}
-                                    key="_data_h_logType_2"
+                                    key="_data_h_integration_2"
                                     onSort={[Function]}
                                   >
                                     <th
                                       aria-live="polite"
                                       aria-sort="none"
                                       className="euiTableHeaderCell"
-                                      data-test-subj="tableHeaderCell_logType_2"
+                                      data-test-subj="tableHeaderCell_integration_2"
                                       role="columnheader"
                                       scope="col"
                                       style={
@@ -2099,15 +2467,15 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                 values={
                                                   Object {
                                                     "description": undefined,
-                                                    "innerText": "Log type",
+                                                    "innerText": "Integration",
                                                   }
                                                 }
                                               >
                                                 <span
                                                   className="euiTableCellContent__text"
-                                                  title="Log type"
+                                                  title="Integration"
                                                 >
-                                                  Log type
+                                                  Integration
                                                 </span>
                                               </EuiI18n>
                                             </EuiInnerText>
@@ -2118,16 +2486,74 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                   </EuiTableHeaderCell>
                                   <EuiTableHeaderCell
                                     align="left"
-                                    data-test-subj="tableHeaderCell_rulesCount_3"
+                                    data-test-subj="tableHeaderCell_space_3"
                                     isSorted={false}
-                                    key="_data_h_rulesCount_3"
+                                    key="_data_h_space_3"
                                     onSort={[Function]}
                                   >
                                     <th
                                       aria-live="polite"
                                       aria-sort="none"
                                       className="euiTableHeaderCell"
-                                      data-test-subj="tableHeaderCell_rulesCount_3"
+                                      data-test-subj="tableHeaderCell_space_3"
+                                      role="columnheader"
+                                      scope="col"
+                                      style={
+                                        Object {
+                                          "width": undefined,
+                                        }
+                                      }
+                                    >
+                                      <button
+                                        className="euiTableHeaderButton"
+                                        data-test-subj="tableHeaderSortButton"
+                                        onClick={[Function]}
+                                        type="button"
+                                      >
+                                        <CellContents
+                                          className="euiTableCellContent"
+                                          isSorted={false}
+                                          showSortMsg={true}
+                                        >
+                                          <span
+                                            className="euiTableCellContent"
+                                          >
+                                            <EuiInnerText>
+                                              <EuiI18n
+                                                default="{innerText}; {description}"
+                                                token="euiTableHeaderCell.titleTextWithDesc"
+                                                values={
+                                                  Object {
+                                                    "description": undefined,
+                                                    "innerText": "Space",
+                                                  }
+                                                }
+                                              >
+                                                <span
+                                                  className="euiTableCellContent__text"
+                                                  title="Space"
+                                                >
+                                                  Space
+                                                </span>
+                                              </EuiI18n>
+                                            </EuiInnerText>
+                                          </span>
+                                        </CellContents>
+                                      </button>
+                                    </th>
+                                  </EuiTableHeaderCell>
+                                  <EuiTableHeaderCell
+                                    align="left"
+                                    data-test-subj="tableHeaderCell_rulesCount_4"
+                                    isSorted={false}
+                                    key="_data_h_rulesCount_4"
+                                    onSort={[Function]}
+                                  >
+                                    <th
+                                      aria-live="polite"
+                                      aria-sort="none"
+                                      className="euiTableHeaderCell"
+                                      data-test-subj="tableHeaderCell_rulesCount_4"
                                       role="columnheader"
                                       scope="col"
                                       style={
@@ -2176,16 +2602,16 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                   </EuiTableHeaderCell>
                                   <EuiTableHeaderCell
                                     align="left"
-                                    data-test-subj="tableHeaderCell_lastUpdatedTime_4"
+                                    data-test-subj="tableHeaderCell_lastUpdatedTime_5"
                                     isSorted={false}
-                                    key="_data_h_lastUpdatedTime_4"
+                                    key="_data_h_lastUpdatedTime_5"
                                     onSort={[Function]}
                                   >
                                     <th
                                       aria-live="polite"
                                       aria-sort="none"
                                       className="euiTableHeaderCell"
-                                      data-test-subj="tableHeaderCell_lastUpdatedTime_4"
+                                      data-test-subj="tableHeaderCell_lastUpdatedTime_5"
                                       role="columnheader"
                                       scope="col"
                                       style={
@@ -2215,15 +2641,15 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                 values={
                                                   Object {
                                                     "description": undefined,
-                                                    "innerText": "Last updated time",
+                                                    "innerText": "Modified",
                                                   }
                                                 }
                                               >
                                                 <span
                                                   className="euiTableCellContent__text"
-                                                  title="Last updated time"
+                                                  title="Modified"
                                                 >
-                                                  Last updated time
+                                                  Modified
                                                 </span>
                                               </EuiI18n>
                                             </EuiInnerText>
@@ -2349,7 +2775,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         }
                                       }
                                       setScopeRow={false}
-                                      textOnly={true}
+                                      textOnly={false}
                                     >
                                       <td
                                         className="euiTableRowCell"
@@ -2365,22 +2791,60 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                           Status
                                         </div>
                                         <div
-                                          className="euiTableCellContent"
+                                          className="euiTableCellContent euiTableCellContent--overflowingContent"
                                         >
-                                          <span
-                                            className="euiTableCellContent__text"
+                                          <EuiHealth
+                                            className=""
+                                            color="success"
+                                            key=".0"
                                           >
-                                            Active
-                                          </span>
+                                            <div
+                                              className="euiHealth euiHealth--textSizeS"
+                                            >
+                                              <EuiFlexGroup
+                                                alignItems="center"
+                                                gutterSize="xs"
+                                                responsive={false}
+                                              >
+                                                <div
+                                                  className="euiFlexGroup euiFlexGroup--gutterExtraSmall euiFlexGroup--alignItemsCenter euiFlexGroup--directionRow"
+                                                >
+                                                  <EuiFlexItem
+                                                    grow={false}
+                                                  >
+                                                    <div
+                                                      className="euiFlexItem euiFlexItem--flexGrowZero"
+                                                    >
+                                                      <EuiIcon
+                                                        color="success"
+                                                        type="dot"
+                                                      >
+                                                        EuiIconMock
+                                                      </EuiIcon>
+                                                    </div>
+                                                  </EuiFlexItem>
+                                                  <EuiFlexItem
+                                                    grow={false}
+                                                  >
+                                                    <div
+                                                      className="euiFlexItem euiFlexItem--flexGrowZero"
+                                                    >
+                                                      Active
+                                                    </div>
+                                                  </EuiFlexItem>
+                                                </div>
+                                              </EuiFlexGroup>
+                                            </div>
+                                          </EuiHealth>
                                         </div>
                                       </td>
                                     </EuiTableRowCell>
                                     <EuiTableRowCell
                                       align="left"
-                                      key="_data_column_logType_detector_id_1_2"
+                                      key="_data_column_integration_detector_id_1_2"
                                       mobileOptions={
                                         Object {
-                                          "header": "Log type",
+                                          "header": "Integration",
                                           "render": undefined,
                                         }
                                       }
@@ -2398,18 +2862,223 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         <div
                                           className="euiTableRowCell__mobileHeader euiTableRowCell--hideForDesktop"
                                         >
-                                          Log type
+                                          Integration
                                         </div>
                                         <div
                                           className="euiTableCellContent euiTableCellContent--overflowingContent"
                                         >
-                                          -
+                                          <IntegrationCell
+                                            className=""
+                                            currentEntity="detectors"
+                                            key=".0"
+                                            name="detector_type"
+                                            space="custom"
+                                          >
+                                            <RedirectAppLinks
+                                              application={
+                                                Object {
+                                                  "applications$": BehaviorSubject {
+                                                    "_isScalar": false,
+                                                    "_value": Array [],
+                                                    "closed": false,
+                                                    "hasError": false,
+                                                    "isStopped": false,
+                                                    "observers": Array [],
+                                                    "thrownError": null,
+                                                  },
+                                                  "capabilities": Object {
+                                                    "catalogue": Object {},
+                                                    "management": Object {},
+                                                    "navLinks": Object {},
+                                                    "workspaces": Object {},
+                                                  },
+                                                  "currentAppId$": Observable {
+                                                    "_isScalar": false,
+                                                    "source": Subject {
+                                                      "_isScalar": false,
+                                                      "closed": false,
+                                                      "hasError": false,
+                                                      "isStopped": false,
+                                                      "observers": Array [
+                                                        Subscriber {
+                                                          "_parentOrParents": null,
+                                                          "_subscriptions": Array [
+                                                            SubjectSubscription {
+                                                              "_parentOrParents": [Circular],
+                                                              "_subscriptions": null,
+                                                              "closed": false,
+                                                              "subject": [Circular],
+                                                              "subscriber": [Circular],
+                                                            },
+                                                          ],
+                                                          "closed": false,
+                                                          "destination": SafeSubscriber {
+                                                            "_complete": undefined,
+                                                            "_context": [Circular],
+                                                            "_error": undefined,
+                                                            "_next": [Function],
+                                                            "_parentOrParents": null,
+                                                            "_parentSubscriber": [Circular],
+                                                            "_subscriptions": null,
+                                                            "closed": false,
+                                                            "destination": Object {
+                                                              "closed": true,
+                                                              "complete": [Function],
+                                                              "error": [Function],
+                                                              "next": [Function],
+                                                            },
+                                                            "isStopped": false,
+                                                            "syncErrorThrowable": false,
+                                                            "syncErrorThrown": false,
+                                                            "syncErrorValue": null,
+                                                          },
+                                                          "isStopped": false,
+                                                          "syncErrorThrowable": true,
+                                                          "syncErrorThrown": false,
+                                                          "syncErrorValue": null,
+                                                        },
+                                                      ],
+                                                      "thrownError": null,
+                                                    },
+                                                  },
+                                                  "getUrlForApp": [MockFunction] {
+                                                    "calls": Array [
+                                                      Array [
+                                                        "decoders",
+                                                        Object {
+                                                          "path": "#/decoders?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                      Array [
+                                                        "rules",
+                                                        Object {
+                                                          "path": "#/rules?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                      Array [
+                                                        "kvdbs",
+                                                        Object {
+                                                          "path": "#/kvdbs?integration=detector_type&space=custom",
+                                                        },
+                                                      ],
+                                                    ],
+                                                    "results": Array [
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                      Object {
+                                                        "type": "return",
+                                                        "value": undefined,
+                                                      },
+                                                    ],
+                                                  },
+                                                  "navigateToApp": [MockFunction],
+                                                  "navigateToUrl": [MockFunction],
+                                                  "registerMountContext": [MockFunction],
+                                                  "setAppBadgeControls": [MockFunction],
+                                                  "setAppBottomControls": [MockFunction],
+                                                  "setAppCenterControls": [MockFunction],
+                                                  "setAppDescriptionControls": [MockFunction],
+                                                  "setAppLeftControls": [MockFunction],
+                                                  "setAppRightControls": [MockFunction],
+                                                }
+                                              }
+                                            >
+                                              <div
+                                                className="osdRedirectCrossAppLinks"
+                                              >
+                                                <EuiPopover
+                                                  anchorPosition="downLeft"
+                                                  button={
+                                                    <EuiLink
+                                                      data-test-subj="integrationCellLink"
+                                                      onClick={[Function]}
+                                                    >
+                                                      detector_type
+                                                    </EuiLink>
+                                                  }
+                                                  closePopover={[Function]}
+                                                  display="inlineBlock"
+                                                  hasArrow={true}
+                                                  id="integrationCellPopover-detector_type"
+                                                  isOpen={false}
+                                                  ownFocus={true}
+                                                  panelPaddingSize="none"
+                                                >
+                                                  <div
+                                                    className="euiPopover euiPopover--anchorDownLeft"
+                                                    id="integrationCellPopover-detector_type"
+                                                  >
+                                                    <div
+                                                      className="euiPopover__anchor"
+                                                    >
+                                                      <EuiLink
+                                                        data-test-subj="integrationCellLink"
+                                                        onClick={[Function]}
+                                                      >
+                                                        <button
+                                                          className="euiLink euiLink--primary"
+                                                          data-test-subj="integrationCellLink"
+                                                          disabled={false}
+                                                          onClick={[Function]}
+                                                          type="button"
+                                                        >
+                                                          detector_type
+                                                        </button>
+                                                      </EuiLink>
+                                                    </div>
+                                                  </div>
+                                                </EuiPopover>
+                                              </div>
+                                            </RedirectAppLinks>
+                                          </IntegrationCell>
                                         </div>
                                       </td>
                                     </EuiTableRowCell>
                                     <EuiTableRowCell
                                       align="left"
-                                      key="_data_column_rulesCount_detector_id_1_3"
+                                      key="_data_column_space_detector_id_1_3"
+                                      mobileOptions={
+                                        Object {
+                                          "header": "Space",
+                                          "render": undefined,
+                                        }
+                                      }
+                                      setScopeRow={false}
+                                      textOnly={true}
+                                    >
+                                      <td
+                                        className="euiTableRowCell"
+                                        style={
+                                          Object {
+                                            "width": undefined,
+                                          }
+                                        }
+                                      >
+                                        <div
+                                          className="euiTableRowCell__mobileHeader euiTableRowCell--hideForDesktop"
+                                        >
+                                          Space
+                                        </div>
+                                        <div
+                                          className="euiTableCellContent"
+                                        >
+                                          <span
+                                            className="euiTableCellContent__text"
+                                          >
+                                            Custom
+                                          </span>
+                                        </div>
+                                      </td>
+                                    </EuiTableRowCell>
+                                    <EuiTableRowCell
+                                      align="left"
+                                      key="_data_column_rulesCount_detector_id_1_4"
                                       mobileOptions={
                                         Object {
                                           "header": "Active rules",
@@ -2441,10 +3110,10 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                     </EuiTableRowCell>
                                     <EuiTableRowCell
                                       align="left"
-                                      key="_data_column_lastUpdatedTime_detector_id_1_4"
+                                      key="_data_column_lastUpdatedTime_detector_id_1_5"
                                       mobileOptions={
                                         Object {
-                                          "header": "Last updated time",
+                                          "header": "Modified",
                                           "render": undefined,
                                         }
                                       }
@@ -2462,7 +3131,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                         <div
                                           className="euiTableRowCell__mobileHeader euiTableRowCell--hideForDesktop"
                                         >
-                                          Last updated time
+                                          Modified
                                         </div>
                                         <div
                                           className="euiTableCellContent euiTableCellContent--overflowingContent"

@@ -1,0 +1,344 @@
+import React, { useState, useEffect } from 'react';
+import { useAsyncAction, useAsyncActionRunOnStart, withGuardAsync } from '../utils/helpers';
+import { DataStore } from '../../../store/DataStore';
+import { AssetIdentity, formatAssetLabel } from '../../../components/AssetIdentity';
+import {
+  EuiButton,
+  EuiButtonEmpty,
+  EuiButtonIcon,
+  EuiCallOut,
+  EuiFieldSearch,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiFormRow,
+  EuiSpacer,
+  EuiSelect,
+  EuiText,
+  EuiToolTip,
+} from '@elastic/eui';
+import { DecoderSource, PolicyDocument, UserSpace } from '../../../../types';
+import { ButtonOpenModal, ButtonOpenModalProps } from './Button';
+import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { errorNotificationToast, successNotificationToast } from '../../../utils/helpers';
+
+const delayOnSearch = 300; // ms
+const itemsPerPage = 25;
+
+interface SelectRootDecoderFormProps {
+  space: UserSpace;
+  notifications: NotificationsStart;
+  policyDocumentData: PolicyDocument;
+  rootDecoderSource?: DecoderSource;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+const SelectRootDecoderForm: React.FC<SelectRootDecoderFormProps> = ({
+  space,
+  onCancel,
+  notifications,
+  policyDocumentData,
+  onConfirm,
+  rootDecoderSource,
+}) => {
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, delayOnSearch);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
+
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const action = useAsyncActionRunOnStart<{
+    items: { value: string; label: string };
+    total_items: number;
+    nextFrom: number;
+    search: string;
+  }>(
+    async (dependencies, state) => {
+      const [currentSearch] = dependencies ?? [];
+
+      const isNewSearch = currentSearch !== state.data?.search;
+
+      const prevItems = isNewSearch ? [] : state.data?.items ?? [];
+      const size = itemsPerPage;
+      const from = isNewSearch ? 0 : state.data?.nextFrom ?? 0;
+      const query = buildDecodersSearchQuery(currentSearch);
+      const response = await DataStore.decoders.searchDecoders(
+        {
+          from,
+          size,
+          sort: [
+            {
+              ['document.name']: {
+                order: 'asc',
+                unmapped_type: 'keyword',
+              },
+            },
+          ],
+          query,
+          // the title is what a reader recognises; the name is the identifier.
+          _source: { includes: ['document.id', 'document.name', 'document.metadata.title'] },
+        },
+        space
+      );
+
+      const newItems = response.items.map((item) => ({
+        value: item?.document?.id,
+        // `value` carries the id, so pairing the label costs nothing downstream.
+        label:
+          formatAssetLabel(item?.document?.metadata?.title, item?.document?.name) ||
+          (item?.document?.id ?? ''),
+      }));
+      const data = search === currentSearch ? [...(prevItems || []), ...newItems] : newItems;
+
+      return {
+        items: data,
+        total_items: response.total,
+        nextFrom: from + size,
+        search: currentSearch,
+      };
+    },
+    [debouncedSearch],
+    { refreshDataOnPreRun: false }
+  );
+
+  const updatePolicyAction = useAsyncAction(async () => {
+    const [success] = await DataStore.policies.updatePolicy(space, {
+      metadata: {
+        title: policyDocumentData.metadata?.title ?? '',
+        author: policyDocumentData.metadata?.author ?? '',
+        description: policyDocumentData.metadata?.description ?? '',
+        documentation: policyDocumentData.metadata?.documentation ?? '',
+        references: policyDocumentData.metadata?.references ?? [],
+      },
+      root_decoder: selected,
+      integrations: policyDocumentData.integrations,
+      filters: policyDocumentData.filters ?? [],
+      enrichments: policyDocumentData.enrichments,
+      enabled: policyDocumentData.enabled,
+      index_unclassified_events: policyDocumentData.index_unclassified_events,
+      index_discarded_events: policyDocumentData.index_discarded_events,
+    });
+    if (success) {
+      successNotificationToast(notifications, 'updated', `[${space}] policy`);
+      onConfirm();
+    } else {
+      errorNotificationToast(notifications, 'updated', `[${space}] policy`);
+    }
+  });
+
+  useEffect(() => {
+    if (action.data?.items && !action.data?.items.some((item) => item.value === selected)) {
+      setSelected(null); // Reset selected value if it's not in the new items list
+    }
+  }, [action?.data]);
+
+  if (action.data?.items) {
+    return (
+      <>
+        <EuiFieldSearch
+          fullWidth
+          placeholder="Search decoders"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          isClearable
+          aria-label="Search decoders"
+        />
+        <EuiSpacer size="m" />
+        <EuiFormRow label="Select decoder" fullWidth={true}>
+          <EuiSelect
+            fullWidth={true}
+            onChange={(e) => setSelected(e.target.value)}
+            loading={action.running}
+            value={selected}
+            options={action.data?.items}
+            hasNoInitialSelection
+            append={
+              action.data?.total_items > action.data?.items.length ? (
+                <EuiToolTip position="top" content="Fetch more decoders">
+                  <EuiButtonIcon
+                    iconType="plusInCircle"
+                    aria-label="Fetch more decoders"
+                    onClick={action.run}
+                    color="primary"
+                  />
+                </EuiToolTip>
+              ) : null
+            }
+          />
+        </EuiFormRow>
+        <EuiSpacer size="s" />
+        {rootDecoderSource && (
+          <>
+            <EuiText size="s">
+              Current root decoder:{' '}
+              {/* The picker options pair the name with the identifier, so this line pairs
+                  them too instead of showing the identifier alone. */}
+              <AssetIdentity
+                title={rootDecoderSource.document.metadata?.title}
+                identifier={rootDecoderSource.document.name}
+              />
+            </EuiText>
+            <EuiSpacer size="s" />
+          </>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'end' }}>
+          <EuiText size="s" color="subdued">
+            {action.data.items.length} of {action.data.total_items} decoders loaded
+          </EuiText>
+        </div>
+        <EuiSpacer size="m" />
+        <EuiFlexGroup justifyContent="flexEnd" gutterSize="m">
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty onClick={onCancel}>Cancel</EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiButton
+              fill={true}
+              onClick={updatePolicyAction.run}
+              isDisabled={!selected}
+              isLoading={updatePolicyAction.running}
+            >
+              Confirm
+            </EuiButton>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </>
+    );
+  }
+  return null;
+};
+
+export type ButtonSelectRootDecoderProps = Omit<ButtonOpenModalProps, 'label' | 'modal'> &
+  SelectRootDecoderFormProps;
+
+export const ButtonSelectRootDecoder: React.FC<ButtonSelectRootDecoderProps> = ({
+  space,
+  notifications,
+  buttonProps,
+  policyDocumentData,
+  rootDecoderSource,
+  onConfirm,
+  onCancel,
+  type,
+}) => {
+  return (
+    <ButtonOpenModal
+      label="Select root decoder"
+      type={type}
+      buttonProps={buttonProps}
+      modal={{
+        title: `Select the root decoder for [${space}] space`,
+        onConfirm: () => {},
+      }}
+      children={({ closeModal }) => (
+        <SelectRootDecoderForm
+          space={space}
+          policyDocumentData={policyDocumentData}
+          rootDecoderSource={rootDecoderSource}
+          notifications={notifications}
+          onCancel={() => {
+            closeModal();
+            onCancel?.();
+          }}
+          onConfirm={() => {
+            closeModal();
+            onConfirm?.();
+          }}
+        />
+      )}
+    />
+  );
+};
+type CalloutProps = {
+  check: () => void;
+  rootDecoder: DecoderSource;
+} & ButtonSelectRootDecoderProps;
+const Callout: React.FC<CalloutProps> = ({
+  space,
+  policyDocumentData,
+  notifications,
+  check,
+  rootDecoder,
+}) => {
+  return (
+    <EuiCallOut title="Root decoder not defined in the space" color="warning" iconType="alert">
+      <p>
+        The promotion of the space requires a root decoder to be defined in the space. Please create
+        and/or select a root decoder.
+      </p>
+      <ButtonSelectRootDecoder
+        buttonProps={{ color: 'warning' }}
+        space={space}
+        policyDocumentData={policyDocumentData}
+        rootDecoderSource={rootDecoder}
+        notifications={notifications}
+        onConfirm={check}
+      />
+    </EuiCallOut>
+  );
+};
+
+export const withRootDecoderRequirementGuard: (Component: React.FC) => React.FC = withGuardAsync(
+  async ({ space, onSuccess }) => {
+    try {
+      const response = await DataStore.policies.searchPolicies(space);
+
+      const policyDocumentData = response.items?.[0]?.document;
+
+      const rootDecoderId = policyDocumentData?.root_decoder;
+      let rootDecoder;
+      if (rootDecoderId) {
+        rootDecoder = await DataStore.decoders.getDecoder(rootDecoderId, space);
+      }
+
+      if (onSuccess && rootDecoder) {
+        onSuccess();
+      }
+
+      return {
+        ok: !Boolean(rootDecoder),
+        data: { policyDocumentData, rootDecoder },
+      };
+    } catch (error) {
+      return { ok: false, data: { error } };
+    }
+  },
+  Callout
+);
+
+export const RootDecoderRequirement: React.FC<{
+  space: UserSpace;
+  notifications: NotificationsStart;
+  onSucess?: () => void;
+}> = withRootDecoderRequirementGuard(({ error }: { error: Error }) => {
+  return error ? <EuiText color="danger">Error loading root decoder requirement</EuiText> : null;
+});
+
+export const withConditionalHOC = (
+  condition: (props: any) => boolean,
+  hoc: (Component: React.FC) => React.FC
+) => {
+  return (Component: React.FC): React.FC => {
+    const EnhancedComponent = hoc(Component);
+    return (props) => {
+      if (condition(props)) {
+        return <EnhancedComponent {...props} />;
+      }
+      return <Component {...props} />;
+    };
+  };
+};
+
+export function isRootDecoderRequiementError(error) {
+  return /missing root decoder/i.test(error);
+}

@@ -11,6 +11,7 @@ import { ICalloutProps, resolveType, TCalloutColor } from '../pages/Main/compone
 import { CreateDetectorResponse, ISavedObjectsService, ServerResponse } from '../../types';
 import { CreateMappingsResponse } from '../../server/models/interfaces';
 import { logTypesWithDashboards, ROUTES } from '../utils/constants';
+import { getErrorMessage } from '../utils/helpers';
 import { EuiButton, EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
 import { Toast } from '@opensearch-project/oui/src/eui_components/toast/global_toast_list';
 import { RouteComponentProps } from 'react-router-dom';
@@ -35,6 +36,7 @@ export interface IDetectorsStore {
     calloutHandler: (callout?: ICalloutProps) => void,
     toastHandler: (toasts?: Toast[]) => void
   ) => void;
+  countByIntegration: (name: string, space: string) => Promise<number>;
 }
 
 export interface IDetectorsState {
@@ -199,7 +201,10 @@ export class DetectorsStore implements IDetectorsStore {
 
       let title: string = `Create detector failed.`;
       if (!mappingsResponse.ok) {
-        const message = 'Double check the field mappings and try again.';
+        const message = getErrorMessage(
+          mappingsResponse.error,
+          'Double check the field mappings and try again.'
+        );
 
         this.showNotification(
           title,
@@ -217,9 +222,11 @@ export class DetectorsStore implements IDetectorsStore {
       }
 
       if (!detectorResponse.ok) {
+        const message = getErrorMessage(detectorResponse.error);
+
         this.showNotification(
           title,
-          detectorResponse.error,
+          message,
           'danger',
           false,
           'Review detector configuration',
@@ -230,7 +237,7 @@ export class DetectorsStore implements IDetectorsStore {
           ok: false,
           error: {
             title,
-            message: detectorResponse.error,
+            message,
           },
         });
       }
@@ -320,5 +327,19 @@ export class DetectorsStore implements IDetectorsStore {
   ): void => {
     this.showCalloutCallback = calloutHandler;
     this.showToastCallback = toastHandler;
+  };
+
+  /**
+   * Wazuh: real Detectors count for the Integration CTA popover.
+   * Resolves 0 on any failure (missing space, request failure, thrown error) — never undefined.
+   */
+  public countByIntegration = async (name: string, space: string): Promise<number> => {
+    try {
+      const response = await this.service.countDetectorsByIntegration(name, space);
+      return response.ok ? response.response.count : 0;
+    } catch (error: any) {
+      console.error(error);
+      return 0;
+    }
   };
 }

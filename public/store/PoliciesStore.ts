@@ -1,0 +1,114 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import {
+  PolicyItem,
+  SearchPoliciesResponse,
+  SearchPolicyOptions,
+  UpdatePolicyRequestBody,
+  UpdatePolicyResponse,
+} from '../../types';
+import PoliciesService from '../services/PoliciesService';
+import { errorNotificationToast } from '../utils/helpers';
+
+export interface PoliciesSearchParams {
+  from?: number;
+  size?: number;
+  sort?: any;
+  query?: any;
+  _source?: any;
+}
+
+export class PoliciesStore {
+  constructor(private service: PoliciesService, private notifications: NotificationsStart) {}
+
+  public async searchPolicies(
+    space: string,
+    options: SearchPolicyOptions
+  ): Promise<SearchPoliciesResponse> {
+    try {
+      const response = await this.service.searchPolicies(space, options);
+      if (!response.ok) {
+        if (
+          response.error?.includes('index_not_found_exception') ||
+          response.error?.includes('no such index')
+        ) {
+          return { total: 0, items: [] };
+        }
+        errorNotificationToast(this.notifications, 'retrieve', 'policies', response.error);
+        return { total: 0, items: [] };
+      }
+
+      const items: PolicyItem[] = response.response.items.map((item) => ({
+        ...item,
+      }));
+
+      return { ...response.response, items };
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'retrieve', 'policies', error);
+      return { total: 0, items: [] };
+    }
+  }
+
+  public async getPolicy(policyId: string): Promise<PolicyItem | undefined> {
+    try {
+      const response = await this.service.getPolicy(policyId);
+      if (!response.ok) {
+        if (
+          response.error?.includes('index_not_found_exception') ||
+          response.error?.includes('no such index')
+        ) {
+          return undefined;
+        }
+        errorNotificationToast(this.notifications, 'retrieve', 'policy', response.error);
+        return undefined;
+      }
+
+      const item = response.response.item;
+      if (!item) {
+        return undefined;
+      }
+
+      return {
+        ...item,
+      };
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'retrieve', 'policy', error);
+      return undefined;
+    }
+  }
+
+  public async updatePolicy(
+    space: string,
+    data: UpdatePolicyRequestBody
+  ): Promise<[boolean, UpdatePolicyResponse['response']]> {
+    try {
+      const response = await this.service.updatePolicy(space, data);
+      if (!response.ok) {
+        errorNotificationToast(this.notifications, 'update', 'policy', response.error);
+        return [false, null];
+      }
+      return [response.ok, response.response];
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'update', 'policy', error);
+      return [false, null];
+    }
+  }
+
+  public async deleteSpace(space: string): Promise<boolean> {
+    try {
+      const response = await this.service.deleteSpace(space);
+      if (!response.ok) {
+        errorNotificationToast(this.notifications, 'clear', 'space', response.error);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'clear', 'space', error);
+      return false;
+    }
+  }
+}

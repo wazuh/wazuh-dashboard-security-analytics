@@ -5,17 +5,19 @@
 
 import { ContentPanel } from '../../../../components/ContentPanel';
 import React, { useContext, useEffect, useState } from 'react';
-import { EuiAccordion, EuiSmallButton, EuiSpacer, EuiText } from '@elastic/eui';
+import { EuiAccordion, EuiSmallButton, EuiSpacer, EuiText, EuiToolTip } from '@elastic/eui';
 import { RuleItem } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
 import { SecurityAnalyticsContext } from '../../../../services';
 import { RuleInfo } from '../../../../../server/models/interfaces';
 import { errorNotificationToast, translateToRuleItems } from '../../../../utils/helpers';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RulesTable } from '../../../Rules/components/RulesTable/RulesTable';
-import { RuleTableItem } from '../../../Rules/utils/helpers';
-import { RuleViewerFlyout } from '../../../Rules/components/RuleViewerFlyout/RuleViewerFlyout';
+import { RuleTableItem } from '../../../WazuhRules/utils/helpers';
+import { RuleViewerFlyout } from '../../../WazuhRules/components/RuleViewerFlyout/RuleViewerFlyout';
 import { DataStore } from '../../../../store/DataStore';
 import { Detector } from '../../../../../types';
+import { isStandardSource } from '../../../../utils/detectorSource';
+import { filterRulesByDetectorSpace } from '../../utils/helpers';
 
 export interface DetectorRulesViewProps {
   detector: Detector;
@@ -50,14 +52,20 @@ export const DetectorRulesView: React.FC<DetectorRulesViewProps> = (props) => {
   const [enabledRuleItems, setEnabledRuleItems] = useState<RuleItem[]>([]);
   const [allRuleItems, setAllRuleItems] = useState<RuleItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const isStandardDetector = isStandardSource(props.detector.source);
   const actions = props.isEditable
     ? [
-        <EuiSmallButton
-          onClick={() => props.onEditClicked(enabledRuleItems, allRuleItems)}
-          data-test-subj={'edit-detector-rules'}
+        <EuiToolTip
+          content={isStandardDetector ? 'Only custom detectors can be edited.' : undefined}
         >
-          Edit
-        </EuiSmallButton>,
+          <EuiSmallButton
+            onClick={() => props.onEditClicked(enabledRuleItems, allRuleItems)}
+            isDisabled={isStandardDetector}
+            data-test-subj={'edit-detector-rules'}
+          >
+            Edit
+          </EuiSmallButton>
+        </EuiToolTip>,
       ]
     : null;
   const saContext = useContext(SecurityAnalyticsContext);
@@ -72,9 +80,14 @@ export const DetectorRulesView: React.FC<DetectorRulesViewProps> = (props) => {
         props.detector.inputs[0].detector_input.custom_rules.map((ruleInfo) => ruleInfo.id)
       );
 
-      const allRules = await DataStore.rules.getAllRules({
-        'rule.category': [props.detector.detector_type.toLowerCase()],
-      });
+      // Wazuh: keep only the rules of the detector's integration, integrations with
+      // the same name can coexist in the standard and custom spaces.
+      const allRules = filterRulesByDetectorSpace(
+        await DataStore.rules.getAllRules({
+          'rule.category': [props.detector.detector_type.toLowerCase()],
+        }),
+        props.detector
+      );
 
       const prePackagedRules = allRules?.filter((rule) => rule.prePackaged);
       const customRules = allRules?.filter((rule) => !rule.prePackaged);
@@ -110,7 +123,7 @@ export const DetectorRulesView: React.FC<DetectorRulesViewProps> = (props) => {
     });
   }, [saContext?.services, props.detector]);
 
-  const getDetectionRulesTitle = () => `View detection rules`;
+  const getDetectionRulesTitle = () => `View rules`; // Wazuh: rename 'View detection rules' to 'View rules'
 
   const onShowRuleDetails = (rule: RuleTableItem) => {
     setFlyoutData(() => rule);

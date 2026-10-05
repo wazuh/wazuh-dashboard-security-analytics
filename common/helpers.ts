@@ -5,9 +5,12 @@
 
 import _ from 'lodash';
 import { DEFAULT_METRICS_COUNTER } from '../server/utils/constants';
-import { MetricsCounter, PartialMetricsCounter } from '../types';
+import { MetricsCounter, PartialMetricsCounter, PromoteSpaces, Space } from '../types';
 import { SecurityAnalyticsPluginConfigType } from '../config';
 import { Get, Set } from '../../../src/plugins/opensearch_dashboards_utils/common';
+
+// Wazuh
+import { AllowedActionsBySpace, SpaceTypes, UserSpacesOrder } from './constants';
 
 export function aggregateMetrics(
   metrics: PartialMetricsCounter,
@@ -76,3 +79,52 @@ export function createNullableGetterSetter<T>(): [Get<T | undefined>, Set<T>] {
 
   return [get, set];
 }
+
+// Wazuh
+export function actionIsAllowedOnSpace(
+  space: Space,
+  action: string,
+  allowedActionsBySpace = AllowedActionsBySpace
+): boolean {
+  return allowedActionsBySpace?.[SpaceTypes[space.toUpperCase()]?.value]?.includes(action);
+}
+
+export function getSpacesAllowAction(
+  action: string,
+  allowedActionsBySpace = AllowedActionsBySpace
+): Space[] {
+  return Object.entries(allowedActionsBySpace)
+    .filter(([_, allowedActions]) => allowedActions.includes(action))
+    .map(([space]) => space) as Space[];
+}
+
+/** Localized label for a space value (from {@link SpaceTypes}). */
+export function getSpaceTypeLabel(space: Space): string {
+  const key = space.toUpperCase() as keyof typeof SpaceTypes;
+  return SpaceTypes[key]?.label ?? space;
+}
+
+export const getNextSpace = (space: PromoteSpaces) => {
+  const currentIndex = UserSpacesOrder.indexOf(space);
+  if (currentIndex === -1 || currentIndex === UserSpacesOrder.length - 1) {
+    return null; // No next space available
+  }
+  return UserSpacesOrder[currentIndex + 1];
+};
+
+// Wazuh: the space content is promoted from, so a space that cannot create content can
+// still say where its content comes from.
+export const getPreviousSpace = (space: PromoteSpaces) => {
+  const currentIndex = UserSpacesOrder.indexOf(space);
+  if (currentIndex <= 0) {
+    return null;
+  }
+  return UserSpacesOrder[currentIndex - 1];
+};
+
+// Wazuh: escapes a free-text fragment for an OpenSearch `wildcard` value. `*` stays
+// live so `apache*log` works; `?` and `\` are escaped, since they carry no meaning
+// for the user and occur in ordinary titles. Shared by the client query builders and
+// the server integration-name joins, so one search text has one meaning per request.
+export const escapeWildcard = (value: string): string =>
+  value.replace(/\\/g, '\\\\').replace(/\?/g, '\\?');

@@ -1,0 +1,604 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  EuiBasicTable,
+  EuiBasicTableColumn,
+  EuiButtonIcon,
+  EuiConfirmModal,
+  EuiContextMenuItem,
+  EuiContextMenuPanel,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiPanel,
+  EuiPopover,
+  EuiSearchBar,
+  EuiSmallButton,
+  EuiSpacer,
+  EuiText,
+  EuiToolTip,
+} from '@elastic/eui';
+import { NotificationsStart } from 'opensearch-dashboards/public';
+import { RouteComponentProps } from 'react-router-dom';
+import { KVDBItem } from '../../../../types';
+import { DataStore } from '../../../store/DataStore';
+import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
+import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
+import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
+import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
+import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
+import {
+  buildKVDBsSearchQuery,
+  KVDBS_PAGE_SIZE,
+  KVDBS_SORT_FIELD,
+  KVDBS_SEARCHABLE_FIELDS_LABEL,
+} from '../utils/constants';
+import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
+import {
+  DELETE_ACTION,
+  DELETE_SELECTED_ACTION,
+  useDeleteItems,
+} from '../../../hooks/useDeleteItems';
+import { useUrlFilterParams } from '../../../hooks/useUrlFilterParams';
+import { useIntegrationSelector } from '../../../components/IntegrationComboBox/useIntegrationSelector';
+import { IntegrationCell } from '../../../components/IntegrationCell/IntegrationCell';
+import {
+  ENTITY_FILTER_SELECTORS_LABEL,
+  ENTITY_SEARCH_SCHEMA,
+  buildStatusIntegrationFilters,
+  buildStatusIntegrationQueryFromUrl,
+  decodeEnabledValues,
+  encodeEnabledValues,
+  decodeMultiValue,
+  encodeMultiValue,
+  getFreeText,
+  getOrSelectedValues,
+  hasTypedFieldClause,
+} from '../../../utils/entitySearchBarFilters';
+
+interface KVDBsProps extends RouteComponentProps {
+  notifications: NotificationsStart;
+}
+
+// Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
+const PAGE_DESCRIPTION =
+  'A KVDB is a lookup table that decoder or rule logic can reference to enrich events, for example mapping IP addresses to threat categories.';
+
+export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
+  const isMountedRef = useRef(true);
+  const [items, setItems] = useState<KVDBItem[]>([]);
+  const [totalItemCount, setTotalItemCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const urlFilters = useUrlFilterParams(
+    { params: ['query', 'enabled', 'integration', 'page'] },
+    history
+  );
+  const pageIndex = urlFilters.page - 1;
+  const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
+  const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
+  // Status/Integration `field_value_selection` (multiSelect: 'or') filter clauses,
+  // matching the pattern already used by Detectors. Neither `enabled` (unprefixed)
+  // nor `integration` are real KVDB document fields, so both get stripped back out
+  // and resolved to explicit filters in buildQuery below.
+  const buildQueryFromUrl = () => buildStatusIntegrationQueryFromUrl(urlFilters.values);
+  const [searchQuery, setSearchQuery] = useState(buildQueryFromUrl);
+  // Wazuh: captures the EuiSearchBar strict-schema parse error (unrecognized
+  // field name) so a warning callout can render above the table without
+  // losing the previously applied query/results (see onSearchChange/
+  // renderError below).
+  const [searchError, setSearchError] = useState<any>(null);
+  // Wazuh: the free-text portion of `searchQuery` debounces into `appliedQueryText`
+  // (matching Rules/Decoders) so buildQuery/fetchKVDBs don't fire an ES round-trip
+  // on every keystroke; popover filter clauses apply at once, typed ones debounce.
+  const [appliedQueryText, setAppliedQueryText] = useState(urlFilters.values.query);
+  const [appliedStatus, setAppliedStatus] = useState<'enabled' | 'disabled' | undefined>(() => {
+    const statuses = decodeEnabledValues(urlFilters.values.enabled);
+    return statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined;
+  });
+  const [selectedKVDBId, setSelectedKVDBId] = useState<string | null>(null);
+  const {
+    component: spaceSelector,
+    spaceFilter,
+    setSpace,
+  } = useSpaceSelector({
+    isLoading: loading,
+    clearParamsOnChange: ['page', 'integration'],
+    history,
+  });
+  const [actionsPopoverOpen, setActionsPopoverOpen] = useState<boolean>(false);
+  const [selectedItems, setSelectedItems] = useState<KVDBItem[]>([]);
+
+  const isCreateActionDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE);
+  const isDeleteActionAllowed = actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    setBreadcrumbs([BREADCRUMBS.NORMALIZATION, BREADCRUMBS.KVDBS]);
+  }, []);
+
+  // Wazuh: the URL values this container last wrote. The resync effect treats a URL
+  // change equal to them as its own write echoing back, and any other change as an
+  // external navigation to hydrate from. A one-shot flag cannot do this: a write that
+  // leaves the URL unchanged never runs the effect that would consume the flag.
+  const lastWrittenRef = useRef(urlFilters.values);
+
+  // Wazuh: a same-route CTA navigation (e.g. an Integration popover's "Go to
+  // integration KVDBs" while already on KVDBs) updates the URL without remounting
+  // this component, so the search bar must resync from the URL-owned value instead
+  // of relying on its mount-time initializer.
+  const isFirstQuerySyncRender = useRef(true);
+  useEffect(() => {
+    if (isFirstQuerySyncRender.current) {
+      isFirstQuerySyncRender.current = false;
+      setSearchQuery(buildQueryFromUrl());
+      return;
+    }
+    const { query, enabled, integration } = urlFilters.values;
+    const last = lastWrittenRef.current;
+    if (query === last.query && enabled === last.enabled && integration === last.integration) {
+      return;
+    }
+    lastWrittenRef.current = urlFilters.values;
+    setSearchQuery(buildQueryFromUrl());
+    setAppliedQueryText(query);
+    const statuses = decodeEnabledValues(enabled);
+    setAppliedStatus(statuses.length === 1 ? (statuses[0] as 'enabled' | 'disabled') : undefined);
+    urlFilters.setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlFilters.values.query, urlFilters.values.enabled, urlFilters.values.integration]);
+
+  // Wazuh: debounce the free-text portion of `searchQuery` into `appliedQueryText`
+  // (used by buildQuery below) — matches Rules/Decoders. Filter clauses go through
+  // the effect further down: at once from the popover, debounced when typed.
+  const isFirstSearchRender = useRef(true);
+  useEffect(() => {
+    if (isFirstSearchRender.current) {
+      isFirstSearchRender.current = false;
+      return;
+    }
+    const timeout = setTimeout(() => {
+      const freeText = getFreeText(searchQuery);
+      setAppliedQueryText(freeText);
+      lastWrittenRef.current = { ...lastWrittenRef.current, query: freeText };
+      urlFilters.setParams({ query: freeText });
+    }, 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getFreeText(searchQuery)]);
+
+  const { options: integrationOptions, loading: integrationOptionsLoading } =
+    useIntegrationSelector({
+      notifications,
+      enabled: true,
+      space: spaceFilter,
+      relatedField: 'kvdbs',
+    });
+
+  const selectedStatuses = useMemo(() => getOrSelectedValues(searchQuery, 'status'), [searchQuery]);
+  const selectedIntegrations = useMemo(
+    () => getOrSelectedValues(searchQuery, 'integration'),
+    [searchQuery]
+  );
+  // Wazuh: `selectedIntegrations` is a fresh array on every `searchQuery` change.
+  // This applied copy changes only when the contents change, matching Rules/Decoders,
+  // so fetchKVDBs' dependency stays stable between keystrokes.
+  const [appliedIntegrationNames, setAppliedIntegrationNames] = useState<string[]>(() =>
+    decodeMultiValue(urlFilters.values.integration)
+  );
+
+  const hasFilters =
+    !!appliedQueryText || selectedStatuses.length > 0 || selectedIntegrations.length > 0;
+
+  // Wazuh: a clause the popover wrote (`integration:(x)`) applies at once; a clause
+  // being typed (`integration:x`) debounces like free text, or every keystroke of the
+  // value fires a request and rewrites the URL.
+  const isFirstFilterRender = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
+    }
+    const apply = () => {
+      setAppliedStatus(
+        selectedStatuses.length === 1 ? (selectedStatuses[0] as 'enabled' | 'disabled') : undefined
+      );
+      setAppliedIntegrationNames(selectedIntegrations);
+      const patch = {
+        enabled: selectedStatuses.length ? encodeEnabledValues(selectedStatuses) : undefined,
+        integration: selectedIntegrations.length
+          ? encodeMultiValue(selectedIntegrations)
+          : undefined,
+      };
+      lastWrittenRef.current = {
+        ...lastWrittenRef.current,
+        enabled: patch.enabled ?? '',
+        integration: patch.integration ?? '',
+      };
+      urlFilters.setParams(patch);
+    };
+    if (!hasTypedFieldClause(searchQuery, Object.keys(ENTITY_SEARCH_SCHEMA.fields))) {
+      apply();
+      return;
+    }
+    const timeout = setTimeout(apply, 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatuses.join(','), selectedIntegrations.join(',')]);
+
+  // Wazuh: built from the debounced `appliedQueryText`, not `searchQuery`, so typing
+  // does not fire a request per keystroke. Status and integration travel as explicit
+  // params (appliedStatus/appliedIntegrationNames) and resolve server-side, see
+  // KVDBsService.searchKVDBs and applyEntityFilters, matching Rules/Decoders.
+  const buildQuery = useCallback(() => {
+    const query = buildKVDBsSearchQuery(appliedQueryText ?? '');
+
+    return spaceFilter
+      ? { bool: { must: [query], filter: [{ term: { 'space.name': spaceFilter } }] } }
+      : query;
+  }, [appliedQueryText, spaceFilter]);
+
+  const fetchKVDBs = useCallback(async () => {
+    setLoading(true);
+    const sort = sortField ? [{ [sortField]: { order: sortDirection } }] : undefined;
+
+    try {
+      const response = await DataStore.kvdbs.searchKVDBs({
+        from: pageIndex * pageSize,
+        size: pageSize,
+        sort,
+        query: buildQuery(),
+        status: appliedStatus,
+        integrationNames: appliedIntegrationNames.length ? appliedIntegrationNames : undefined,
+        space: appliedIntegrationNames.length ? spaceFilter : undefined,
+        track_total_hits: true,
+        _source: {
+          includes: [
+            'document.id',
+            'document.metadata.title',
+            'document.metadata.author',
+            'document.enabled',
+            'space',
+          ],
+        },
+      });
+
+      setItems(response.items);
+      setTotalItemCount(response.total);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    pageIndex,
+    pageSize,
+    sortField,
+    sortDirection,
+    buildQuery,
+    appliedStatus,
+    appliedIntegrationNames,
+    spaceFilter,
+  ]);
+
+  useEffect(() => {
+    fetchKVDBs();
+  }, [fetchKVDBs]);
+
+  const {
+    itemForAction,
+    setItemForAction,
+    isDeleting,
+    confirmDeleteSingle,
+    confirmDeleteSelected,
+  } = useDeleteItems({
+    deleteOne: (id) => DataStore.kvdbs.deleteKVDB(id),
+    reload: fetchKVDBs,
+    notifications,
+    entityName: 'KVDB',
+    entityNamePlural: 'KVDBs',
+    isMountedRef,
+  });
+
+  const onTableChange = ({ page, sort }: any) => {
+    // Wazuh: EuiBasicTable reports the current sort criteria on every onChange call
+    // (including plain pagination clicks), not only when it actually changes — guard
+    // on an actual change so paging doesn't get silently reset back to page 1.
+    if (sort && (sort.field !== sortField || sort.direction !== sortDirection)) {
+      setSortField(sort.field || KVDBS_SORT_FIELD);
+      setSortDirection(sort.direction || 'asc');
+      urlFilters.setPage(1);
+    }
+
+    if (page) {
+      urlFilters.setPage(page.index + 1);
+      setPageSize(page.size);
+    }
+  };
+
+  // Wazuh: URL writes for 'query' (debounced) and 'enabled'/'integration'
+  // (immediate) happen in the effects above, reacting to this state change —
+  // matches the Rules/Decoders pattern.
+  const onSearchChange = ({
+    query,
+    queryText,
+    error,
+  }: {
+    query: any;
+    queryText?: string;
+    error: any;
+  }) => {
+    setSearchError(error ? { message: error.message, queryText } : null);
+    if (!query) return;
+    setSearchQuery(query);
+  };
+
+  const renderError = () => (
+    <EntitySearchErrorCallOut
+      error={searchError}
+      schema={ENTITY_SEARCH_SCHEMA}
+      searchableFields={KVDBS_SEARCHABLE_FIELDS_LABEL}
+      filterSelectors={ENTITY_FILTER_SELECTORS_LABEL}
+    />
+  );
+
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+      totalItemCount,
+      pageSizeOptions: [10, 25, 50, 100],
+    }),
+    [pageIndex, pageSize, totalItemCount]
+  );
+
+  const sorting = useMemo(
+    () => ({
+      sort: {
+        field: sortField,
+        direction: sortDirection,
+      },
+    }),
+    [sortField, sortDirection]
+  );
+
+  const menuItems = [
+    <EuiContextMenuItem
+      key="create"
+      icon="plusInCircle"
+      href={`#${ROUTES.KVDBS_CREATE}`}
+      disabled={isCreateActionDisabled}
+      toolTipContent={
+        isCreateActionDisabled ? `Cannot create KVDBs in the ${spaceFilter} space.` : undefined
+      }
+    >
+      Create
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="delete"
+      icon="trash"
+      onClick={() => {
+        setItemForAction({ action: DELETE_SELECTED_ACTION });
+        setActionsPopoverOpen(false);
+      }}
+      disabled={selectedItems.length === 0 || !isDeleteActionAllowed}
+      toolTipContent={
+        !isDeleteActionAllowed
+          ? `Cannot delete KVDBs in the ${spaceFilter} space.`
+          : selectedItems.length === 0
+          ? 'Select KVDBs to delete'
+          : undefined
+      }
+    >
+      Delete selected ({selectedItems.length})
+    </EuiContextMenuItem>,
+  ];
+
+  const columns: Array<EuiBasicTableColumn<KVDBItem>> = useMemo(
+    () => [
+      {
+        field: 'document.metadata.title',
+        name: 'Title',
+        sortable: true,
+        dataType: 'string',
+        render: (value: string) => formatCellValue(value),
+      },
+      {
+        field: 'integration.title',
+        name: 'Integration',
+        dataType: 'string',
+        render: (value: string, item: KVDBItem) => (
+          <IntegrationCell
+            name={value || ''}
+            integrationId={item.integration?.id}
+            space={spaceFilter}
+            currentEntity="kvdbs"
+          />
+        ),
+      },
+      {
+        field: 'document.metadata.author',
+        name: 'Author',
+        sortable: true,
+        render: (value: string) => formatCellValue(value),
+      },
+      {
+        field: 'document.enabled',
+        name: 'Status',
+        render: (enabled: boolean) => (
+          <EnabledHealth enabled={enabled} data-test-subj="kvdb_status" />
+        ),
+      },
+      {
+        name: 'Actions',
+        align: 'right',
+        actions: [
+          {
+            name: 'View',
+            description: 'View KVDB details',
+            type: 'icon',
+            icon: 'inspect',
+            onClick: (item: KVDBItem) => setSelectedKVDBId(item.id),
+          },
+          {
+            name: 'Edit',
+            description: 'Edit KVDB',
+            type: 'icon',
+            icon: 'pencil',
+            onClick: (item: KVDBItem) => history.push(`${ROUTES.KVDBS_EDIT}/${item.id}`),
+            available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT),
+          },
+          {
+            name: 'Delete',
+            description: 'Delete KVDB',
+            type: 'icon',
+            icon: 'trash',
+            color: 'danger',
+            onClick: (item: KVDBItem) => setItemForAction({ action: DELETE_ACTION, id: item.id }),
+            available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
+          },
+        ],
+      },
+    ],
+    [spaceFilter, history]
+  );
+
+  return (
+    <EuiFlexGroup direction="column" gutterSize="m">
+      {selectedKVDBId && (
+        <KVDBDetailsFlyout kvdbId={selectedKVDBId} onClose={() => setSelectedKVDBId(null)} />
+      )}
+      {itemForAction?.action === DELETE_ACTION && (
+        <EuiConfirmModal
+          title="Delete KVDB"
+          onCancel={() => setItemForAction(null)}
+          onConfirm={confirmDeleteSingle}
+          cancelButtonText="Cancel"
+          confirmButtonText="Delete"
+          buttonColor="danger"
+          defaultFocusedButton="cancel"
+          isLoading={isDeleting}
+        >
+          <p>Are you sure you want to delete this KVDB? This action cannot be undone.</p>
+        </EuiConfirmModal>
+      )}
+      {itemForAction?.action === DELETE_SELECTED_ACTION && (
+        <EuiConfirmModal
+          title={`Delete ${selectedItems.length} KVDB${selectedItems.length !== 1 ? 's' : ''}`}
+          onCancel={() => setItemForAction(null)}
+          onConfirm={() => confirmDeleteSelected(selectedItems, () => setSelectedItems([]))}
+          cancelButtonText="Cancel"
+          confirmButtonText="Delete"
+          buttonColor="danger"
+          defaultFocusedButton="cancel"
+          isLoading={isDeleting}
+        >
+          <p>{`Are you sure you want to delete ${selectedItems.length} KVDB${
+            selectedItems.length !== 1 ? 's' : ''
+          }? This action cannot be undone.`}</p>
+        </EuiConfirmModal>
+      )}
+      <EuiFlexItem grow={false}>
+        <WazuhPageHeader
+          appDescriptionControls={[{ description: PAGE_DESCRIPTION }]}
+          title="KVDBs"
+          description={PAGE_DESCRIPTION}
+          controls={[
+            spaceSelector,
+            <EuiPopover
+              id="kvdbsActionsPopover"
+              button={
+                <EuiSmallButton
+                  iconType="arrowDown"
+                  iconSide="right"
+                  onClick={() => setActionsPopoverOpen((prev) => !prev)}
+                  data-test-subj="kvdbsActionsButton"
+                >
+                  Actions
+                </EuiSmallButton>
+              }
+              isOpen={actionsPopoverOpen}
+              closePopover={() => setActionsPopoverOpen(false)}
+              panelPaddingSize="none"
+              anchorPosition="downLeft"
+            >
+              <EuiContextMenuPanel size="s" items={menuItems} />
+            </EuiPopover>,
+          ]}
+        />
+      </EuiFlexItem>
+      <EuiFlexItem>
+        <EuiPanel>
+          <EuiFlexGroup alignItems="center" gutterSize="m">
+            <EuiFlexItem>
+              <EuiSearchBar
+                // Wazuh: remount once Integration options load, or the filter badge
+                // can stick at "0 selected" until the popover is opened once.
+                key={integrationOptionsLoading ? 'loading' : 'loaded'}
+                query={searchQuery}
+                box={{
+                  placeholder: 'Search KVDBs',
+                  incremental: true,
+                  compressed: true,
+                  schema: ENTITY_SEARCH_SCHEMA,
+                }}
+                filters={buildStatusIntegrationFilters(
+                  integrationOptions,
+                  integrationOptionsLoading
+                )}
+                onChange={onSearchChange}
+              />
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiToolTip content="Refresh">
+                <EuiButtonIcon
+                  iconType="refresh"
+                  aria-label="Refresh KVDBs"
+                  onClick={() => fetchKVDBs()}
+                />
+              </EuiToolTip>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+          <EuiSpacer size="m" />
+          {renderError()}
+          <EuiBasicTable
+            items={items}
+            columns={columns}
+            loading={loading || isDeleting}
+            pagination={pagination}
+            sorting={sorting}
+            onChange={onTableChange}
+            itemId={(item) => item.document?.id || item.id}
+            noItemsMessage={
+              loading ? (
+                'Loading...'
+              ) : (
+                <ListEmptyPrompt
+                  entity="KVDBs"
+                  hasFilters={hasFilters}
+                  space={spaceFilter}
+                  onGoToStandard={() => setSpace(SpaceTypes.STANDARD.value)}
+                />
+              )
+            }
+            selection={{
+              selectable: () => true,
+              onSelectionChange: setSelectedItems,
+            }}
+          />
+        </EuiPanel>
+      </EuiFlexItem>
+    </EuiFlexGroup>
+  );
+};

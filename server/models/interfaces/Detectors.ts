@@ -62,7 +62,14 @@ export interface DetectorHit {
   _index: string;
   _source: DetectorResponse;
   _id: string;
+  /** This detector's integration id, resolved server-side by detector_type/space. */
+  integrationId?: string;
 }
+
+// Wazuh
+export type DetectorHitWithSpace = DetectorHit & {
+  space: string;
+};
 
 export type DetectorResponse = Detector & {
   last_update_time: number;

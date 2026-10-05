@@ -3,13 +3,14 @@ on:
   pull_request:
     branches:
       - '*'
-  push:
-    branches:
-      - '*'
+    types: [opened, synchronize, reopened, ready_for_review]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 env:
-  OPENSEARCH_DASHBOARDS_VERSION: 'main'
+  OPENSEARCH_DASHBOARDS_VERSION: 3.9.0
   OPENSEARCH_VERSION: '3.9.0-SNAPSHOT'
-  SECURITY_ANALYTICS_BRANCH: 'main'
+  SECURITY_ANALYTICS_BRANCH: 3.9.0.0
   GRADLE_VERSION: '7.6.1'
 jobs:
   tests:
@@ -17,10 +18,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         include:
-          - os: windows-latest
-            cypress_cache_folder: ~/AppData/Local/Cypress/Cache
+          # - os: windows-latest
+          #   cypress_cache_folder: ~/AppData/Local/Cypress/Cache
           - os: ubuntu-latest
             cypress_cache_folder: ~/.cache/Cypress
     runs-on: ${{ matrix.os }}
@@ -29,6 +31,7 @@ jobs:
       CI: 1
       # avoid warnings like "tput: No value for $TERM and no -T specified"
       TERM: xterm
+    if: github.event.pull_request.draft == false
     steps:
       - name: Set up JDK
         uses: actions/setup-java@b6e674f4b717d7b0ae3baee0fbe79f498905dfde # v1
@@ -83,6 +86,8 @@ jobs:
       - run: yarn -v
 
       - name: Bootstrap plugin/OpenSearch-Dashboards
+        env:
+          GIT_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           cd OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin
           yarn osd bootstrap --single-version=loose
@@ -90,7 +95,7 @@ jobs:
       - name: Run OpenSearch-Dashboards server
         run: |
           cd OpenSearch-Dashboards
-          yarn start --no-base-path --no-watch --server.host="0.0.0.0" &
+          yarn start --no-base-path --no-watch --server.host="0.0.0.0" > ../osd-server.log 2>&1 &
         shell: bash
 
       # Window is slow so wait longer
@@ -142,6 +147,7 @@ jobs:
           browser: electron
         env:
           CYPRESS_CACHE_FOLDER: ${{ matrix.cypress_cache_folder }}
+          SKIP_DOWNLOAD_ENGINE_SCHEMAS: 'true'
 
       # Screenshots are only captured on failure, will change this once we do visual regression tests
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -156,3 +162,8 @@ jobs:
         with:
           name: cypress-videos-${{ matrix.os }}
           path: OpenSearch-Dashboards/plugins/security-analytics-dashboards-plugin/cypress/videos
+
+      - name: Show OpenSearch-Dashboards server log
+        if: always()
+        run: cat osd-server.log
+        shell: bash

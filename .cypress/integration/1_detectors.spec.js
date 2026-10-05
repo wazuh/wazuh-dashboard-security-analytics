@@ -137,7 +137,7 @@ const createDetector = (detectorName, dataSource, expectFailure) => {
 
   fillDetailsForm(detectorName, dataSource, expectFailure);
 
-  cy.getElementByText('.euiAccordion .euiTitle', 'Selected detection rules (14)')
+  cy.getElementByText('.euiAccordion .euiTitle', 'Selected rules (14)') // Wazuh: rename 'Detection rules' to 'Rules'
     .click({ force: true, timeout: 5000 })
     .then(() => cy.contains('.euiTable .euiTableRow', getLogTypeLabel(cypressLogTypeDns)));
 
@@ -184,8 +184,10 @@ const createDetector = (detectorName, dataSource, expectFailure) => {
             cy.validateDetailsItem('Detector name', detectorName);
             cy.validateDetailsItem('Description', '-');
             cy.validateDetailsItem('Detector schedule', 'Every 1 minute');
-            cy.validateDetailsItem('Detection rules', '14');
-            cy.validateDetailsItem('Detector dashboard', 'Not available for this log type');
+            cy.validateDetailsItem('Rules', '14'); // Wazuh: rename 'Detection rules' to 'Rules'
+            // Wazuh: the Detector dashboard field is hidden, so this assertion is gone.
+            // It was already stale: it expected 'Not available for this log type' while the
+            // code rendered 'Not available for this integration'.
 
             cy.wait(5000); // waiting for the page to be reloaded after pushing detector id into route
             cy.getElementByText('button.euiTab', 'Alert triggers').should('be.visible').click();
@@ -351,18 +353,21 @@ describe('Detectors', () => {
       getCreateDetectorButton().should('be.enabled');
     });
 
-    it('...should show mappings warning', () => {
-      fillDetailsForm(detectorName, cypressIndexDns);
+    // Wazuh: the warning cannot be triggered, wazuh-events-v5-* data sources
+    // share the same schema.
+    // it('...should show mappings warning', () => {
+    //   fillDetailsForm(detectorName, cypressIndexDns);
 
-      getDataSourceField().selectComboboxItem(cypressIndexWindows);
-      getDataSourceField().focus().blur();
+    //   getDataSourceField().selectComboboxItem(cypressIndexWindows);
+    //   getDataSourceField().focus().blur();
 
-      cy.get('[data-test-subj="define-detector-diff-log-types-warning"]')
-        .should('be.visible')
-        .contains(
-          'To avoid issues with field mappings, we recommend creating separate detectors for different log types.'
-        );
-    });
+    //   cy.get('[data-test-subj="define-detector-diff-log-types-warning"]')
+    //     .should('be.visible')
+    //     .contains(
+    //       // Replace log types with integrations by Wazuh
+    //       'To avoid issues with field mappings, we recommend creating separate detectors for different integrations.'
+    //     );
+    // });
   });
 
   describe('...validate create detector flow', () => {
@@ -418,7 +423,7 @@ describe('Detectors', () => {
       openDetectorDetails(detectorName);
 
       editDetectorDetails(detectorName, 'Active rules');
-      cy.getElementByText('.euiText', 'Detection rules (14)');
+      cy.getElementByText('.euiText', 'Rules (14)'); // Wazuh: rename 'Detection rules' to 'Rules'
 
       cy.getInputByPlaceholder('Search...').type(`${cypressDNSRule}`).pressEnterKey();
 
@@ -428,7 +433,7 @@ describe('Detectors', () => {
         .find('.euiTableCellContent button')
         .click();
 
-      cy.getElementByText('.euiText', 'Detection rules (13)');
+      cy.getElementByText('.euiText', 'Rules (13)'); // Wazuh: rename 'Detection rules' to 'Rules'
       cy.getElementByText('button', 'Save changes').click({ force: true });
       cy.urlShouldContain('detector-details').then(() => {
         cy.getElementByText('.euiText', detectorName);

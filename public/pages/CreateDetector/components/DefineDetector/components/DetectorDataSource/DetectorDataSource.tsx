@@ -32,6 +32,9 @@ interface DetectorDataSourceProps extends DataSourceProps {
   onDetectorInputIndicesChange: (selectedOptions: EuiComboBoxOptionOption<string>[]) => void;
   notifications: NotificationsStart;
   detector_type: string;
+  // Wazuh: integrations with the same name can coexist in the standard and
+  // custom spaces, so the space takes part in the mappings cache key.
+  selectedSpace?: string;
 }
 
 interface DetectorDataSourceState {
@@ -70,6 +73,15 @@ export default class DetectorDataSource extends Component<
     if (prevProps.dataSource !== this.props.dataSource) {
       this.getDataSources();
     }
+
+    // Wazuh: hide a stale warning computed for the previous integration until
+    // the selection is re-evaluated against the new one.
+    if (
+      prevProps.detector_type !== this.props.detector_type ||
+      prevProps.selectedSpace !== this.props.selectedSpace
+    ) {
+      this.setState({ differentLogTypesDetected: false });
+    }
   }
 
   getDataSources = async () => {
@@ -77,9 +89,21 @@ export default class DetectorDataSource extends Component<
     const res = await getDataSources(this.props.indexService, this.props.notifications);
 
     if (res.ok) {
+      const WAZUH_EVENTS_PREFIX = 'wazuh-events-v5';
+      const filteredDataSources = (res.dataSources as any[])
+        .map((group) => ({
+          ...group,
+          options: (group.options || []).filter(
+            (opt: { label: string; index?: string }) =>
+              opt.label?.startsWith(WAZUH_EVENTS_PREFIX) ||
+              !!opt.index?.startsWith(WAZUH_EVENTS_PREFIX)
+          ),
+        }))
+        .filter((group) => group.options.length > 0);
+
       this.setState({
         loading: false,
-        indexOptions: res.dataSources,
+        indexOptions: filteredDataSources,
       });
     } else {
       this.setState({ loading: false, errorMessage: res.error });
@@ -98,35 +122,43 @@ export default class DetectorDataSource extends Component<
 
   onSelectionChange = async (options: EuiComboBoxOptionOption<string>[]) => {
     const allIndices = _.map(options, 'label');
-    for (let indexName in this.indicesMappings) {
-      if (allIndices.indexOf(indexName) === -1) {
-        // cleanup removed indexes
-        delete this.indicesMappings[indexName];
-      }
-    }
-
     const detectorType = this.props.detector_type.toLowerCase();
-    if (detectorType) {
-      for (const indexName of allIndices) {
-        if (!this.indicesMappings[indexName]) {
-          const result = await this.props.fieldMappingService?.getMappingsView(
-            indexName,
-            detectorType
-          );
-          result?.ok && (this.indicesMappings[indexName] = result.response.unmapped_field_aliases);
+    const cacheKey = `${this.props.selectedSpace}:${detectorType}`;
+
+    if (this.indicesMappings?.[cacheKey]) {
+      for (let indexName in this.indicesMappings[cacheKey]) {
+        if (allIndices.indexOf(indexName) === -1) {
+          // cleanup removed indexes
+          delete this.indicesMappings[cacheKey][indexName];
         }
       }
     }
 
-    if (!_.isEmpty(this.indicesMappings)) {
+    if (detectorType) {
+      if (!this.indicesMappings[cacheKey]) {
+        this.indicesMappings[cacheKey] = {};
+      }
+      for (const indexName of allIndices) {
+        if (!this.indicesMappings[cacheKey][indexName]) {
+          const result = await this.props.fieldMappingService?.getMappingsView(
+            indexName,
+            detectorType
+          );
+          result?.ok &&
+            (this.indicesMappings[cacheKey][indexName] = result.response.unmapped_field_aliases ?? []);
+        }
+      }
+    }
+
+    if (!_.isEmpty(this.indicesMappings[cacheKey])) {
       let firstMapping: string[] = [];
       let firstMatchMappingIndex: string = '';
       let differentLogTypesDetected = false;
-      for (let indexName in this.indicesMappings) {
-        if (this.indicesMappings.hasOwnProperty(indexName)) {
-          if (!firstMapping.length) firstMapping = this.indicesMappings[indexName];
+      for (let indexName in this.indicesMappings[cacheKey]) {
+        if (this.indicesMappings[cacheKey].hasOwnProperty(indexName)) {
+          if (!firstMapping.length) firstMapping = this.indicesMappings[cacheKey][indexName];
           !firstMatchMappingIndex.length && (firstMatchMappingIndex = indexName);
-          if (!_.isEqual(firstMapping, this.indicesMappings[indexName])) {
+          if (!_.isEqual(firstMapping, this.indicesMappings[cacheKey][indexName])) {
             differentLogTypesDetected = true;
             break;
           }
@@ -141,13 +173,8 @@ export default class DetectorDataSource extends Component<
 
   render() {
     const { detectorIndices } = this.props;
-    const {
-      loading,
-      fieldTouched,
-      indexOptions,
-      errorMessage,
-      differentLogTypesDetected,
-    } = this.state;
+    const { loading, fieldTouched, indexOptions, errorMessage, differentLogTypesDetected } =
+      this.state;
     const isInvalid = fieldTouched && detectorIndices.length < MIN_NUM_DATA_SOURCES;
     return (
       <>
@@ -197,8 +224,9 @@ export default class DetectorDataSource extends Component<
               data-test-subj={'define-detector-diff-log-types-warning'}
             >
               <EuiTextColor color={'default'}>
+                {/* Replace log types with integrations by Wazuh */}
                 To avoid issues with field mappings, we recommend creating separate detectors for
-                different log types.
+                different integrations.
               </EuiTextColor>
             </EuiCallOut>
           </>

@@ -766,7 +766,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                             size="s"
                           >
                             <strong>
-                              Log type
+                              Integration
                             </strong>
                           </EuiText>
                         }
@@ -796,7 +796,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                                     className="euiText euiText--small"
                                   >
                                     <strong>
-                                      Log type
+                                      Integration
                                     </strong>
                                   </div>
                                 </EuiText>
@@ -817,7 +817,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                               onChange={[Function]}
                               onFocus={[Function]}
                               options={Array []}
-                              placeholder="Select a log type"
+                              placeholder="Select an integration"
                               selectedOptions={Array []}
                               singleSelection={
                                 Object {
@@ -850,7 +850,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                                   onFocus={[Function]}
                                   onOpenListClick={[Function]}
                                   onRemoveOption={[Function]}
-                                  placeholder="Select a log type"
+                                  placeholder="Select an integration"
                                   rootId={[Function]}
                                   searchValue=""
                                   selectedOptions={Array []}
@@ -893,7 +893,7 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                                           <p
                                             className="euiComboBoxPlaceholder"
                                           >
-                                            Select a log type
+                                            Select an integration
                                           </p>
                                           <AutosizeInput
                                             aria-controls=""
@@ -2193,6 +2193,38 @@ exports[`<RuleEditorContainer /> spec renders the component 1`] = `
                                                           Object {
                                                             "label": "cidr",
                                                             "value": "cidr",
+                                                          },
+                                                          Object {
+                                                            "label": "base64offset",
+                                                            "value": "base64offset",
+                                                          },
+                                                          Object {
+                                                            "label": "wide",
+                                                            "value": "wide",
+                                                          },
+                                                          Object {
+                                                            "label": "windash",
+                                                            "value": "windash",
+                                                          },
+                                                          Object {
+                                                            "label": "re",
+                                                            "value": "re",
+                                                          },
+                                                          Object {
+                                                            "label": "lt",
+                                                            "value": "lt",
+                                                          },
+                                                          Object {
+                                                            "label": "lte",
+                                                            "value": "lte",
+                                                          },
+                                                          Object {
+                                                            "label": "gt",
+                                                            "value": "gt",
+                                                          },
+                                                          Object {
+                                                            "label": "gte",
+                                                            "value": "gte",
                                                           },
                                                         ]
                                                       }
