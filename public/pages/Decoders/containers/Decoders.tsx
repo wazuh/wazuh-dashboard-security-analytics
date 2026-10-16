@@ -62,7 +62,7 @@ import {
 const PAGE_DESCRIPTION =
   'A decoder defines how a raw log event is parsed and mapped to normalized fields. Each decoder belongs to an integration.';
 
-const DEFAULT_PAGE_SIZE = 25;
+const DEFAULT_PAGE_SIZE = 50;
 
 interface DecodersProps {
   history: RouteComponentProps['history'];
@@ -475,7 +475,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         pageIndex,
         pageSize,
         totalItemCount: total,
-        pageSizeOptions: [10, 25, 50],
+        pageSizeOptions: [10, 25, 50, 100],
       }}
       sorting={{ sort: { field: sortField, direction: sortDirection } }}
       onChange={onTableChange}

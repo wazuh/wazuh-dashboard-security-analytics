@@ -35,7 +35,7 @@
 | [#354](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/354) | Removed the getLogTypeLabel usage across Ruleset management |
 | [#447](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/447) | Improved the Ruleset management UX: unified the user-facing terminology and documented it in `TERMINOLOGY.md`, said what each entity and space is for, added a "How ruleset management works" flyout, told the user what to do next on empty lists, replaced the log test status code with a plain-language verdict, gave the remaining dead ends a cause, paired asset identifiers with their name so the root decoder reads as a name instead of `decoder/core-wazuh-message/0`, labelled each compliance framework's values with its own unit, and made the space policy panel legible: consistent booleans, enrichments as badges, and a hint on every setting saying what it affects |
 | [#471](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/471) | Renamed the user-facing "Security Analytics" references to "Ruleset management", including the navigation group label, the app title, the root breadcrumb and the "How ruleset management works" flyout |
-| [#518](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/518) | Detectors table now shows 50 rows per page by default and offers 10, 25, 50 and 100 rows per page |
+| [#518](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/518) | Detectors, KVDBs, Decoders and Rules lists now show 50 rows per page by default and offer 10, 25, 50 and 100 rows per page |
 
 ### Removed
 

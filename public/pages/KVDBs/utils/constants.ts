@@ -5,7 +5,7 @@
 
 import { buildEntitySearchQuery } from '../../../utils/entitySearchQuery';
 
-export const KVDBS_PAGE_SIZE = 25;
+export const KVDBS_PAGE_SIZE = 50;
 export const KVDBS_SORT_FIELD = 'document.metadata.title';
 
 // Wazuh: shares ENTITY_SEARCH_SCHEMA (entitySearchBarFilters.ts) as-is with

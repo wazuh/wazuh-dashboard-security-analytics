@@ -71,7 +71,7 @@ import {
 const PAGE_DESCRIPTION =
   'A rule defines the conditions under which the Wazuh engine generates a security finding, evaluated on the fields the decoders already normalized. Each rule belongs to an integration and is promoted with it.';
 
-const DEFAULT_PAGE_SIZE = 25;
+const DEFAULT_PAGE_SIZE = 50;
 
 const SEVERITY_FILTER_OPTIONS = ruleSeverity.map((severity) => ({
   value: severity.value,
@@ -652,7 +652,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
               pageIndex,
               pageSize,
               totalItemCount: totalRules,
-              pageSizeOptions: [10, 25, 50],
+              pageSizeOptions: [10, 25, 50, 100],
             }}
             sorting={{ sort: { field: sortField, direction: sortDirection } }}
             onChange={onTableChange}
