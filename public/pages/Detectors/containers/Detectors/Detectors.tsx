@@ -24,6 +24,7 @@ import {
   EuiSearchBar,
 } from '@elastic/eui';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
+import { DETECTORS_PAGE_SIZE, DETECTORS_PAGE_SIZE_OPTIONS } from '../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
 import { getDetectorNames } from '../../utils/helpers';
 import {
@@ -513,7 +514,10 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               items={detectorHits}
               itemId={(item: DetectorHit) => `${item._id}`}
               columns={columns}
-              pagination={true}
+              pagination={{
+                initialPageSize: DETECTORS_PAGE_SIZE,
+                pageSizeOptions: DETECTORS_PAGE_SIZE_OPTIONS,
+              }}
               sorting={sorting}
               isSelectable={true}
               selection={{ onSelectionChange: this.onSelectionChange }}

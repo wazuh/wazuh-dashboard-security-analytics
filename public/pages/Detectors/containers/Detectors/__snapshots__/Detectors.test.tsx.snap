@@ -546,7 +546,17 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     noContentTitle="No detectors yet"
                   />
                 }
-                pagination={true}
+                pagination={
+                  Object {
+                    "initialPageSize": 50,
+                    "pageSizeOptions": Array [
+                      10,
+                      25,
+                      50,
+                      100,
+                    ],
+                  }
+                }
                 responsive={true}
                 search={
                   Object {
@@ -2003,11 +2013,12 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       Object {
                         "hidePerPageOptions": undefined,
                         "pageIndex": 0,
-                        "pageSize": 10,
+                        "pageSize": 50,
                         "pageSizeOptions": Array [
                           10,
                           25,
                           50,
+                          100,
                         ],
                         "totalItemCount": 1,
                       }
@@ -3155,11 +3166,12 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           Object {
                             "hidePerPageOptions": undefined,
                             "pageIndex": 0,
-                            "pageSize": 10,
+                            "pageSize": 50,
                             "pageSizeOptions": Array [
                               10,
                               25,
                               50,
+                              100,
                             ],
                             "totalItemCount": 1,
                           }
@@ -3176,12 +3188,13 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           <EuiTablePagination
                             activePage={0}
                             aria-controls="some_html_id"
-                            itemsPerPage={10}
+                            itemsPerPage={50}
                             itemsPerPageOptions={
                               Array [
                                 10,
                                 25,
                                 50,
+                                100,
                               ]
                             }
                             onChangeItemsPerPage={[Function]}
@@ -3218,7 +3231,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                             token="euiTablePagination.rowsPerPage"
                                           />
                                           : 
-                                          10
+                                          50
                                         </EuiButtonEmpty>
                                       }
                                       closePopover={[Function]}
@@ -3282,7 +3295,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                       Rows per page
                                                     </EuiI18n>
                                                     : 
-                                                    10
+                                                    50
                                                   </span>
                                                 </span>
                                               </EuiButtonContent>
