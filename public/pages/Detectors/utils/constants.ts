@@ -5,8 +5,6 @@
 
 export const MAX_DETECTOR_INPUTS = 1;
 export const MIN_NUM_DATA_SOURCES = 1;
-export const DETECTORS_PAGE_SIZE = 50;
-export const DETECTORS_PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 export const STATUS_OPTIONS = [
   { value: 'test_status1', text: 'Test status #1' },

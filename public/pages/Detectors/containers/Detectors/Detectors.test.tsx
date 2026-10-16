@@ -11,7 +11,7 @@ import { mount } from 'enzyme';
 import Detectors from './Detectors';
 import { coreContextMock } from '../../../../../test/mocks/useContext.mock';
 import { setupCoreStart } from '../../../../../test/utils/helpers';
-import { DETECTORS_PAGE_SIZE, DETECTORS_PAGE_SIZE_OPTIONS } from '../../utils/constants';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../../../utils/constants';
 
 beforeAll(() => {
   setupCoreStart();
@@ -37,8 +37,8 @@ describe('<Detectors /> spec', () => {
     wrapper.update();
     const pagination = wrapper.find('EuiInMemoryTable').prop('pagination');
     expect(pagination.initialPageSize).toBe(50);
-    expect(DETECTORS_PAGE_SIZE).toBe(50);
-    expect(pagination.pageSizeOptions).toEqual(DETECTORS_PAGE_SIZE_OPTIONS);
+    expect(DEFAULT_PAGE_SIZE).toBe(50);
+    expect(pagination.pageSizeOptions).toEqual(PAGE_SIZE_OPTIONS);
     expect(Math.max(...pagination.pageSizeOptions)).toBeGreaterThan(50);
   });
 

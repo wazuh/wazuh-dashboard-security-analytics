@@ -25,7 +25,12 @@ import {
 } from '@elastic/eui';
 import { DataStore } from '../../../store/DataStore';
 import { DecoderItem } from '../../../../types';
-import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_PAGE_SIZE,
+  PAGE_SIZE_OPTIONS,
+  ROUTES,
+} from '../../../utils/constants';
 import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
@@ -61,8 +66,6 @@ import {
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
   'A decoder defines how a raw log event is parsed and mapped to normalized fields. Each decoder belongs to an integration.';
-
-const DEFAULT_PAGE_SIZE = 50;
 
 interface DecodersProps {
   history: RouteComponentProps['history'];
@@ -475,7 +478,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         pageIndex,
         pageSize,
         totalItemCount: total,
-        pageSizeOptions: [10, 25, 50, 100],
+        pageSizeOptions: PAGE_SIZE_OPTIONS,
       }}
       sorting={{ sort: { field: sortField, direction: sortDirection } }}
       onChange={onTableChange}

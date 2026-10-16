@@ -27,7 +27,12 @@ import {
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DataStore } from '../../../../store/DataStore';
 import { RuleItemInfoBase } from '../../../../../types';
-import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_PAGE_SIZE,
+  PAGE_SIZE_OPTIONS,
+  ROUTES,
+} from '../../../../utils/constants';
 import { WazuhPageHeader } from '../../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../../components/EntitySearchErrorCallOut';
@@ -70,8 +75,6 @@ import {
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
   'A rule defines the conditions under which the Wazuh engine generates a security finding, evaluated on the fields the decoders already normalized. Each rule belongs to an integration and is promoted with it.';
-
-const DEFAULT_PAGE_SIZE = 50;
 
 const SEVERITY_FILTER_OPTIONS = ruleSeverity.map((severity) => ({
   value: severity.value,
@@ -652,7 +655,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
               pageIndex,
               pageSize,
               totalItemCount: totalRules,
-              pageSizeOptions: [10, 25, 50, 100],
+              pageSizeOptions: PAGE_SIZE_OPTIONS,
             }}
             sorting={{ sort: { field: sortField, direction: sortDirection } }}
             onChange={onTableChange}
