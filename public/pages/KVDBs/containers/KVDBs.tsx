@@ -25,7 +25,13 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import { KVDBItem } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
-import { BREADCRUMBS, DEFAULT_EMPTY_DATA, ROUTES } from '../../../utils/constants';
+import {
+  BREADCRUMBS,
+  DEFAULT_EMPTY_DATA,
+  DEFAULT_PAGE_SIZE,
+  PAGE_SIZE_OPTIONS,
+  ROUTES,
+} from '../../../utils/constants';
 import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
@@ -33,7 +39,6 @@ import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import {
   buildKVDBsSearchQuery,
-  KVDBS_PAGE_SIZE,
   KVDBS_SORT_FIELD,
   KVDBS_SEARCHABLE_FIELDS_LABEL,
 } from '../utils/constants';
@@ -81,7 +86,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     history
   );
   const pageIndex = urlFilters.page - 1;
-  const [pageSize, setPageSize] = useState(KVDBS_PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortField, setSortField] = useState(KVDBS_SORT_FIELD);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   // Wazuh: `searchQuery` is the EuiSearchBar's controlled Query — free text plus
@@ -358,7 +363,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       pageIndex,
       pageSize,
       totalItemCount,
-      pageSizeOptions: [10, 25, 50, 100],
+      pageSizeOptions: PAGE_SIZE_OPTIONS,
     }),
     [pageIndex, pageSize, totalItemCount]
   );
