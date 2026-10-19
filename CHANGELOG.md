@@ -65,6 +65,7 @@
 | [#463](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/463) | Fixed promote and policy retrieval/clear errors failing silently instead of showing an error toast |
 | [#490](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/490) | Fixed write failures in Ruleset management printing the raw backend authorization exception — the username and its role bindings — in the error toast, and the integration form reporting a failed creation as a failed update |
 | [#502](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/502) | Fixed the search box not matching partial text on KVDBs and decoder titles, and unified search, filtering and URL sync across Rules, Decoders and KVDBs |
+| [#521](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/521) | Fixed the KVDB form silently dropping a content entry that has a value but no key; the entry now shows Key is required and blocks saving |
 
 ## Prior versions
 
