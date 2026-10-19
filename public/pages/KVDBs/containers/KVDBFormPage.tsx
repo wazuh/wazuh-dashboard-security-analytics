@@ -252,7 +252,9 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       const contentErrors = values.contentEntries.map((entry): FormikErrors<ContentEntry> => {
         const entryErrors: FormikErrors<ContentEntry> = {};
 
-        if (entry.key.trim() && keyCounts[entry.key.trim()] > 1) {
+        if (!entry.key.trim() && entry.value.trim()) {
+          entryErrors.key = 'Key is required';
+        } else if (entry.key.trim() && keyCounts[entry.key.trim()] > 1) {
           entryErrors.key = 'Duplicate key';
         }
 
@@ -302,7 +304,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
     }
     if (selectedEditorType === EDITOR_TYPE.YAML && yamlError) {
       messages.push('Please fix the errors in the YAML editor to proceed');
-    } else if (errors.title || errors.author) {
+    } else if (errors.title || errors.author || errors.contentEntries) {
       messages.push('Please fix the errors in the form to proceed');
     }
     return messages.length > 0 ? messages.join('. ') : undefined;
