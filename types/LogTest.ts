@@ -13,6 +13,9 @@ export interface LogTestRequestBody {
   trace_level?: LogTestTraceLevel;
   space: string;
   integration?: string;
+  // Wazuh: set when `space` cannot normalize events (no root decoder); the log is
+  // normalized in this space and only the rules come from `space`.
+  normalization_space?: string;
 }
 
 export interface LogTestAssetTrace {
