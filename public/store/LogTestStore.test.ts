@@ -192,3 +192,44 @@ describe('LogTestStore.executeLogTest', () => {
     expect(result.error).not.toContain('1.2 MB');
   });
 });
+
+describe('LogTestStore partial scopes', () => {
+  it('runs Normalization only through its own endpoint and returns the wrapped response', async () => {
+    const data = { status: '200', message: { normalization: { output: {} } } };
+    const executeNormalization = jest.fn().mockResolvedValue({ ok: true, response: data });
+    const { notifications, addDanger } = buildNotifications();
+    const store = new LogTestStore({ executeNormalization } as any, notifications);
+
+    const result = await store.executeNormalization(request);
+
+    expect(executeNormalization).toHaveBeenCalledWith(request);
+    expect(result).toEqual({ success: true, data });
+    expect(addDanger).not.toHaveBeenCalled();
+  });
+
+  it('toasts a Detection only failure with the content manager message', async () => {
+    const error = "Integration [x] not found in the 'test' space.";
+    const executeDetection = jest.fn().mockResolvedValue({ ok: false, error });
+    const { notifications, addDanger } = buildNotifications();
+    const store = new LogTestStore({ executeDetection } as any, notifications);
+
+    const result = await store.executeDetection(request);
+
+    expect(result).toEqual({ success: false, error });
+    expect(addDanger).toHaveBeenCalledWith(expect.objectContaining({ text: error }));
+  });
+
+  it('applies the payload-too-large wording to every scope', async () => {
+    const executeNormalization = jest.fn().mockResolvedValue({
+      ok: false,
+      error: 'Event exceeds the maximum allowed size of 1048576 bytes.',
+      errorKind: 'payload-too-large',
+    });
+    const { notifications } = buildNotifications();
+    const store = new LogTestStore({ executeNormalization } as any, notifications);
+
+    const result = await store.executeNormalization(request);
+
+    expect(result.error).toContain('Reduce it below 1 MB');
+  });
+});

@@ -17,6 +17,7 @@ import {
   EuiTabs,
   EuiTab,
   EuiButtonEmpty,
+  EuiButton,
   EuiToolTip,
 } from '@elastic/eui';
 import {
@@ -26,12 +27,21 @@ import {
   LogTestDetectionResult,
   LogTestDetectionRuleMatch,
   LogTestValidationError,
+  LogTestScope,
 } from '../../../../types';
-import { buildLogTestVerdict, countNormalizedFields } from '../utils';
+import { buildLogTestVerdict, countNormalizedFields, isEngineEnvironmentMissing } from '../utils';
+import { LOG_TEST_HELP, LOG_TEST_SCOPE_OPTIONS } from '../constants';
 
 export interface LogTestResultProps {
   result: LogTestResponse;
   ruleHref?: (ruleId: string) => string;
+  /** Wazuh: the scope and space the test ran in, not whatever the form shows now. */
+  scope?: LogTestScope;
+  space?: string;
+  /** Wazuh: hands a normalized output over to a detection-only test. */
+  onTestDetectionWithOutput?: (output: object) => void;
+  /** Wazuh: offered when the Engine could not load the space at all. */
+  onSwitchToDetection?: () => void;
 }
 
 const AssetTraceItem: React.FC<{ trace: LogTestAssetTrace; index: number }> = ({
@@ -213,7 +223,12 @@ const DetectionMatchItem: React.FC<{
   );
 };
 
-const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({ data }) => {
+const NormalizationSection: React.FC<{
+  data: LogTestNormalizationResult;
+  space?: string;
+  onTestDetectionWithOutput?: (output: object) => void;
+  onSwitchToDetection?: () => void;
+}> = ({ data, space, onTestDetectionWithOutput, onSwitchToDetection }) => {
   const formattedOutput = useMemo(() => {
     if (data?.output) {
       return JSON.stringify(data.output, null, 2);
@@ -225,6 +240,33 @@ const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({ 
   const hasValidation = data?.validation != null;
 
   if (data.status === 'error') {
+    // Wazuh: the Engine's own wording ("The 'test' environment does not exist.") read as
+    // a broken install. It means the space's content never reached the Engine, most
+    // often because the space has no root decoder (wazuh-indexer-plugins#1694), and the
+    // rules can still be tested without it.
+    if (isEngineEnvironmentMissing(data.error?.message)) {
+      const spaceName = space ?? 'selected';
+      return (
+        <EuiCallOut
+          title={`The Engine has no environment for the ${spaceName} space`}
+          color="danger"
+          iconType="alert"
+          data-test-subj="logTestEngineEnvironmentMissing"
+        >
+          <p>
+            The content of the {spaceName} space is not loaded in the Engine, so the log could not
+            be decoded. This usually means the space has no root decoder, or one of its decoders
+            failed to load. Rules do not depend on the Engine and can still be tested.
+          </p>
+          {onSwitchToDetection && (
+            <EuiButton size="s" color="danger" onClick={onSwitchToDetection}>
+              Test detection only
+            </EuiButton>
+          )}
+        </EuiCallOut>
+      );
+    }
+
     return (
       <EuiCallOut title="Normalization error" color="danger" iconType="alert">
         <p>{data.error?.message ?? 'An unexpected error occurred during normalization.'}</p>
@@ -235,11 +277,38 @@ const NormalizationSection: React.FC<{ data: LogTestNormalizationResult }> = ({ 
   return (
     <>
       {formattedOutput ? (
-        <EuiPanel paddingSize="none">
-          <EuiCodeBlock language="json" paddingSize="m" isCopyable overflowHeight={400}>
-            {formattedOutput}
-          </EuiCodeBlock>
-        </EuiPanel>
+        <>
+          <EuiPanel paddingSize="none">
+            <EuiCodeBlock language="json" paddingSize="m" isCopyable overflowHeight={400}>
+              {formattedOutput}
+            </EuiCodeBlock>
+          </EuiPanel>
+          {onTestDetectionWithOutput && data.output && (
+            <>
+              <EuiSpacer size="s" />
+              <EuiPanel color="primary" paddingSize="s" hasShadow={false}>
+                <EuiFlexGroup alignItems="center" justifyContent="spaceBetween" gutterSize="s">
+                  <EuiFlexItem grow={false}>
+                    <EuiText size="s">{LOG_TEST_HELP.handoffText}</EuiText>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiToolTip content={LOG_TEST_HELP.handoffTooltip}>
+                      <EuiButton
+                        size="s"
+                        iconType="arrowRight"
+                        iconSide="right"
+                        onClick={() => onTestDetectionWithOutput(data.output!)}
+                        data-test-subj="logTestHandoffToDetection"
+                      >
+                        {LOG_TEST_HELP.handoffButton}
+                      </EuiButton>
+                    </EuiToolTip>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiPanel>
+            </>
+          )}
+        </>
       ) : (
         <EuiCallOut title="No output" color="warning" iconType="alert">
           <p>The logtest did not return any output.</p>
@@ -380,72 +449,111 @@ const DetectionSection: React.FC<{
 
 type ResultTab = 'normalization' | 'detection';
 
-export const LogTestResult: React.FC<LogTestResultProps> = ({ result, ruleHref }) => {
+export const LogTestResult: React.FC<LogTestResultProps> = ({
+  result,
+  ruleHref,
+  scope = 'full',
+  space,
+  onTestDetectionWithOutput,
+  onSwitchToDetection,
+}) => {
   const [selectedTab, setSelectedTab] = useState<ResultTab>('normalization');
   const normalization = result?.message?.normalization;
   const detection = result?.message?.detection;
   const verdict = useMemo(
     () =>
       buildLogTestVerdict({
+        scope,
         normalizationStatus: normalization?.status,
+        normalizationErrorMessage: normalization?.error?.message,
         detectionStatus: detection?.status,
         fieldCount: countNormalizedFields(normalization?.output),
         rulesMatched: detection?.matches?.length ?? 0,
+        rulesEvaluated: detection?.rules_evaluated,
       }),
-    [normalization?.status, normalization?.output, detection?.status, detection?.matches]
+    [scope, normalization, detection]
+  );
+  const scopeLabel = LOG_TEST_SCOPE_OPTIONS.find((option) => option.id === scope)?.label;
+
+  const normalizationView = normalization ? (
+    <NormalizationSection
+      data={normalization}
+      space={space}
+      onTestDetectionWithOutput={onTestDetectionWithOutput}
+      onSwitchToDetection={onSwitchToDetection}
+    />
+  ) : (
+    <EuiCallOut title="No normalization data" color="primary" iconType="iInCircle">
+      <p>The logtest did not return normalization results.</p>
+    </EuiCallOut>
+  );
+
+  const detectionView = detection ? (
+    <DetectionSection data={detection} ruleHref={ruleHref} />
+  ) : (
+    <EuiCallOut title="No detection data" color="primary" iconType="iInCircle">
+      <p>The logtest did not return detection results.</p>
+    </EuiCallOut>
   );
 
   return (
     <>
-      <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
+      <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" wrap>
         <EuiFlexItem grow={false}>
-          <EuiText size="s">
-            <h3>Test Result</h3>
-          </EuiText>
+          <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false} wrap>
+            <EuiFlexItem grow={false}>
+              <EuiText size="s">
+                <h3>Test Result</h3>
+              </EuiText>
+            </EuiFlexItem>
+            {scopeLabel && (
+              <EuiFlexItem grow={false}>
+                {/* Wazuh: names what was tested, so a result is not misread after the
+                    form has moved on to another scope or space. */}
+                <EuiBadge color="hollow" data-test-subj="logTestResultScope">
+                  {space ? `${scopeLabel} · ${space} space` : scopeLabel}
+                </EuiBadge>
+              </EuiFlexItem>
+            )}
+          </EuiFlexGroup>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>
           {/* Wazuh: the engine's raw status code (often just "200") told the user nothing,
               so this states the outcome instead. */}
-          <EuiBadge color={verdict.color}>{verdict.text}</EuiBadge>
+          <EuiBadge color={verdict.color} data-test-subj="logTestVerdict">
+            {verdict.text}
+          </EuiBadge>
         </EuiFlexItem>
       </EuiFlexGroup>
 
       <EuiSpacer size="m" />
 
-      <EuiTabs size="s">
-        <EuiTab
-          isSelected={selectedTab === 'normalization'}
-          onClick={() => setSelectedTab('normalization')}
-        >
-          Normalization
-        </EuiTab>
-        <EuiTab
-          isSelected={selectedTab === 'detection'}
-          onClick={() => setSelectedTab('detection')}
-        >
-          Detection
-        </EuiTab>
-      </EuiTabs>
+      {/* Wazuh: a partial scope answers one question, so it gets one panel and no tabs. */}
+      {scope === 'normalization' && normalizationView}
+      {scope === 'detection' && detectionView}
+      {scope === 'full' && (
+        <>
+          <EuiTabs size="s">
+            <EuiTab
+              isSelected={selectedTab === 'normalization'}
+              onClick={() => setSelectedTab('normalization')}
+            >
+              Normalization
+            </EuiTab>
+            <EuiTab
+              isSelected={selectedTab === 'detection'}
+              onClick={() => setSelectedTab('detection')}
+            >
+              Detection
+            </EuiTab>
+          </EuiTabs>
 
-      <EuiSpacer size="m" />
+          <EuiSpacer size="m" />
 
-      {selectedTab === 'normalization' &&
-        (normalization ? (
-          <NormalizationSection data={normalization} />
-        ) : (
-          <EuiCallOut title="No normalization data" color="primary" iconType="iInCircle">
-            <p>The logtest did not return normalization results.</p>
-          </EuiCallOut>
-        ))}
-
-      {selectedTab === 'detection' &&
-        (detection ? (
-          <DetectionSection data={detection} ruleHref={ruleHref} />
-        ) : (
-          <EuiCallOut title="No detection data" color="primary" iconType="iInCircle">
-            <p>The logtest did not return detection results.</p>
-          </EuiCallOut>
-        ))}
+          {selectedTab === 'normalization' && normalizationView}
+          {selectedTab === 'detection' && detectionView}
+        </>
+      )}
     </>
   );
 };

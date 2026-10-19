@@ -20,6 +20,7 @@
 | [#459](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/459) | Added a documentation link and a brief explanation of each Trace level option to the Log test page |
 | [#473](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/473) | Added a Cascade view to an integration's decoders that draws the parent hierarchy as a diagram, with a legend for each decoder state, path tracing on hover and warnings for parent cycles, external parents and truncated hierarchies |
 | [#482](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/482) | Added a Visual Editor to the decoder form as an alternative to the YAML editor; anything it cannot represent is kept as it is |
+| [wazuh-indexer-plugins#1694](https://github.com/wazuh/wazuh-indexer-plugins/issues/1694) | Added Normalization only and Detection only scopes to Log test, so the rules of a space without a root decoder can still be tested; the page says which scopes a space can run and why, explains when the Engine has not loaded a space, hands a normalized output over to detection, requires an integration in the combined test, keeps its space, scope and integration in the URL, and the rules list links each rule to Log test |
 
 ### Changed
 

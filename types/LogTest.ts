@@ -5,6 +5,12 @@
 
 export type LogTestTraceLevel = 'NONE' | 'ASSET_ONLY' | 'ALL';
 
+// Wazuh: which part of the pipeline a log test runs. Each scope calls its own
+// content manager endpoint: `full` the combined `/logtest`, `normalization` the
+// Engine-only `/logtest/normalization`, and `detection` the Engine-free
+// `/logtest/detection`, which still works in a space that has no root decoder.
+export type LogTestScope = 'full' | 'normalization' | 'detection';
+
 export interface LogTestRequestBody {
   queue: number;
   location: string;
@@ -69,9 +75,10 @@ export interface LogTestDetectionResult {
   reason?: string;
 }
 
+// Wazuh: a partial scope answers with only its own half, so both are optional.
 export interface LogTestResponseMessage {
-  normalization: LogTestNormalizationResult;
-  detection: LogTestDetectionResult;
+  normalization?: LogTestNormalizationResult;
+  detection?: LogTestDetectionResult;
 }
 
 export interface LogTestResponse {
@@ -81,6 +88,23 @@ export interface LogTestResponse {
 
 export interface LogTestApiRequest {
   document: LogTestRequestBody;
+}
+
+export type LogTestNormalizationRequestBody = Omit<LogTestRequestBody, 'integration'>;
+
+export interface LogTestNormalizationApiRequest {
+  document: LogTestNormalizationRequestBody;
+}
+
+export interface LogTestDetectionRequestBody {
+  space: string;
+  integration: string;
+  /** An already normalized event: the fields the integration's rules are evaluated against. */
+  input: Record<string, unknown>;
+}
+
+export interface LogTestDetectionApiRequest {
+  document: LogTestDetectionRequestBody;
 }
 
 // Wazuh: log-test-scoped failure classification. The response envelope always

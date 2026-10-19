@@ -231,3 +231,42 @@ describe('<Rules /> typed filter clauses', () => {
     }
   });
 });
+
+describe('<Rules /> Test action', () => {
+  const ruleWithIntegration = {
+    _id: 'rule-1',
+    _source: { enabled: true, level: 'medium', metadata: { title: 'UX test failed sshd login' } },
+    integration: { document: { id: 'int-1', metadata: { title: 'ux-test-int' } } },
+  };
+
+  const mountInSpace = async (space: string) => {
+    DataStore.rules.searchRules.mockResolvedValueOnce({ items: [ruleWithIntegration], total: 1 });
+    const { getApplication } = jest.requireActual('../../../../services/utils/constants');
+    getApplication().getUrlForApp.mockImplementation(
+      (appId: string, { path }: { path: string }) => `/app/${appId}${path}`
+    );
+    const history = createFakeHistory('/rules', `?space=${space}`);
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<Rules history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+    return wrapper;
+  };
+
+  it('links a rule to Log test on Detection only, with its integration and this space', async () => {
+    const wrapper = await mountInSpace('test');
+
+    const action = wrapper.find('[data-test-subj="rulesTableTestAction"]').hostNodes();
+    expect(action.length).toBe(1);
+    expect(action.prop('href')).toBe(
+      '/app/log_test#/log-test?space=test&scope=detection&integration=int-1'
+    );
+  });
+
+  it('offers no Test action in the draft space, which Log test cannot run', async () => {
+    const wrapper = await mountInSpace('draft');
+
+    expect(wrapper.find('[data-test-subj="rulesTableTestAction"]').hostNodes().length).toBe(0);
+  });
+});

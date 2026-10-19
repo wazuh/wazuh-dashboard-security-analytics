@@ -51,6 +51,8 @@ export interface SecurityAnalyticsApi {
   readonly KVDBS_BASE: string;
   readonly FILTERS_BASE: string;
   readonly LOG_TEST_BASE: string;
+  readonly LOG_TEST_NORMALIZATION: string;
+  readonly LOG_TEST_DETECTION: string;
   readonly METRICS: string;
   readonly GET_CORRELATION_ALERTS: string;
   readonly ACK_CORRELATION_ALERTS: string;

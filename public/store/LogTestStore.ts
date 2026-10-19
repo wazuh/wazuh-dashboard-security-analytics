@@ -6,7 +6,13 @@
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { errorNotificationToast, getErrorMessage } from '../utils/helpers';
 import LogTestService from '../services/LogTestService';
-import { LogTestApiRequest, LogTestResponse } from '../../types';
+import {
+  LogTestApiRequest,
+  LogTestDetectionApiRequest,
+  LogTestNormalizationApiRequest,
+  LogTestResponse,
+  LogTestServerResponse,
+} from '../../types';
 
 // Wazuh: the same failure reaches the store from two places. With the default
 // server.maxPayloadBytes the dashboard's own HTTP layer rejects the request, so
@@ -67,9 +73,20 @@ export interface LogTestStoreResult {
 export class LogTestStore {
   constructor(private service: LogTestService, private notifications: NotificationsStart) {}
 
-  executeLogTest = async (request: LogTestApiRequest): Promise<LogTestStoreResult> => {
+  executeLogTest = (request: LogTestApiRequest): Promise<LogTestStoreResult> =>
+    this.run(() => this.service.executeLogTest(request));
+
+  executeNormalization = (request: LogTestNormalizationApiRequest): Promise<LogTestStoreResult> =>
+    this.run(() => this.service.executeNormalization(request));
+
+  executeDetection = (request: LogTestDetectionApiRequest): Promise<LogTestStoreResult> =>
+    this.run(() => this.service.executeDetection(request));
+
+  // Wazuh: every scope shares the same envelope and the same failure handling, so the
+  // payload-too-large wording reads the same whichever endpoint rejected the event.
+  private run = async (call: () => Promise<LogTestServerResponse>): Promise<LogTestStoreResult> => {
     try {
-      const response = await this.service.executeLogTest(request);
+      const response = await call();
 
       if (!response.ok) {
         const message =

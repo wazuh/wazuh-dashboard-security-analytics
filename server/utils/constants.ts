@@ -47,6 +47,8 @@ export const API: SecurityAnalyticsApi = {
   KVDBS_BASE: `${BASE_API_PATH}/kvdbs`,
   FILTERS_BASE: `${BASE_API_PATH}/filters`,
   LOG_TEST_BASE: `${BASE_API_PATH}/logtest`,
+  LOG_TEST_NORMALIZATION: `${BASE_API_PATH}/logtest/normalization`,
+  LOG_TEST_DETECTION: `${BASE_API_PATH}/logtest/detection`,
   METRICS: `/api/security_analytics/stats`,
   GET_CORRELATION_ALERTS: `${BASE_API_PATH}/correlationAlerts`,
   ACK_CORRELATION_ALERTS: `${BASE_API_PATH}/_acknowledge/correlationAlerts`,
@@ -132,6 +134,8 @@ export const METHOD_NAMES = {
 
   // LogTest methods
   TEST_LOG: 'executeLogtest',
+  TEST_LOG_NORMALIZATION: 'executeLogtestNormalization',
+  TEST_LOG_DETECTION: 'executeLogtestDetection',
 
   // Threat intel methods
   ADD_THREAT_INTEL_SOURCE: 'addThreatIntelSource',
@@ -245,6 +249,8 @@ export const CLIENT_POLICY_METHODS = {
 
 export const CLIENT_LOG_TEST_METHODS = {
   TEST_LOG: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.TEST_LOG}`,
+  TEST_LOG_NORMALIZATION: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.TEST_LOG_NORMALIZATION}`,
+  TEST_LOG_DETECTION: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.TEST_LOG_DETECTION}`,
 };
 
 export const CLIENT_THREAT_INTEL_METHODS = {

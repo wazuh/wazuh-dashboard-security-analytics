@@ -21,6 +21,7 @@ const buildFormData = (overrides: Partial<LogTestFormData> = {}): LogTestFormDat
   space: 'draft',
   metadataFields: [],
   integration: '',
+  normalizedEvent: '',
   ...overrides,
 });
 
@@ -80,5 +81,68 @@ describe('<LogTestForm /> trace level', () => {
     wrapper.find('EuiSuperSelect').prop('onChange')!('ASSET_ONLY');
 
     expect(onFormChange).toHaveBeenCalledWith('traceLevel', 'ASSET_ONLY');
+  });
+});
+
+const INTEGRATIONS = [
+  { id: 'with-rules', label: 'ux-test-int', value: 'ux-test-int', rulesCount: 1 },
+  { id: 'no-rules', label: 'ux-sshd-decoders', value: 'ux-sshd-decoders', rulesCount: 0 },
+];
+
+describe('<LogTestForm /> scopes', () => {
+  // The help icon renders as the icon mock's text, which is not part of the heading.
+  const sections = (wrapper: any) =>
+    wrapper.find('EuiTitle h3').map((h: any) => h.text().replace('EuiIconMock', '').trim());
+
+  it('asks for the raw event and an integration in the combined test', async () => {
+    const { wrapper } = await mountLogTestForm({ scope: 'full', integrationOptions: INTEGRATIONS });
+
+    expect(sections(wrapper)).toEqual(['Normalization', 'Detection', 'Log event']);
+    // Wazuh: no longer marked optional; Normalization only covers a test without rules.
+    expect(wrapper.find('IntegrationComboBox').text()).not.toContain('optional');
+    expect(wrapper.find('NormalizedEventEditor').length).toBe(0);
+  });
+
+  it('drops the integration for Normalization only', async () => {
+    const { wrapper } = await mountLogTestForm({ scope: 'normalization' });
+
+    expect(sections(wrapper)).toEqual(['Normalization', 'Log event']);
+    expect(wrapper.find('IntegrationComboBox').length).toBe(0);
+  });
+
+  it('swaps the raw event for a normalized JSON event in Detection only', async () => {
+    const { wrapper } = await mountLogTestForm({ scope: 'detection' });
+
+    expect(sections(wrapper)).toEqual(['Detection']);
+    expect(wrapper.find('EuiSuperSelect').length).toBe(0);
+    expect(wrapper.find('EuiTextArea').length).toBe(0);
+    expect(wrapper.find('NormalizedEventEditor').length).toBe(1);
+  });
+
+  it('lists integrations without rules as disabled in Detection only', async () => {
+    const { wrapper } = await mountLogTestForm({
+      scope: 'detection',
+      integrationOptions: INTEGRATIONS,
+    });
+
+    expect(wrapper.find('IntegrationComboBox').prop('options')).toEqual([
+      INTEGRATIONS[0],
+      { ...INTEGRATIONS[1], disabled: true, label: 'ux-sshd-decoders (no rules in this space)' },
+    ]);
+  });
+
+  it('keeps every integration selectable in the combined test', async () => {
+    const { wrapper } = await mountLogTestForm({ scope: 'full', integrationOptions: INTEGRATIONS });
+
+    expect(wrapper.find('IntegrationComboBox').prop('options')).toEqual(INTEGRATIONS);
+  });
+
+  it('shows the required-integration error', async () => {
+    const { wrapper } = await mountLogTestForm({
+      scope: 'full',
+      errors: { integration: 'Integration is required' },
+    });
+
+    expect(wrapper.find('IntegrationComboBox').prop('error')).toBe('Integration is required');
   });
 });

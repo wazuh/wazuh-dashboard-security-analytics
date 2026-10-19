@@ -30,9 +30,12 @@ import { RuleItemInfoBase } from '../../../../../types';
 import {
   BREADCRUMBS,
   DEFAULT_PAGE_SIZE,
+  LOG_TEST_NAV_ID,
   PAGE_SIZE_OPTIONS,
   ROUTES,
 } from '../../../../utils/constants';
+import { buildAppUrl } from '../../../../utils/routes';
+import { buildLogTestRoute } from '../../../LogTest/utils';
 import { WazuhPageHeader } from '../../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../../components/EntitySearchErrorCallOut';
@@ -485,6 +488,32 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             onClick: (item: RuleTableItem) =>
               setItemForAction({ action: DELETE_ACTION, id: item.ruleId }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
+          },
+          {
+            // Wazuh: opens Log test on Detection only for the rule's integration, in this
+            // space. A real link rather than onClick, so it can be opened in a new tab or
+            // copied; OUI's `href` action only takes a fixed string, hence `render`.
+            render: (item: RuleTableItem) => (
+              <EuiToolTip content="Test rule in Log test">
+                <EuiButtonIcon
+                  iconType="play"
+                  aria-label="Test rule in Log test"
+                  href={buildAppUrl(
+                    LOG_TEST_NAV_ID,
+                    buildLogTestRoute({
+                      space: spaceFilter,
+                      scope: 'detection',
+                      integration: item.integration?.document?.id,
+                    })
+                  )}
+                  data-test-subj="rulesTableTestAction"
+                />
+              </EuiToolTip>
+            ),
+            // Draft content never reaches the engine, and a rule outside an integration
+            // has nothing for detection to evaluate it with.
+            available: (item: RuleTableItem) =>
+              spaceFilter !== SpaceTypes.DRAFT.value && !!item.integration?.document?.id,
           },
         ],
       },
