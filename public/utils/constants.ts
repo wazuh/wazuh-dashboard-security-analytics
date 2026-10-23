@@ -19,6 +19,9 @@ export const MAX_RECENTLY_USED_TIME_RANGES = 5;
 export const DEFAULT_DATE_RANGE = { start: 'now-24h', end: 'now' };
 export const DATE_TIME_FILTER_KEY = 'security_analytics_time_filter';
 
+export const DEFAULT_PAGE_SIZE = 50;
+export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
 export const PLUGIN_NAME = 'opensearch_security_analytics_dashboards';
 export const OS_NOTIFICATION_PLUGIN = 'opensearch-notifications';
 

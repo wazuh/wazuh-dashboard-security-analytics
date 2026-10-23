@@ -13,4 +13,20 @@ export function addLogTestMethods(securityAnalytics: any, createAction: any): vo
     needBody: true,
     method: 'POST',
   });
+
+  securityAnalytics[METHOD_NAMES.TEST_LOG_NORMALIZATION] = createAction({
+    url: {
+      fmt: `${CONTENT_MANAGER_BASE_PATH}/logtest/normalization`,
+    },
+    needBody: true,
+    method: 'POST',
+  });
+
+  securityAnalytics[METHOD_NAMES.TEST_LOG_DETECTION] = createAction({
+    url: {
+      fmt: `${CONTENT_MANAGER_BASE_PATH}/logtest/detection`,
+    },
+    needBody: true,
+    method: 'POST',
+  });
 }

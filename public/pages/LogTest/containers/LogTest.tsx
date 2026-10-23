@@ -28,7 +28,11 @@ import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/L
 import { LogTestResult } from '../components/LogTestResult';
 import { IntegrationOption } from '../../../components/IntegrationComboBox';
 import { MetadataEntry, buildMetadataObject } from '../utils';
-import { DETECTION_RULE_NAV_ID, LOG_TEST_DOCUMENTATION_URL } from '../../../utils/constants';
+import {
+  DETECTION_RULE_NAV_ID,
+  INTEGRATIONS_NAV_ID,
+  LOG_TEST_DOCUMENTATION_URL,
+} from '../../../utils/constants';
 import { buildAppUrl } from '../../../utils/routes';
 
 // Wazuh: appDescriptionControls (home:useNewHomePage) needs a plain string, so the
@@ -84,6 +88,7 @@ const INITIAL_SPACE_OPTIONS = [
 
 interface SpaceCacheEntry {
   enabled: boolean;
+  hasRootDecoder: boolean;
   integrations: IntegrationOption[];
 }
 
@@ -101,6 +106,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
   // Wazuh: the space the result belongs to. The selector can move after a test, and the
   // rule links must keep pointing at the space the event was actually evaluated in.
   const [testedSpace, setTestedSpace] = useState<string | null>(null);
+  const [testedNormalizationSpace, setTestedNormalizationSpace] = useState<string | undefined>();
   const [spaceCache, setSpaceCache] = useState<SpaceCache>({});
 
   useEffect(() => {
@@ -127,6 +133,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               option.id,
               {
                 enabled: !!policy && policy.document?.enabled !== false,
+                hasRootDecoder: !!policy?.document?.root_decoder,
                 integrations,
               },
             ];
@@ -134,7 +141,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
           .catch((error): [string, SpaceCacheEntry] => {
             console.error(`Ruleset Management - LogTest - searchPolicies (${option.id}):`, error);
             errorNotificationToast(notifications, 'retrieve', 'policies', error);
-            return [option.id, { enabled: false, integrations: [] }];
+            return [option.id, { enabled: false, hasRootDecoder: false, integrations: [] }];
           })
       )
     );
@@ -151,12 +158,21 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
 
   useEffect(() => {
     setFormData((prev) => (prev.integration ? { ...prev, integration: '' } : prev));
+    // Wazuh: the integration is only required in spaces without a root decoder.
+    setErrors(({ integration, ...rest }) => rest);
   }, [formData.space]);
 
   const disabledSpaces = useMemo<string[]>(
     () => INITIAL_SPACE_OPTIONS.filter((o) => spaceCache[o.id]?.enabled === false).map((o) => o.id),
     [spaceCache]
   );
+
+  // Wazuh: a space with no root decoder has no engine environment. Its events are
+  // normalized by the standard space in production too, so Log test does the same.
+  const normalizationSpace =
+    spaceCache[formData.space]?.enabled && !spaceCache[formData.space].hasRootDecoder
+      ? SpaceTypes.STANDARD.value
+      : undefined;
 
   const integrationOptions = useMemo<IntegrationOption[]>(
     () => spaceCache[formData.space]?.integrations ?? [],
@@ -174,9 +190,13 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
       newErrors.space = 'Space is required';
     }
 
+    if (normalizationSpace && !formData.integration) {
+      newErrors.integration = 'Select an integration to run its rules.';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  }, [formData, normalizationSpace]);
 
   const handleExecuteLogTest = async () => {
     if (!validateForm()) {
@@ -194,6 +214,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
         metadata: buildMetadataObject(formData.metadataFields),
         space: formData.space,
         integration: formData.integration || undefined,
+        normalization_space: normalizationSpace,
       },
     });
 
@@ -202,6 +223,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
     if (result.success && result.data) {
       setTestResult(result.data);
       setTestedSpace(formData.space);
+      setTestedNormalizationSpace(normalizationSpace);
     }
   };
 
@@ -230,6 +252,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
     setErrors(INITIAL_ERRORS);
     setTestResult(null);
     setTestedSpace(null);
+    setTestedNormalizationSpace(undefined);
   }, []);
 
   return (
@@ -275,6 +298,34 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               <EuiSpacer size="m" />
             </>
           )}
+          {normalizationSpace && (
+            <>
+              <EuiCallOut
+                size="s"
+                color="warning"
+                iconType="alert"
+                title={`The ${formData.space} space has no root decoder`}
+                data-test-subj="logTestNoRootDecoderCallout"
+              >
+                <p>
+                  Its decoders cannot parse events, so Log test parses the log with the{' '}
+                  {normalizationSpace} space, then runs the rules of the selected integration from
+                  the {formData.space} space.
+                </p>
+                <EuiLink
+                  href={buildAppUrl(
+                    INTEGRATIONS_NAV_ID,
+                    `${ROUTES.INTEGRATIONS}?space=${SpaceTypes.DRAFT.value}`
+                  )}
+                  target="_blank"
+                  external
+                >
+                  Set a root decoder in the draft space
+                </EuiLink>
+              </EuiCallOut>
+              <EuiSpacer size="m" />
+            </>
+          )}
           <LogTestForm
             formData={formData}
             errors={errors}
@@ -282,6 +333,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
             onMetadataFieldsChange={handleMetadataFieldsChange}
             integrationOptions={integrationOptions}
             disabled={isLoading}
+            integrationRequired={!!normalizationSpace}
           />
 
           <EuiSpacer size="l" />
@@ -311,6 +363,8 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
               <EuiHorizontalRule margin="l" />
               <LogTestResult
                 result={testResult}
+                normalizationSpace={testedNormalizationSpace}
+                detectionSpace={testedSpace ?? undefined}
                 /* Wazuh: a real cross-app URL, so the link can be opened in a new tab,
                    copied, and read by assistive tech. The rule id goes in `query`, which
                    the rules list applies as its search, and the space is the one the test

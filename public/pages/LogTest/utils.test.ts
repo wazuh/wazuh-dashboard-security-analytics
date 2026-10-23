@@ -121,4 +121,16 @@ describe('buildLogTestVerdict', () => {
       color: 'danger',
     });
   });
+
+  it('names the space that parsed the event when it is not the tested one', () => {
+    expect(
+      buildLogTestVerdict({
+        normalizationStatus: 'success',
+        detectionStatus: 'success',
+        fieldCount: 29,
+        rulesMatched: 1,
+        normalizationSpace: 'standard',
+      }).text
+    ).toBe('Parsed by the standard space into 29 fields, 1 rule matched');
+  });
 });

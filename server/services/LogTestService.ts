@@ -11,7 +11,7 @@ import {
   ResponseError,
 } from 'opensearch-dashboards/server';
 import { ServerResponse } from '../models/types';
-import { LogTestApiRequest, LogTestResponse } from '../../types';
+import { LogTestApiRequest, LogTestRequestBody, LogTestResponse } from '../../types';
 import { CLIENT_LOG_TEST_METHODS, LOGTEST_ERROR_KIND_BY_STATUS } from '../utils/constants';
 import { extractErrorKind, extractErrorMessage } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
@@ -69,9 +69,11 @@ export class LogTestService extends MDSEnabledClientService {
         });
       }
 
-      const logTestResponse: LogTestResponse = await client(CLIENT_LOG_TEST_METHODS.TEST_LOG, {
-        body: logTest,
-      });
+      const { normalization_space: normalizationSpace, ...engineDocument } = logTest;
+      const logTestResponse: LogTestResponse =
+        normalizationSpace && normalizationSpace !== engineDocument.space
+          ? await this.normalizeElsewhere(client, engineDocument, normalizationSpace)
+          : await client(CLIENT_LOG_TEST_METHODS.TEST_LOG, { body: engineDocument });
 
       return response.custom({
         statusCode: 200,
@@ -91,5 +93,29 @@ export class LogTestService extends MDSEnabledClientService {
         },
       });
     }
+  };
+
+  // Wazuh: a space with no root decoder has no engine environment, so the combined
+  // endpoint cannot run there. Normalize in another space, then run the tested
+  // space's rules on that output, keeping the combined response shape.
+  private normalizeElsewhere = async (
+    client: (method: string, params: object) => Promise<any>,
+    document: Omit<LogTestRequestBody, 'normalization_space'>,
+    normalizationSpace: string
+  ): Promise<LogTestResponse> => {
+    const { space, integration, ...event } = document;
+    const normalized = await client(CLIENT_LOG_TEST_METHODS.TEST_LOG_NORMALIZATION, {
+      body: { ...event, space: normalizationSpace },
+    });
+    const normalization = { status: 'success' as const, ...normalized.message };
+    const detection = integration
+      ? (
+          await client(CLIENT_LOG_TEST_METHODS.TEST_LOG_DETECTION, {
+            body: { space, integration, input: normalization.output ?? {} },
+          })
+        ).message
+      : { status: 'skipped' as const, reason: 'No integration selected.' };
+
+    return { status: String(normalized.status), message: { normalization, detection } };
   };
 }
