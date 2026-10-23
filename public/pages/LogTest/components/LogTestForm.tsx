@@ -92,6 +92,8 @@ export interface LogTestFormProps {
   onMetadataFieldsChange: (fields: MetadataEntry[]) => void;
   integrationOptions: IntegrationOption[];
   disabled?: boolean;
+  // Wazuh: without a root decoder only the rules can be tested, so they must be chosen.
+  integrationRequired?: boolean;
 }
 
 export const LogTestForm: React.FC<LogTestFormProps> = ({
@@ -101,6 +103,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
   onMetadataFieldsChange,
   integrationOptions,
   disabled = false,
+  integrationRequired = false,
 }) => {
   return (
     <>
@@ -166,16 +169,22 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
         <EuiFlexItem style={{ minWidth: '300px' }}>
           <IntegrationComboBox
             label={
-              <>
-                {'Integration - '}
-                <em>optional</em>
-              </>
+              integrationRequired ? (
+                'Integration'
+              ) : (
+                <>
+                  {'Integration - '}
+                  <em>optional</em>
+                </>
+              )
             }
+            isInvalid={!!errors.integration}
+            error={errors.integration}
             options={integrationOptions}
             selectedId={formData.integration}
             resourceName="log test"
             space={formData.space}
-            isOptional
+            isOptional={!integrationRequired}
             onChange={(e) => onFormChange('integration', e[0]?.id || '')}
             fullWidth
           />

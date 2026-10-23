@@ -46,7 +46,9 @@ export const KVDBContentEditor: React.FC = () => {
             const entryTouched = contentTouched?.[index];
             const afterSubmit = submitCount > 0;
 
-            const showKeyError = (entryTouched?.key || afterSubmit) && !!entryErrors?.key;
+            // A missing key is only noticed once the value is filled in.
+            const showKeyError =
+              (entryTouched?.key || entryTouched?.value || afterSubmit) && !!entryErrors?.key;
             const showValueError = (entryTouched?.value || afterSubmit) && !!entryErrors?.value;
 
             const textareaRows = Math.min(Math.max(entry.value.split('\n').length, 1), 8);

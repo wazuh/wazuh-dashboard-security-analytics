@@ -11,6 +11,7 @@ import { mount } from 'enzyme';
 import Detectors from './Detectors';
 import { coreContextMock } from '../../../../../test/mocks/useContext.mock';
 import { setupCoreStart } from '../../../../../test/utils/helpers';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../../../utils/constants';
 
 beforeAll(() => {
   setupCoreStart();
@@ -25,6 +26,20 @@ describe('<Detectors /> spec', () => {
     });
     wrapper.update();
     expect(wrapper).toMatchSnapshot();
+  });
+
+  it('paginates with 50 rows per page by default and offers larger page sizes', async () => {
+    let wrapper: any;
+    await act(async () => {
+      Detectors.contextType = React.createContext(coreContextMock);
+      wrapper = await mount(<Detectors {...props} />);
+    });
+    wrapper.update();
+    const pagination = wrapper.find('EuiInMemoryTable').prop('pagination');
+    expect(pagination.initialPageSize).toBe(50);
+    expect(DEFAULT_PAGE_SIZE).toBe(50);
+    expect(pagination.pageSizeOptions).toEqual(PAGE_SIZE_OPTIONS);
+    expect(Math.max(...pagination.pageSizeOptions)).toBeGreaterThan(50);
   });
 
   it('renders the Integration column as a clickable IntegrationCell CTA', async () => {

@@ -132,6 +132,8 @@ export const METHOD_NAMES = {
 
   // LogTest methods
   TEST_LOG: 'executeLogtest',
+  TEST_LOG_NORMALIZATION: 'executeLogtestNormalization',
+  TEST_LOG_DETECTION: 'executeLogtestDetection',
 
   // Threat intel methods
   ADD_THREAT_INTEL_SOURCE: 'addThreatIntelSource',
@@ -245,6 +247,8 @@ export const CLIENT_POLICY_METHODS = {
 
 export const CLIENT_LOG_TEST_METHODS = {
   TEST_LOG: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.TEST_LOG}`,
+  TEST_LOG_NORMALIZATION: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.TEST_LOG_NORMALIZATION}`,
+  TEST_LOG_DETECTION: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.TEST_LOG_DETECTION}`,
 };
 
 export const CLIENT_THREAT_INTEL_METHODS = {

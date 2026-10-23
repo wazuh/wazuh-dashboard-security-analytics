@@ -33,6 +33,7 @@ export function setupLogTestRoutes(services: NodeServices, router: IRouter) {
             ),
             space: schema.string(),
             integration: schema.maybe(schema.string()),
+            normalization_space: schema.maybe(schema.string()),
           }),
         }),
         query: createQueryValidationSchema(),

@@ -82,3 +82,23 @@ describe('<LogTestForm /> trace level', () => {
     expect(onFormChange).toHaveBeenCalledWith('traceLevel', 'ASSET_ONLY');
   });
 });
+
+describe('<LogTestForm /> integration', () => {
+  it('marks the integration optional by default', async () => {
+    const { wrapper } = await mountLogTestForm();
+
+    expect(wrapper.find('IntegrationComboBox').prop('isOptional')).toBe(true);
+  });
+
+  it('requires the integration and shows its error when asked to', async () => {
+    const { wrapper } = await mountLogTestForm({
+      integrationRequired: true,
+      errors: { integration: 'Select an integration to run its rules.' },
+    });
+
+    const comboBox = wrapper.find('IntegrationComboBox');
+    expect(comboBox.prop('isOptional')).toBe(false);
+    expect(comboBox.prop('label')).toBe('Integration');
+    expect(comboBox.prop('error')).toBe('Select an integration to run its rules.');
+  });
+});
