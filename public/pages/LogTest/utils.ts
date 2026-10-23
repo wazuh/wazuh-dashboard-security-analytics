@@ -72,8 +72,11 @@ export function buildLogTestVerdict(args: {
   detectionStatus?: string;
   fieldCount: number;
   rulesMatched: number;
+  // Wazuh: set when the log was normalized in another space than the tested one.
+  normalizationSpace?: string;
 }): LogTestVerdict {
-  const { normalizationStatus, detectionStatus, fieldCount, rulesMatched } = args;
+  const { normalizationStatus, detectionStatus, fieldCount, rulesMatched, normalizationSpace } =
+    args;
 
   if (normalizationStatus === 'error') {
     return { text: 'Not parsed by active decoders', color: 'danger' };
@@ -82,8 +85,10 @@ export function buildLogTestVerdict(args: {
   // Wazuh: the actor is dropped here on purpose. This clause sits above the Normalization
   // tab, which already frames who parses, and the badge has a second clause to fit. The
   // failure branch above keeps it, since there nothing else competes for the space and the
-  // user needs to know no active decoder claimed the event.
-  const parsed = `Parsed into ${fieldCount} ${fieldCount === 1 ? 'field' : 'fields'}`;
+  // user needs to know no active decoder claimed the event. The actor comes back when another
+  // space parsed the event, since the tab no longer implies it.
+  const actor = normalizationSpace ? ` by the ${normalizationSpace} space` : '';
+  const parsed = `Parsed${actor} into ${fieldCount} ${fieldCount === 1 ? 'field' : 'fields'}`;
 
   if (detectionStatus === 'error') {
     return { text: `${parsed}, detection logic failed`, color: 'danger' };

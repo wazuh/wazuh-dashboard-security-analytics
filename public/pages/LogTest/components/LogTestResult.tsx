@@ -32,6 +32,9 @@ import { buildLogTestVerdict, countNormalizedFields } from '../utils';
 export interface LogTestResultProps {
   result: LogTestResponse;
   ruleHref?: (ruleId: string) => string;
+  // Wazuh: set when the tested space has no root decoder and another space normalized the log.
+  normalizationSpace?: string;
+  detectionSpace?: string;
 }
 
 const AssetTraceItem: React.FC<{ trace: LogTestAssetTrace; index: number }> = ({
@@ -380,7 +383,21 @@ const DetectionSection: React.FC<{
 
 type ResultTab = 'normalization' | 'detection';
 
-export const LogTestResult: React.FC<LogTestResultProps> = ({ result, ruleHref }) => {
+const SpaceNote: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <>
+    <EuiText size="s" color="subdued">
+      <p>{children}</p>
+    </EuiText>
+    <EuiSpacer size="s" />
+  </>
+);
+
+export const LogTestResult: React.FC<LogTestResultProps> = ({
+  result,
+  ruleHref,
+  normalizationSpace,
+  detectionSpace,
+}) => {
   const [selectedTab, setSelectedTab] = useState<ResultTab>('normalization');
   const normalization = result?.message?.normalization;
   const detection = result?.message?.detection;
@@ -391,8 +408,15 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, ruleHref }
         detectionStatus: detection?.status,
         fieldCount: countNormalizedFields(normalization?.output),
         rulesMatched: detection?.matches?.length ?? 0,
+        normalizationSpace,
       }),
-    [normalization?.status, normalization?.output, detection?.status, detection?.matches]
+    [
+      normalization?.status,
+      normalization?.output,
+      detection?.status,
+      detection?.matches,
+      normalizationSpace,
+    ]
   );
 
   return (
@@ -428,6 +452,17 @@ export const LogTestResult: React.FC<LogTestResultProps> = ({ result, ruleHref }
       </EuiTabs>
 
       <EuiSpacer size="m" />
+
+      {normalizationSpace && selectedTab === 'normalization' && (
+        <SpaceNote>
+          Normalized with the <strong>{normalizationSpace}</strong> space.
+        </SpaceNote>
+      )}
+      {normalizationSpace && detectionSpace && selectedTab === 'detection' && (
+        <SpaceNote>
+          Rules from the <strong>{detectionSpace}</strong> space.
+        </SpaceNote>
+      )}
 
       {selectedTab === 'normalization' &&
         (normalization ? (
