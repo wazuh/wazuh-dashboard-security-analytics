@@ -9,6 +9,7 @@ import {
   extractErrorKind,
   extractErrorMessage,
   mergeIdsClause,
+  resolveEntityNamesBySpace,
 } from './helpers';
 import { LOGTEST_ERROR_KIND_BY_STATUS } from './constants';
 
@@ -285,5 +286,45 @@ describe('extractErrorMessage with an authorization denial', () => {
     expect(extractErrorMessage({ body: { message: 'Integration not found.' } })).toBe(
       'Integration not found.'
     );
+  });
+});
+
+describe('resolveEntityNamesBySpace', () => {
+  const options = {
+    index: 'wazuh-threatintel-kvdbs',
+    space: 'draft',
+    nameProp: 'document.metadata.title',
+    idProp: 'document.id',
+  };
+
+  it('does not search when there are no ids', async () => {
+    const client = jest.fn();
+    await expect(resolveEntityNamesBySpace(client, [], options)).resolves.toEqual({});
+    expect(client).not.toHaveBeenCalled();
+  });
+
+  it('maps each id found in the space to its name', async () => {
+    const client = jest.fn().mockResolvedValue({
+      hits: {
+        hits: [{ _source: { document: { id: 'kvdb-1', metadata: { title: 'Ports' } } } }],
+      },
+    });
+
+    await expect(resolveEntityNamesBySpace(client, ['kvdb-1', 'kvdb-2'], options)).resolves.toEqual(
+      { 'kvdb-1': 'Ports' }
+    );
+    expect(client).toHaveBeenCalledWith('search', {
+      index: 'wazuh-threatintel-kvdbs',
+      body: expect.objectContaining({
+        query: {
+          bool: {
+            must: [
+              { terms: { 'document.id': ['kvdb-1', 'kvdb-2'] } },
+              { term: { 'space.name': 'draft' } },
+            ],
+          },
+        },
+      }),
+    });
   });
 });

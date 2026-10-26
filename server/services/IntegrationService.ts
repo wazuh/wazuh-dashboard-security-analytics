@@ -26,9 +26,8 @@ import {
   UpdateIntegrationResponse,
 } from '../../types';
 import { CLIENT_INTEGRATION_METHODS, CONTENT_INDICES } from '../utils/constants';
-import { extractErrorMessage } from '../utils/helpers';
+import { extractErrorMessage, resolveEntityNamesBySpace } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
-import { get, sortBy } from 'lodash';
 import { getNextSpace } from '../../common/helpers';
 
 export class IntegrationService extends MDSEnabledClientService {
@@ -172,43 +171,13 @@ export class IntegrationService extends MDSEnabledClientService {
   ) => {
     const ids = promoteEntityData.map(({ id }) => id.replace(/^\w_/, '')); // TODO: this removes the `d_` prefix of the ids
 
-    const searchEntityByIdsAndSpace = async (idsToSearch: string[], searchSpace: PromoteSpaces) => {
-      if (idsToSearch.length === 0) {
-        return {};
-      }
-
-      // TODO: This should paginate the results
-      const searchResponse: SearchIntegrationsResponse = await client('search', {
+    const searchEntityByIdsAndSpace = (idsToSearch: string[], searchSpace: PromoteSpaces) =>
+      resolveEntityNamesBySpace(client, idsToSearch, {
         index,
-        body: {
-          size: 10000,
-          _source: [nameProp, idProp],
-          query: {
-            bool: {
-              must: [
-                {
-                  terms: {
-                    [idProp]: idsToSearch,
-                  },
-                },
-                {
-                  term: {
-                    'space.name': searchSpace,
-                  },
-                },
-              ],
-            },
-          },
-        },
+        space: String(searchSpace),
+        nameProp,
+        idProp,
       });
-
-      return Object.fromEntries(
-        searchResponse.hits.hits.map(({ _source }) => [
-          get(_source, idProp),
-          get(_source, nameProp),
-        ])
-      );
-    };
 
     const entitiesInCurrentSpace = await searchEntityByIdsAndSpace(ids, space);
 

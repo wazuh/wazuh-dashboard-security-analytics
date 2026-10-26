@@ -7,6 +7,7 @@ import { HttpSetup } from 'opensearch-dashboards/public';
 import { API } from '../../server/utils/constants';
 import { ServerResponse } from '../../server/models/types';
 import {
+  GetPolicyResourcesResponse,
   GetPolicyResponse,
   SearchPoliciesResponse,
   SearchPolicyOptions,
@@ -54,5 +55,17 @@ export default class PoliciesService {
   deleteSpace = async (space: string): Promise<ServerResponse<null>> => {
     const url = `..${API.SPACES_BASE}/${space}`;
     return (await this.httpClient.delete(url)) as ServerResponse<null>;
+  };
+
+  clearSpaceNormalization = async (space: string): Promise<ServerResponse<null>> => {
+    const url = `..${API.SPACES_BASE}/${space}/normalization`;
+    return (await this.httpClient.delete(url)) as ServerResponse<null>;
+  };
+
+  getPolicyResources = async (
+    space: string
+  ): Promise<ServerResponse<GetPolicyResourcesResponse>> => {
+    const url = `..${API.SPACES_BASE}/${space}/resources`;
+    return (await this.httpClient.get(url)) as ServerResponse<GetPolicyResourcesResponse>;
   };
 }
