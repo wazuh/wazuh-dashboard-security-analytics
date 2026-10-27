@@ -24,7 +24,7 @@ describe('HowItWorksFlyout', () => {
 
     expect(screen.getByText(HOW_IT_WORKS_TITLE)).toBeTruthy();
     expect(screen.getByText('First step: collect the log')).toBeTruthy();
-    expect(screen.getByText('How to collect a log').closest('a')?.getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: /How to collect a log/ }).getAttribute('href')).toBe(
       LOG_DATA_COLLECTION_DOCUMENTATION_URL
     );
   });
