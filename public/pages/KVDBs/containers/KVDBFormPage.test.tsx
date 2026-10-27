@@ -61,6 +61,43 @@ const renderEditPage = async (): Promise<ReactWrapper> => {
   return wrapper;
 };
 
+const renderCreatePage = async (): Promise<ReactWrapper> => {
+  let wrapper!: ReactWrapper;
+  await act(async () => {
+    wrapper = mount(
+      <KVDBFormPage
+        notifications={notifications}
+        history={history}
+        action="create"
+        match={{ params: {} }}
+      />
+    );
+  });
+  wrapper.update();
+  return wrapper;
+};
+
+const switchToYaml = async (wrapper: ReactWrapper) => {
+  await act(async () => {
+    wrapper.find('EuiButtonGroup').first().prop('onChange')('yaml' as any);
+  });
+  wrapper.update();
+};
+
+const typeYaml = async (wrapper: ReactWrapper, yaml: string) => {
+  await act(async () => {
+    (wrapper.find('YamlForm').first().prop('change') as (value: string) => void)(yaml);
+  });
+  wrapper.update();
+};
+
+const integrationErrors = (wrapper: ReactWrapper) =>
+  wrapper
+    .find('IntegrationComboBox')
+    .find('.euiFormErrorText')
+    .hostNodes()
+    .map((node) => node.text());
+
 const submitButton = (wrapper: ReactWrapper) =>
   wrapper.find('EuiButton').filterWhere((button) => button.text().endsWith('Edit KVDB'));
 
@@ -126,5 +163,51 @@ describe('KVDBFormPage content validation', () => {
     await addEntry(wrapper, {});
 
     expect(submitButton(wrapper).prop('disabled')).toBe(false);
+  });
+});
+
+describe('KVDBFormPage on create', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('shows no validation errors in YAML before anything is edited', async () => {
+    const wrapper = await renderCreatePage();
+    await switchToYaml(wrapper);
+
+    expect(wrapper.find('YamlForm').first().prop('isInvalid')).toBe(false);
+    expect(wrapper.text()).not.toContain('Please address the highlighted errors.');
+  });
+
+  it('shows validation errors in YAML once the content has been edited', async () => {
+    const wrapper = await renderCreatePage();
+    await switchToYaml(wrapper);
+    await typeYaml(wrapper, ['metadata:', '  title: ip-reputation', 'enabled: true'].join('\n'));
+
+    expect(wrapper.text()).toContain('Please address the highlighted errors.');
+    expect(wrapper.text()).toContain('Author is required');
+  });
+
+  it('does not ask for an integration before anything is edited', async () => {
+    const wrapper = await renderCreatePage();
+    expect(integrationErrors(wrapper)).toEqual([]);
+  });
+
+  it('asks for an integration once the content has been edited without one', async () => {
+    const wrapper = await renderCreatePage();
+    await act(async () => {
+      wrapper
+        .find('input[placeholder="Enter KVDB title"]')
+        .simulate('change', { target: { value: 'ip-reputation' } });
+    });
+    wrapper.update();
+
+    expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+    expect(
+      wrapper
+        .find('EuiButton')
+        .filterWhere((button) => button.text().endsWith('Create KVDB'))
+        .prop('disabled')
+    ).toBe(true);
   });
 });
