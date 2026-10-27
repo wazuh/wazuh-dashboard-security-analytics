@@ -432,6 +432,16 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
   const structuralCount = Object.keys(structuralErrors).length;
   const warningCount = Object.keys(schemaWarnings.fields).length + schemaWarnings.document.length;
 
+  // On create, hold back validation feedback until the user edits the content (picking
+  // an integration does not count) or tries to submit. Typing broken YAML is an edit.
+  const showValidation =
+    action !== 'create' ||
+    !isPristineCreate ||
+    yamlSyntaxError !== null ||
+    formikProps.submitCount > 0;
+  const integrationError =
+    showValidation && action === 'create' && !integrationType ? 'Select an integration' : undefined;
+
   const isSubmitBlocked =
     !integrationType ||
     structuralCount > 0 ||
@@ -482,6 +492,8 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
               data-test-subj="integration_dropdown"
               notifications={notifications}
               onCreateSuccess={onIntegrationCreateSuccess}
+              isInvalid={!!integrationError}
+              error={integrationError}
             />
             <EuiSpacer size="m" />
           </>
@@ -502,7 +514,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
             errorSeverity={ERROR_SEVERITY.WARNING}
             type={YAML_TYPE.DECODER}
             value={yamlText}
-            isInvalid={yamlSyntaxError !== null || warningCount > 0}
+            isInvalid={showValidation && (yamlSyntaxError !== null || warningCount > 0)}
             errors={
               yamlSyntaxError
                 ? [yamlSyntaxError]
