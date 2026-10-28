@@ -270,5 +270,29 @@ describe('DecoderFormPage', () => {
       expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
       expect(subj(wrapper, 'submit-decoder').first().prop('disabled')).toBe(true);
     });
+
+    it('asks for an integration once a field was touched, even if cleared back to empty', async () => {
+      const wrapper = await renderPage('create');
+      await editName(wrapper, 'decoder/mine/0');
+      await editName(wrapper, '');
+      await act(async () => {
+        subj(wrapper, 'name').simulate('blur');
+      });
+      wrapper.update();
+
+      expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+    });
+
+    it('asks for an integration once a field was visited without a change', async () => {
+      const wrapper = await renderPage('create');
+      await act(async () => {
+        subj(wrapper, 'name').simulate('focus');
+        subj(wrapper, 'name').simulate('blur');
+      });
+      wrapper.update();
+
+      expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+      expect(subj(wrapper, 'submit-decoder').first().prop('disabled')).toBe(true);
+    });
   });
 });

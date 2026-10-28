@@ -386,6 +386,8 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
 }) => {
   const values: DecoderFormModel = formikProps.values;
   const validationSeq = useRef(0);
+  // True once a visual editor field lost focus, even if its value ended up unchanged.
+  const [hasVisitedField, setHasVisitedField] = useState(false);
 
   // Advisory tier: schema validation, debounced, newest result wins.
   useEffect(() => {
@@ -432,11 +434,12 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
   const structuralCount = Object.keys(structuralErrors).length;
   const warningCount = Object.keys(schemaWarnings.fields).length + schemaWarnings.document.length;
 
-  // On create, hold back validation feedback until the user edits the content (picking
+  // On create, hold back validation feedback until the user edits or visits a field (picking
   // an integration does not count) or tries to submit. Typing broken YAML is an edit.
   const showValidation =
     action !== 'create' ||
     !isPristineCreate ||
+    hasVisitedField ||
     yamlSyntaxError !== null ||
     formikProps.submitCount > 0;
   const integrationError =
@@ -500,13 +503,16 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
         )}
 
         {selectedEditorType === EDITOR_TYPE.VISUAL && (
-          <DecoderEditorForm
-            submitAttempted={formikProps.submitCount > 0}
-            values={values}
-            onChange={onVisualChange}
-            fieldErrors={{ ...schemaWarnings.fields, ...structuralErrors }}
-            documentErrors={schemaWarnings.document}
-          />
+          // Blur bubbles in React, so this sees every field the editor marks as touched.
+          <div onBlur={() => setHasVisitedField(true)}>
+            <DecoderEditorForm
+              submitAttempted={formikProps.submitCount > 0}
+              values={values}
+              onChange={onVisualChange}
+              fieldErrors={{ ...schemaWarnings.fields, ...structuralErrors }}
+              documentErrors={schemaWarnings.document}
+            />
+          </div>
         )}
 
         {selectedEditorType === EDITOR_TYPE.YAML && (
