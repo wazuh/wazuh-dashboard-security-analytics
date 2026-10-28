@@ -210,4 +210,26 @@ describe('KVDBFormPage on create', () => {
         .prop('disabled')
     ).toBe(true);
   });
+
+  it('asks for an integration once a field was touched, even if cleared back to empty', async () => {
+    const wrapper = await renderCreatePage();
+    const title = () => wrapper.find('input[placeholder="Enter KVDB title"]');
+    await act(async () => {
+      title().simulate('change', { target: { value: 'ip-reputation' } });
+    });
+    wrapper.update();
+    await act(async () => {
+      title().simulate('change', { target: { value: '' } });
+    });
+    wrapper.update();
+    await act(async () => {
+      title().simulate('blur');
+      // Formik validates on a scheduler tick.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    wrapper.update();
+
+    expect(wrapper.text()).toContain('Title is required');
+    expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+  });
 });

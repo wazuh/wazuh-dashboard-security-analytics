@@ -310,11 +310,13 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
     return messages.length > 0 ? messages.join('. ') : undefined;
   };
 
-  // On create, hold back validation feedback until the user edits the content (picking
+  // On create, hold back validation feedback until the user edits or visits a field (picking
   // an integration does not count) or tries to submit. Typing broken YAML is an edit.
+  // Visited counts too: content typed and cleared again is no longer dirty.
   const shouldShowValidation = (formikProps: FormikProps<KVDBFormModel>) =>
     action !== KVDB_ACTION.CREATE ||
     formikProps.dirty ||
+    Object.keys(formikProps.touched).length > 0 ||
     yamlError !== null ||
     formikProps.submitCount > 0;
 
