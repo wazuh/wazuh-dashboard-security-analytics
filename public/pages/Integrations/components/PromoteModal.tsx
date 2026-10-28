@@ -20,6 +20,10 @@ import { PromoteChangeDiff } from './PromoteChangeDiff';
 import { PROMOTE_ENTITIES_LABELS, PROMOTE_ENTITIES_ORDER, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { successNotificationToast } from '../../../utils/helpers';
+import {
+  CHANGES_APPLY_DELAY_NOTICE,
+  CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS,
+} from '../utils/constants';
 import { isRootDecoderRequiementError, RootDecoderRequirement } from './RootDecoderRequirement';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
@@ -80,7 +84,13 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
       changes: promote.promote.changes,
     });
     if (success) {
-      successNotificationToast(notifications, 'promoted', `[${space}] space`);
+      successNotificationToast(
+        notifications,
+        'promoted',
+        `[${space}] space`,
+        CHANGES_APPLY_DELAY_NOTICE,
+        CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS
+      );
       history.push(ROUTES.INTEGRATIONS);
     } else if (isRootDecoderRequiementError(error)) {
       setRequireRootDecoderError(true);

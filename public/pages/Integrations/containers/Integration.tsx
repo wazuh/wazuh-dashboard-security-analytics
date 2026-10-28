@@ -37,6 +37,8 @@ import {
   KVDBS_NAV_ID,
 } from '../../../utils/constants';
 import {
+  CHANGES_APPLY_DELAY_NOTICE,
+  CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS,
   INTEGRATION_DETAILS_TAB,
   integrationDetailsTabs,
   IntegrationMode,
@@ -250,10 +252,13 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     const success = await DataStore.integrations.updateIntegration(integrationDetails.id, next);
     if (success) {
       setIntegrationDetails(next);
+      // Wazuh: enabling an integration is applied asynchronously; undefined keeps the defaults.
       successNotificationToast(
         notifications,
         'updated',
-        `integration ${next.document.metadata?.title ?? ''}`
+        `integration ${next.document.metadata?.title ?? ''}`,
+        checked ? CHANGES_APPLY_DELAY_NOTICE : undefined,
+        checked ? CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS : undefined
       );
     }
     setTogglingEnabled(false);
