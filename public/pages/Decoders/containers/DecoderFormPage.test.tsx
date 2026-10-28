@@ -85,6 +85,28 @@ const integrationErrors = (wrapper: ReactWrapper) =>
     .hostNodes()
     .map((node) => node.text());
 
+// The combo box reports a blur from a native focusout on its container.
+const blurIntegration = async (wrapper: ReactWrapper) => {
+  await act(async () => {
+    wrapper
+      .find('IntegrationComboBox')
+      .find('input')
+      .first()
+      .getDOMNode()
+      .dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+  });
+  wrapper.update();
+};
+
+const pickIntegration = async (wrapper: ReactWrapper) => {
+  await act(async () => {
+    wrapper.find('IntegrationComboBox').first().prop('onChange')([
+      { id: 'integration-1', value: 'wazuh-core', label: 'wazuh-core' },
+    ]);
+  });
+  wrapper.update();
+};
+
 // Lets the debounced schema validation settle.
 const waitForSchemaValidation = async (wrapper: ReactWrapper) => {
   await act(async () => {
@@ -263,15 +285,15 @@ describe('DecoderFormPage', () => {
       expect(integrationErrors(wrapper)).toEqual([]);
     });
 
-    it('asks for an integration once the form has been edited without one', async () => {
+    it('does not ask for an integration when another field is edited', async () => {
       const wrapper = await renderPage('create');
       await editName(wrapper, 'decoder/mine/0');
 
-      expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+      expect(integrationErrors(wrapper)).toEqual([]);
       expect(subj(wrapper, 'submit-decoder').first().prop('disabled')).toBe(true);
     });
 
-    it('asks for an integration once a field was touched, even if cleared back to empty', async () => {
+    it('does not ask for an integration when another field is touched and cleared', async () => {
       const wrapper = await renderPage('create');
       await editName(wrapper, 'decoder/mine/0');
       await editName(wrapper, '');
@@ -280,10 +302,10 @@ describe('DecoderFormPage', () => {
       });
       wrapper.update();
 
-      expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+      expect(integrationErrors(wrapper)).toEqual([]);
     });
 
-    it('asks for an integration once a field was visited without a change', async () => {
+    it('does not ask for an integration when another field is visited', async () => {
       const wrapper = await renderPage('create');
       await act(async () => {
         subj(wrapper, 'name').simulate('focus');
@@ -291,8 +313,22 @@ describe('DecoderFormPage', () => {
       });
       wrapper.update();
 
-      expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+      expect(integrationErrors(wrapper)).toEqual([]);
       expect(subj(wrapper, 'submit-decoder').first().prop('disabled')).toBe(true);
+    });
+
+    it('asks for an integration when its field is left empty, until one is picked', async () => {
+      DataStore.integrations.listIntegrationOptions.mockResolvedValueOnce([
+        { id: 'integration-1', title: 'wazuh-core' },
+      ]);
+      const wrapper = await renderPage('create');
+      await blurIntegration(wrapper);
+
+      expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+
+      await pickIntegration(wrapper);
+
+      expect(integrationErrors(wrapper)).toEqual([]);
     });
   });
 });

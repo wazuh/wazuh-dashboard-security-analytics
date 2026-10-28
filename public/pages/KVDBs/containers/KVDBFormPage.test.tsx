@@ -98,6 +98,28 @@ const integrationErrors = (wrapper: ReactWrapper) =>
     .hostNodes()
     .map((node) => node.text());
 
+// The combo box reports a blur from a native focusout on its container.
+const blurIntegration = async (wrapper: ReactWrapper) => {
+  await act(async () => {
+    wrapper
+      .find('IntegrationComboBox')
+      .find('input')
+      .first()
+      .getDOMNode()
+      .dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+  });
+  wrapper.update();
+};
+
+const pickIntegration = async (wrapper: ReactWrapper) => {
+  await act(async () => {
+    wrapper.find('IntegrationComboBox').first().prop('onChange')([
+      { id: 'integration-1', value: 'wazuh-core', label: 'wazuh-core' },
+    ]);
+  });
+  wrapper.update();
+};
+
 const submitButton = (wrapper: ReactWrapper) =>
   wrapper.find('EuiButton').filterWhere((button) => button.text().endsWith('Edit KVDB'));
 
@@ -193,7 +215,7 @@ describe('KVDBFormPage on create', () => {
     expect(integrationErrors(wrapper)).toEqual([]);
   });
 
-  it('asks for an integration once the content has been edited without one', async () => {
+  it('does not ask for an integration when another field is edited', async () => {
     const wrapper = await renderCreatePage();
     await act(async () => {
       wrapper
@@ -202,7 +224,7 @@ describe('KVDBFormPage on create', () => {
     });
     wrapper.update();
 
-    expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+    expect(integrationErrors(wrapper)).toEqual([]);
     expect(
       wrapper
         .find('EuiButton')
@@ -211,7 +233,7 @@ describe('KVDBFormPage on create', () => {
     ).toBe(true);
   });
 
-  it('asks for an integration once a field was touched, even if cleared back to empty', async () => {
+  it('does not ask for an integration when another field is touched and cleared', async () => {
     const wrapper = await renderCreatePage();
     const title = () => wrapper.find('input[placeholder="Enter KVDB title"]');
     await act(async () => {
@@ -230,6 +252,20 @@ describe('KVDBFormPage on create', () => {
     wrapper.update();
 
     expect(wrapper.text()).toContain('Title is required');
+    expect(integrationErrors(wrapper)).toEqual([]);
+  });
+
+  it('asks for an integration when its field is left empty, until one is picked', async () => {
+    DataStore.integrations.listIntegrationOptions.mockResolvedValueOnce([
+      { id: 'integration-1', title: 'wazuh-core' },
+    ]);
+    const wrapper = await renderCreatePage();
+    await blurIntegration(wrapper);
+
     expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+
+    await pickIntegration(wrapper);
+
+    expect(integrationErrors(wrapper)).toEqual([]);
   });
 });

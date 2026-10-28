@@ -173,6 +173,19 @@ describe('<RuleEditorForm /> on create', () => {
     wrapper.update();
   };
 
+  // The combo box reports a blur from a native focusout on its container.
+  const blurIntegration = async (wrapper: ReactWrapper) => {
+    await act(async () => {
+      wrapper
+        .find('IntegrationComboBox')
+        .find('input')
+        .first()
+        .getDOMNode()
+        .dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    });
+    wrapper.update();
+  };
+
   const integrationErrors = (wrapper: ReactWrapper) =>
     wrapper
       .find('IntegrationComboBox')
@@ -222,7 +235,7 @@ describe('<RuleEditorForm /> on create', () => {
     expect(integrationErrors(wrapper)).toEqual([]);
   });
 
-  it('asks for an integration once the rule has been edited without one', async () => {
+  it('does not ask for an integration when another field is edited', async () => {
     const wrapper = await mountCreate();
 
     await act(async () => {
@@ -232,13 +245,13 @@ describe('<RuleEditorForm /> on create', () => {
     });
     wrapper.update();
 
-    expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+    expect(integrationErrors(wrapper)).toEqual([]);
     expect(
       wrapper.find('button[data-test-subj="submit_rule_form_button"]').first().prop('disabled')
     ).toBe(true);
   });
 
-  it('asks for an integration once a field was touched, even if cleared back to empty', async () => {
+  it('does not ask for an integration when another field is touched and cleared', async () => {
     const wrapper = await mountCreate();
     const ruleName = () => wrapper.find('input[data-test-subj="rule_name_field"]');
 
@@ -252,6 +265,20 @@ describe('<RuleEditorForm /> on create', () => {
     });
     wrapper.update();
 
+    expect(integrationErrors(wrapper)).toEqual([]);
+  });
+
+  it('asks for an integration when its field is left empty, until one is picked', async () => {
+    jest
+      .spyOn(DataStore.integrations, 'listIntegrationOptions')
+      .mockResolvedValue([{ id: 'integration-1', title: 'wazuh-core' }] as any);
+    const wrapper = await mountCreate();
+    await blurIntegration(wrapper);
+
     expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+
+    await pickIntegration(wrapper);
+
+    expect(integrationErrors(wrapper)).toEqual([]);
   });
 });

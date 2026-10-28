@@ -388,6 +388,8 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
   const validationSeq = useRef(0);
   // True once a visual editor field lost focus, even if its value ended up unchanged.
   const [hasVisitedField, setHasVisitedField] = useState(false);
+  // True once the Integration field itself lost focus.
+  const [isIntegrationTouched, setIsIntegrationTouched] = useState(false);
 
   // Advisory tier: schema validation, debounced, newest result wins.
   useEffect(() => {
@@ -442,8 +444,11 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
     hasVisitedField ||
     yamlSyntaxError !== null ||
     formikProps.submitCount > 0;
+  // Only leaving the Integration field or trying to submit asks for one; other fields do not.
   const integrationError =
-    showValidation && action === 'create' && !integrationType ? 'Select an integration' : undefined;
+    (isIntegrationTouched || formikProps.submitCount > 0) && action === 'create' && !integrationType
+      ? 'Select an integration'
+      : undefined;
 
   const isSubmitBlocked =
     !integrationType ||
@@ -491,6 +496,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
               selectedId={integrationType}
               isLoading={loadingIntegrations}
               onChange={onIntegrationChange}
+              onBlur={() => setIsIntegrationTouched(true)}
               resourceName="decoders"
               data-test-subj="integration_dropdown"
               notifications={notifications}

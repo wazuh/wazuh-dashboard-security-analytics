@@ -96,6 +96,8 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const [rawKvdb, setRawKvdb] = useState<string | undefined>(undefined);
   const [yamlError, setYamlError] = useState<string | null>(null);
   const [integrationType, setIntegrationType] = useState<string>('');
+  // True once the Integration field itself lost focus.
+  const [isIntegrationTouched, setIsIntegrationTouched] = useState(false);
   const [initialValue, setInitialValue] = useState<KVDBFormModel>(kvdbFormDefaultValue);
 
   const {
@@ -320,8 +322,11 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
     yamlError !== null ||
     formikProps.submitCount > 0;
 
+  // Only leaving the Integration field or trying to submit asks for one; other fields do not.
   const getIntegrationError = (formikProps: FormikProps<KVDBFormModel>) =>
-    shouldShowValidation(formikProps) && !integrationType ? 'Select an integration' : undefined;
+    (isIntegrationTouched || formikProps.submitCount > 0) && !integrationType
+      ? 'Select an integration'
+      : undefined;
 
   return (
     <>
@@ -378,6 +383,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                       selectedId={integrationType}
                       isLoading={loadingIntegrations}
                       onChange={onIntegrationChange}
+                      onBlur={() => setIsIntegrationTouched(true)}
                       resourceName="KVDBs"
                       notifications={notifications}
                       onCreateSuccess={onIntegrationCreateSuccess}

@@ -236,7 +236,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         };
 
         // On create, hold back validation feedback until the user edits or visits a field of
-        // the rule or tries to submit. Picking an integration only sets and touches
+        // the rule or tries to submit. Picking or leaving the integration only sets or touches
         // `integration`, so it is not an edit. Visited counts too: content typed and cleared
         // again equals the initial values.
         const isContentEdited = !isEqual(
@@ -250,8 +250,12 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         const integrationError = integrationId
           ? props.errors.integration
           : INTEGRATION_REQUIRED_ERROR;
+        // Only leaving the Integration field or trying to submit asks for one; other fields
+        // do not.
         const isIntegrationInvalid =
-          (validateOnMount || props.touched.integration || showValidation) && !!integrationError;
+          (validateOnMount || props.touched.integration || props.submitCount > 0) &&
+          !!integrationError;
+        const onIntegrationBlur = () => props.setFieldTouched('integration', true, false);
 
         return (
           <Form>
@@ -316,6 +320,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                         resourceName="rules"
                         isInvalid={isIntegrationInvalid}
                         error={integrationError}
+                        onBlur={onIntegrationBlur}
                         notifications={notifications}
                         onCreateSuccess={onIntegrationCreateSuccess}
                         onChange={(selected) => {
@@ -464,6 +469,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                       resourceName="rules"
                       isInvalid={isIntegrationInvalid}
                       error={integrationError}
+                      onBlur={onIntegrationBlur}
                       notifications={notifications}
                       onCreateSuccess={onIntegrationCreateSuccess}
                       onChange={(selected) => {
