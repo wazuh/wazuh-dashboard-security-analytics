@@ -235,13 +235,17 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
           props.setFieldValue('integration', option.value, true);
         };
 
-        // On create, hold back validation feedback until the user edits the rule or tries
-        // to submit. Picking an integration only sets `integration`, so it is not an edit.
+        // On create, hold back validation feedback until the user edits or visits a field of
+        // the rule or tries to submit. Picking an integration only sets and touches
+        // `integration`, so it is not an edit. Visited counts too: content typed and cleared
+        // again equals the initial values.
         const isContentEdited = !isEqual(
           { ...props.values, integration: '' },
           { ...props.initialValues, integration: '' }
         );
-        const showValidation = mode !== 'create' || isContentEdited || props.submitCount > 0;
+        const isContentTouched = Object.keys(props.touched).some((key) => key !== 'integration');
+        const showValidation =
+          mode !== 'create' || isContentEdited || isContentTouched || props.submitCount > 0;
         // The combo box shows the selected integration, so it decides whether one is missing.
         const integrationError = integrationId
           ? props.errors.integration

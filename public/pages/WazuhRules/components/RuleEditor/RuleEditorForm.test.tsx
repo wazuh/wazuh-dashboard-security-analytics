@@ -237,4 +237,21 @@ describe('<RuleEditorForm /> on create', () => {
       wrapper.find('button[data-test-subj="submit_rule_form_button"]').first().prop('disabled')
     ).toBe(true);
   });
+
+  it('asks for an integration once a field was touched, even if cleared back to empty', async () => {
+    const wrapper = await mountCreate();
+    const ruleName = () => wrapper.find('input[data-test-subj="rule_name_field"]');
+
+    await act(async () => {
+      ruleName().simulate('change', { target: { value: 'My rule' } });
+    });
+    wrapper.update();
+    await act(async () => {
+      ruleName().simulate('change', { target: { value: '' } });
+      ruleName().simulate('blur');
+    });
+    wrapper.update();
+
+    expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+  });
 });
