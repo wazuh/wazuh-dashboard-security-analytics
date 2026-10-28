@@ -266,6 +266,24 @@ describe('DecoderFormPage', () => {
       expect(wrapper.text()).toContain('Please address the highlighted errors.');
     });
 
+    it('does not flash the untouched form errors on the first YAML edit', async () => {
+      const wrapper = await renderPage('create');
+      await switchTo(wrapper, 'yaml');
+      await waitForSchemaValidation(wrapper);
+      validateWithJsonSchemaAsync.mockResolvedValue({});
+
+      await act(async () => {
+        (wrapper.find('YamlForm').first().prop('change') as (value: string) => void)(
+          decoderFormDefaultValue.replace('name: decoder/<name>/<version>', 'name: decoder/mine/0')
+        );
+      });
+      wrapper.update();
+
+      expect(wrapper.find('YamlForm').first().prop('isInvalid')).toBe(false);
+      await waitForSchemaValidation(wrapper);
+      expect(wrapper.find('YamlForm').first().prop('isInvalid')).toBe(false);
+    });
+
     it('shows a YAML syntax error typed before any other edit', async () => {
       const wrapper = await renderPage('create');
       await switchTo(wrapper, 'yaml');

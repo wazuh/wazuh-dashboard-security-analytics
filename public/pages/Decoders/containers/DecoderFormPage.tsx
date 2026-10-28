@@ -418,10 +418,13 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
       setYamlSyntaxError(syntaxError);
       // Unparseable YAML never reaches the document, matching the rules editor.
       if (syntaxError) return;
+      // The warnings so far belong to the empty form behind the starter template; drop them
+      // so they do not flash until the debounced validation of the edited document lands.
+      if (isPristineCreate) setSchemaWarnings({ fields: {}, document: [] });
       setIsPristineCreate(false);
       formikProps.setValues(mapDecoderToForm(mapYamlToLosslessObject<DecoderDocument>(text)));
     },
-    [formikProps, setYamlSyntaxError, setIsPristineCreate]
+    [formikProps, setYamlSyntaxError, setIsPristineCreate, isPristineCreate, setSchemaWarnings]
   );
 
   const onVisualChange = useCallback(
