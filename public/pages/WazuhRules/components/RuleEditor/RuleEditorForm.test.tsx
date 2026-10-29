@@ -129,3 +129,156 @@ describe('<RuleEditorForm /> submit flush integration', () => {
     expect(wrapper.text()).not.toContain('A title under metadata is required');
   });
 });
+
+describe('<RuleEditorForm /> on create', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    DataStore.init(mockContexts.services as any, notificationsMock.NotificationsStart);
+    jest.spyOn(DataStore.integrations, 'listIntegrationOptions').mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  const mountCreate = async () => {
+    let wrapper: ReactWrapper | undefined;
+    await act(async () => {
+      wrapper = mount(
+        <RuleEditorForm
+          {...buildProps(jest.fn())}
+          initialValue={ruleEditorStateDefaultValue}
+          mode="create"
+        />
+      );
+    });
+    wrapper!.update();
+    return wrapper!;
+  };
+
+  const switchToYaml = (wrapper: ReactWrapper) => {
+    act(() => {
+      wrapper.find(EuiButtonGroup).first().prop('onChange')('yaml', {} as any);
+    });
+    wrapper.update();
+  };
+
+  const pickIntegration = async (wrapper: ReactWrapper) => {
+    await act(async () => {
+      wrapper.find('IntegrationComboBox').first().prop('onChange')([
+        { id: 'integration-1', value: 'wazuh-core', label: 'wazuh-core' },
+      ]);
+    });
+    wrapper.update();
+  };
+
+  // The combo box reports a blur from a native focusout on its container.
+  const blurIntegration = async (wrapper: ReactWrapper) => {
+    await act(async () => {
+      wrapper
+        .find('IntegrationComboBox')
+        .find('input')
+        .first()
+        .getDOMNode()
+        .dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    });
+    wrapper.update();
+  };
+
+  const integrationErrors = (wrapper: ReactWrapper) =>
+    wrapper
+      .find('IntegrationComboBox')
+      .find('.euiFormErrorText')
+      .hostNodes()
+      .map((node) => node.text());
+
+  it('shows no validation errors in YAML before anything is edited', async () => {
+    const wrapper = await mountCreate();
+    switchToYaml(wrapper);
+
+    expect(wrapper.find(YamlRuleEditorComponent).prop('isInvalid')).toBe(false);
+    expect(wrapper.text()).not.toContain('Please address the highlighted errors.');
+  });
+
+  it('does not count picking an integration as an edit', async () => {
+    const wrapper = await mountCreate();
+    switchToYaml(wrapper);
+    await pickIntegration(wrapper);
+
+    expect(wrapper.find(YamlRuleEditorComponent).prop('isInvalid')).toBe(false);
+    expect(wrapper.text()).not.toContain('Please address the highlighted errors.');
+  });
+
+  it('shows validation errors in YAML once the rule has been edited', async () => {
+    const wrapper = await mountCreate();
+    switchToYaml(wrapper);
+
+    act(() => {
+      (
+        wrapper.find(YamlRuleEditorComponent).find(EuiCodeEditor).prop('onChange') as (
+          value: string
+        ) => void
+      )(EDITED_RULE.replace('Edited rule', "''"));
+    });
+    await act(async () => {
+      jest.runOnlyPendingTimers();
+    });
+    wrapper.update();
+
+    expect(wrapper.text()).toContain('Please address the highlighted errors.');
+    expect(wrapper.text()).toContain('A title under metadata is required');
+  });
+
+  it('does not ask for an integration before anything is edited', async () => {
+    const wrapper = await mountCreate();
+    expect(integrationErrors(wrapper)).toEqual([]);
+  });
+
+  it('does not ask for an integration when another field is edited', async () => {
+    const wrapper = await mountCreate();
+
+    await act(async () => {
+      wrapper
+        .find('input[data-test-subj="rule_name_field"]')
+        .simulate('change', { target: { value: 'My rule' } });
+    });
+    wrapper.update();
+
+    expect(integrationErrors(wrapper)).toEqual([]);
+    expect(
+      wrapper.find('button[data-test-subj="submit_rule_form_button"]').first().prop('disabled')
+    ).toBe(true);
+  });
+
+  it('does not ask for an integration when another field is touched and cleared', async () => {
+    const wrapper = await mountCreate();
+    const ruleName = () => wrapper.find('input[data-test-subj="rule_name_field"]');
+
+    await act(async () => {
+      ruleName().simulate('change', { target: { value: 'My rule' } });
+    });
+    wrapper.update();
+    await act(async () => {
+      ruleName().simulate('change', { target: { value: '' } });
+      ruleName().simulate('blur');
+    });
+    wrapper.update();
+
+    expect(integrationErrors(wrapper)).toEqual([]);
+  });
+
+  it('asks for an integration when its field is left empty, until one is picked', async () => {
+    jest
+      .spyOn(DataStore.integrations, 'listIntegrationOptions')
+      .mockResolvedValue([{ id: 'integration-1', title: 'wazuh-core' }] as any);
+    const wrapper = await mountCreate();
+    await blurIntegration(wrapper);
+
+    expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+
+    await pickIntegration(wrapper);
+
+    expect(integrationErrors(wrapper)).toEqual([]);
+  });
+});
