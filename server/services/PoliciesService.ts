@@ -14,11 +14,13 @@ import { ServerResponse } from '../models/types';
 import {
   PolicyItem,
   GetPolicyResponse,
+  GetPolicyResourcesResponse,
   SearchPoliciesResponse,
   UpdatePolicyRequestBody,
 } from '../../types';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
 import { CLIENT_POLICY_METHODS, CONTENT_INDICES } from '../utils/constants';
+import { extractErrorMessage, resolveEntityNamesBySpace } from '../utils/helpers';
 
 const SPACE_FIELD_CANDIDATES = [
   'space.keyword',
@@ -414,6 +416,89 @@ export class PoliciesService extends MDSEnabledClientService {
         body: {
           ok: false,
           error: error.body?.message || error.message,
+        },
+      });
+    }
+  };
+
+  clearSpaceNormalization = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest<{ space: string }>,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<ServerResponse<null> | ResponseError>> => {
+    try {
+      const { space } = request.params;
+      const client = this.getClient(request, context);
+
+      await client(CLIENT_POLICY_METHODS.CLEAR_SPACE_NORMALIZATION, { space });
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: null,
+        },
+      });
+    } catch (error: any) {
+      console.error('Ruleset Management - PoliciesService - clearSpaceNormalization:', error);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: extractErrorMessage(error),
+        },
+      });
+    }
+  };
+
+  getPolicyResources = async (
+    context: RequestHandlerContext,
+    request: OpenSearchDashboardsRequest<{ space: string }>,
+    response: OpenSearchDashboardsResponseFactory
+  ): Promise<
+    IOpenSearchDashboardsResponse<ServerResponse<GetPolicyResourcesResponse> | ResponseError>
+  > => {
+    try {
+      const { space } = request.params;
+      const client = this.getClient(request, context);
+
+      const resources = await client(CLIENT_POLICY_METHODS.GET_POLICY_RESOURCES, { space });
+      const normalization = resources?.normalization ?? {};
+
+      // The endpoint returns ids only. Names are resolved like in the promote preview.
+      const withNames = async (ids: string[] = [], index: string, nameProp: string) => {
+        const names = await resolveEntityNamesBySpace(client, ids, {
+          index,
+          space,
+          nameProp,
+          idProp: 'document.id',
+        });
+        return ids.map((id) => ({ id, name: names[id] }));
+      };
+
+      const [decoders, kvdbs, filters] = await Promise.all([
+        withNames(normalization.decoders, CONTENT_INDICES.DECODERS, 'document.name'),
+        withNames(normalization.kvdbs, CONTENT_INDICES.KVDBS, 'document.metadata.title'),
+        withNames(normalization.filters, CONTENT_INDICES.FILTERS, 'document.metadata.title'),
+      ]);
+
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: true,
+          response: {
+            normalization: { decoders, kvdbs, filters },
+            detection: { rules: resources?.detection?.rules ?? [] },
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error('Ruleset Management - PoliciesService - getPolicyResources:', error);
+      return response.custom({
+        statusCode: 200,
+        body: {
+          ok: false,
+          error: extractErrorMessage(error),
         },
       });
     }

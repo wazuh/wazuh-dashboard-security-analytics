@@ -20,6 +20,7 @@
 | [#459](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/459) | Added a documentation link and a brief explanation of each Trace level option to the Log test page |
 | [#473](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/473) | Added a Cascade view to an integration's decoders that draws the parent hierarchy as a diagram, with a legend for each decoder state, path tracing on hover and warnings for parent cycles, external parents and truncated hierarchies |
 | [#482](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/482) | Added a Visual Editor to the decoder form as an alternative to the YAML editor; anything it cannot represent is kept as it is |
+| [#530](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/530) | Added a warning when the root decoder is cleared while the space still has decoders, KVDBs or filters, listing them and offering to clear the normalization resources |
 | [wazuh-dashboard-plugins#9438](https://github.com/wazuh/wazuh-dashboard-plugins/issues/9438) | Added a "First step: collect the log" section, with a documentation link, to the "How ruleset management works" panel |
 
 ### Changed

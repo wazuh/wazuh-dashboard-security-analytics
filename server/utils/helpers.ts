@@ -5,6 +5,7 @@
 
 import { Props, schema } from '@osd/config-schema';
 import YAML from 'yaml';
+import { get } from 'lodash';
 import { CONTENT_INDICES } from './constants';
 import { sanitizeErrorMessage } from '../../common/permissionErrors';
 
@@ -197,6 +198,56 @@ const extractFromStringBody = (raw: string): string | undefined => {
 // Wazuh: every service catch() logs the raw error and then sends this string to the browser, so
 // it is the last place the content manager's authorization exception can be stripped of the
 // action name, username and role bindings it quotes. See common/permissionErrors.ts.
+// Wazuh: map the ids of one content index to a display name, restricted to the documents of
+// `space`. Ids with no document in that space are left out, so the caller falls back to the
+// id. Shared by the promote preview and the space resources listing.
+export const resolveEntityNamesBySpace = async (
+  client: any,
+  ids: string[],
+  {
+    index,
+    space,
+    nameProp,
+    idProp,
+  }: { index: string; space: string; nameProp: string; idProp: string }
+): Promise<Record<string, string>> => {
+  if (ids.length === 0) {
+    return {};
+  }
+
+  // TODO: This should paginate the results
+  const searchResponse = await client('search', {
+    index,
+    body: {
+      size: 10000,
+      _source: [nameProp, idProp],
+      query: {
+        bool: {
+          must: [
+            {
+              terms: {
+                [idProp]: ids,
+              },
+            },
+            {
+              term: {
+                'space.name': space,
+              },
+            },
+          ],
+        },
+      },
+    },
+  });
+
+  return Object.fromEntries(
+    (searchResponse?.hits?.hits ?? []).map(({ _source }: any) => [
+      get(_source, idProp),
+      get(_source, nameProp),
+    ])
+  );
+};
+
 export const extractErrorMessage = (
   error: any,
   fallback: string = 'An unexpected error occurred.'

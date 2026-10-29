@@ -6,13 +6,14 @@
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
   PolicyItem,
+  PolicyResources,
   SearchPoliciesResponse,
   SearchPolicyOptions,
   UpdatePolicyRequestBody,
   UpdatePolicyResponse,
 } from '../../types';
 import PoliciesService from '../services/PoliciesService';
-import { errorNotificationToast } from '../utils/helpers';
+import { errorNotificationToast, getErrorMessage } from '../utils/helpers';
 
 export interface PoliciesSearchParams {
   from?: number;
@@ -109,6 +110,38 @@ export class PoliciesStore {
     } catch (error) {
       errorNotificationToast(this.notifications, 'clear', 'space', error);
       return false;
+    }
+  }
+
+  public async clearSpaceNormalization(space: string): Promise<boolean> {
+    try {
+      const response = await this.service.clearSpaceNormalization(space);
+      if (!response.ok) {
+        errorNotificationToast(this.notifications, 'clear', 'normalization', response.error);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      errorNotificationToast(this.notifications, 'clear', 'normalization', error);
+      return false;
+    }
+  }
+
+  /**
+   * Lists the resources of a space. Errors are returned instead of shown as a toast, so the
+   * caller can report them where the user is already looking.
+   */
+  public async getPolicyResources(
+    space: string
+  ): Promise<{ ok: true; resources: PolicyResources } | { ok: false; error: string }> {
+    try {
+      const response = await this.service.getPolicyResources(space);
+      if (!response.ok) {
+        return { ok: false, error: getErrorMessage(response.error, 'Unknown error') };
+      }
+      return { ok: true, resources: response.response };
+    } catch (error) {
+      return { ok: false, error: getErrorMessage(error, 'Unknown error') };
     }
   }
 }

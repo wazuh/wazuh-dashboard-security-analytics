@@ -74,6 +74,26 @@ export interface GetPolicyResponse {
   item?: PolicyItem;
 }
 
+export interface PolicyResourceEntry {
+  id: string;
+  /** Resolved from the resource document; absent when it could not be resolved. */
+  name?: string;
+}
+
+/** The resources of a space, as listed by the indexer `GET /policy/resources` endpoint. */
+export interface PolicyResources {
+  normalization: {
+    decoders: PolicyResourceEntry[];
+    kvdbs: PolicyResourceEntry[];
+    filters: PolicyResourceEntry[];
+  };
+  detection: {
+    rules: string[];
+  };
+}
+
+export type GetPolicyResourcesResponse = PolicyResources;
+
 export interface UpdatePolicyRequestBody {}
 
 export interface UpdatePolicyResponse {

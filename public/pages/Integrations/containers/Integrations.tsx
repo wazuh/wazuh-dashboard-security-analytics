@@ -547,7 +547,12 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               space={spaceFilter}
               notifications={notifications}
               onClose={() => setItemForAction(null)}
-              onSuccess={() => setPolicyRefresh((prevState) => prevState + 1)}
+              onSuccess={() => {
+                setPolicyRefresh((prevState) => prevState + 1);
+                // Saving can clear the normalization resources of the space, which deletes its
+                // filters and the integrations left empty.
+                loadIntegrations();
+              }}
             />
           )}
         </>
@@ -699,7 +704,12 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             />
           </RedirectAppLinks>
         ) : (
-          <FiltersTab spaceFilter={spaceFilter} notifications={notifications} history={history} />
+          <FiltersTab
+            key={policyRefresh}
+            spaceFilter={spaceFilter}
+            notifications={notifications}
+            history={history}
+          />
         )}
       </EuiCard>
     </>

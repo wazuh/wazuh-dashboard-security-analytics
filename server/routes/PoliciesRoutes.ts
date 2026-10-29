@@ -82,4 +82,28 @@ export function setupPoliciesRoutes(services: NodeServices, router: IRouter) {
     },
     policiesService.deleteSpace
   );
+
+  router.delete(
+    {
+      path: `${API.SPACES_BASE}/{space}/normalization`,
+      validate: {
+        params: schema.object({
+          space: schema.literal('draft'),
+        }),
+      },
+    },
+    policiesService.clearSpaceNormalization
+  );
+
+  router.get(
+    {
+      path: `${API.SPACES_BASE}/{space}/resources`,
+      validate: {
+        params: schema.object({
+          space: schema.string(),
+        }),
+      },
+    },
+    policiesService.getPolicyResources
+  );
 }
