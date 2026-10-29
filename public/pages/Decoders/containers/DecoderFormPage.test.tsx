@@ -47,6 +47,7 @@ jest.mock('../../../store/DataStore', () => ({
 }));
 
 const { DataStore } = jest.requireMock('../../../store/DataStore');
+const { validateWithJsonSchemaAsync } = jest.requireMock('../../../utils/jsonSchemaValidation');
 
 const notifications: any = {
   toasts: { addDanger: jest.fn(), addSuccess: jest.fn(), addWarning: jest.fn() },
@@ -76,6 +77,50 @@ const renderPage = async (
 
 const subj = (wrapper: ReactWrapper, name: string) =>
   wrapper.find(`[data-test-subj="${name}"]`).hostNodes();
+
+const integrationErrors = (wrapper: ReactWrapper) =>
+  wrapper
+    .find('IntegrationComboBox')
+    .find('.euiFormErrorText')
+    .hostNodes()
+    .map((node) => node.text());
+
+// The combo box reports a blur from a native focusout on its container.
+const blurIntegration = async (wrapper: ReactWrapper) => {
+  await act(async () => {
+    wrapper
+      .find('IntegrationComboBox')
+      .find('input')
+      .first()
+      .getDOMNode()
+      .dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+  });
+  wrapper.update();
+};
+
+const pickIntegration = async (wrapper: ReactWrapper) => {
+  await act(async () => {
+    wrapper.find('IntegrationComboBox').first().prop('onChange')([
+      { id: 'integration-1', value: 'wazuh-core', label: 'wazuh-core' },
+    ]);
+  });
+  wrapper.update();
+};
+
+// Lets the debounced schema validation settle.
+const waitForSchemaValidation = async (wrapper: ReactWrapper) => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  });
+  wrapper.update();
+};
+
+const editName = async (wrapper: ReactWrapper, value: string) => {
+  await act(async () => {
+    subj(wrapper, 'name').simulate('change', { target: { value } });
+  });
+  wrapper.update();
+};
 
 const switchTo = async (wrapper: ReactWrapper, id: 'visual' | 'yaml') => {
   await act(async () => {
@@ -192,5 +237,116 @@ describe('DecoderFormPage', () => {
     await switchTo(wrapper, 'visual');
 
     expect(subj(wrapper, 'name').prop('value')).toBe('decoder/syslog/0');
+  });
+
+  describe('on create', () => {
+    beforeEach(() => {
+      validateWithJsonSchemaAsync.mockResolvedValue({ '': 'Document is not valid' });
+    });
+
+    afterEach(() => {
+      validateWithJsonSchemaAsync.mockResolvedValue({});
+    });
+
+    it('shows no validation errors in YAML before anything is edited', async () => {
+      const wrapper = await renderPage('create');
+      await switchTo(wrapper, 'yaml');
+      await waitForSchemaValidation(wrapper);
+
+      expect(wrapper.find('YamlForm').first().prop('isInvalid')).toBe(false);
+      expect(wrapper.text()).not.toContain('Please address the highlighted errors.');
+    });
+
+    it('shows validation errors in YAML once the form has been edited', async () => {
+      const wrapper = await renderPage('create');
+      await editName(wrapper, 'decoder/mine/0');
+      await switchTo(wrapper, 'yaml');
+      await waitForSchemaValidation(wrapper);
+
+      expect(wrapper.text()).toContain('Please address the highlighted errors.');
+    });
+
+    it('does not flash the untouched form errors on the first YAML edit', async () => {
+      const wrapper = await renderPage('create');
+      await switchTo(wrapper, 'yaml');
+      await waitForSchemaValidation(wrapper);
+      validateWithJsonSchemaAsync.mockResolvedValue({});
+
+      await act(async () => {
+        (wrapper.find('YamlForm').first().prop('change') as (value: string) => void)(
+          decoderFormDefaultValue.replace('name: decoder/<name>/<version>', 'name: decoder/mine/0')
+        );
+      });
+      wrapper.update();
+
+      expect(wrapper.find('YamlForm').first().prop('isInvalid')).toBe(false);
+      await waitForSchemaValidation(wrapper);
+      expect(wrapper.find('YamlForm').first().prop('isInvalid')).toBe(false);
+    });
+
+    it('shows a YAML syntax error typed before any other edit', async () => {
+      const wrapper = await renderPage('create');
+      await switchTo(wrapper, 'yaml');
+
+      await act(async () => {
+        (wrapper.find('YamlForm').first().prop('change') as (value: string) => void)(
+          'name: [unclosed'
+        );
+      });
+      wrapper.update();
+
+      expect(wrapper.find('YamlForm').first().prop('isInvalid')).toBe(true);
+    });
+
+    it('does not ask for an integration before anything is edited', async () => {
+      const wrapper = await renderPage('create');
+      expect(integrationErrors(wrapper)).toEqual([]);
+    });
+
+    it('does not ask for an integration when another field is edited', async () => {
+      const wrapper = await renderPage('create');
+      await editName(wrapper, 'decoder/mine/0');
+
+      expect(integrationErrors(wrapper)).toEqual([]);
+      expect(subj(wrapper, 'submit-decoder').first().prop('disabled')).toBe(true);
+    });
+
+    it('does not ask for an integration when another field is touched and cleared', async () => {
+      const wrapper = await renderPage('create');
+      await editName(wrapper, 'decoder/mine/0');
+      await editName(wrapper, '');
+      await act(async () => {
+        subj(wrapper, 'name').simulate('blur');
+      });
+      wrapper.update();
+
+      expect(integrationErrors(wrapper)).toEqual([]);
+    });
+
+    it('does not ask for an integration when another field is visited', async () => {
+      const wrapper = await renderPage('create');
+      await act(async () => {
+        subj(wrapper, 'name').simulate('focus');
+        subj(wrapper, 'name').simulate('blur');
+      });
+      wrapper.update();
+
+      expect(integrationErrors(wrapper)).toEqual([]);
+      expect(subj(wrapper, 'submit-decoder').first().prop('disabled')).toBe(true);
+    });
+
+    it('asks for an integration when its field is left empty, until one is picked', async () => {
+      DataStore.integrations.listIntegrationOptions.mockResolvedValueOnce([
+        { id: 'integration-1', title: 'wazuh-core' },
+      ]);
+      const wrapper = await renderPage('create');
+      await blurIntegration(wrapper);
+
+      expect(integrationErrors(wrapper)).toEqual(['Select an integration']);
+
+      await pickIntegration(wrapper);
+
+      expect(integrationErrors(wrapper)).toEqual([]);
+    });
   });
 });

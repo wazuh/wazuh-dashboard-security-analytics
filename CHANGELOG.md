@@ -20,7 +20,8 @@
 | [#459](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/459) | Added a documentation link and a brief explanation of each Trace level option to the Log test page |
 | [#473](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/473) | Added a Cascade view to an integration's decoders that draws the parent hierarchy as a diagram, with a legend for each decoder state, path tracing on hover and warnings for parent cycles, external parents and truncated hierarchies |
 | [#482](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/482) | Added a Visual Editor to the decoder form as an alternative to the YAML editor; anything it cannot represent is kept as it is |
-| [wazuh-indexer-plugins#1710](https://github.com/wazuh/wazuh-indexer-plugins/issues/1710) [wazuh-indexer-plugins#1722](https://github.com/wazuh/wazuh-indexer-plugins/issues/1722) | Added a warning when the root decoder is cleared while the space still has decoders, KVDBs or filters, listing them and offering to clear the normalization resources |
+| [#530](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/530) | Added a warning when the root decoder is cleared while the space still has decoders, KVDBs or filters, listing them and offering to clear the normalization resources |
+| [wazuh-dashboard-plugins#9438](https://github.com/wazuh/wazuh-dashboard-plugins/issues/9438) | Added a "First step: collect the log" section, with a documentation link, to the "How ruleset management works" panel |
 
 ### Changed
 
@@ -37,6 +38,7 @@
 | [#447](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/447) | Improved the Ruleset management UX: unified the user-facing terminology and documented it in `TERMINOLOGY.md`, said what each entity and space is for, added a "How ruleset management works" flyout, told the user what to do next on empty lists, replaced the log test status code with a plain-language verdict, gave the remaining dead ends a cause, paired asset identifiers with their name so the root decoder reads as a name instead of `decoder/core-wazuh-message/0`, labelled each compliance framework's values with its own unit, and made the space policy panel legible: consistent booleans, enrichments as badges, and a hint on every setting saying what it affects |
 | [#471](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/471) | Renamed the user-facing "Security Analytics" references to "Ruleset management", including the navigation group label, the app title, the root breadcrumb and the "How ruleset management works" flyout |
 | [#518](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/518) | Detectors, KVDBs, Decoders and Rules lists now show 50 rows per page by default and offer 10, 25, 50 and 100 rows per page |
+| [#532](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/532) | The success toast shown after promoting a space or enabling an integration now says that the changes can take a few minutes to apply and to wait before testing them, and stays on screen longer |
 
 ### Removed
 
@@ -67,6 +69,7 @@
 | [#490](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/490) | Fixed write failures in Ruleset management printing the raw backend authorization exception — the username and its role bindings — in the error toast, and the integration form reporting a failed creation as a failed update |
 | [#502](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/502) | Fixed the search box not matching partial text on KVDBs and decoder titles, and unified search, filtering and URL sync across Rules, Decoders and KVDBs |
 | [#521](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/521) | Fixed the KVDB form silently dropping a content entry that has a value but no key; the entry now shows Key is required and blocks saving |
+| [#525](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/525) | Fixed the create decoder, rule and KVDB forms giving no feedback when no integration is selected; the Integration field now asks to select one when it is left empty, and the YAML editor no longer lists validation errors before the first edit |
 
 ## Prior versions
 

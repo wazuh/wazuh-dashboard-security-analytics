@@ -24,6 +24,12 @@ export type IntegrationDetailsTabId =
 
 export const INTEGRATION_TAB_PARAM = 'tab';
 
+// Wazuh: promoting a space or enabling an integration is applied asynchronously, so its
+// success toast says so and stays on screen long enough to be read.
+export const CHANGES_APPLY_DELAY_NOTICE =
+  'It can take a few minutes for the changes to apply. Wait before you test them.';
+export const CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS = 15000;
+
 export const integrationDetailsTabs = [
   {
     id: INTEGRATION_DETAILS_TAB.DETAILS,

@@ -386,6 +386,10 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
 }) => {
   const values: DecoderFormModel = formikProps.values;
   const validationSeq = useRef(0);
+  // True once a visual editor field lost focus, even if its value ended up unchanged.
+  const [hasVisitedField, setHasVisitedField] = useState(false);
+  // True once the Integration field itself lost focus.
+  const [isIntegrationTouched, setIsIntegrationTouched] = useState(false);
 
   // Advisory tier: schema validation, debounced, newest result wins.
   useEffect(() => {
@@ -414,10 +418,13 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
       setYamlSyntaxError(syntaxError);
       // Unparseable YAML never reaches the document, matching the rules editor.
       if (syntaxError) return;
+      // The warnings so far belong to the empty form behind the starter template; drop them
+      // so they do not flash until the debounced validation of the edited document lands.
+      if (isPristineCreate) setSchemaWarnings({ fields: {}, document: [] });
       setIsPristineCreate(false);
       formikProps.setValues(mapDecoderToForm(mapYamlToLosslessObject<DecoderDocument>(text)));
     },
-    [formikProps, setYamlSyntaxError, setIsPristineCreate]
+    [formikProps, setYamlSyntaxError, setIsPristineCreate, isPristineCreate, setSchemaWarnings]
   );
 
   const onVisualChange = useCallback(
@@ -431,6 +438,20 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
   const structuralErrors: Record<string, string> = formikProps.errors ?? {};
   const structuralCount = Object.keys(structuralErrors).length;
   const warningCount = Object.keys(schemaWarnings.fields).length + schemaWarnings.document.length;
+
+  // On create, hold back validation feedback until the user edits or visits a field (picking
+  // an integration does not count) or tries to submit. Typing broken YAML is an edit.
+  const showValidation =
+    action !== 'create' ||
+    !isPristineCreate ||
+    hasVisitedField ||
+    yamlSyntaxError !== null ||
+    formikProps.submitCount > 0;
+  // Only leaving the Integration field or trying to submit asks for one; other fields do not.
+  const integrationError =
+    (isIntegrationTouched || formikProps.submitCount > 0) && action === 'create' && !integrationType
+      ? 'Select an integration'
+      : undefined;
 
   const isSubmitBlocked =
     !integrationType ||
@@ -478,23 +499,29 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
               selectedId={integrationType}
               isLoading={loadingIntegrations}
               onChange={onIntegrationChange}
+              onBlur={() => setIsIntegrationTouched(true)}
               resourceName="decoders"
               data-test-subj="integration_dropdown"
               notifications={notifications}
               onCreateSuccess={onIntegrationCreateSuccess}
+              isInvalid={!!integrationError}
+              error={integrationError}
             />
             <EuiSpacer size="m" />
           </>
         )}
 
         {selectedEditorType === EDITOR_TYPE.VISUAL && (
-          <DecoderEditorForm
-            submitAttempted={formikProps.submitCount > 0}
-            values={values}
-            onChange={onVisualChange}
-            fieldErrors={{ ...schemaWarnings.fields, ...structuralErrors }}
-            documentErrors={schemaWarnings.document}
-          />
+          // Blur bubbles in React, so this sees every field the editor marks as touched.
+          <div onBlur={() => setHasVisitedField(true)}>
+            <DecoderEditorForm
+              submitAttempted={formikProps.submitCount > 0}
+              values={values}
+              onChange={onVisualChange}
+              fieldErrors={{ ...schemaWarnings.fields, ...structuralErrors }}
+              documentErrors={schemaWarnings.document}
+            />
+          </div>
         )}
 
         {selectedEditorType === EDITOR_TYPE.YAML && (
@@ -502,7 +529,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
             errorSeverity={ERROR_SEVERITY.WARNING}
             type={YAML_TYPE.DECODER}
             value={yamlText}
-            isInvalid={yamlSyntaxError !== null || warningCount > 0}
+            isInvalid={showValidation && (yamlSyntaxError !== null || warningCount > 0)}
             errors={
               yamlSyntaxError
                 ? [yamlSyntaxError]

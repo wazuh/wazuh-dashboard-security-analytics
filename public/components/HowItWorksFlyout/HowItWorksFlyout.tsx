@@ -15,7 +15,10 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { SpaceTypes } from '../../../common/constants';
-import { SECURITY_ANALYTICS_DOCUMENTATION_URL } from '../../utils/constants';
+import {
+  LOG_DATA_COLLECTION_DOCUMENTATION_URL,
+  SECURITY_ANALYTICS_DOCUMENTATION_URL,
+} from '../../utils/constants';
 
 export const HOW_IT_WORKS_TITLE = 'How ruleset management works';
 
@@ -106,6 +109,23 @@ export const HowItWorksFlyout: React.FC = () => {
           <p>
             Ruleset management provides the tools for managing the full lifecycle of log
             normalization and event-based detection.
+          </p>
+        </EuiText>
+
+        <EuiSpacer size="l" />
+
+        <EuiTitle size="xs">
+          <h3>First step: collect the log</h3>
+        </EuiTitle>
+        <EuiSpacer size="s" />
+        <EuiText size="s">
+          <p>
+            Before a log can be decoded and matched by rules, it has to be collected on the agent.
+            Collect the log on the agent first, then use the pieces below to normalize it and detect
+            on it.{' '}
+            <EuiLink href={LOG_DATA_COLLECTION_DOCUMENTATION_URL} target="_blank" external>
+              How to collect a log
+            </EuiLink>
           </p>
         </EuiText>
 

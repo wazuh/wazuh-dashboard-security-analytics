@@ -31,6 +31,10 @@ export const SECURITY_ANALYTICS_DOCUMENTATION_URL = webDocumentationLink(
   'user-manual/wazuh-dashboard/wazuh-dashboard-configurations.html#security-analytics'
 );
 
+export const LOG_DATA_COLLECTION_DOCUMENTATION_URL = webDocumentationLink(
+  'user-manual/capabilities/log-data-collection/index.html'
+);
+
 export const LOG_TEST_DOCUMENTATION_URL = webDocumentationLink(
   'user-manual/wazuh-dashboard/wazuh-dashboard-configurations.html#log-test'
 );
