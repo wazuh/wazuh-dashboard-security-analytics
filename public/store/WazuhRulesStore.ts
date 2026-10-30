@@ -296,6 +296,7 @@ export class RulesStore implements IWazuhRulesStore {
       space: this.normalizeSpace(hit._source?.space),
       _source: {
         id: hit._source?.document?.id ?? hit._id,
+        sigma_id: doc.sigma_id,
         level: doc.level ?? '',
         category: logsource.category ?? logsource.product ?? logsource.service ?? '',
         status: doc.status ?? '',

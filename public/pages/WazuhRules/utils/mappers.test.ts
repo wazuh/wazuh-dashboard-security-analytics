@@ -82,3 +82,56 @@ describe('mapRuleToYamlObject', () => {
     });
   });
 });
+
+describe('sigma_id and logsource', () => {
+  const yamlRule = {
+    sigma_id: '19aefed0-ffd4-47dc-a7fc-f8b1425e84f9',
+    level: 'medium',
+    status: 'stable',
+    logsource: { product: 'test-integration', category: 'application', service: 'python' },
+    detection: { keywords: ['DataError'], condition: 'keywords' },
+    metadata: { title: 'Python SQL Exceptions' },
+  };
+
+  it('keeps sigma_id and every logsource field when reading YAML', () => {
+    const rule = mapYamlObjectToRule(yamlRule);
+
+    expect(rule.sigma_id).toBe('19aefed0-ffd4-47dc-a7fc-f8b1425e84f9');
+    expect(rule.category).toBe('test-integration');
+    expect(rule.log_source).toEqual({
+      product: 'test-integration',
+      category: 'application',
+      service: 'python',
+    });
+  });
+
+  it('ignores a logsource that is not a mapping', () => {
+    const rule = mapYamlObjectToRule({ ...yamlRule, logsource: 'test-integration' });
+
+    expect(rule.log_source).toEqual({});
+    expect(rule.category).toBeUndefined();
+  });
+
+  it('writes sigma_id and the full logsource back to YAML', () => {
+    const yamlObject = mapRuleToYamlObject(mapYamlObjectToRule(yamlRule));
+
+    expect(yamlObject.sigma_id).toBe('19aefed0-ffd4-47dc-a7fc-f8b1425e84f9');
+    expect(yamlObject.logsource).toEqual(yamlRule.logsource);
+  });
+
+  it('shows logsource.product, not the display category, as the product', () => {
+    // The store fills `category` with logsource.category when the rule has one.
+    const rule = {
+      ...mapYamlObjectToRule(yamlRule),
+      category: 'application',
+    };
+
+    expect(mapRuleToYamlObject(rule).logsource.product).toBe('test-integration');
+  });
+
+  it('leaves sigma_id out of the YAML when the rule has none', () => {
+    const { sigma_id: _sigmaId, ...withoutSigmaId } = yamlRule;
+
+    expect(mapRuleToYamlObject(mapYamlObjectToRule(withoutSigmaId))).not.toHaveProperty('sigma_id');
+  });
+});

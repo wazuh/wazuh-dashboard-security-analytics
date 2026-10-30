@@ -115,3 +115,77 @@ describe('WazuhRulesService.getRules — status/integration filters', () => {
     );
   });
 });
+
+describe('WazuhRulesService — rule resource', () => {
+  const buildService = () => {
+    const callAsCurrentUser = jest.fn(() => Promise.resolve({}));
+    const osDriver: any = { asScoped: () => ({ callAsCurrentUser }) };
+    return { service: new WazuhRulesService(osDriver), callAsCurrentUser };
+  };
+
+  const rule = {
+    id: 'rule-id',
+    sigma_id: '19aefed0-ffd4-47dc-a7fc-f8b1425e84f9',
+    category: 'test-integration',
+    log_source: { product: 'test-integration', category: 'application', service: 'python' },
+    tags: [],
+    false_positives: [],
+    level: 'medium',
+    status: 'stable',
+    enabled: true,
+    detection: 'condition: keywords\nkeywords:\n  - DataError\n',
+    mitre: '',
+    compliance: '',
+    metadata: { title: 'Python SQL Exceptions', author: 'Thomas Patzke', description: '' },
+  };
+
+  it('sends sigma_id and every logsource field on create', async () => {
+    const { service, callAsCurrentUser } = buildService();
+
+    await service.createRule(
+      {} as any,
+      { body: { document: rule, integrationId: 'integration-id' } } as any,
+      buildResponseFactory() as any
+    );
+
+    const { resource } = (callAsCurrentUser.mock.calls[0] as any)[1].body;
+    expect(resource.sigma_id).toBe('19aefed0-ffd4-47dc-a7fc-f8b1425e84f9');
+    expect(resource.logsource).toEqual({
+      product: 'test-integration',
+      category: 'application',
+      service: 'python',
+    });
+  });
+
+  it('sends sigma_id on update so editing a rule keeps it', async () => {
+    const { service, callAsCurrentUser } = buildService();
+
+    await service.updateRule(
+      {} as any,
+      { params: { ruleId: 'rule-id' }, body: { document: rule } } as any,
+      buildResponseFactory() as any
+    );
+
+    const { resource } = (callAsCurrentUser.mock.calls[0] as any)[1].body;
+    expect(resource.sigma_id).toBe('19aefed0-ffd4-47dc-a7fc-f8b1425e84f9');
+  });
+
+  it('fills a missing logsource.product from the category and omits an empty sigma_id', async () => {
+    const { service, callAsCurrentUser } = buildService();
+
+    await service.createRule(
+      {} as any,
+      {
+        body: {
+          document: { ...rule, sigma_id: undefined, log_source: { category: 'application' } },
+          integrationId: 'integration-id',
+        },
+      } as any,
+      buildResponseFactory() as any
+    );
+
+    const { resource } = (callAsCurrentUser.mock.calls[0] as any)[1].body;
+    expect(resource).not.toHaveProperty('sigma_id');
+    expect(resource.logsource).toEqual({ product: 'test-integration', category: 'application' });
+  });
+});
