@@ -56,9 +56,14 @@ export const mapRuleToYamlObject = (rule: Rule): any => {
 
   if (rule.metadata?.modified) metadata.modified = rule.metadata.modified;
 
+  // `category` is display-only and may hold logsource.category, so the product
+  // comes from the log source itself.
+  const { product, ...logSource } = rule.log_source ?? {};
+
   const yamlObject: any = {
     id: rule.id || '',
-    logsource: { product: rule.category || '' },
+    ...(rule.sigma_id ? { sigma_id: rule.sigma_id } : {}),
+    logsource: { product: product || rule.category || '', ...logSource },
     tags: rule.tags?.map((tag) => tag.value) ?? [],
     falsepositives: rule.false_positives?.map((fp) => fp.value) ?? [],
     level: rule.level || '',
@@ -84,11 +89,16 @@ export const mapYamlObjectToRule = (rawObj: any): Rule => {
   const supports = (meta.supports ?? []).filter(Boolean);
   const tags = (obj.tags ?? []).filter(Boolean);
   const falsepositives = (obj.falsepositives ?? []).filter(Boolean);
+  const logSource =
+    obj.logsource && typeof obj.logsource === 'object' && !Array.isArray(obj.logsource)
+      ? { ...obj.logsource }
+      : {};
 
   return {
     id: obj.id,
-    category: obj.logsource ? obj.logsource.product : undefined,
-    log_source: {},
+    sigma_id: obj.sigma_id,
+    category: logSource.product,
+    log_source: logSource,
     tags: tags.map((tag: string) => ({ value: tag })),
     false_positives: falsepositives.map((fp: string) => ({ value: fp })),
     level: obj.level,
