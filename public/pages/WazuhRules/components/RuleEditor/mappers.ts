@@ -8,8 +8,10 @@ import { getLogTypeFromLogSource } from '../../utils/helpers';
 import { RuleEditorFormModel, ruleEditorStateDefaultValue } from './RuleEditorFormModel';
 
 export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
+  // The indexer requires logsource.product to match the integration title, so the
+  // selected integration wins over a product carried in from the YAML editor.
   const logSource = { ...(formState.log_source ?? {}) };
-  if (!logSource.product && formState.integration) {
+  if (formState.integration) {
     logSource.product = formState.integration;
   }
 
@@ -22,6 +24,7 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
 
   const rule: any = {
     id: formState.id,
+    sigma_id: formState.sigma_id,
     category: formState.integration,
     status: formState.status,
     tags: formState.tags.map((tag) => ({ value: tag })),
@@ -48,7 +51,10 @@ export const mapFormToRule = (formState: RuleEditorFormModel): Rule => {
 };
 
 export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
-  const logType = rule.category || getLogTypeFromLogSource(rule.log_source);
+  // `category` may hold logsource.category for display, so the integration title
+  // comes from logsource.product first.
+  const logType =
+    rule.log_source?.product || rule.category || getLogTypeFromLogSource(rule.log_source);
 
   const metadataTitle = rule.metadata?.title;
   const metadataDescription = rule.metadata?.description;
@@ -59,6 +65,7 @@ export const mapRuleToForm = (rule: Rule): RuleEditorFormModel => {
 
   return {
     id: rule.id,
+    sigma_id: rule.sigma_id,
     log_source: rule.log_source,
     integration: logType || '',
     status: rule.status,
