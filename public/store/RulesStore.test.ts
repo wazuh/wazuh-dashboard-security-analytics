@@ -50,4 +50,35 @@ describe('Rules store specs', () => {
 
     expect(getRulesSpy).toBeCalledTimes(2);
   });
+
+  it('getRule keeps sigma_id and the full logsource of the stored rule', async () => {
+    jest.spyOn(DataStore.rules.service, 'getRules').mockReturnValue(
+      Promise.resolve({
+        ok: true,
+        response: {
+          hits: {
+            hits: [
+              {
+                _id: 'rule-id',
+                _source: {
+                  space: { name: 'draft' },
+                  document: {
+                    id: 'rule-id',
+                    sigma_id: '85254a62-22be-4239-b79c-2ec17e566c37',
+                    logsource: { product: 'apache-http', category: 'webserver' },
+                    metadata: { title: 'Title' },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      } as any)
+    );
+
+    const rule = await DataStore.rules.getRule('rule-id', 'draft');
+
+    expect(rule?._source.sigma_id).toBe('85254a62-22be-4239-b79c-2ec17e566c37');
+    expect(rule?._source.log_source).toEqual({ product: 'apache-http', category: 'webserver' });
+  });
 });
