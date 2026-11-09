@@ -6,8 +6,12 @@
 import React from 'react';
 import { EuiEmptyPrompt, EuiLink, EuiText, EuiTitle } from '@elastic/eui';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../common/constants';
-import { actionIsAllowedOnSpace, getPreviousSpace } from '../../../common/helpers';
-import { PromoteSpaces } from '../../../types';
+import {
+  actionIsAllowedOnSpace,
+  getPreviousSpace,
+  getSpaceTypeLabel,
+} from '../../../common/helpers';
+import { PromoteSpaces, Space } from '../../../types';
 
 export interface ListEmptyPromptProps {
   /** Plural entity name as it appears in copy, for example `decoders`. */
@@ -40,7 +44,15 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
   actions,
   emptyBody,
 }) => {
+  const showStandardHint = !!onGoToStandard && space !== SpaceTypes.STANDARD.value;
+  const standardSpaceLink = showStandardHint && (
+    <EuiLink onClick={onGoToStandard}>{SpaceTypes.STANDARD.label.toLowerCase()} space</EuiLink>
+  );
+
   if (hasFilters) {
+    // Wazuh: name the space that was searched. Shipped content lives in Standard, so a
+    // search for it from another space comes back empty; offer to repeat it there.
+    const spaceLabel = space && getSpaceTypeLabel(space as Space).toLowerCase();
     return (
       <EuiEmptyPrompt
         style={{ maxWidth: '45em' }}
@@ -56,9 +68,19 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
             <p>
               {searchOnly
                 ? `Clear it to see all ${entity}.`
-                : space
-                ? 'Clear them to see everything in this space.'
-                : `Clear them to see all ${entity}.`}
+                : spaceLabel
+                ? `Clear them to see everything in the ${spaceLabel} space`
+                : `Clear them to see all ${entity}`}
+              {!searchOnly && (
+                <>
+                  {standardSpaceLink && (
+                    <>
+                      , or search the {standardSpaceLink} for the {entity} shipped with Wazuh
+                    </>
+                  )}
+                  .
+                </>
+              )}
             </p>
           </EuiText>
         }
@@ -66,7 +88,6 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
     );
   }
 
-  const showStandardHint = !!onGoToStandard && space !== SpaceTypes.STANDARD.value;
   // Wazuh: content is only created in Draft. Test and Custom receive it by promotion, so
   // pointing them at a create action would be a dead end.
   const canCreate = !space || actionIsAllowedOnSpace(space, SPACE_ACTIONS.CREATE);
@@ -95,11 +116,8 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
               {howToFill}
               {showStandardHint && (
                 <>
-                  {howToFill ? ', or switch' : 'Switch'} to the{' '}
-                  <EuiLink onClick={onGoToStandard}>
-                    {SpaceTypes.STANDARD.label.toLowerCase()} space
-                  </EuiLink>{' '}
-                  to see the {entity} shipped with Wazuh
+                  {howToFill ? ', or switch' : 'Switch'} to the {standardSpaceLink} to see the{' '}
+                  {entity} shipped with Wazuh
                 </>
               )}
               .

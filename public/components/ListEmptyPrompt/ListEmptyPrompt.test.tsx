@@ -15,6 +15,45 @@ describe('ListEmptyPrompt', () => {
     );
 
     getByText('No decoders match your search or filters');
+    getByText(
+      `Clear them to see everything in the ${SpaceTypes.CUSTOM.label.toLowerCase()} space.`
+    );
+    expect(queryByText(/shipped with Wazuh/)).toBeNull();
+  });
+
+  it('offers to repeat an empty search in the Standard space', () => {
+    const onGoToStandard = jest.fn();
+    const { getByRole, container } = render(
+      <ListEmptyPrompt
+        entity="integrations"
+        hasFilters
+        space={SpaceTypes.TEST.value}
+        onGoToStandard={onGoToStandard}
+      />
+    );
+
+    expect(container.querySelector('p')?.textContent).toBe(
+      `Clear them to see everything in the ${SpaceTypes.TEST.label.toLowerCase()} space, or search the ${SpaceTypes.STANDARD.label.toLowerCase()} space for the integrations shipped with Wazuh.`
+    );
+    fireEvent.click(
+      getByRole('button', { name: `${SpaceTypes.STANDARD.label.toLowerCase()} space` })
+    );
+    expect(onGoToStandard).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not offer the Standard space to an empty search already in Standard', () => {
+    const { getByText, queryByText } = render(
+      <ListEmptyPrompt
+        entity="integrations"
+        hasFilters
+        space={SpaceTypes.STANDARD.value}
+        onGoToStandard={jest.fn()}
+      />
+    );
+
+    getByText(
+      `Clear them to see everything in the ${SpaceTypes.STANDARD.label.toLowerCase()} space.`
+    );
     expect(queryByText(/shipped with Wazuh/)).toBeNull();
   });
 

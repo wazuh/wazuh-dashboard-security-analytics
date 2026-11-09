@@ -28,4 +28,16 @@ describe('HowItWorksFlyout', () => {
       LOG_DATA_COLLECTION_DOCUMENTATION_URL
     );
   });
+
+  it('says what a disabled integration means', () => {
+    render(<HowItWorksFlyout />);
+
+    act(() => {
+      openHowItWorksFlyout();
+    });
+
+    expect(screen.getByText(/While an integration is disabled/).textContent).toContain(
+      'While an integration is disabled, its decoders and rules are not applied to incoming events.'
+    );
+  });
 });

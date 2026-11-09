@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { EuiLink, EuiPanel, EuiToolTip } from '@elastic/eui';
-import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
+import { IntegrationStatus } from '../components/IntegrationStatus';
 import { Integration } from '../../../../types';
 import { SPACE_ACTIONS, UserSpacesOrder } from '../../../../common/constants';
 import { startCase } from 'lodash';
@@ -260,8 +260,13 @@ export const getIntegrationsTableColumns = ({
     field: 'status',
     name: 'Status',
     sortable: true,
-    render: (status: 'enabled' | 'disabled') => (
-      <EnabledHealth enabled={status === 'enabled'} data-test-subj="integration_status" />
+    render: (status: 'enabled' | 'disabled', item: IntegrationTableItem) => (
+      <IntegrationStatus
+        enabled={status === 'enabled'}
+        space={item.space}
+        mode={item.mode}
+        data-test-subj="integration_status"
+      />
     ),
   },
   {
