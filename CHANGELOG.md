@@ -70,6 +70,7 @@
 | [#502](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/502) | Fixed the search box not matching partial text on KVDBs and decoder titles, and unified search, filtering and URL sync across Rules, Decoders and KVDBs |
 | [#521](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/521) | Fixed the KVDB form silently dropping a content entry that has a value but no key; the entry now shows Key is required and blocks saving |
 | [#525](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/525) | Fixed the create decoder, rule and KVDB forms giving no feedback when no integration is selected; the Integration field now asks to select one when it is left empty, and the YAML editor no longer lists validation errors before the first edit |
+| [#542](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/542) | Fixed a decoder the engine rejects for a parser expression printing the engine's whole parser trace in the error toast; the toast now names the field and expression, marks the failing position, and keeps the trace behind Show details |
 
 ## Prior versions
 
