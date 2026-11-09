@@ -22,6 +22,7 @@
 | [#482](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/482) | Added a Visual Editor to the decoder form as an alternative to the YAML editor; anything it cannot represent is kept as it is |
 | [#530](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/530) | Added a warning when the root decoder is cleared while the space still has decoders, KVDBs or filters, listing them and offering to clear the normalization resources |
 | [wazuh-dashboard-plugins#9438](https://github.com/wazuh/wazuh-dashboard-plugins/issues/9438) | Added a "First step: collect the log" section, with a documentation link, to the "How ruleset management works" panel |
+| [wazuh-dashboard-plugins#9441](https://github.com/wazuh/wazuh-dashboard-plugins/issues/9441) | Added a help icon next to a disabled integration's status that says what disabled means and how to enable it, and an empty search now names the space it searched and offers to search the standard space |
 
 ### Changed
 

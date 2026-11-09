@@ -42,7 +42,8 @@ const ENTITIES = [
       <>
         The top-level unit of ruleset management. It groups the <em>decoders</em>, <em>rules</em>{' '}
         and <em>KVDBs</em> that add support for one log source or use case. Each of those belongs to
-        exactly one integration and travels with it when the space is promoted.
+        exactly one integration and travels with it when the space is promoted. While an integration
+        is disabled, its <em>decoders</em> and <em>rules</em> are not applied to incoming events.
       </>
     ),
   },
