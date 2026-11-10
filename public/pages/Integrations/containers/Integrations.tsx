@@ -313,7 +313,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     id: string,
     isOpen: boolean,
     onToggle: () => void,
-    items: React.ReactElement[]
+    items: React.ReactElement[],
+    label: string = 'Actions'
   ) => (
     <EuiPopover
       id={id}
@@ -324,7 +325,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           onClick={onToggle}
           data-test-subj={id}
         >
-          Actions
+          {label}
         </EuiSmallButton>
       }
       isOpen={isOpen}
@@ -398,7 +399,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     'overviewActionsPopover',
     isOverviewActionsOpen,
     () => setIsOverviewActionsOpen((prev) => !prev),
-    overviewActionsMenuItems
+    overviewActionsMenuItems,
+    // Wazuh: named apart from the Actions menu of the integrations table below it.
+    'Space actions'
   );
 
   const actionsButton = buildActionsPopOver(

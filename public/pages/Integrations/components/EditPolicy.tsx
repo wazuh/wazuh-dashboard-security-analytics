@@ -32,12 +32,13 @@ import { successNotificationToast } from '../../../utils/helpers';
 import { FormFieldArray } from '../../../components/FormFieldArray';
 import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validation';
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpaceTypeLabel } from '../../../../common/helpers';
 import { AssetIdentity, formatAssetLabel } from '../../../components/AssetIdentity';
 import { UI_DISABLED_SETTINGS_IDS, isUiSettingDisabled } from '../../../utils/helpers';
 import { ALLOWED_ENRICHMENTS, ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
 import { RootDecoderRemovalModal, hasNormalizationResources } from './RootDecoderRemovalModal';
+import { POLICY_SETTING_HELP } from '../utils/constants';
 
 const DECODER_SEARCH_SIZE = 25;
 const DELAY_ON_SEARCH = 300; // ms
@@ -159,11 +160,18 @@ const EditForm: React.FC<{}> = withPolicyGuard({
       </EuiText>
     );
 
-    const renderBooleanValue = (value?: boolean) => (
+    // Same words as the policy panel on the overview.
+    const renderBooleanValue = (value: boolean | undefined, on: string, off: string) => (
       <EuiText size="s" color="subdued">
-        {value ? 'yes' : 'no'}
+        {value ? on : off}
       </EuiText>
     );
+
+    // The draft policy reaches the engine only once the space is promoted to custom.
+    const statusHelpText =
+      space === SpaceTypes.DRAFT.value
+        ? `${POLICY_SETTING_HELP.status} ${POLICY_SETTING_HELP.statusInDraft}`
+        : POLICY_SETTING_HELP.status;
 
     const updateErrors = (details: PolicyDocument) => {
       const titleInvalid = !validateName(details.metadata?.title, INTEGRATION_AUTHOR_REGEX);
@@ -417,10 +425,11 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             <h3>Settings</h3>
           </EuiText>
           <EuiSpacer size="s" />
-          <EuiCompressedFormRow label={'Status'}>
+          <EuiCompressedFormRow label={'Status'} helpText={statusHelpText}>
             {canEditToggles ? (
               <EuiSwitch
                 compressed
+                label={policyDetails.enabled ? 'Enabled' : 'Disabled'}
                 checked={policyDetails.enabled || false}
                 onChange={(e) => {
                   const newPolicy = {
@@ -432,7 +441,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
                 }}
               />
             ) : (
-              renderBooleanValue(policyDetails.enabled)
+              renderBooleanValue(policyDetails.enabled, 'Enabled', 'Disabled')
             )}
           </EuiCompressedFormRow>
           <EuiCompressedFormRow label="Root decoder">
@@ -473,10 +482,14 @@ const EditForm: React.FC<{}> = withPolicyGuard({
               <EuiFlexGroup>
                 {showIndexUnclassifiedEventsSetting && (
                   <EuiFlexItem>
-                    <EuiCompressedFormRow label={'Index unclassified events'}>
+                    <EuiCompressedFormRow
+                      label={'Index unclassified events'}
+                      helpText={POLICY_SETTING_HELP.indexUnclassifiedEvents}
+                    >
                       {canEditToggles ? (
                         <EuiSwitch
                           compressed
+                          label={policyDetails.index_unclassified_events ? 'On' : 'Off'}
                           checked={policyDetails.index_unclassified_events || false}
                           onChange={(e) => {
                             const newPolicy = {
@@ -488,17 +501,21 @@ const EditForm: React.FC<{}> = withPolicyGuard({
                           }}
                         />
                       ) : (
-                        renderBooleanValue(policyDetails.index_unclassified_events)
+                        renderBooleanValue(policyDetails.index_unclassified_events, 'On', 'Off')
                       )}
                     </EuiCompressedFormRow>
                   </EuiFlexItem>
                 )}
                 {showIndexDiscardedEventsSetting && (
                   <EuiFlexItem>
-                    <EuiCompressedFormRow label={'Index discarded events'}>
+                    <EuiCompressedFormRow
+                      label={'Index discarded events'}
+                      helpText={POLICY_SETTING_HELP.indexDiscardedEvents}
+                    >
                       {canEditToggles ? (
                         <EuiSwitch
                           compressed
+                          label={policyDetails.index_discarded_events ? 'On' : 'Off'}
                           checked={policyDetails.index_discarded_events || false}
                           onChange={(e) => {
                             const newPolicy = {
@@ -510,7 +527,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
                           }}
                         />
                       ) : (
-                        renderBooleanValue(policyDetails.index_discarded_events)
+                        renderBooleanValue(policyDetails.index_discarded_events, 'On', 'Off')
                       )}
                     </EuiCompressedFormRow>
                   </EuiFlexItem>
