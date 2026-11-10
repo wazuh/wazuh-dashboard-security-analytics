@@ -46,6 +46,8 @@ export const CUSTOM_DECODERS_DOCUMENTATION_URL = webDocumentationLink(
 // Wazuh: page headers top-align their columns so the description wraps under the title,
 // which would leave the controls hanging at the top of a two-line header.
 export const OVERVIEW_NAV_ID = `sa_overview`;
+// Wazuh: app of the wazuh-check-updates plugin that reports the standard space sync.
+export const CTI_FEED_APP_ID = 'cti-feed';
 export const GET_STARTED_NAV_ID = `get_started`;
 export const THREAT_ALERTS_NAV_ID = `threat_alerts`;
 export const FINDINGS_NAV_ID = `findings`;
