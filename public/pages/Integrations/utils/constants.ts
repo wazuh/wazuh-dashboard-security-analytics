@@ -83,9 +83,8 @@ export const defaultIntegration: IntegrationBase = {
 
 // Wazuh: help under the policy switches of the edit form, per the engine reference.
 export const POLICY_SETTING_HELP = {
-  status: 'Turn it off and this space processes no events.',
-  statusInDraft: 'It applies once the space is promoted to custom.',
-  indexUnclassifiedEvents:
-    'Index events decoded by an integration in the unclassified category. Off: they are not indexed.',
-  indexDiscardedEvents: 'Index events that a filter marks as discarded. Off: they are not indexed.',
+  status: 'Turn it off to stop processing events in this space.',
+  statusInDraft: 'Applies once promoted to custom.',
+  indexUnclassifiedEvents: 'Also index events whose integration is in the unclassified category.',
+  indexDiscardedEvents: 'Also index events that a filter marks as discarded.',
 } as const;
