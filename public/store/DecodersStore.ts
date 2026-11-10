@@ -7,6 +7,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { CUDDecoderResponse, DecoderItem, SearchDecodersResponse } from '../../types';
 import DecodersService from '../services/DecodersService';
 import { errorNotificationToast } from '../utils/helpers';
+import { decoderWriteErrorToast } from '../pages/Decoders/utils/decoderErrorToast';
 
 export interface DecodersSearchParams {
   from?: number;
@@ -83,7 +84,7 @@ export class DecodersStore {
   }): Promise<CUDDecoderResponse | undefined> {
     const responseRequest = await this.service.createDecoder(body);
     if (!responseRequest.ok) {
-      errorNotificationToast(this.notifications, 'create', 'decoder', responseRequest.error);
+      decoderWriteErrorToast(this.notifications, 'create', responseRequest.error, body.document);
       return undefined;
     }
     return responseRequest.response;
@@ -95,7 +96,7 @@ export class DecodersStore {
   ): Promise<CUDDecoderResponse | undefined> {
     const responseRequest = await this.service.updateDecoder(decoderId, body);
     if (!responseRequest.ok) {
-      errorNotificationToast(this.notifications, 'update', 'decoder', responseRequest.error);
+      decoderWriteErrorToast(this.notifications, 'update', responseRequest.error, body.document);
       return undefined;
     }
     return responseRequest.response;
