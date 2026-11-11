@@ -13,7 +13,16 @@ jest.mock('../../services/utils/constants', () => ({
   getApplication: jest.fn(),
 }));
 
+const CTI_FEED_URL = '/app/cti_feed';
+
 describe('HowItWorksFlyout', () => {
+  beforeEach(() => {
+    (getApplication as jest.Mock).mockReturnValue({
+      navigateToApp: jest.fn(),
+      getUrlForApp: jest.fn().mockReturnValue(CTI_FEED_URL),
+    });
+  });
+
   it('renders nothing until it is opened', () => {
     render(<HowItWorksFlyout />);
 
@@ -36,7 +45,8 @@ describe('HowItWorksFlyout', () => {
 
   it('says the standard space is synced from the CTI feed and opens the CTI feed app', () => {
     const navigateToApp = jest.fn();
-    (getApplication as jest.Mock).mockReturnValue({ navigateToApp });
+    const getUrlForApp = jest.fn().mockReturnValue(CTI_FEED_URL);
+    (getApplication as jest.Mock).mockReturnValue({ navigateToApp, getUrlForApp });
     render(<HowItWorksFlyout />);
 
     act(() => {
@@ -44,7 +54,10 @@ describe('HowItWorksFlyout', () => {
     });
 
     expect(screen.getByText(/checks the feed for updates every hour by default/)).toBeTruthy();
-    screen.getByRole('button', { name: 'Open CTI feed' }).click();
+    const link = screen.getByRole('link', { name: 'Open CTI feed' });
+    expect(getUrlForApp).toHaveBeenCalledWith(CTI_FEED_APP_ID);
+    expect(link.getAttribute('href')).toBe(CTI_FEED_URL);
+    link.click();
     expect(navigateToApp).toHaveBeenCalledWith(CTI_FEED_APP_ID);
   });
 });
