@@ -14,6 +14,7 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
+import { RedirectAppLinks } from '../../../../../src/plugins/opensearch_dashboards_react/public';
 import { SpaceTypes } from '../../../common/constants';
 import { getApplication } from '../../services/utils/constants';
 import {
@@ -152,14 +153,14 @@ export const HowItWorksFlyout: React.FC = () => {
         </EuiTitle>
         <EuiSpacer size="s" />
         <EuiText size="s">
-          <p>
-            Three spaces are the stages of the content lifecycle: <em>draft</em>, <em>test</em> and{' '}
-            <em>custom</em>. The fourth, <em>standard</em>, holds the content synced from the CTI
-            feed. The indexer checks the feed for updates every hour by default.{' '}
-            <EuiLink onClick={() => getApplication().navigateToApp(CTI_FEED_APP_ID)}>
-              Open CTI feed
-            </EuiLink>
-          </p>
+          <RedirectAppLinks application={getApplication()}>
+            <p>
+              Three spaces are the stages of the content lifecycle: <em>draft</em>, <em>test</em>{' '}
+              and <em>custom</em>. The fourth, <em>standard</em>, holds the content synced from the
+              CTI feed. The indexer checks the feed for updates every hour by default.{' '}
+              <EuiLink href={getApplication().getUrlForApp(CTI_FEED_APP_ID)}>Open CTI feed</EuiLink>
+            </p>
+          </RedirectAppLinks>
           <p>
             User-managed content is promoted sequentially from <em>draft</em> to <em>test</em>, and
             from <em>test</em> to <em>custom</em>, after validation.

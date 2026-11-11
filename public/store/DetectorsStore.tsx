@@ -168,13 +168,16 @@ export class DetectorsStore implements IDetectorsStore {
     });
 
     const { color, iconType } = resolveType(type);
-    this.toasts.push({
-      title,
-      color,
-      iconType,
-      id: `toastsKey_${uuidv4()}`,
-      text: messageBody,
-    });
+    // Wazuh: replace, not append, so the in-progress toast closes when the result arrives.
+    this.toasts = [
+      {
+        title,
+        color,
+        iconType,
+        id: `toastsKey_${uuidv4()}`,
+        text: messageBody,
+      },
+    ];
     this.showToastCallback(this.toasts);
   };
 

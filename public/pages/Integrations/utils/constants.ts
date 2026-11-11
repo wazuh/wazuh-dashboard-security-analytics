@@ -30,6 +30,10 @@ export const CHANGES_APPLY_DELAY_NOTICE =
   'It can take a few minutes for the changes to apply. Wait before you test them.';
 export const CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS = 15000;
 
+// Wazuh: test is loaded into log test on promotion; the manager syncs custom every 120 s.
+export const PROMOTED_TO_TEST_NOTICE = 'Check the changes in Log test.';
+export const PROMOTED_TO_CUSTOM_NOTICE = 'Changes apply to events within about 2 minutes.';
+
 export const integrationDetailsTabs = [
   {
     id: INTEGRATION_DETAILS_TAB.DETAILS,
@@ -76,3 +80,11 @@ export const defaultIntegration: IntegrationBase = {
     name: '',
   },
 };
+
+// Wazuh: help under the policy switches of the edit form, per the engine reference.
+export const POLICY_SETTING_HELP = {
+  status: 'Turn it off to stop processing events in this space.',
+  statusInDraft: 'Applies once promoted to custom.',
+  indexUnclassifiedEvents: 'Also index events whose integration is in the unclassified category.',
+  indexDiscardedEvents: 'Also index events that a filter marks as discarded.',
+} as const;
