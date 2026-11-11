@@ -63,6 +63,9 @@ describe('HowItWorksFlyout', () => {
     expect(application.getUrlForApp).toHaveBeenCalledWith(CTI_FEED_APP_ID);
     expect(link.getAttribute('href')).toBe(CTI_FEED_URL);
     link.click();
-    expect(application.navigateToUrl).toHaveBeenCalledWith(CTI_FEED_URL);
+    // RedirectAppLinks hands over the anchor's resolved href, not the raw attribute.
+    expect(application.navigateToUrl).toHaveBeenCalledWith(
+      `${window.location.origin}${CTI_FEED_URL}`
+    );
   });
 });
