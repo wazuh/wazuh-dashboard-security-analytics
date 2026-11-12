@@ -49,7 +49,7 @@ import { getSeverityColor, getSeverityLabel } from '../../../Correlations/utils/
 import { ruleSeverity } from '../../../Rules/utils/constants';
 import { RuleViewerFlyout } from '../../components/RuleViewerFlyout/RuleViewerFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../../common/constants';
-import { RowAction } from '../../../../components/RowAction';
+import { RowAction, RowActionGroup } from '../../../../components/RowAction';
 import {
   actionIsAllowedOnSpace,
   getBlockedSpaceActionReason,
@@ -499,7 +499,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             // would have more than 2 and OUI would collapse them into the "All actions" popover.
             name: 'Edit and Delete',
             render: (_item: RuleTableItem) => (
-              <>
+              <RowActionGroup>
                 <RowAction
                   name="Edit"
                   iconType="pencil"
@@ -522,7 +522,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                   )}
                   onClick={() => {}}
                 />
-              </>
+              </RowActionGroup>
             ),
             available: () =>
               !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT) &&

@@ -5,3 +5,4 @@
 
 export { RowAction } from './RowAction';
 export type { RowActionProps } from './RowAction';
+export { RowActionGroup } from './RowActionGroup';

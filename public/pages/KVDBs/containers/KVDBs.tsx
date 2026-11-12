@@ -44,7 +44,7 @@ import {
 } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { RowAction } from '../../../components/RowAction';
+import { RowAction, RowActionGroup } from '../../../components/RowAction';
 import {
   actionIsAllowedOnSpace,
   getBlockedSpaceActionReason,
@@ -481,7 +481,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             // would have more than 2 and OUI would collapse them into the "All actions" popover.
             name: 'Edit and Delete',
             render: (_item: KVDBItem) => (
-              <>
+              <RowActionGroup>
                 <RowAction
                   name="Edit"
                   iconType="pencil"
@@ -505,7 +505,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                   color="danger"
                   onClick={() => {}}
                 />
-              </>
+              </RowActionGroup>
             ),
             available: () =>
               !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT) &&

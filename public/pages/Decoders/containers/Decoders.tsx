@@ -39,7 +39,7 @@ import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery, DECODERS_SEARCHABLE_FIELDS_LABEL } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { RowAction } from '../../../components/RowAction';
+import { RowAction, RowActionGroup } from '../../../components/RowAction';
 import {
   actionIsAllowedOnSpace,
   getBlockedSpaceActionReason,
@@ -398,7 +398,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
             // would have more than 2 and OUI would collapse them into the "All actions" popover.
             name: 'Edit and Delete',
             render: (_item: DecoderItem) => (
-              <>
+              <RowActionGroup>
                 <RowAction
                   name="Edit"
                   iconType="pencil"
@@ -421,7 +421,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                   )}
                   onClick={() => {}}
                 />
-              </>
+              </RowActionGroup>
             ),
             available: () =>
               !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT) &&
