@@ -9,14 +9,21 @@ import moment from 'moment';
 import { DEFAULT_EMPTY_DATA } from '../../utils/constants';
 import { formatUIDate } from '../../utils/dateFormat';
 
-export type MetadataFieldType = 'raw' | 'text' | 'number' | 'date' | 'url' | 'boolean' | 'boolean_yesno';
+export type MetadataFieldType =
+  | 'raw'
+  | 'text'
+  | 'number'
+  | 'date'
+  | 'url'
+  | 'boolean'
+  | 'boolean_yesno';
 
 export const MetadataFieldRaw: React.FC<{ value: string | number }> = ({ value }) => {
   return <>{value}</>;
 };
 
 export const MetadataFieldText: React.FC<{ value: string | number }> = ({ value }) => {
-  return <div style={{ textAlign: 'justify' }}>{String(value)}</div>;
+  return <div>{String(value)}</div>;
 };
 
 export const MetadataFieldURL: React.FC<{ value: string | number }> = ({ value }) => {
@@ -56,7 +63,7 @@ const mapFieldRenderers: {
   number: MetadataFieldText,
   date: MetadataFieldDate,
   url: MetadataFieldURL,
-  raw: MetadataFieldRaw
+  raw: MetadataFieldRaw,
 };
 
 export const Metadata: React.FC<{

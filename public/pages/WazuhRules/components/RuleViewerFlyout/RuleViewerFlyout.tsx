@@ -14,8 +14,8 @@ import {
   EuiLoadingContent,
   EuiSmallButtonIcon,
   EuiText,
+  EuiTitle,
 } from '@elastic/eui';
-import { RuleItemInfoBase } from '../../../../../types';
 import { RuleTableItem } from '../../utils/helpers';
 import { RuleContentViewer } from '../RuleContentViewer/RuleContentViewer';
 import { DataStore } from '../../../../store/DataStore';
@@ -58,14 +58,20 @@ export const RuleViewerFlyout: React.FC<RuleViewerFlyoutProps> = ({
       hideCloseButton
       ownFocus={true}
       size="m"
+      aria-labelledby="rule_flyout_title"
       data-test-subj={`rule_flyout_${title ?? ruleId ?? ''}`}
     >
       <EuiFlyoutHeader hasBorder>
-        <EuiFlexGroup alignItems="center">
+        <EuiFlexGroup alignItems="flexStart" gutterSize="s" responsive={false}>
           <EuiFlexItem>
-            <EuiText size="s">
-              <h2>{title ? `Rule details - ${title}` : 'Rule details'}</h2>
-            </EuiText>
+            {title && (
+              <EuiText size="xs" color="subdued">
+                Rule details
+              </EuiText>
+            )}
+            <EuiTitle size="m">
+              <h2 id="rule_flyout_title">{title || 'Rule details'}</h2>
+            </EuiTitle>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <EuiSmallButtonIcon
