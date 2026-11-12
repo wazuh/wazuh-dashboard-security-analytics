@@ -136,7 +136,11 @@ export const escapeWildcard = (value: string): string =>
 // action is allowed, so the result can feed `toolTipContent` directly.
 export const getBlockedSpaceActionReason = (
   space: Space,
-  action: typeof SPACE_ACTIONS.CREATE | typeof SPACE_ACTIONS.EDIT | typeof SPACE_ACTIONS.DELETE,
+  action:
+    | typeof SPACE_ACTIONS.CREATE
+    | typeof SPACE_ACTIONS.EDIT
+    | typeof SPACE_ACTIONS.DELETE
+    | typeof SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
   entity: string,
   allowedActionsBySpace = AllowedActionsBySpace
 ): string | undefined => {
@@ -150,10 +154,12 @@ export const getBlockedSpaceActionReason = (
       [SPACE_ACTIONS.CREATE]: `To add one, create it in the ${draftSpace} space and promote it.`,
       [SPACE_ACTIONS.EDIT]: `To change one, edit it in the ${draftSpace} space and promote the change.`,
       [SPACE_ACTIONS.DELETE]: `To remove one, delete it in the ${draftSpace} space and promote the change.`,
+      [SPACE_ACTIONS.REARRANGE_INTEGRATIONS]: `To change the order, rearrange them in the ${draftSpace} space and promote the change.`,
     }[action];
     const subject = `${entity.charAt(0).toUpperCase()}${entity.slice(1)}`;
     return `${subject} in the ${space} space change only through promotion. ${change}`;
   }
 
-  return `Cannot ${action} ${entity} in the ${space} space.`;
+  const verb = action === SPACE_ACTIONS.REARRANGE_INTEGRATIONS ? 'rearrange' : action;
+  return `Cannot ${verb} ${entity} in the ${space} space.`;
 };

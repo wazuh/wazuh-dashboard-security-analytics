@@ -69,6 +69,29 @@ describe('getBlockedSpaceActionReason', () => {
     );
   });
 
+  it('allows rearranging integrations in draft only', () => {
+    expect(
+      getBlockedSpaceActionReason('draft', SPACE_ACTIONS.REARRANGE_INTEGRATIONS, 'integrations')
+    ).toBeUndefined();
+  });
+
+  it.each(['test', 'custom'] as const)(
+    'explains the rearrange path through draft in %s',
+    (space) => {
+      expect(
+        getBlockedSpaceActionReason(space, SPACE_ACTIONS.REARRANGE_INTEGRATIONS, 'integrations')
+      ).toBe(
+        `Integrations in the ${space} space change only through promotion. To change the order, rearrange them in the draft space and promote the change.`
+      );
+    }
+  );
+
+  it('keeps a plain, readable restriction for rearranging in standard', () => {
+    expect(
+      getBlockedSpaceActionReason('standard', SPACE_ACTIONS.REARRANGE_INTEGRATIONS, 'integrations')
+    ).toBe('Cannot rearrange integrations in the standard space.');
+  });
+
   it('keeps a plain restriction in standard, which has no promotion path', () => {
     expect(getBlockedSpaceActionReason('standard', SPACE_ACTIONS.DELETE, 'decoders')).toBe(
       'Cannot delete decoders in the standard space.'

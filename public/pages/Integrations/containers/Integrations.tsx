@@ -457,13 +457,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           setIsPopoverOpen(false);
         }}
         disabled={isRearrangeIntegrationsActionDisabled}
-        toolTipContent={
-          isRearrangeIntegrationsActionDisabled
-            ? `Integrations can only be rearranged in the spaces: ${getSpacesAllowAction(
-                SPACE_ACTIONS.REARRANGE_INTEGRATIONS
-              ).join(', ')}`
-            : undefined
-        }
+        toolTipContent={getBlockedSpaceActionReason(
+          spaceFilter,
+          SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
+          'integrations'
+        )}
       >
         Rearrange
       </EuiContextMenuItem>,
