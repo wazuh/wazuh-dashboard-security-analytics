@@ -1887,7 +1887,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                           onFocus={[Function]}
                                           style={
                                             Object {
-                                              "backgroundColor": "#F5F7FA",
+                                              "backgroundColor": "#D3DAE6",
                                             }
                                           }
                                         >
@@ -2025,7 +2025,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                   className="tableStatusSummary__swatch"
                                                   style={
                                                     Object {
-                                                      "backgroundColor": "#98A2B3",
+                                                      "backgroundColor": "#D3DAE6",
                                                     }
                                                   }
                                                 />

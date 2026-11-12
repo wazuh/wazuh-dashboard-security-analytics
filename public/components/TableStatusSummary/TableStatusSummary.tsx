@@ -22,9 +22,11 @@ const DEFAULT_STATUS_LABELS: Record<EntityStatusValue, string> = {
   disabled: 'Disabled',
 };
 
+// Wazuh: the colors of the CTI explorer bars (an EuiProgress `primary` fill on its
+// light shade track), so every Wazuh bar chart reads alike.
 const STATUS_COLORS: Record<EntityStatusValue, string> = {
   enabled: euiThemeVars.euiColorPrimary,
-  disabled: euiThemeVars.euiColorMediumShade,
+  disabled: euiThemeVars.euiColorLightShade,
 };
 
 export interface TableStatusSummaryProps {
@@ -111,7 +113,7 @@ export const TableStatusSummary: React.FC<TableStatusSummaryProps> = ({
           <EuiToolTip content={tooltip} position="top">
             <div
               className="tableStatusSummary__bar"
-              style={{ backgroundColor: euiThemeVars.euiColorLightestShade }}
+              style={{ backgroundColor: euiThemeVars.euiColorLightShade }}
               data-test-subj={`${testSubj}-bar`}
             >
               {STATUS_ORDER.filter((status) => statusCounts[status] > 0).map((status) => (
