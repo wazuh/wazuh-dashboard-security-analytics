@@ -8,6 +8,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import {
   formatPercent,
   formatResults,
+  InMemoryTableStatusSummary,
   TableStatusSummary,
   TableStatusSummaryProps,
 } from './TableStatusSummary';
@@ -166,5 +167,24 @@ describe('TableStatusSummary', () => {
       '19 active'
     );
     expect(screen.getByRole('button', { name: 'Show only inactive detectors' })).toBeTruthy();
+  });
+});
+
+describe('InMemoryTableStatusSummary', () => {
+  it('renders the same summary inside the wrapper that evens out the in-memory table gap', () => {
+    const { container } = render(
+      <InMemoryTableStatusSummary
+        total={3}
+        entityPlural="filters"
+        statusCounts={{ enabled: 2, disabled: 1 }}
+      />
+    );
+
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.className).toBe('tableStatusSummary__inMemoryTable');
+    expect(screen.getByTestId('tableStatusSummary-total').textContent).toBe('3 results');
+    expect(screen.getByTestId('tableStatusSummary-legend-disabled').textContent).toContain(
+      '1 disabled'
+    );
   });
 });

@@ -61,7 +61,7 @@ import {
   toggleStatusFilter,
 } from '../../../../utils/entitySearchBarFilters';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
-import { TableStatusSummary } from '../../../../components/TableStatusSummary';
+import { InMemoryTableStatusSummary } from '../../../../components/TableStatusSummary';
 import { countStatuses, EntityStatusValue } from '../../../../hooks/useStatusCounts';
 import { countQueryMatches } from '../../../../hooks/useInMemoryTableQuery';
 
@@ -573,20 +573,17 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               selection={{ onSelectionChange: this.onSelectionChange }}
               search={search}
               childrenBetween={
-                <>
-                  <TableStatusSummary
-                    total={countQueryMatches(this.state.appliedQuery, detectorHits)}
-                    loading={loadingDetectors}
-                    entityPlural="detectors"
-                    statusCounts={countStatuses(detectorHits, (hit) => !!hit._source.enabled)}
-                    statusLoading={loadingDetectors}
-                    activeStatus={activeStatus}
-                    onStatusClick={this.onStatusClick}
-                    statusLabels={DETECTOR_STATUS_LABELS}
-                    data-test-subj="detectorsStatusSummary"
-                  />
-                  <EuiSpacer size="s" />
-                </>
+                <InMemoryTableStatusSummary
+                  total={countQueryMatches(this.state.appliedQuery, detectorHits)}
+                  loading={loadingDetectors}
+                  entityPlural="detectors"
+                  statusCounts={countStatuses(detectorHits, (hit) => !!hit._source.enabled)}
+                  statusLoading={loadingDetectors}
+                  activeStatus={activeStatus}
+                  onStatusClick={this.onStatusClick}
+                  statusLabels={DETECTOR_STATUS_LABELS}
+                  data-test-subj="detectorsStatusSummary"
+                />
               }
               loading={loadingDetectors}
               message={

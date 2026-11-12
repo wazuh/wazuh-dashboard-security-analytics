@@ -45,7 +45,7 @@ import {
 } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
-import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { InMemoryTableStatusSummary } from '../../../components/TableStatusSummary';
 import { asEntityStatus, countStatuses } from '../../../hooks/useStatusCounts';
 import { useInMemoryTableQuery } from '../../../hooks/useInMemoryTableQuery';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
@@ -705,19 +705,16 @@ export const Integrations: React.FC<IntegrationsProps> = ({
                 onChange: onSearchChange,
               }}
               childrenBetween={
-                <>
-                  <TableStatusSummary
-                    total={matchCount}
-                    loading={loading}
-                    entityPlural="integrations"
-                    statusCounts={statusCounts}
-                    statusLoading={loading}
-                    activeStatus={asEntityStatus(activeStatus)}
-                    onStatusClick={toggleStatus}
-                    data-test-subj="integrationsStatusSummary"
-                  />
-                  <EuiSpacer size="s" />
-                </>
+                <InMemoryTableStatusSummary
+                  total={matchCount}
+                  loading={loading}
+                  entityPlural="integrations"
+                  statusCounts={statusCounts}
+                  statusLoading={loading}
+                  activeStatus={asEntityStatus(activeStatus)}
+                  onStatusClick={toggleStatus}
+                  data-test-subj="integrationsStatusSummary"
+                />
               }
               selection={{
                 onSelectionChange: onSelectionChange,

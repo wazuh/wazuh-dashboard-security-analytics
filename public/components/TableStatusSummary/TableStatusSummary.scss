@@ -9,6 +9,14 @@
   min-height: 24px;
 }
 
+.tableStatusSummary__inMemoryTable {
+  /* EuiInMemoryTable's spacer under its search bar is 16px taller than the gap the
+     server-paginated lists leave, measured from the search box to the row. */
+  margin-top: -16px;
+  /* Its own formatting context, or this margin collapses with the flex group's. */
+  display: flow-root;
+}
+
 .tableStatusSummary__bar {
   display: flex;
   width: 120px;

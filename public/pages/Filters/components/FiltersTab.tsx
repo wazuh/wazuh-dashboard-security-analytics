@@ -12,12 +12,11 @@ import {
   EuiContextMenuPanel,
   EuiInMemoryTable,
   EuiPopover,
-  EuiSpacer,
 } from '@elastic/eui';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
-import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { InMemoryTableStatusSummary } from '../../../components/TableStatusSummary';
 import { asEntityStatus, countStatuses } from '../../../hooks/useStatusCounts';
 import { useInMemoryTableQuery } from '../../../hooks/useInMemoryTableQuery';
 import { DataStore } from '../../../store/DataStore';
@@ -253,19 +252,16 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
           onChange: onSearchChange,
         }}
         childrenBetween={
-          <>
-            <TableStatusSummary
-              total={matchCount}
-              loading={loading}
-              entityPlural="filters"
-              statusCounts={statusCounts}
-              statusLoading={loading}
-              activeStatus={asEntityStatus(activeStatus)}
-              onStatusClick={toggleStatus}
-              data-test-subj="filtersStatusSummary"
-            />
-            <EuiSpacer size="s" />
-          </>
+          <InMemoryTableStatusSummary
+            total={matchCount}
+            loading={loading}
+            entityPlural="filters"
+            statusCounts={statusCounts}
+            statusLoading={loading}
+            activeStatus={asEntityStatus(activeStatus)}
+            onStatusClick={toggleStatus}
+            data-test-subj="filtersStatusSummary"
+          />
         }
         selection={{
           onSelectionChange: setSelectedItems,

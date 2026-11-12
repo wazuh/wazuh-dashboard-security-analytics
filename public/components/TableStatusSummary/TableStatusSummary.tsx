@@ -9,6 +9,7 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiLoadingSpinner,
+  EuiSpacer,
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
@@ -199,3 +200,13 @@ export const TableStatusSummary: React.FC<TableStatusSummaryProps> = ({
     </EuiFlexGroup>
   );
 };
+
+// Wazuh: the summary as an EuiInMemoryTable's `childrenBetween`. The table puts its own
+// spacer under its search bar, wider than the one the server-paginated lists use, so
+// this pulls the row up by the difference: every table shows the row at the same gap.
+export const InMemoryTableStatusSummary: React.FC<TableStatusSummaryProps> = (props) => (
+  <div className="tableStatusSummary__inMemoryTable">
+    <TableStatusSummary {...props} />
+    <EuiSpacer size="s" />
+  </div>
+);

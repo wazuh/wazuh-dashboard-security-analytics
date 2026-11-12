@@ -283,31 +283,26 @@ exports[`<Detectors /> spec renders the component 1`] = `
             >
               <EuiInMemoryTable
                 childrenBetween={
-                  <React.Fragment>
-                    <TableStatusSummary
-                      data-test-subj="detectorsStatusSummary"
-                      entityPlural="detectors"
-                      loading={false}
-                      onStatusClick={[Function]}
-                      statusCounts={
-                        Object {
-                          "disabled": 0,
-                          "enabled": 1,
-                        }
+                  <InMemoryTableStatusSummary
+                    data-test-subj="detectorsStatusSummary"
+                    entityPlural="detectors"
+                    loading={false}
+                    onStatusClick={[Function]}
+                    statusCounts={
+                      Object {
+                        "disabled": 0,
+                        "enabled": 1,
                       }
-                      statusLabels={
-                        Object {
-                          "disabled": "Inactive",
-                          "enabled": "Active",
-                        }
+                    }
+                    statusLabels={
+                      Object {
+                        "disabled": "Inactive",
+                        "enabled": "Active",
                       }
-                      statusLoading={false}
-                      total={1}
-                    />
-                    <EuiSpacer
-                      size="s"
-                    />
-                  </React.Fragment>
+                    }
+                    statusLoading={false}
+                    total={1}
+                  />
                 }
                 columns={
                   Array [
@@ -1770,7 +1765,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       className="euiSpacer euiSpacer--l"
                     />
                   </EuiSpacer>
-                  <TableStatusSummary
+                  <InMemoryTableStatusSummary
                     data-test-subj="detectorsStatusSummary"
                     entityPlural="detectors"
                     loading={false}
@@ -1790,268 +1785,293 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     statusLoading={false}
                     total={1}
                   >
-                    <EuiFlexGroup
-                      alignItems="center"
-                      className="tableStatusSummary"
-                      data-test-subj="detectorsStatusSummary"
-                      gutterSize="m"
-                      justifyContent="spaceBetween"
-                      responsive={false}
-                      wrap={true}
+                    <div
+                      className="tableStatusSummary__inMemoryTable"
                     >
-                      <div
-                        className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--alignItemsCenter euiFlexGroup--justifyContentSpaceBetween euiFlexGroup--directionRow euiFlexGroup--wrap tableStatusSummary"
+                      <TableStatusSummary
                         data-test-subj="detectorsStatusSummary"
+                        entityPlural="detectors"
+                        loading={false}
+                        onStatusClick={[Function]}
+                        statusCounts={
+                          Object {
+                            "disabled": 0,
+                            "enabled": 1,
+                          }
+                        }
+                        statusLabels={
+                          Object {
+                            "disabled": "Inactive",
+                            "enabled": "Active",
+                          }
+                        }
+                        statusLoading={false}
+                        total={1}
                       >
-                        <EuiFlexItem
-                          grow={false}
+                        <EuiFlexGroup
+                          alignItems="center"
+                          className="tableStatusSummary"
+                          data-test-subj="detectorsStatusSummary"
+                          gutterSize="m"
+                          justifyContent="spaceBetween"
+                          responsive={false}
+                          wrap={true}
                         >
                           <div
-                            className="euiFlexItem euiFlexItem--flexGrowZero"
+                            className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--alignItemsCenter euiFlexGroup--justifyContentSpaceBetween euiFlexGroup--directionRow euiFlexGroup--wrap tableStatusSummary"
+                            data-test-subj="detectorsStatusSummary"
                           >
-                            <EuiText
-                              aria-live="polite"
-                              color="subdued"
-                              size="xs"
+                            <EuiFlexItem
+                              grow={false}
                             >
                               <div
-                                aria-live="polite"
-                                className="euiText euiText--extraSmall"
+                                className="euiFlexItem euiFlexItem--flexGrowZero"
                               >
-                                <EuiTextColor
+                                <EuiText
+                                  aria-live="polite"
                                   color="subdued"
-                                  component="div"
+                                  size="xs"
                                 >
                                   <div
-                                    className="euiTextColor euiTextColor--subdued"
+                                    aria-live="polite"
+                                    className="euiText euiText--extraSmall"
                                   >
-                                    <span
-                                      data-test-subj="detectorsStatusSummary-total"
+                                    <EuiTextColor
+                                      color="subdued"
+                                      component="div"
                                     >
-                                      1 result
-                                    </span>
+                                      <div
+                                        className="euiTextColor euiTextColor--subdued"
+                                      >
+                                        <span
+                                          data-test-subj="detectorsStatusSummary-total"
+                                        >
+                                          1 result
+                                        </span>
+                                      </div>
+                                    </EuiTextColor>
                                   </div>
-                                </EuiTextColor>
+                                </EuiText>
                               </div>
-                            </EuiText>
-                          </div>
-                        </EuiFlexItem>
-                        <EuiFlexItem
-                          grow={false}
-                        >
-                          <div
-                            className="euiFlexItem euiFlexItem--flexGrowZero"
-                          >
-                            <EuiFlexGroup
-                              alignItems="center"
-                              gutterSize="s"
-                              responsive={false}
-                              wrap={false}
+                            </EuiFlexItem>
+                            <EuiFlexItem
+                              grow={false}
                             >
                               <div
-                                className="euiFlexGroup euiFlexGroup--gutterSmall euiFlexGroup--alignItemsCenter euiFlexGroup--directionRow"
+                                className="euiFlexItem euiFlexItem--flexGrowZero"
                               >
-                                <EuiFlexItem
-                                  grow={false}
+                                <EuiFlexGroup
+                                  alignItems="center"
+                                  gutterSize="s"
+                                  responsive={false}
+                                  wrap={false}
                                 >
                                   <div
-                                    className="euiFlexItem euiFlexItem--flexGrowZero"
+                                    className="euiFlexGroup euiFlexGroup--gutterSmall euiFlexGroup--alignItemsCenter euiFlexGroup--directionRow"
                                   >
-                                    <EuiToolTip
-                                      content={
-                                        <React.Fragment>
-                                          <div>
-                                            Active: 1 (100%)
-                                          </div>
-                                          <div>
-                                            Inactive: 0 (0%)
-                                          </div>
-                                          <div>
-                                            Counts all detectors, regardless of the search and filters.
-                                          </div>
-                                        </React.Fragment>
-                                      }
-                                      delay="regular"
-                                      position="top"
+                                    <EuiFlexItem
+                                      grow={false}
                                     >
-                                      <span
-                                        className="euiToolTipAnchor"
-                                        onKeyUp={[Function]}
-                                        onMouseOut={[Function]}
-                                        onMouseOver={[Function]}
+                                      <div
+                                        className="euiFlexItem euiFlexItem--flexGrowZero"
                                       >
-                                        <div
-                                          className="tableStatusSummary__bar"
-                                          data-test-subj="detectorsStatusSummary-bar"
-                                          onBlur={[Function]}
-                                          onFocus={[Function]}
-                                          style={
-                                            Object {
-                                              "backgroundColor": "#D3DAE6",
-                                            }
+                                        <EuiToolTip
+                                          content={
+                                            <React.Fragment>
+                                              <div>
+                                                Active: 1 (100%)
+                                              </div>
+                                              <div>
+                                                Inactive: 0 (0%)
+                                              </div>
+                                              <div>
+                                                Counts all detectors, regardless of the search and filters.
+                                              </div>
+                                            </React.Fragment>
                                           }
+                                          delay="regular"
+                                          position="top"
+                                        >
+                                          <span
+                                            className="euiToolTipAnchor"
+                                            onKeyUp={[Function]}
+                                            onMouseOut={[Function]}
+                                            onMouseOver={[Function]}
+                                          >
+                                            <div
+                                              className="tableStatusSummary__bar"
+                                              data-test-subj="detectorsStatusSummary-bar"
+                                              onBlur={[Function]}
+                                              onFocus={[Function]}
+                                              style={
+                                                Object {
+                                                  "backgroundColor": "#D3DAE6",
+                                                }
+                                              }
+                                            >
+                                              <button
+                                                aria-hidden="true"
+                                                className="tableStatusSummary__segment"
+                                                data-test-subj="detectorsStatusSummary-segment-enabled"
+                                                disabled={false}
+                                                key="enabled"
+                                                onClick={[Function]}
+                                                style={
+                                                  Object {
+                                                    "backgroundColor": "#006BB4",
+                                                    "width": "100%",
+                                                  }
+                                                }
+                                                tabIndex={-1}
+                                                type="button"
+                                              />
+                                            </div>
+                                          </span>
+                                        </EuiToolTip>
+                                      </div>
+                                    </EuiFlexItem>
+                                    <EuiFlexItem
+                                      grow={false}
+                                      key="enabled"
+                                    >
+                                      <div
+                                        className="euiFlexItem euiFlexItem--flexGrowZero"
+                                      >
+                                        <EuiButtonEmpty
+                                          aria-label="Show only active detectors"
+                                          aria-pressed={false}
+                                          color="text"
+                                          data-test-subj="detectorsStatusSummary-legend-enabled"
+                                          flush="both"
+                                          isDisabled={false}
+                                          onClick={[Function]}
+                                          size="xs"
                                         >
                                           <button
-                                            aria-hidden="true"
-                                            className="tableStatusSummary__segment"
-                                            data-test-subj="detectorsStatusSummary-segment-enabled"
+                                            aria-label="Show only active detectors"
+                                            aria-pressed={false}
+                                            className="euiButtonEmpty euiButtonEmpty--text euiButtonEmpty--xSmall euiButtonEmpty--flushBoth"
+                                            data-test-subj="detectorsStatusSummary-legend-enabled"
                                             disabled={false}
-                                            key="enabled"
                                             onClick={[Function]}
-                                            style={
-                                              Object {
-                                                "backgroundColor": "#006BB4",
-                                                "width": "100%",
-                                              }
-                                            }
-                                            tabIndex={-1}
                                             type="button"
-                                          />
-                                        </div>
-                                      </span>
-                                    </EuiToolTip>
-                                  </div>
-                                </EuiFlexItem>
-                                <EuiFlexItem
-                                  grow={false}
-                                  key="enabled"
-                                >
-                                  <div
-                                    className="euiFlexItem euiFlexItem--flexGrowZero"
-                                  >
-                                    <EuiButtonEmpty
-                                      aria-label="Show only active detectors"
-                                      aria-pressed={false}
-                                      color="text"
-                                      data-test-subj="detectorsStatusSummary-legend-enabled"
-                                      flush="both"
-                                      isDisabled={false}
-                                      onClick={[Function]}
-                                      size="xs"
-                                    >
-                                      <button
-                                        aria-label="Show only active detectors"
-                                        aria-pressed={false}
-                                        className="euiButtonEmpty euiButtonEmpty--text euiButtonEmpty--xSmall euiButtonEmpty--flushBoth"
-                                        data-test-subj="detectorsStatusSummary-legend-enabled"
-                                        disabled={false}
-                                        onClick={[Function]}
-                                        type="button"
-                                      >
-                                        <EuiButtonContent
-                                          className="euiButtonEmpty__content"
-                                          iconGap="m"
-                                          iconSide="left"
-                                          iconSize="s"
-                                          textProps={
-                                            Object {
-                                              "className": "euiButtonEmpty__text",
-                                            }
-                                          }
-                                        >
-                                          <span
-                                            className="euiButtonContent euiButtonEmpty__content"
                                           >
-                                            <span
-                                              className="euiButtonEmpty__text"
+                                            <EuiButtonContent
+                                              className="euiButtonEmpty__content"
+                                              iconGap="m"
+                                              iconSide="left"
+                                              iconSize="s"
+                                              textProps={
+                                                Object {
+                                                  "className": "euiButtonEmpty__text",
+                                                }
+                                              }
                                             >
                                               <span
-                                                className="tableStatusSummary__legendContent"
+                                                className="euiButtonContent euiButtonEmpty__content"
                                               >
                                                 <span
-                                                  className="tableStatusSummary__swatch"
-                                                  style={
-                                                    Object {
-                                                      "backgroundColor": "#006BB4",
-                                                    }
-                                                  }
-                                                />
-                                                1 active
+                                                  className="euiButtonEmpty__text"
+                                                >
+                                                  <span
+                                                    className="tableStatusSummary__legendContent"
+                                                  >
+                                                    <span
+                                                      className="tableStatusSummary__swatch"
+                                                      style={
+                                                        Object {
+                                                          "backgroundColor": "#006BB4",
+                                                        }
+                                                      }
+                                                    />
+                                                    1 active
+                                                  </span>
+                                                </span>
                                               </span>
-                                            </span>
-                                          </span>
-                                        </EuiButtonContent>
-                                      </button>
-                                    </EuiButtonEmpty>
-                                  </div>
-                                </EuiFlexItem>
-                                <EuiFlexItem
-                                  grow={false}
-                                  key="disabled"
-                                >
-                                  <div
-                                    className="euiFlexItem euiFlexItem--flexGrowZero"
-                                  >
-                                    <EuiButtonEmpty
-                                      aria-label="Show only inactive detectors"
-                                      aria-pressed={false}
-                                      color="text"
-                                      data-test-subj="detectorsStatusSummary-legend-disabled"
-                                      flush="both"
-                                      isDisabled={true}
-                                      onClick={[Function]}
-                                      size="xs"
+                                            </EuiButtonContent>
+                                          </button>
+                                        </EuiButtonEmpty>
+                                      </div>
+                                    </EuiFlexItem>
+                                    <EuiFlexItem
+                                      grow={false}
+                                      key="disabled"
                                     >
-                                      <button
-                                        aria-label="Show only inactive detectors"
-                                        aria-pressed={false}
-                                        className="euiButtonEmpty euiButtonEmpty--text euiButtonEmpty--xSmall euiButtonEmpty--flushBoth euiButtonEmpty-isDisabled"
-                                        data-test-subj="detectorsStatusSummary-legend-disabled"
-                                        disabled={true}
-                                        onClick={[Function]}
-                                        type="button"
+                                      <div
+                                        className="euiFlexItem euiFlexItem--flexGrowZero"
                                       >
-                                        <EuiButtonContent
-                                          className="euiButtonEmpty__content"
-                                          iconGap="m"
-                                          iconSide="left"
-                                          iconSize="s"
-                                          textProps={
-                                            Object {
-                                              "className": "euiButtonEmpty__text",
-                                            }
-                                          }
+                                        <EuiButtonEmpty
+                                          aria-label="Show only inactive detectors"
+                                          aria-pressed={false}
+                                          color="text"
+                                          data-test-subj="detectorsStatusSummary-legend-disabled"
+                                          flush="both"
+                                          isDisabled={true}
+                                          onClick={[Function]}
+                                          size="xs"
                                         >
-                                          <span
-                                            className="euiButtonContent euiButtonEmpty__content"
+                                          <button
+                                            aria-label="Show only inactive detectors"
+                                            aria-pressed={false}
+                                            className="euiButtonEmpty euiButtonEmpty--text euiButtonEmpty--xSmall euiButtonEmpty--flushBoth euiButtonEmpty-isDisabled"
+                                            data-test-subj="detectorsStatusSummary-legend-disabled"
+                                            disabled={true}
+                                            onClick={[Function]}
+                                            type="button"
                                           >
-                                            <span
-                                              className="euiButtonEmpty__text"
+                                            <EuiButtonContent
+                                              className="euiButtonEmpty__content"
+                                              iconGap="m"
+                                              iconSide="left"
+                                              iconSize="s"
+                                              textProps={
+                                                Object {
+                                                  "className": "euiButtonEmpty__text",
+                                                }
+                                              }
                                             >
                                               <span
-                                                className="tableStatusSummary__legendContent"
+                                                className="euiButtonContent euiButtonEmpty__content"
                                               >
                                                 <span
-                                                  className="tableStatusSummary__swatch"
-                                                  style={
-                                                    Object {
-                                                      "backgroundColor": "#D3DAE6",
-                                                    }
-                                                  }
-                                                />
-                                                0 inactive
+                                                  className="euiButtonEmpty__text"
+                                                >
+                                                  <span
+                                                    className="tableStatusSummary__legendContent"
+                                                  >
+                                                    <span
+                                                      className="tableStatusSummary__swatch"
+                                                      style={
+                                                        Object {
+                                                          "backgroundColor": "#D3DAE6",
+                                                        }
+                                                      }
+                                                    />
+                                                    0 inactive
+                                                  </span>
+                                                </span>
                                               </span>
-                                            </span>
-                                          </span>
-                                        </EuiButtonContent>
-                                      </button>
-                                    </EuiButtonEmpty>
+                                            </EuiButtonContent>
+                                          </button>
+                                        </EuiButtonEmpty>
+                                      </div>
+                                    </EuiFlexItem>
                                   </div>
-                                </EuiFlexItem>
+                                </EuiFlexGroup>
                               </div>
-                            </EuiFlexGroup>
+                            </EuiFlexItem>
                           </div>
-                        </EuiFlexItem>
-                      </div>
-                    </EuiFlexGroup>
-                  </TableStatusSummary>
-                  <EuiSpacer
-                    size="s"
-                  >
-                    <div
-                      className="euiSpacer euiSpacer--s"
-                    />
-                  </EuiSpacer>
+                        </EuiFlexGroup>
+                      </TableStatusSummary>
+                      <EuiSpacer
+                        size="s"
+                      >
+                        <div
+                          className="euiSpacer euiSpacer--s"
+                        />
+                      </EuiSpacer>
+                    </div>
+                  </InMemoryTableStatusSummary>
                   <EuiBasicTable
                     columns={
                       Array [
