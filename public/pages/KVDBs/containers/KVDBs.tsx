@@ -44,7 +44,7 @@ import {
 } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { RowAction, RowActionGroup } from '../../../components/RowAction';
+import { BlockedMenuAction } from '../../../components/BlockedMenuAction';
 import {
   actionIsAllowedOnSpace,
   getBlockedSpaceActionReason,
@@ -473,42 +473,33 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             onClick: (item: KVDBItem) => setItemForAction({ action: DELETE_ACTION, id: item.id }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
+          // Wazuh: where content changes only through promotion (test, custom), Edit and Delete
+          // stay in the row actions menu like in draft, but disabled with the reason as a
+          // tooltip. Custom actions, because the default one shows no tooltip when disabled.
           {
-            // Wazuh: where content changes only through promotion (test, custom) the Edit and
-            // Delete icons stay visible but disabled, so their tooltips say how to change or
-            // remove a KVDB from there. A custom action, because the default one drops its
-            // tooltip when disabled. Both icons live in ONE action: with two more actions the row
-            // would have more than 2 and OUI would collapse them into the "All actions" popover.
-            name: 'Edit and Delete',
-            render: (_item: KVDBItem) => (
-              <RowActionGroup>
-                <RowAction
-                  name="Edit"
-                  iconType="pencil"
-                  description="Edit KVDB"
-                  disabledReason={getBlockedSpaceActionReason(
-                    spaceFilter,
-                    SPACE_ACTIONS.EDIT,
-                    'KVDBs'
-                  )}
-                  onClick={() => {}}
-                />
-                <RowAction
-                  name="Delete"
-                  iconType="trash"
-                  description="Delete KVDB"
-                  disabledReason={getBlockedSpaceActionReason(
-                    spaceFilter,
-                    SPACE_ACTIONS.DELETE,
-                    'KVDBs'
-                  )}
-                  color="danger"
-                  onClick={() => {}}
-                />
-              </RowActionGroup>
+            name: 'Edit',
+            render: () => (
+              <BlockedMenuAction
+                iconType="pencil"
+                label="Edit"
+                reason={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.EDIT, 'KVDBs')}
+              />
             ),
             available: () =>
               !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT) &&
+              getPreviousSpace(spaceFilter) !== null,
+          },
+          {
+            name: 'Delete',
+            render: () => (
+              <BlockedMenuAction
+                iconType="trash"
+                label="Delete"
+                reason={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.DELETE, 'KVDBs')}
+              />
+            ),
+            available: () =>
+              !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE) &&
               getPreviousSpace(spaceFilter) !== null,
           },
         ],

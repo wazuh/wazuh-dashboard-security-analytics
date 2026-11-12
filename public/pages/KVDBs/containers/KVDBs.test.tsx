@@ -283,31 +283,42 @@ describe('<KVDBs /> row Edit and Delete actions by space', () => {
     return wrapper;
   };
 
+  const openRowMenu = (wrapper: any) => {
+    wrapper
+      .find('button[data-test-subj="euiCollapsedItemActionsButton"]')
+      .first()
+      .simulate('click');
+    wrapper.update();
+  };
+
   it.each(['test', 'custom'])(
-    'keeps the Edit and Delete icons visible but disabled in %s, with the way to change or remove the KVDB',
+    'groups Edit and Delete under the row actions menu in %s, disabled and with the way to change or remove the content',
     async (space) => {
       const wrapper = await mountInSpace(space);
-      const [edit, remove] = wrapper.find('RowAction').map((n: any) => n);
+      expect(
+        wrapper.find('[data-test-subj="euiCollapsedItemActionsButton"]').hostNodes().length
+      ).toBe(1);
 
-      expect(wrapper.find('RowAction').length).toBe(2);
-      expect(edit.prop('disabledReason')).toBe(
+      openRowMenu(wrapper);
+      const [edit, remove] = wrapper.find('BlockedMenuAction').map((n: any) => n);
+
+      expect(wrapper.find('BlockedMenuAction').length).toBe(2);
+      expect(edit.prop('reason')).toBe(
         `KVDBs in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change.`
       );
-      expect(remove.prop('disabledReason')).toBe(
+      expect(remove.prop('reason')).toBe(
         `KVDBs in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change.`
       );
-      expect(edit.find('button').prop('disabled')).toBe(true);
-      expect(remove.find('button').prop('disabled')).toBe(true);
     }
   );
 
   it('keeps the regular Edit and Delete actions in draft', async () => {
     const wrapper = await mountInSpace('draft');
-    expect(wrapper.find('RowAction').length).toBe(0);
+    expect(wrapper.find('BlockedMenuAction').length).toBe(0);
   });
 
-  it('keeps Edit and Delete hidden in standard', async () => {
+  it('shows no row menu in standard', async () => {
     const wrapper = await mountInSpace('standard');
-    expect(wrapper.find('RowAction').length).toBe(0);
+    expect(wrapper.find('[data-test-subj="euiCollapsedItemActionsButton"]').length).toBe(0);
   });
 });
