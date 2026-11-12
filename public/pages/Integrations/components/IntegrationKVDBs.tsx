@@ -26,7 +26,12 @@ import { withReturnTo } from '../../../utils/routes';
 import { KVDBItem, Space } from '../../../../types';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
-import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
+import {
+  useIntegrationKVDBs,
+  useIntegrationKVDBStatusCounts,
+} from '../../KVDBs/hooks/useIntegrationKVDBs';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { IntegrationEditAction } from './IntegrationEditAction';
 
@@ -60,6 +65,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [searchText, setSearchText] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<EntityStatusValue | undefined>(undefined);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -82,8 +88,22 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
     sortField,
     sortDirection,
     search: appliedSearch,
+    status: statusFilter,
     reloadTrigger,
   });
+  const { counts: statusCounts, loading: statusCountsLoading } = useIntegrationKVDBStatusCounts({
+    kvdbIds,
+    space,
+    enabled,
+    reloadTrigger,
+  });
+
+  // Wazuh: the summary bar is this tab's only Status filter; selecting the active
+  // status again clears it.
+  const onStatusClick = useCallback((status: EntityStatusValue) => {
+    setStatusFilter((current) => (current === status ? undefined : status));
+    setPageIndex(0);
+  }, []);
 
   const isCreateDisabled = !actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.CREATE);
   const canEdit = actionIsAllowedOnSpace(space as Space, SPACE_ACTIONS.EDIT);
@@ -154,7 +174,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
     []
   );
 
-  const isEmptyState = total === 0 && !loading && !appliedSearch;
+  const isEmptyState = total === 0 && !loading && !appliedSearch && !statusFilter;
 
   return (
     <>
@@ -216,6 +236,17 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
               </EuiFlexItem>
             </EuiFlexGroup>
             <EuiSpacer size="s" />
+            <TableStatusSummary
+              total={total}
+              loading={loading}
+              entityPlural="KVDBs"
+              statusCounts={statusCounts}
+              statusLoading={statusCountsLoading}
+              activeStatus={statusFilter}
+              onStatusClick={onStatusClick}
+              data-test-subj="integrationKvdbsStatusSummary"
+            />
+            <EuiSpacer size="s" />
             <EuiBasicTable
               items={kvdbs}
               columns={columns}
@@ -226,7 +257,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
                 ) : (
                   <ListEmptyPrompt
                     entity="KVDBs"
-                    hasFilters={!!appliedSearch}
+                    hasFilters={!!appliedSearch || !!statusFilter}
                     searchOnly
                     noContentTitle="This integration has no KVDBs"
                     emptyBody={null}

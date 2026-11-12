@@ -9,11 +9,18 @@ import { mount } from 'enzyme';
 import { IntegrationDetectionRules } from './IntegrationDetectionRules';
 import { SpaceTypes } from '../../../../common/constants';
 
+const mockUseIntegrationRules = jest.fn((_params: unknown) => ({
+  items: [{ ruleId: 'rule-1', title: 'Rule 1', level: 'medium', description: '' }],
+  total: 1,
+  loading: false,
+}));
+
 jest.mock('../../WazuhRules/hooks/useIntegrationRules', () => ({
-  useIntegrationRules: () => ({
-    items: [{ ruleId: 'rule-1', title: 'Rule 1', level: 'medium', description: '' }],
-    total: 1,
+  useIntegrationRules: (params: unknown) => mockUseIntegrationRules(params),
+  useIntegrationRuleStatusCounts: () => ({
+    counts: { enabled: 1, disabled: 2 },
     loading: false,
+    reload: jest.fn(),
   }),
 }));
 
@@ -74,5 +81,39 @@ describe('<IntegrationDetectionRules /> edit action', () => {
     expect(getEditTooltip(wrapper)).toBe('Rules can only be edited in the spaces: draft');
 
     expect(history.push).not.toHaveBeenCalled();
+  });
+});
+
+describe('<IntegrationDetectionRules /> status summary', () => {
+  it('shows the total and the status split of every rule of the integration', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    const summary = wrapper.find(`[data-test-subj="integrationRulesStatusSummary"]`).first();
+
+    expect(summary.text()).toContain('1 result');
+    expect(summary.text()).toContain('1 enabled');
+    expect(summary.text()).toContain('2 disabled');
+  });
+
+  it('filters the table by the clicked status, and clears it on a second click', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    const clickDisabled = async () => {
+      await act(async () => {
+        wrapper
+          .find(`button[data-test-subj="integrationRulesStatusSummary-legend-disabled"]`)
+          .first()
+          .simulate('click');
+      });
+      wrapper.update();
+    };
+
+    await clickDisabled();
+    expect(mockUseIntegrationRules).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: 'disabled' })
+    );
+
+    await clickDisabled();
+    expect(mockUseIntegrationRules).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: undefined })
+    );
   });
 });

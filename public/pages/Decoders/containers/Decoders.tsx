@@ -35,6 +35,8 @@ import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { asEntityStatus, EntityStatusValue, useStatusCounts } from '../../../hooks/useStatusCounts';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery, DECODERS_SEARCHABLE_FIELDS_LABEL } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
@@ -58,9 +60,11 @@ import {
   encodeMultiValue,
   ENTITY_FILTER_SELECTORS_LABEL,
   ENTITY_SEARCH_SCHEMA,
+  getActiveStatusValue,
   getFreeText,
   getOrSelectedValues,
   hasTypedFieldClause,
+  toggleStatusFilter,
 } from '../../../utils/entitySearchBarFilters';
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
@@ -288,6 +292,34 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     loadDecoders();
   }, [loadDecoders]);
 
+  // Wazuh: the status bar counts every decoder in the space, ignoring the search and
+  // filters; a size-0 search per status reuses the Status filter's own definition.
+  const countDecodersByStatus = useCallback(
+    async (status: EntityStatusValue) =>
+      (
+        await DataStore.decoders.searchDecoders(
+          { from: 0, size: 0, query: { match_all: {} }, status, _source: false },
+          spaceFilter
+        )
+      ).total,
+    [spaceFilter]
+  );
+  const {
+    counts: statusCounts,
+    loading: statusCountsLoading,
+    reload: reloadStatusCounts,
+  } = useStatusCounts(countDecodersByStatus);
+
+  const reloadAll = useCallback(async () => {
+    reloadStatusCounts();
+    await loadDecoders();
+  }, [loadDecoders, reloadStatusCounts]);
+
+  const onStatusClick = (status: EntityStatusValue) => {
+    setSearchError(null);
+    setSearchQuery((query) => toggleStatusFilter(query, status));
+  };
+
   const {
     itemForAction,
     setItemForAction,
@@ -296,7 +328,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     confirmDeleteSelected,
   } = useDeleteItems({
     deleteOne: (id) => DataStore.decoders.deleteDecoder(id),
-    reload: loadDecoders,
+    reload: reloadAll,
     notifications,
     entityName: 'decoder',
     entityNamePlural: 'decoders',
@@ -596,12 +628,23 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                 <EuiButtonIcon
                   iconType="refresh"
                   aria-label="Refresh decoders"
-                  onClick={() => loadDecoders()}
+                  onClick={() => reloadAll()}
                 />
               </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size="m" />
+          <EuiSpacer size="s" />
+          <TableStatusSummary
+            total={total}
+            loading={loading}
+            entityPlural="decoders"
+            statusCounts={statusCounts}
+            statusLoading={statusCountsLoading}
+            activeStatus={asEntityStatus(getActiveStatusValue(searchQuery))}
+            onStatusClick={onStatusClick}
+            data-test-subj="decodersStatusSummary"
+          />
+          <EuiSpacer size="s" />
           {content}
         </EuiPanel>
       </EuiFlexItem>

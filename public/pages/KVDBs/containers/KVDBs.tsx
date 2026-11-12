@@ -36,6 +36,8 @@ import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { asEntityStatus, EntityStatusValue, useStatusCounts } from '../../../hooks/useStatusCounts';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import {
   buildKVDBsSearchQuery,
@@ -64,8 +66,10 @@ import {
   decodeMultiValue,
   encodeMultiValue,
   getFreeText,
+  getActiveStatusValue,
   getOrSelectedValues,
   hasTypedFieldClause,
+  toggleStatusFilter,
 } from '../../../utils/entitySearchBarFilters';
 
 interface KVDBsProps extends RouteComponentProps {
@@ -301,6 +305,42 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     fetchKVDBs();
   }, [fetchKVDBs]);
 
+  // Wazuh: the status bar counts every KVDB in the space, ignoring the search and
+  // filters; a size-0 search per status reuses the Status filter's own definition.
+  const countKVDBsByStatus = useCallback(
+    async (status: EntityStatusValue) =>
+      (
+        await DataStore.kvdbs.searchKVDBs(
+          {
+            size: 0,
+            query: spaceFilter
+              ? { bool: { filter: [{ term: { 'space.name': spaceFilter } }] } }
+              : { match_all: {} },
+            status,
+            track_total_hits: true,
+            _source: false,
+          },
+          { skipIntegrationMap: true }
+        )
+      ).total,
+    [spaceFilter]
+  );
+  const {
+    counts: statusCounts,
+    loading: statusCountsLoading,
+    reload: reloadStatusCounts,
+  } = useStatusCounts(countKVDBsByStatus);
+
+  const reloadAll = useCallback(async () => {
+    reloadStatusCounts();
+    await fetchKVDBs();
+  }, [fetchKVDBs, reloadStatusCounts]);
+
+  const onStatusClick = (status: EntityStatusValue) => {
+    setSearchError(null);
+    setSearchQuery((query) => toggleStatusFilter(query, status));
+  };
+
   const {
     itemForAction,
     setItemForAction,
@@ -309,7 +349,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     confirmDeleteSelected,
   } = useDeleteItems({
     deleteOne: (id) => DataStore.kvdbs.deleteKVDB(id),
-    reload: fetchKVDBs,
+    reload: reloadAll,
     notifications,
     entityName: 'KVDB',
     entityNamePlural: 'KVDBs',
@@ -570,12 +610,23 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                 <EuiButtonIcon
                   iconType="refresh"
                   aria-label="Refresh KVDBs"
-                  onClick={() => fetchKVDBs()}
+                  onClick={() => reloadAll()}
                 />
               </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size="m" />
+          <EuiSpacer size="s" />
+          <TableStatusSummary
+            total={totalItemCount}
+            loading={loading}
+            entityPlural="KVDBs"
+            statusCounts={statusCounts}
+            statusLoading={statusCountsLoading}
+            activeStatus={asEntityStatus(getActiveStatusValue(searchQuery))}
+            onStatusClick={onStatusClick}
+            data-test-subj="kvdbsStatusSummary"
+          />
+          <EuiSpacer size="s" />
           {renderError()}
           <EuiBasicTable
             items={items}

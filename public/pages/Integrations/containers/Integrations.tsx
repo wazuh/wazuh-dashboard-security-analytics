@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
   EuiSmallButton,
   EuiFlexGroup,
@@ -18,7 +18,6 @@ import {
   EuiConfirmModal,
   EuiTab,
   EuiTabs,
-  EuiSearchBar,
 } from '@elastic/eui';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { OVERVIEW_TAB, OverviewTabId } from '../utils/constants';
@@ -46,6 +45,9 @@ import {
 } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { asEntityStatus, countStatuses } from '../../../hooks/useStatusCounts';
+import { useInMemoryTableQuery } from '../../../hooks/useInMemoryTableQuery';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import { EditPolicy } from '../components/EditPolicy';
 import { FiltersTab } from '../../Filters/components/FiltersTab';
@@ -125,6 +127,33 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     history.location.pathname === ROUTES.FILTERS ? OVERVIEW_TAB.FILTERS : OVERVIEW_TAB.INTEGRATIONS;
   const pageDescription = TAB_DESCRIPTIONS[selectedTab];
 
+  const writeQueryToUrl = useCallback(
+    (query: { text: string } | null) => {
+      const { query: withoutStatus, status } = splitStatusFromQueryText(query?.text ?? '');
+      const { query: freeText, status: category } = splitStatusFromQueryText(
+        withoutStatus,
+        'category'
+      );
+      writeInMemoryUrlFilterValues(history, { query: freeText, status, category });
+    },
+    [history]
+  );
+  const { searchQuery, onSearchChange, toggleStatus, resetQuery, matchCount, activeStatus } =
+    useInMemoryTableQuery(
+      buildQueryTextWithStatus(
+        buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
+        urlFilters.category,
+        'category'
+      ),
+      integrations,
+      writeQueryToUrl
+    );
+  // Wazuh: every integration of the space, regardless of the search.
+  const statusCounts = useMemo(
+    () => countStatuses(integrations, (item) => item.status === 'enabled'),
+    [integrations]
+  );
+
   const onTabChange = (tab: OverviewTabId) => {
     const path = tab === OVERVIEW_TAB.FILTERS ? ROUTES.FILTERS : ROUTES.INTEGRATIONS;
     // Wazuh: Integrations and Filters each have their own independent meaning for
@@ -135,6 +164,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     params.delete('status');
     params.delete('category');
     const search = params.toString();
+    // Wazuh: the Integrations query lives in this component, which stays mounted
+    // across tabs; clear it with the params so the table and the URL agree.
+    resetQuery();
     history.replace(path + (search ? `?${search}` : ''));
   };
   const loadIntegrations = useCallback(async () => {
@@ -669,25 +701,24 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               }}
               search={{
                 ...getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] }),
-                defaultQuery: EuiSearchBar.Query.parse(
-                  buildQueryTextWithStatus(
-                    buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
-                    urlFilters.category,
-                    'category'
-                  )
-                ),
-                onChange: ({ query }: { query: any }) => {
-                  const { query: withoutStatus, status } = splitStatusFromQueryText(
-                    query?.text ?? ''
-                  );
-                  const { query: freeText, status: category } = splitStatusFromQueryText(
-                    withoutStatus,
-                    'category'
-                  );
-                  writeInMemoryUrlFilterValues(history, { query: freeText, status, category });
-                  return true;
-                },
+                query: searchQuery,
+                onChange: onSearchChange,
               }}
+              childrenBetween={
+                <>
+                  <TableStatusSummary
+                    total={matchCount}
+                    loading={loading}
+                    entityPlural="integrations"
+                    statusCounts={statusCounts}
+                    statusLoading={loading}
+                    activeStatus={asEntityStatus(activeStatus)}
+                    onStatusClick={toggleStatus}
+                    data-test-subj="integrationsStatusSummary"
+                  />
+                  <EuiSpacer size="s" />
+                </>
+              }
               selection={{
                 onSelectionChange: onSelectionChange,
                 initialSelected: [],

@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
+import { EntityStatusValue, useStatusCounts } from '../../../hooks/useStatusCounts';
 import { RuleItemInfoBase } from '../../../../types';
 import { RuleTableItem } from '../utils/helpers';
 import { buildRulesSearchQuery } from '../utils/constants';
@@ -35,6 +36,8 @@ export interface UseIntegrationRulesParams {
   sortDirection: 'asc' | 'desc';
   search: string;
   severityLevels?: string[];
+  /** The status summary bar's filter. */
+  status?: EntityStatusValue;
   reloadTrigger: number;
 }
 
@@ -48,6 +51,7 @@ export function useIntegrationRules({
   sortDirection,
   search,
   severityLevels,
+  status,
   reloadTrigger,
 }: UseIntegrationRulesParams) {
   const [items, setItems] = useState<RuleTableItem[]>([]);
@@ -86,6 +90,7 @@ export function useIntegrationRules({
           size,
           query,
           sort,
+          status,
           _source: {
             includes: [
               'document.id',
@@ -132,8 +137,39 @@ export function useIntegrationRules({
     sortDirection,
     search,
     severityLevels,
+    status,
     reloadTrigger,
   ]);
 
   return { items, total, loading };
+}
+
+// Wazuh: the enabled/disabled split of every rule of the integration, regardless of
+// the tab's search, rule level and status filters.
+export function useIntegrationRuleStatusCounts({
+  ruleIds,
+  space,
+  enabled = true,
+  reloadTrigger,
+}: Pick<UseIntegrationRulesParams, 'ruleIds' | 'space' | 'enabled' | 'reloadTrigger'>) {
+  const ruleIdsKey = ruleIds.join(',');
+  const countByStatus = useCallback(
+    async (status: EntityStatusValue) =>
+      (
+        await DataStore.rules.searchRules(
+          {
+            query: { terms: { 'document.id': ruleIds } },
+            from: 0,
+            size: 0,
+            status,
+            _source: false,
+          },
+          space
+        )
+      ).total,
+    // The parent rebuilds `ruleIds` on every render, so depend on its content.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ruleIdsKey, space]
+  );
+  return useStatusCounts(countByStatus, { enabled, reloadTrigger });
 }

@@ -37,6 +37,12 @@ import { WazuhPageHeader } from '../../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
+import { TableStatusSummary } from '../../../../components/TableStatusSummary';
+import {
+  asEntityStatus,
+  EntityStatusValue,
+  useStatusCounts,
+} from '../../../../hooks/useStatusCounts';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import {
   buildRulesSearchQuery,
@@ -67,9 +73,11 @@ import {
   decodeMultiValue,
   encodeEnabledValues,
   encodeMultiValue,
+  getActiveStatusValue,
   getFreeText,
   getOrSelectedValues,
   hasTypedFieldClause,
+  toggleStatusFilter,
 } from '../../../../utils/entitySearchBarFilters';
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
@@ -342,6 +350,34 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     loadRules();
   }, [loadRules]);
 
+  // Wazuh: the status bar counts every rule in the space, ignoring the search and
+  // filters; a size-0 search per status reuses the Status filter's own definition.
+  const countRulesByStatus = useCallback(
+    async (status: EntityStatusValue) =>
+      (
+        await DataStore.rules.searchRules(
+          { query: { match_all: {} }, from: 0, size: 0, status, _source: false },
+          spaceFilter
+        )
+      ).total,
+    [spaceFilter]
+  );
+  const {
+    counts: statusCounts,
+    loading: statusCountsLoading,
+    reload: reloadStatusCounts,
+  } = useStatusCounts(countRulesByStatus);
+
+  const reloadAll = useCallback(async () => {
+    reloadStatusCounts();
+    await loadRules();
+  }, [loadRules, reloadStatusCounts]);
+
+  const onStatusClick = (status: EntityStatusValue) => {
+    setSearchError(null);
+    setSearchQuery((query) => toggleStatusFilter(query, status));
+  };
+
   const {
     itemForAction,
     setItemForAction,
@@ -353,7 +389,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       const ok = await DataStore.rules.deleteRule(id);
       return ok ? ok : undefined;
     },
-    reload: loadRules,
+    reload: reloadAll,
     notifications,
     entityName: 'rule',
     entityNamePlural: 'rules',
@@ -377,7 +413,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
 
   const hideFlyout = (refreshRules?: boolean) => {
     clearParam();
-    if (refreshRules) loadRules();
+    if (refreshRules) reloadAll();
   };
 
   // Wazuh: EuiSearchBar only emits `query` when parsing succeeds — on a
@@ -640,12 +676,23 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                 <EuiButtonIcon
                   iconType="refresh"
                   aria-label="Refresh rules"
-                  onClick={() => loadRules()}
+                  onClick={() => reloadAll()}
                 />
               </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size="m" />
+          <EuiSpacer size="s" />
+          <TableStatusSummary
+            total={totalRules}
+            loading={loading}
+            entityPlural="rules"
+            statusCounts={statusCounts}
+            statusLoading={statusCountsLoading}
+            activeStatus={asEntityStatus(getActiveStatusValue(searchQuery))}
+            onStatusClick={onStatusClick}
+            data-test-subj="rulesStatusSummary"
+          />
+          <EuiSpacer size="s" />
           {renderError()}
           <EuiBasicTable
             items={allRules}

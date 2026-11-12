@@ -282,6 +282,33 @@ exports[`<Detectors /> spec renders the component 1`] = `
               className="euiPanel euiPanel--paddingMedium euiPanel--borderRadiusMedium euiPanel--plain euiPanel--hasShadow"
             >
               <EuiInMemoryTable
+                childrenBetween={
+                  <React.Fragment>
+                    <TableStatusSummary
+                      data-test-subj="detectorsStatusSummary"
+                      entityPlural="detectors"
+                      loading={false}
+                      onStatusClick={[Function]}
+                      statusCounts={
+                        Object {
+                          "disabled": 0,
+                          "enabled": 1,
+                        }
+                      }
+                      statusLabels={
+                        Object {
+                          "disabled": "Inactive",
+                          "enabled": "Active",
+                        }
+                      }
+                      statusLoading={false}
+                      total={1}
+                    />
+                    <EuiSpacer
+                      size="s"
+                    />
+                  </React.Fragment>
+                }
                 columns={
                   Array [
                     Object {
@@ -566,23 +593,6 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       "placeholder": "Search threat detectors",
                       "schema": true,
                     },
-                    "defaultQuery": Query {
-                      "ast": _AST {
-                        "_clauses": Array [],
-                        "_indexedClauses": Object {
-                          "field": Object {},
-                          "group": Array [],
-                          "is": Object {},
-                          "term": Array [],
-                        },
-                      },
-                      "syntax": Object {
-                        "parse": [Function],
-                        "print": [Function],
-                        "printClause": [Function],
-                      },
-                      "text": "",
-                    },
                     "filters": Array [
                       Object {
                         "compressed": true,
@@ -624,6 +634,23 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       },
                     ],
                     "onChange": [Function],
+                    "query": Query {
+                      "ast": _AST {
+                        "_clauses": Array [],
+                        "_indexedClauses": Object {
+                          "field": Object {},
+                          "group": Array [],
+                          "is": Object {},
+                          "term": Array [],
+                        },
+                      },
+                      "syntax": Object {
+                        "parse": [Function],
+                        "print": [Function],
+                        "printClause": [Function],
+                      },
+                      "text": "",
+                    },
                     "toolsLeft": Array [
                       <EuiToolTip
                         delay="regular"
@@ -727,25 +754,6 @@ exports[`<Detectors /> spec renders the component 1`] = `
                         },
                       }
                     }
-                    defaultQuery={
-                      Query {
-                        "ast": _AST {
-                          "_clauses": Array [],
-                          "_indexedClauses": Object {
-                            "field": Object {},
-                            "group": Array [],
-                            "is": Object {},
-                            "term": Array [],
-                          },
-                        },
-                        "syntax": Object {
-                          "parse": [Function],
-                          "print": [Function],
-                          "printClause": [Function],
-                        },
-                        "text": "",
-                      }
-                    }
                     filters={
                       Array [
                         Object {
@@ -789,6 +797,25 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       ]
                     }
                     onChange={[Function]}
+                    query={
+                      Query {
+                        "ast": _AST {
+                          "_clauses": Array [],
+                          "_indexedClauses": Object {
+                            "field": Object {},
+                            "group": Array [],
+                            "is": Object {},
+                            "term": Array [],
+                          },
+                        },
+                        "syntax": Object {
+                          "parse": [Function],
+                          "print": [Function],
+                          "printClause": [Function],
+                        },
+                        "text": "",
+                      }
+                    }
                     toolsLeft={
                       Array [
                         <EuiToolTip
@@ -1741,6 +1768,288 @@ exports[`<Detectors /> spec renders the component 1`] = `
                   >
                     <div
                       className="euiSpacer euiSpacer--l"
+                    />
+                  </EuiSpacer>
+                  <TableStatusSummary
+                    data-test-subj="detectorsStatusSummary"
+                    entityPlural="detectors"
+                    loading={false}
+                    onStatusClick={[Function]}
+                    statusCounts={
+                      Object {
+                        "disabled": 0,
+                        "enabled": 1,
+                      }
+                    }
+                    statusLabels={
+                      Object {
+                        "disabled": "Inactive",
+                        "enabled": "Active",
+                      }
+                    }
+                    statusLoading={false}
+                    total={1}
+                  >
+                    <EuiFlexGroup
+                      alignItems="center"
+                      className="tableStatusSummary"
+                      data-test-subj="detectorsStatusSummary"
+                      gutterSize="m"
+                      justifyContent="spaceBetween"
+                      responsive={false}
+                      wrap={true}
+                    >
+                      <div
+                        className="euiFlexGroup euiFlexGroup--gutterMedium euiFlexGroup--alignItemsCenter euiFlexGroup--justifyContentSpaceBetween euiFlexGroup--directionRow euiFlexGroup--wrap tableStatusSummary"
+                        data-test-subj="detectorsStatusSummary"
+                      >
+                        <EuiFlexItem
+                          grow={false}
+                        >
+                          <div
+                            className="euiFlexItem euiFlexItem--flexGrowZero"
+                          >
+                            <EuiText
+                              aria-live="polite"
+                              color="subdued"
+                              size="xs"
+                            >
+                              <div
+                                aria-live="polite"
+                                className="euiText euiText--extraSmall"
+                              >
+                                <EuiTextColor
+                                  color="subdued"
+                                  component="div"
+                                >
+                                  <div
+                                    className="euiTextColor euiTextColor--subdued"
+                                  >
+                                    <span
+                                      data-test-subj="detectorsStatusSummary-total"
+                                    >
+                                      1 result
+                                    </span>
+                                  </div>
+                                </EuiTextColor>
+                              </div>
+                            </EuiText>
+                          </div>
+                        </EuiFlexItem>
+                        <EuiFlexItem
+                          grow={false}
+                        >
+                          <div
+                            className="euiFlexItem euiFlexItem--flexGrowZero"
+                          >
+                            <EuiFlexGroup
+                              alignItems="center"
+                              gutterSize="s"
+                              responsive={false}
+                              wrap={false}
+                            >
+                              <div
+                                className="euiFlexGroup euiFlexGroup--gutterSmall euiFlexGroup--alignItemsCenter euiFlexGroup--directionRow"
+                              >
+                                <EuiFlexItem
+                                  grow={false}
+                                >
+                                  <div
+                                    className="euiFlexItem euiFlexItem--flexGrowZero"
+                                  >
+                                    <EuiToolTip
+                                      content={
+                                        <React.Fragment>
+                                          <div>
+                                            Active: 1 (100%)
+                                          </div>
+                                          <div>
+                                            Inactive: 0 (0%)
+                                          </div>
+                                          <div>
+                                            Counts all detectors, regardless of the search and filters.
+                                          </div>
+                                        </React.Fragment>
+                                      }
+                                      delay="regular"
+                                      position="top"
+                                    >
+                                      <span
+                                        className="euiToolTipAnchor"
+                                        onKeyUp={[Function]}
+                                        onMouseOut={[Function]}
+                                        onMouseOver={[Function]}
+                                      >
+                                        <div
+                                          className="tableStatusSummary__bar"
+                                          data-test-subj="detectorsStatusSummary-bar"
+                                          onBlur={[Function]}
+                                          onFocus={[Function]}
+                                          style={
+                                            Object {
+                                              "backgroundColor": "#F5F7FA",
+                                            }
+                                          }
+                                        >
+                                          <button
+                                            aria-hidden="true"
+                                            className="tableStatusSummary__segment"
+                                            data-test-subj="detectorsStatusSummary-segment-enabled"
+                                            disabled={false}
+                                            key="enabled"
+                                            onClick={[Function]}
+                                            style={
+                                              Object {
+                                                "backgroundColor": "#006BB4",
+                                                "width": "100%",
+                                              }
+                                            }
+                                            tabIndex={-1}
+                                            type="button"
+                                          />
+                                        </div>
+                                      </span>
+                                    </EuiToolTip>
+                                  </div>
+                                </EuiFlexItem>
+                                <EuiFlexItem
+                                  grow={false}
+                                  key="enabled"
+                                >
+                                  <div
+                                    className="euiFlexItem euiFlexItem--flexGrowZero"
+                                  >
+                                    <EuiButtonEmpty
+                                      aria-label="Show only active detectors"
+                                      aria-pressed={false}
+                                      color="text"
+                                      data-test-subj="detectorsStatusSummary-legend-enabled"
+                                      flush="both"
+                                      isDisabled={false}
+                                      onClick={[Function]}
+                                      size="xs"
+                                    >
+                                      <button
+                                        aria-label="Show only active detectors"
+                                        aria-pressed={false}
+                                        className="euiButtonEmpty euiButtonEmpty--text euiButtonEmpty--xSmall euiButtonEmpty--flushBoth"
+                                        data-test-subj="detectorsStatusSummary-legend-enabled"
+                                        disabled={false}
+                                        onClick={[Function]}
+                                        type="button"
+                                      >
+                                        <EuiButtonContent
+                                          className="euiButtonEmpty__content"
+                                          iconGap="m"
+                                          iconSide="left"
+                                          iconSize="s"
+                                          textProps={
+                                            Object {
+                                              "className": "euiButtonEmpty__text",
+                                            }
+                                          }
+                                        >
+                                          <span
+                                            className="euiButtonContent euiButtonEmpty__content"
+                                          >
+                                            <span
+                                              className="euiButtonEmpty__text"
+                                            >
+                                              <span
+                                                className="tableStatusSummary__legendContent"
+                                              >
+                                                <span
+                                                  className="tableStatusSummary__swatch"
+                                                  style={
+                                                    Object {
+                                                      "backgroundColor": "#006BB4",
+                                                    }
+                                                  }
+                                                />
+                                                1 active
+                                              </span>
+                                            </span>
+                                          </span>
+                                        </EuiButtonContent>
+                                      </button>
+                                    </EuiButtonEmpty>
+                                  </div>
+                                </EuiFlexItem>
+                                <EuiFlexItem
+                                  grow={false}
+                                  key="disabled"
+                                >
+                                  <div
+                                    className="euiFlexItem euiFlexItem--flexGrowZero"
+                                  >
+                                    <EuiButtonEmpty
+                                      aria-label="Show only inactive detectors"
+                                      aria-pressed={false}
+                                      color="text"
+                                      data-test-subj="detectorsStatusSummary-legend-disabled"
+                                      flush="both"
+                                      isDisabled={true}
+                                      onClick={[Function]}
+                                      size="xs"
+                                    >
+                                      <button
+                                        aria-label="Show only inactive detectors"
+                                        aria-pressed={false}
+                                        className="euiButtonEmpty euiButtonEmpty--text euiButtonEmpty--xSmall euiButtonEmpty--flushBoth euiButtonEmpty-isDisabled"
+                                        data-test-subj="detectorsStatusSummary-legend-disabled"
+                                        disabled={true}
+                                        onClick={[Function]}
+                                        type="button"
+                                      >
+                                        <EuiButtonContent
+                                          className="euiButtonEmpty__content"
+                                          iconGap="m"
+                                          iconSide="left"
+                                          iconSize="s"
+                                          textProps={
+                                            Object {
+                                              "className": "euiButtonEmpty__text",
+                                            }
+                                          }
+                                        >
+                                          <span
+                                            className="euiButtonContent euiButtonEmpty__content"
+                                          >
+                                            <span
+                                              className="euiButtonEmpty__text"
+                                            >
+                                              <span
+                                                className="tableStatusSummary__legendContent"
+                                              >
+                                                <span
+                                                  className="tableStatusSummary__swatch"
+                                                  style={
+                                                    Object {
+                                                      "backgroundColor": "#98A2B3",
+                                                    }
+                                                  }
+                                                />
+                                                0 inactive
+                                              </span>
+                                            </span>
+                                          </span>
+                                        </EuiButtonContent>
+                                      </button>
+                                    </EuiButtonEmpty>
+                                  </div>
+                                </EuiFlexItem>
+                              </div>
+                            </EuiFlexGroup>
+                          </div>
+                        </EuiFlexItem>
+                      </div>
+                    </EuiFlexGroup>
+                  </TableStatusSummary>
+                  <EuiSpacer
+                    size="s"
+                  >
+                    <div
+                      className="euiSpacer euiSpacer--s"
                     />
                   </EuiSpacer>
                   <EuiBasicTable

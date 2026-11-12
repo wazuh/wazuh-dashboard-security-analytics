@@ -1,0 +1,58 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/* Wazuh: one compact row under a table's search bar. Colors come from euiThemeVars in
+   TableStatusSummary.tsx, so they follow the light and dark themes. */
+.tableStatusSummary {
+  min-height: 24px;
+}
+
+.tableStatusSummary__bar {
+  display: flex;
+  width: 120px;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tableStatusSummary__segment {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  transition: opacity 150ms ease-in-out;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.8;
+  }
+}
+
+.tableStatusSummary__segment--dimmed {
+  opacity: 0.35;
+}
+
+.tableStatusSummary__legendContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tableStatusSummary__swatch {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.tableStatusSummary__legend--active {
+  font-weight: 600;
+  text-decoration: underline;
+}

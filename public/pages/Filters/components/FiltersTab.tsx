@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   EuiSmallButton,
   EuiCard,
@@ -12,11 +12,14 @@ import {
   EuiContextMenuPanel,
   EuiInMemoryTable,
   EuiPopover,
-  EuiSearchBar,
+  EuiSpacer,
 } from '@elastic/eui';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { asEntityStatus, countStatuses } from '../../../hooks/useStatusCounts';
+import { useInMemoryTableQuery } from '../../../hooks/useInMemoryTableQuery';
 import { DataStore } from '../../../store/DataStore';
 import { ROUTES } from '../../../utils/constants';
 import { pluralize } from '../../../utils/helpers';
@@ -58,6 +61,25 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
   // table, per the no-goal boundary). Uses the history prop directly, consistent
   // with this page's existing `history.replace`/`history.push` usage.
   const [urlFilters] = useState(() => readInMemoryUrlFilterValues(history.location.search));
+
+  const writeQueryToUrl = useCallback(
+    (query: { text: string } | null) => {
+      const { query: freeText, status } = splitStatusFromQueryText(query?.text ?? '');
+      writeInMemoryUrlFilterValues(history, { query: freeText, status });
+    },
+    [history]
+  );
+  const { searchQuery, onSearchChange, toggleStatus, matchCount, activeStatus } =
+    useInMemoryTableQuery(
+      buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
+      items,
+      writeQueryToUrl
+    );
+  // Wazuh: every filter loaded for the space, regardless of the search.
+  const statusCounts = useMemo(
+    () => countStatuses(items, (item) => item.status === 'enabled'),
+    [items]
+  );
 
   useEffect(() => {
     return () => {
@@ -227,15 +249,24 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
         pagination={{ initialPageSize: 25 }}
         search={{
           ...getFiltersTableSearchConfig(items, { toolsRight: [actionsButton] }),
-          defaultQuery: EuiSearchBar.Query.parse(
-            buildQueryTextWithStatus(urlFilters.query, urlFilters.status)
-          ),
-          onChange: ({ query }: { query: any }) => {
-            const { query: freeText, status } = splitStatusFromQueryText(query?.text ?? '');
-            writeInMemoryUrlFilterValues(history, { query: freeText, status });
-            return true;
-          },
+          query: searchQuery,
+          onChange: onSearchChange,
         }}
+        childrenBetween={
+          <>
+            <TableStatusSummary
+              total={matchCount}
+              loading={loading}
+              entityPlural="filters"
+              statusCounts={statusCounts}
+              statusLoading={loading}
+              activeStatus={asEntityStatus(activeStatus)}
+              onStatusClick={toggleStatus}
+              data-test-subj="filtersStatusSummary"
+            />
+            <EuiSpacer size="s" />
+          </>
+        }
         selection={{
           onSelectionChange: setSelectedItems,
           initialSelected: [],

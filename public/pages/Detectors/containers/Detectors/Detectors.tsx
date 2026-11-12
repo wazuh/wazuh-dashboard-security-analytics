@@ -55,8 +55,15 @@ import {
   splitStatusFromQueryText,
   writeInMemoryUrlFilterValues,
 } from '../../../../utils/inMemoryUrlFilterAdapter';
-import { buildStatusIntegrationFilters } from '../../../../utils/entitySearchBarFilters';
+import {
+  buildStatusIntegrationFilters,
+  getActiveStatusValue,
+  toggleStatusFilter,
+} from '../../../../utils/entitySearchBarFilters';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
+import { TableStatusSummary } from '../../../../components/TableStatusSummary';
+import { countStatuses, EntityStatusValue } from '../../../../hooks/useStatusCounts';
+import { countQueryMatches } from '../../../../hooks/useInMemoryTableQuery';
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -64,13 +71,27 @@ export interface DetectorsProps extends RouteComponentProps {
   dataSource: DataSourceOption;
 }
 
+type SearchQuery = ReturnType<typeof EuiSearchBar.Query.parse>;
+
 interface DetectorsState {
   detectorHits: DetectorHit[];
   loadingDetectors: boolean;
   selectedItems: DetectorHit[];
   isDeleteModalVisible: boolean;
   isPopoverOpen: boolean;
+  // Wazuh: the table's search query is controlled, so the status summary bar can apply
+  // the Status filter. `appliedQuery` is what the table filters with: null after a
+  // search that failed to parse.
+  searchQuery: SearchQuery;
+  appliedQuery: SearchQuery | null;
 }
+
+// Wazuh: a detector's status reads Active/Inactive; the summary bar works in
+// enabled/disabled, the detector's own `enabled` field.
+const DETECTOR_STATUS_LABELS: Record<EntityStatusValue, string> = {
+  enabled: 'Active',
+  disabled: 'Inactive',
+};
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
@@ -80,13 +101,6 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
   constructor(props: DetectorsProps) {
     super(props);
 
-    this.state = {
-      detectorHits: [],
-      loadingDetectors: false,
-      selectedItems: [],
-      isDeleteModalVisible: false,
-      isPopoverOpen: false,
-    };
     // Wazuh: query/status/space persisted in the URL (no 'page' — Detectors is an
     // in-memory table, per the no-goal boundary). Guarded: `history` is optional
     // in some existing test mocks that don't pass RouteComponentProps.
@@ -110,18 +124,50 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         query: [this.urlFilters.query, token].filter(Boolean).join(' ').trim(),
       };
     }
+
+    const initialQuery = EuiSearchBar.Query.parse(
+      buildQueryTextWithStatus(
+        buildQueryTextWithStatus(this.urlFilters.query, this.urlFilters.status, 'status'),
+        this.urlFilters.space,
+        'space'
+      )
+    );
+    this.state = {
+      detectorHits: [],
+      loadingDetectors: false,
+      selectedItems: [],
+      isDeleteModalVisible: false,
+      isPopoverOpen: false,
+      searchQuery: initialQuery,
+      appliedQuery: initialQuery,
+    };
   }
 
   private urlFilters: { query: string; status: string; space: string };
   private pendingIntegrationParam: string | undefined;
 
-  private onSearchChange = ({ query }: { query: any }) => {
+  private writeQueryToUrl = (query: { text: string } | null) => {
     const { query: withoutStatus, status } = splitStatusFromQueryText(query?.text ?? '', 'status');
     const { query: freeText, status: space } = splitStatusFromQueryText(withoutStatus, 'space');
     if (this.props.history) {
       writeInMemoryUrlFilterValues(this.props.history, { query: freeText, status, space });
     }
+  };
+
+  private onSearchChange = ({ query }: { query: SearchQuery | null }) => {
+    if (query) {
+      this.setState({ searchQuery: query, appliedQuery: query });
+    } else {
+      this.setState({ appliedQuery: null });
+    }
+    this.writeQueryToUrl(query ?? null);
     return true;
+  };
+
+  private onStatusClick = (status: EntityStatusValue) => {
+    const next = toggleStatusFilter(this.state.searchQuery, DETECTOR_STATUS_LABELS[status]);
+    this.setState({ searchQuery: next, appliedQuery: next });
+    this.writeQueryToUrl(next);
   };
 
   async componentDidMount() {
@@ -484,15 +530,14 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         // End Wazuh
       ],
       // Wazuh: persist query/status/space in the URL (see this.urlFilters / onSearchChange).
-      defaultQuery: EuiSearchBar.Query.parse(
-        buildQueryTextWithStatus(
-          buildQueryTextWithStatus(this.urlFilters.query, this.urlFilters.status, 'status'),
-          this.urlFilters.space,
-          'space'
-        )
-      ),
+      query: this.state.searchQuery,
       onChange: this.onSearchChange,
     };
+
+    const activeStatusValue = getActiveStatusValue(this.state.searchQuery);
+    const activeStatus = (Object.keys(DETECTOR_STATUS_LABELS) as EntityStatusValue[]).find(
+      (status) => DETECTOR_STATUS_LABELS[status] === activeStatusValue
+    );
 
     const sorting: { sort: { field: string; direction: Direction } } = {
       sort: {
@@ -527,6 +572,22 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               isSelectable={true}
               selection={{ onSelectionChange: this.onSelectionChange }}
               search={search}
+              childrenBetween={
+                <>
+                  <TableStatusSummary
+                    total={countQueryMatches(this.state.appliedQuery, detectorHits)}
+                    loading={loadingDetectors}
+                    entityPlural="detectors"
+                    statusCounts={countStatuses(detectorHits, (hit) => !!hit._source.enabled)}
+                    statusLoading={loadingDetectors}
+                    activeStatus={activeStatus}
+                    onStatusClick={this.onStatusClick}
+                    statusLabels={DETECTOR_STATUS_LABELS}
+                    data-test-subj="detectorsStatusSummary"
+                  />
+                  <EuiSpacer size="s" />
+                </>
+              }
               loading={loadingDetectors}
               message={
                 loadingDetectors ? undefined : (

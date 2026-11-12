@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
+import { EntityStatusValue, useStatusCounts } from '../../../hooks/useStatusCounts';
 import { buildKVDBsSearchQuery } from '../utils/constants';
 import { KVDBItem } from '../../../../types';
 
@@ -17,6 +18,8 @@ export interface UseIntegrationKVDBsParams {
   sortField: string;
   sortDirection: 'asc' | 'desc';
   search: string;
+  /** The status summary bar's filter. */
+  status?: EntityStatusValue;
   reloadTrigger: number;
 }
 
@@ -29,6 +32,7 @@ export function useIntegrationKVDBs({
   sortField,
   sortDirection,
   search,
+  status,
   reloadTrigger,
 }: UseIntegrationKVDBsParams) {
   const [items, setItems] = useState<KVDBItem[]>([]);
@@ -74,6 +78,7 @@ export function useIntegrationKVDBs({
           size,
           query,
           sort,
+          status,
           track_total_hits: true,
           _source: {
             includes: [
@@ -117,8 +122,38 @@ export function useIntegrationKVDBs({
     sortField,
     sortDirection,
     search,
+    status,
     reloadTrigger,
   ]);
 
   return { items, total, loading };
+}
+
+// Wazuh: the enabled/disabled split of every KVDB of the integration, regardless of
+// the tab's search and status filter.
+export function useIntegrationKVDBStatusCounts({
+  kvdbIds,
+  space,
+  enabled = true,
+  reloadTrigger,
+}: Pick<UseIntegrationKVDBsParams, 'kvdbIds' | 'space' | 'enabled' | 'reloadTrigger'>) {
+  const kvdbIdsKey = kvdbIds.join(',');
+  const countByStatus = useCallback(
+    async (status: EntityStatusValue) => {
+      const filter: any[] = [{ terms: { 'document.id': kvdbIds } }];
+      if (space) {
+        filter.push({ term: { 'space.name': space } });
+      }
+      return (
+        await DataStore.kvdbs.searchKVDBs(
+          { size: 0, query: { bool: { filter } }, status, track_total_hits: true, _source: false },
+          { skipIntegrationMap: true }
+        )
+      ).total;
+    },
+    // The parent rebuilds `kvdbIds` on every render, so depend on its content.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [kvdbIdsKey, space]
+  );
+  return useStatusCounts(countByStatus, { enabled, reloadTrigger });
 }

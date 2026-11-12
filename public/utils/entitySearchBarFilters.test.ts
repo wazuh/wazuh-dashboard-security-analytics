@@ -9,8 +9,10 @@ import {
   classifyEntitySearchError,
   ENTITY_FILTER_SELECTORS_LABEL,
   ENTITY_SEARCH_SCHEMA,
+  getActiveStatusValue,
   getOrSelectedValues,
   hasTypedFieldClause,
+  toggleStatusFilter,
 } from './entitySearchBarFilters';
 import { IntegrationOption } from '../components/IntegrationComboBox/useIntegrationSelector';
 
@@ -213,5 +215,61 @@ describe('hasTypedFieldClause', () => {
   it('ignores fields outside the list and free text', () => {
     expect(hasTypedFieldClause(parse('level:high plain words'), FIELDS)).toBe(false);
     expect(hasTypedFieldClause(parse(''), FIELDS)).toBe(false);
+  });
+});
+
+describe('getActiveStatusValue', () => {
+  it('returns the single selected status, popover or typed', () => {
+    expect(getActiveStatusValue(EuiSearchBar.Query.parse('status:(enabled)'))).toBe('enabled');
+    expect(getActiveStatusValue(EuiSearchBar.Query.parse('aws status:disabled'))).toBe('disabled');
+  });
+
+  it('returns nothing when no status, or more than one, is selected', () => {
+    expect(getActiveStatusValue(EuiSearchBar.Query.parse('aws'))).toBeUndefined();
+    expect(
+      getActiveStatusValue(EuiSearchBar.Query.parse('status:(enabled or disabled)'))
+    ).toBeUndefined();
+  });
+
+  it('reads another field when asked', () => {
+    expect(getActiveStatusValue(EuiSearchBar.Query.parse('state:(on)'), 'state')).toBe('on');
+  });
+});
+
+describe('toggleStatusFilter', () => {
+  it('adds the status, keeping the free text and other filters', () => {
+    const next = toggleStatusFilter(
+      EuiSearchBar.Query.parse('aws integration:(azure)'),
+      'disabled'
+    );
+
+    expect(getOrSelectedValues(next, 'status')).toEqual(['disabled']);
+    expect(getOrSelectedValues(next, 'integration')).toEqual(['azure']);
+    expect(next.text).toContain('aws');
+  });
+
+  it('replaces any other status selection with the clicked one', () => {
+    [
+      'status:(enabled)',
+      'status:(enabled or disabled)',
+      'status:enabled',
+      '-status:disabled',
+    ].forEach((text) => {
+      const next = toggleStatusFilter(EuiSearchBar.Query.parse(text), 'disabled');
+      expect(getOrSelectedValues(next, 'status')).toEqual(['disabled']);
+    });
+  });
+
+  it('clears the status when the active one is clicked again', () => {
+    const next = toggleStatusFilter(EuiSearchBar.Query.parse('aws status:(enabled)'), 'enabled');
+
+    expect(getOrSelectedValues(next, 'status')).toEqual([]);
+    expect(next.text.trim()).toBe('aws');
+  });
+
+  it('writes a clause the Status filter popover reads as checked', () => {
+    const next = toggleStatusFilter(EuiSearchBar.Query.parse(''), 'enabled');
+
+    expect(next.hasOrFieldClause('status', 'enabled')).toBe(true);
   });
 });
