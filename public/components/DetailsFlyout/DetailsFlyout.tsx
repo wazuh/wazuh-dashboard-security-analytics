@@ -15,6 +15,7 @@ import {
   EuiBadge,
   EuiButtonGroup,
   EuiButtonIcon,
+  EuiCodeBlock,
   EuiCopy,
   EuiDescriptionList,
   EuiFlexGroup,
@@ -148,7 +149,8 @@ export const CopyableValue: React.FC<{ value: string; ariaLabel: string; testSub
       <EuiCopy textToCopy={value}>
         {(copy) => (
           <EuiButtonIcon
-            iconType="copyClipboard"
+            iconType="copy"
+            color="text"
             aria-label={ariaLabel}
             size="xs"
             onClick={copy}
@@ -158,6 +160,32 @@ export const CopyableValue: React.FC<{ value: string; ariaLabel: string; testSub
       </EuiCopy>
     </EuiFlexItem>
   </EuiFlexGroup>
+);
+
+// Lines that fit in DETAILS_CODE_MAX_HEIGHT. Below this the block needs no height cap.
+const DETAILS_CODE_MAX_LINES = 15;
+const DETAILS_CODE_MAX_HEIGHT = 300;
+
+/**
+ * Copyable code block for an asset's logic (rule detection, filter check). The height is
+ * capped only when the code is long: `overflowHeight` adds a fullscreen button above the
+ * copy button, and in a short block that stack spills out of the block.
+ */
+export const DetailsCodeBlock: React.FC<{ language: string; code: string; testSubj?: string }> = ({
+  language,
+  code,
+  testSubj,
+}) => (
+  <EuiCodeBlock
+    language={language}
+    isCopyable
+    overflowHeight={
+      code.split('\n').length > DETAILS_CODE_MAX_LINES ? DETAILS_CODE_MAX_HEIGHT : undefined
+    }
+    data-test-subj={testSubj}
+  >
+    {code}
+  </EuiCodeBlock>
 );
 
 /** Full-width description plus a compact key/value list; empty values are left out. */

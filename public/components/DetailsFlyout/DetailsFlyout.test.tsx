@@ -6,6 +6,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import {
+  DetailsCodeBlock,
   DetailsFlyoutHeader,
   DetailsOverview,
   LabeledBadge,
@@ -98,5 +99,21 @@ describe('<ReferencesSection />', () => {
     const link = screen.getByTestId('x_references').querySelector('a')!;
     expect(link.getAttribute('href')).toBe(LONG_URL);
     expect(link.querySelector('.eui-textTruncate')?.textContent).toBe(LONG_URL);
+  });
+});
+
+describe('<DetailsCodeBlock />', () => {
+  const maxHeight = (container: HTMLElement) =>
+    (container.querySelector('.euiCodeBlock') as HTMLElement).style.maxHeight;
+
+  it('does not cap a short block, so its copy button stays inside it', () => {
+    const { container } = render(<DetailsCodeBlock language="yaml" code="a: b" />);
+    expect(maxHeight(container)).toBe('');
+  });
+
+  it('caps the height of a long block', () => {
+    const code = Array.from({ length: 20 }, (_, i) => `k${i}: v`).join('\n');
+    const { container } = render(<DetailsCodeBlock language="yaml" code={code} />);
+    expect(maxHeight(container)).toBe('300px');
   });
 });

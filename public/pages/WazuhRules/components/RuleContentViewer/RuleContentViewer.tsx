@@ -19,6 +19,7 @@ import { RuleItemInfoBase } from '../../../../../types';
 import { BadgeGroup } from '../../../../components/Utility/BadgeGroup';
 import {
   CopyableValue,
+  DetailsCodeBlock,
   DetailsOverview,
   DetailsSection,
   DetailsToolbar,
@@ -123,14 +124,11 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
             title="Detection"
             initialIsOpen
           >
-            <EuiCodeBlock
+            <DetailsCodeBlock
               language="yaml"
-              isCopyable
-              overflowHeight={300}
-              data-test-subj="rule_flyout_rule_detection"
-            >
-              {ruleData.detection}
-            </EuiCodeBlock>
+              code={ruleData.detection ?? ''}
+              testSubj="rule_flyout_rule_detection"
+            />
           </DetailsSection>
           {mitreCount > 0 && (
             <DetailsSection

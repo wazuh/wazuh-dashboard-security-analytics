@@ -17,6 +17,7 @@ import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
 import {
   CopyableValue,
+  DetailsCodeBlock,
   DetailsFlyoutHeader,
   DetailsOverview,
   DetailsSection,
@@ -147,14 +148,11 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
           title="Check"
           initialIsOpen
         >
-          <EuiCodeBlock
+          <DetailsCodeBlock
             language="yaml"
-            isCopyable
-            overflowHeight={300}
-            data-test-subj="filter_flyout_check"
-          >
-            {checkDisplayYaml}
-          </EuiCodeBlock>
+            code={checkDisplayYaml}
+            testSubj="filter_flyout_check"
+          />
         </DetailsSection>
         <ReferencesSection idPrefix="filter_flyout" urls={metadata.references} />
       </>
