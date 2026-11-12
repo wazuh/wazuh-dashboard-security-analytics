@@ -92,6 +92,31 @@ describe('getBlockedSpaceActionReason', () => {
     ).toBe('Cannot rearrange integrations in the standard space.');
   });
 
+  it('explains the space policy edit path through draft in test and custom', () => {
+    expect(
+      getBlockedSpaceActionReason('draft', SPACE_ACTIONS.EDIT_POLICY, 'space')
+    ).toBeUndefined();
+    (['test', 'custom'] as const).forEach((space) => {
+      expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.EDIT_POLICY, 'space')).toBe(
+        `The space policy of the ${space} space changes only through promotion. To change it, edit the policy in the draft space and promote the change.`
+      );
+    });
+  });
+
+  it('says only draft can be cleared, and that test and custom change through promotion', () => {
+    expect(
+      getBlockedSpaceActionReason('draft', SPACE_ACTIONS.CLEAR_SPACE, 'space')
+    ).toBeUndefined();
+    (['test', 'custom'] as const).forEach((space) => {
+      expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.CLEAR_SPACE, 'space')).toBe(
+        `Only the draft space can be cleared. The ${space} space changes only through promotion.`
+      );
+    });
+    expect(getBlockedSpaceActionReason('standard', SPACE_ACTIONS.CLEAR_SPACE, 'space')).toBe(
+      'Only the draft space can be cleared.'
+    );
+  });
+
   it('keeps a plain restriction in standard, which has no promotion path', () => {
     expect(getBlockedSpaceActionReason('standard', SPACE_ACTIONS.DELETE, 'decoders')).toBe(
       'Cannot delete decoders in the standard space.'

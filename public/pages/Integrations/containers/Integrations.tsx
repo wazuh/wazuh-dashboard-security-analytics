@@ -215,13 +215,6 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS) ||
     actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS);
   const isEditSpaceDetailsDisabled = !canEditSpaceDetails;
-  const spacesAllowingSpacePolicyEdit = Array.from(
-    new Set([
-      ...getSpacesAllowAction(SPACE_ACTIONS.DEFINE_ROOT_DECODER),
-      ...getSpacesAllowAction(SPACE_ACTIONS.EDIT_POLICY_ENRICHMENTS),
-      ...getSpacesAllowAction(SPACE_ACTIONS.EDIT_POLICY_INDEXING_SETTINGS),
-    ])
-  );
   const isClearSpaceDisabled = !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CLEAR_SPACE);
   // Wazuh: promotion target of the current space, used by the pending-promotion callout.
   const pendingPromotionNextSpace = getNextSpace(spaceFilter as PromoteSpaces);
@@ -346,9 +339,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       disabled={isEditSpaceDetailsDisabled}
       toolTipContent={
         isEditSpaceDetailsDisabled
-          ? `Space policy can only be edited in the spaces: ${spacesAllowingSpacePolicyEdit.join(
-              ', '
-            )}`
+          ? getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.EDIT_POLICY, 'space policy')
           : undefined
       }
       data-test-subj="overviewEditSpaceDetails"
@@ -363,13 +354,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         setIsOverviewActionsOpen(false);
       }}
       disabled={isClearSpaceDisabled}
-      toolTipContent={
-        isClearSpaceDisabled
-          ? `Clear space is only available in the spaces: ${getSpacesAllowAction(
-              SPACE_ACTIONS.CLEAR_SPACE
-            ).join(', ')}`
-          : undefined
-      }
+      toolTipContent={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.CLEAR_SPACE, 'space')}
       data-test-subj="overviewClearSpace"
     >
       Clear space

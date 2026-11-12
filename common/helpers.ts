@@ -140,7 +140,9 @@ export const getBlockedSpaceActionReason = (
     | typeof SPACE_ACTIONS.CREATE
     | typeof SPACE_ACTIONS.EDIT
     | typeof SPACE_ACTIONS.DELETE
-    | typeof SPACE_ACTIONS.REARRANGE_INTEGRATIONS,
+    | typeof SPACE_ACTIONS.REARRANGE_INTEGRATIONS
+    | typeof SPACE_ACTIONS.EDIT_POLICY
+    | typeof SPACE_ACTIONS.CLEAR_SPACE,
   entity: string,
   allowedActionsBySpace = AllowedActionsBySpace
 ): string | undefined => {
@@ -149,7 +151,22 @@ export const getBlockedSpaceActionReason = (
   }
 
   const draftSpace = SpaceTypes.DRAFT.value;
-  if (getPreviousSpace(space as PromoteSpaces) !== null) {
+  const isPromotable = getPreviousSpace(space as PromoteSpaces) !== null;
+
+  // Space-level actions read as whole sentences rather than the "<Entities> ... change"
+  // template of the entity lists (`entity` is not used for them).
+  if (action === SPACE_ACTIONS.EDIT_POLICY) {
+    return isPromotable
+      ? `The space policy of the ${space} space changes only through promotion. To change it, edit the policy in the ${draftSpace} space and promote the change.`
+      : `The space policy cannot be edited in the ${space} space.`;
+  }
+  if (action === SPACE_ACTIONS.CLEAR_SPACE) {
+    return isPromotable
+      ? `Only the ${draftSpace} space can be cleared. The ${space} space changes only through promotion.`
+      : `Only the ${draftSpace} space can be cleared.`;
+  }
+
+  if (isPromotable) {
     const change = {
       [SPACE_ACTIONS.CREATE]: `To add one, create it in the ${draftSpace} space and promote it.`,
       [SPACE_ACTIONS.EDIT]: `To change one, edit it in the ${draftSpace} space and promote the change.`,
