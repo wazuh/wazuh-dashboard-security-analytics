@@ -137,9 +137,10 @@ export const escapeWildcard = (value: string): string =>
 export const getBlockedSpaceActionReason = (
   space: Space,
   action: typeof SPACE_ACTIONS.CREATE | typeof SPACE_ACTIONS.EDIT | typeof SPACE_ACTIONS.DELETE,
-  entity: string
+  entity: string,
+  allowedActionsBySpace = AllowedActionsBySpace
 ): string | undefined => {
-  if (actionIsAllowedOnSpace(space, action)) {
+  if (actionIsAllowedOnSpace(space, action, allowedActionsBySpace)) {
     return undefined;
   }
 

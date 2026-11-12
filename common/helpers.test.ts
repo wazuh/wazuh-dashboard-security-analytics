@@ -4,7 +4,7 @@
  */
 
 import { escapeWildcard, getBlockedSpaceActionReason } from './helpers';
-import { SPACE_ACTIONS } from './constants';
+import { FiltersAllowedActionsBySpace, SPACE_ACTIONS } from './constants';
 
 describe('escapeWildcard', () => {
   it('keeps * live so the user can type a wildcard', () => {
@@ -45,6 +45,27 @@ describe('getBlockedSpaceActionReason', () => {
   it.each(['test', 'custom'] as const)('explains the edit path through draft in %s', (space) => {
     expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.EDIT, 'decoders')).toBe(
       `Decoders in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change.`
+    );
+  });
+
+  it('honours a custom allowed-actions map', () => {
+    expect(
+      getBlockedSpaceActionReason(
+        'standard',
+        SPACE_ACTIONS.DELETE,
+        'filters',
+        FiltersAllowedActionsBySpace
+      )
+    ).toBeUndefined();
+    expect(
+      getBlockedSpaceActionReason(
+        'test',
+        SPACE_ACTIONS.EDIT,
+        'filters',
+        FiltersAllowedActionsBySpace
+      )
+    ).toBe(
+      'Filters in the test space change only through promotion. To change one, edit it in the draft space and promote the change.'
     );
   });
 
