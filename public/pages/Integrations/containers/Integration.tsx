@@ -79,7 +79,14 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  // Wazuh: the list's row Edit action links here with `edit=true` to open the details in edit
+  // mode, only where editing is allowed.
+  const [isEditMode, setIsEditMode] = useState(
+    () =>
+      new URLSearchParams(location.search).get('edit') === 'true' &&
+      Boolean(spaceParam) &&
+      actionIsAllowedOnSpace(spaceParam as string, SPACE_ACTIONS.EDIT)
+  );
   const [togglingEnabled, setTogglingEnabled] = useState(false);
 
   // Wazuh: the integration document is the page's single source of truth — the

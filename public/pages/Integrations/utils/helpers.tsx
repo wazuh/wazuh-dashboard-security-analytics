@@ -17,7 +17,12 @@ import {
   KVDBS_NAV_ID,
   ROUTES,
 } from '../../../utils/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import {
+  actionIsAllowedOnSpace,
+  getBlockedSpaceActionReason,
+  getPreviousSpace,
+} from '../../../../common/helpers';
+import { BlockedMenuAction } from '../../../components/BlockedMenuAction';
 import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
 import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
 import { buildAppUrl, buildEntityQueryRoute } from '../../../utils/routes';
@@ -203,6 +208,7 @@ const renderCount =
 
 export const getIntegrationsTableColumns = ({
   showDetails,
+  editDetails,
   setItemForAction,
 }: {
   /**
@@ -211,6 +217,8 @@ export const getIntegrationsTableColumns = ({
    * and the detail view looks the integration up by `document.id` and space.
    */
   showDetails: (id: string) => void;
+  /** Opens the integration details in edit mode. Takes `document.id` and the row's space. */
+  editDetails?: (id: string, space: string) => void;
   setItemForAction: (options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null) => void;
 }) => [
   {
@@ -277,6 +285,17 @@ export const getIntegrationsTableColumns = ({
         },
       },
       {
+        name: 'Edit',
+        description: 'Edit integration',
+        type: 'icon',
+        icon: 'pencil',
+        available: (item) =>
+          Boolean(editDetails) && actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.EDIT),
+        onClick: (item) => {
+          editDetails?.(item.documentId, item.space);
+        },
+      },
+      {
         name: 'Delete',
         description: 'Delete integration',
         type: 'icon',
@@ -286,6 +305,35 @@ export const getIntegrationsTableColumns = ({
         onClick: (item) => {
           setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },
+      },
+      // Wazuh: where content changes only through promotion (test, custom), Edit and Delete
+      // stay in the row actions menu like in draft, but disabled with the reason as a
+      // tooltip. Custom actions, because the default one shows no tooltip when disabled.
+      {
+        name: 'Edit',
+        render: (item) => (
+          <BlockedMenuAction
+            iconType="pencil"
+            label="Edit"
+            reason={getBlockedSpaceActionReason(item.space, SPACE_ACTIONS.EDIT, 'integrations')}
+          />
+        ),
+        available: (item) =>
+          !actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.EDIT) &&
+          getPreviousSpace(item.space) !== null,
+      },
+      {
+        name: 'Delete',
+        render: (item) => (
+          <BlockedMenuAction
+            iconType="trash"
+            label="Delete"
+            reason={getBlockedSpaceActionReason(item.space, SPACE_ACTIONS.DELETE, 'integrations')}
+          />
+        ),
+        available: (item) =>
+          !actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.DELETE) &&
+          getPreviousSpace(item.space) !== null,
       },
     ],
   },

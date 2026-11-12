@@ -42,6 +42,7 @@ import { PolicyInfoCard } from '../components/PolicyInfoCard';
 import {
   actionIsAllowedOnSpace,
   getNextSpace,
+  getBlockedSpaceActionReason,
   getSpacesAllowAction,
 } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
@@ -417,13 +418,11 @@ export const Integrations: React.FC<IntegrationsProps> = ({
           setIsPopoverOpen(false);
         }}
         disabled={isCreateActionDisabled}
-        toolTipContent={
-          isCreateActionDisabled
-            ? `Integrations can only be created in the spaces: ${getSpacesAllowAction(
-                SPACE_ACTIONS.CREATE
-              ).join(', ')}`
-            : undefined
-        }
+        toolTipContent={getBlockedSpaceActionReason(
+          spaceFilter,
+          SPACE_ACTIONS.CREATE,
+          'integrations'
+        )}
       >
         Create
       </EuiContextMenuItem>,
@@ -436,11 +435,8 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         }}
         disabled={isDeleteSelectedActionDisabled}
         toolTipContent={
-          isDeleteActionDisabledBySpace
-            ? `Integrations can only be deleted in the spaces: ${getSpacesAllowAction(
-                SPACE_ACTIONS.DELETE
-              ).join(', ')}`
-            : selectedItems.length === 0
+          getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.DELETE, 'integrations') ??
+          (selectedItems.length === 0
             ? 'Select integrations to delete.'
             : selectedItemsWithoutRelatedEntities.length === 0
             ? 'Integrations with associated rules, decoders, or KVDBs cannot be deleted.'
@@ -448,7 +444,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
             ? `${selectedItemsWithRelatedEntitiesCount} selected integration${
                 selectedItemsWithRelatedEntitiesCount !== 1 ? 's have' : ' has'
               } associated ${selectedItemsRelatedEntitiesMessage} and will be skipped.`
-            : undefined
+            : undefined)
         }
       >
         Delete selected ({selectedItems.length})
@@ -513,6 +509,13 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       history.push(`${ROUTES.INTEGRATIONS}/${id}?space=${spaceFilter}`);
     },
     [spaceFilter]
+  );
+
+  const editIntegrationDetails = useCallback(
+    (id: string, space: string) => {
+      history.push(`${ROUTES.INTEGRATIONS}/${id}?space=${space}&edit=true`);
+    },
+    [history]
   );
 
   const createIntegrationAction = (
@@ -662,6 +665,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               items={integrations}
               columns={getIntegrationsTableColumns({
                 showDetails: showIntegrationDetails,
+                editDetails: editIntegrationDetails,
                 setItemForAction,
               })}
               pagination={{
