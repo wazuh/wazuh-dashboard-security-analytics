@@ -88,6 +88,46 @@ describe('LogTestService.logTest', () => {
     expect(result.body).toEqual({ ok: true, response: logTestResponse });
     expect(result.body.errorKind).toBeUndefined();
   });
+
+  it('replaces the skip reason when no integration was sent', async () => {
+    const callAsCurrentUser = jest.fn(() =>
+      Promise.resolve({
+        status: 200,
+        message: {
+          normalization: { status: 'success' },
+          detection: { status: 'skipped', reason: "'integration' field not provided" },
+        },
+      })
+    );
+    const service = new LogTestService(buildClient(callAsCurrentUser), false);
+
+    const result: any = await service.logTest(
+      {} as any,
+      makeRequest(validDocument),
+      buildResponseFactory() as any
+    );
+
+    expect(result.body.response.message.detection).toEqual({
+      status: 'skipped',
+      reason: 'Select an integration to run its rules.',
+    });
+  });
+
+  it('keeps the skip reason when an integration was sent', async () => {
+    const detection = { status: 'skipped', reason: 'Integration is disabled.' };
+    const callAsCurrentUser = jest.fn(() =>
+      Promise.resolve({ status: 200, message: { normalization: {}, detection: { ...detection } } })
+    );
+    const service = new LogTestService(buildClient(callAsCurrentUser), false);
+
+    const result: any = await service.logTest(
+      {} as any,
+      makeRequest({ document: { ...validDocument.document, integration: 'integration-id' } }),
+      buildResponseFactory() as any
+    );
+
+    expect(result.body.response.message.detection).toEqual(detection);
+  });
 });
 
 describe('LogTestService.logTest with a normalization space', () => {
@@ -160,7 +200,7 @@ describe('LogTestService.logTest with a normalization space', () => {
     expect(callAsCurrentUser).toHaveBeenCalledTimes(1);
     expect(result.body.response.message.detection).toEqual({
       status: 'skipped',
-      reason: 'No integration selected.',
+      reason: 'Select an integration to run its rules.',
     });
   });
 

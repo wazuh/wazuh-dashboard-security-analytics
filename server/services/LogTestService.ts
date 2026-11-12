@@ -15,6 +15,7 @@ import { LogTestApiRequest, LogTestRequestBody, LogTestResponse } from '../../ty
 import { CLIENT_LOG_TEST_METHODS, LOGTEST_ERROR_KIND_BY_STATUS } from '../utils/constants';
 import { extractErrorKind, extractErrorMessage } from '../utils/helpers';
 import { MDSEnabledClientService } from './MDSEnabledClientService';
+import { LOG_TEST_NO_INTEGRATION } from '../../common/constants';
 
 export class LogTestService extends MDSEnabledClientService {
   logTest = async (
@@ -75,6 +76,11 @@ export class LogTestService extends MDSEnabledClientService {
           ? await this.normalizeElsewhere(client, engineDocument, normalizationSpace)
           : await client(CLIENT_LOG_TEST_METHODS.TEST_LOG, { body: engineDocument });
 
+      const detection = logTestResponse?.message?.detection;
+      if (!engineDocument.integration && detection?.status === 'skipped') {
+        detection.reason = LOG_TEST_NO_INTEGRATION;
+      }
+
       return response.custom({
         statusCode: 200,
         body: {
@@ -114,7 +120,7 @@ export class LogTestService extends MDSEnabledClientService {
             body: { space, integration, input: normalization.output ?? {} },
           })
         ).message
-      : { status: 'skipped' as const, reason: 'No integration selected.' };
+      : { status: 'skipped' as const };
 
     return { status: String(normalized.status), message: { normalization, detection } };
   };

@@ -75,6 +75,11 @@ export const DRAFT_UNAVAILABLE_IN_LOG_TEST = i18n.translate(
   }
 );
 
+// Wazuh: names the form field, unlike the indexer's "'integration' field not provided".
+export const LOG_TEST_NO_INTEGRATION = i18n.translate('securityAnalytics.logTest.noIntegration', {
+  defaultMessage: 'Select an integration to run its rules.',
+});
+
 export const SPACE_SELECTOR_LABEL = i18n.translate('securityAnalytics.spaceSelector.label', {
   defaultMessage: 'Space:',
 });
