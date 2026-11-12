@@ -5,28 +5,26 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  EuiButtonGroup,
   EuiCallOut,
   EuiCodeBlock,
-  EuiFlexGrid,
-  EuiFlexGroup,
-  EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
-  EuiFlyoutHeader,
-  EuiFormLabel,
   EuiLoadingContent,
   EuiModalBody,
-  EuiSmallButtonIcon,
-  EuiSpacer,
-  EuiText,
 } from '@elastic/eui';
-import { DecoderDocument, DecoderItem } from '../../../../types';
+import { DecoderDocument } from '../../../../types';
 import { DataStore } from '../../../store/DataStore';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
-import { Metadata, MetadataFieldType } from '../../../components/Utility/Metadata';
-import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
+import {
+  CopyableValue,
+  DetailsFlyoutHeader,
+  DetailsOverview,
+  DetailsToolbar,
+  LabeledBadge,
+  ReferencesSection,
+  formatDetailsDate,
+} from '../../../components/DetailsFlyout/DetailsFlyout';
 import { stringify as LosslessStringify } from 'lossless-json';
 import { mapYamlToLosslessObject } from '../../../components/YamlForm';
 import { useLazyFetch } from '../../../hooks/useLazyFetch';
@@ -36,31 +34,16 @@ interface DecoderDetailsFlyoutProps {
   onClose: () => void;
 }
 
-const viewOptions = [
-  {
-    id: 'visual',
-    label: 'Visual',
-  },
-  {
-    id: 'yaml',
-    label: 'YAML',
-  },
-  {
-    id: 'json',
-    label: 'JSON',
-  },
-];
-
 export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   decoderId,
   space,
   onClose,
 }) => {
-  const [selectedView, setSelectedView] = useState(viewOptions[0].id);
-  const fetchDecoder = useCallback(
-    () => DataStore.decoders.getDecoder(decoderId, space),
-    [decoderId, space]
-  );
+  const [selectedView, setSelectedView] = useState('visual');
+  const fetchDecoder = useCallback(() => DataStore.decoders.getDecoder(decoderId, space), [
+    decoderId,
+    space,
+  ]);
   const { data: decoder, loading, error } = useLazyFetch(fetchDecoder, 'Decoder not found.');
 
   const decoderJson = useMemo(() => {
@@ -77,41 +60,48 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
     }
   }, [decoder]);
 
-  const fields: Array<{
-    label: string;
-    value: any;
-    type?: MetadataFieldType;
-  }> = [
-    { label: 'Space', value: decoder?.space },
-    { label: 'Integration', value: decoder?.integrations },
-    { label: 'Title', value: decoder?.document?.metadata?.title },
-    { label: 'ID', value: decoder?.document?.id },
-    { label: 'Author', value: decoder?.document?.metadata?.author },
-    { label: 'Description', value: decoder?.document?.metadata?.description },
-    { label: 'Created', value: decoder?.document?.metadata?.date, type: 'date' },
-    { label: 'Modified', value: decoder?.document?.metadata?.modified, type: 'date' },
-    { label: 'Documentation', value: decoder?.document?.metadata?.documentation },
-    { label: 'References', value: decoder?.document?.metadata?.references, type: 'url' },
-    {
-      label: 'Supports',
-      value: (
-        <BadgeGroup
-          emptyValue={DEFAULT_EMPTY_DATA}
-          values={decoder?.document?.metadata?.supports}
-        />
-      ),
-      type: 'raw',
-    },
-  ];
+  const metadata = decoder?.document?.metadata;
+  const name = decoder?.document?.name;
+  const id = decoder?.document?.id;
 
   const detailsContent = (
-    <EuiFlexGrid columns={2}>
-      {fields.map(({ label, value, type = 'text' }) => (
-        <EuiFlexItem key={label}>
-          <Metadata label={<EuiFormLabel>{label}</EuiFormLabel>} value={value} type={type} />
-        </EuiFlexItem>
-      ))}
-    </EuiFlexGrid>
+    <>
+      <DetailsOverview
+        description={metadata?.description}
+        descriptionTestSubj="decoder_flyout_description"
+        testSubj="decoder_flyout_overview"
+        items={[
+          {
+            title: 'Name',
+            description: name && (
+              <CopyableValue
+                value={name}
+                ariaLabel="Copy name"
+                testSubj="decoder_flyout_copy_name"
+              />
+            ),
+          },
+          { title: 'Integration', description: decoder?.integrations?.join(', ') },
+          { title: 'Author', description: metadata?.author },
+          { title: 'Created', description: formatDetailsDate(metadata?.date) },
+          { title: 'Modified', description: formatDetailsDate(metadata?.modified) },
+          {
+            title: 'ID',
+            description: id && (
+              <CopyableValue value={id} ariaLabel="Copy ID" testSubj="decoder_flyout_copy_id" />
+            ),
+          },
+          { title: 'Documentation', description: metadata?.documentation },
+          {
+            title: 'Supports',
+            description: metadata?.supports?.length ? (
+              <BadgeGroup values={metadata.supports} />
+            ) : null,
+          },
+        ]}
+      />
+      <ReferencesSection idPrefix="decoder_flyout" urls={metadata?.references} />
+    </>
   );
 
   const yamlContent = (
@@ -153,52 +143,42 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
       hideCloseButton
       ownFocus={true}
       size="m"
+      aria-labelledby="decoder_flyout_title"
       data-test-subj="decoder-details-flyout"
     >
-      <EuiFlyoutHeader hasBorder>
-        <EuiFlexGroup alignItems="center">
-          <EuiFlexItem>
-            <EuiText size="s">
-              <h2>
-                {decoder?.document?.name ? `Decoder details - ${decoder.document.name}` : 'Decoder'}
-              </h2>
-            </EuiText>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiSmallButtonIcon
-              aria-label="close"
-              iconType="cross"
-              display="empty"
-              iconSize="m"
-              onClick={onClose}
-              data-test-subj="close-decoder-details-flyout"
-            />
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiFlyoutHeader>
+      <DetailsFlyoutHeader
+        eyebrow="Decoder details"
+        title={metadata?.title || name}
+        titleId="decoder_flyout_title"
+        onClose={onClose}
+        closeButtonTestSubj="close-decoder-details-flyout"
+      />
       <EuiFlyoutBody>
         <EuiModalBody>
-          <EuiFlexGroup alignItems="center">
-            <EuiFlexItem>
-              <EuiButtonGroup
-                data-test-subj="decoder-details-view-selector"
-                legend="Decoder view selector"
-                options={viewOptions}
-                idSelected={selectedView}
-                onChange={(id) => setSelectedView(id)}
-                isDisabled={loading || !!error || !decoder}
-              />
-            </EuiFlexItem>
-            {decoder && (
-              <EuiFlexItem>
-                <EnabledHealth
-                  enabled={decoder.document?.enabled}
-                  data-test-subj="decoder_flyout_enabled"
-                />
-              </EuiFlexItem>
-            )}
-          </EuiFlexGroup>
-          <EuiSpacer size="xl" />
+          <DetailsToolbar
+            status={
+              decoder
+                ? [
+                    <EnabledHealth
+                      key="enabled"
+                      enabled={decoder.document?.enabled}
+                      data-test-subj="decoder_flyout_enabled"
+                    />,
+                    <LabeledBadge
+                      key="space"
+                      label="Space"
+                      value={decoder.space}
+                      testSubj="decoder_flyout_space"
+                    />,
+                  ]
+                : []
+            }
+            selectedView={selectedView}
+            onChangeView={setSelectedView}
+            viewSwitchTestSubj="decoder-details-view-selector"
+            viewSwitchLegend="Decoder view selector"
+            isDisabled={loading || !!error || !decoder}
+          />
           {renderContent()}
         </EuiModalBody>
       </EuiFlyoutBody>

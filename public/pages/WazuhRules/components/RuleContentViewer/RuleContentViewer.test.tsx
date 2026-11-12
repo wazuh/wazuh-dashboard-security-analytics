@@ -6,7 +6,7 @@
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { RuleItemInfoBase } from '../../../../../types';
-import { RuleContentViewer, formatRuleDate } from './RuleContentViewer';
+import { RuleContentViewer } from './RuleContentViewer';
 
 const LONG_URL = `https://example.com/${'very-long-path/'.repeat(20)}`;
 
@@ -110,16 +110,5 @@ describe('<RuleContentViewer />', () => {
     expect(screen.getByTestId('rule_flyout_yaml_rule')).toBeTruthy();
     fireEvent.click(screen.getByTestId('json'));
     expect(container.querySelector('code')?.textContent).toContain('"level": "high"');
-  });
-});
-
-describe('formatRuleDate', () => {
-  it('formats date-only values without a time', () => {
-    expect(formatRuleDate('2026-07-28')).toBe('Jul 28, 2026');
-  });
-
-  it('leaves empty values empty', () => {
-    expect(formatRuleDate(undefined)).toBeUndefined();
-    expect(formatRuleDate('')).toBe('');
   });
 });
