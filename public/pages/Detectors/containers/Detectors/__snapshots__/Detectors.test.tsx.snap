@@ -1903,11 +1903,6 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                               data-test-subj="detectorsStatusSummary-bar"
                                               onBlur={[Function]}
                                               onFocus={[Function]}
-                                              style={
-                                                Object {
-                                                  "backgroundColor": "#D3DAE6",
-                                                }
-                                              }
                                             >
                                               <button
                                                 aria-hidden="true"
@@ -1919,7 +1914,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                 style={
                                                   Object {
                                                     "backgroundColor": "#006BB4",
-                                                    "width": "100%",
+                                                    "flexGrow": 1,
                                                   }
                                                 }
                                                 tabIndex={-1}
@@ -2043,7 +2038,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                       className="tableStatusSummary__swatch"
                                                       style={
                                                         Object {
-                                                          "backgroundColor": "#D3DAE6",
+                                                          "backgroundColor": "#98A2B3",
                                                         }
                                                       }
                                                     />

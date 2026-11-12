@@ -62,8 +62,8 @@ describe('TableStatusSummary', () => {
   it('sizes each bar segment by its share of the whole table', () => {
     renderSummary({ statusCounts: { enabled: 3, disabled: 1 } });
 
-    expect(screen.getByTestId('tableStatusSummary-segment-enabled').style.width).toBe('75%');
-    expect(screen.getByTestId('tableStatusSummary-segment-disabled').style.width).toBe('25%');
+    expect(screen.getByTestId('tableStatusSummary-segment-enabled').style.flexGrow).toBe('3');
+    expect(screen.getByTestId('tableStatusSummary-segment-disabled').style.flexGrow).toBe('1');
   });
 
   it('draws no segment for a status with no items', () => {

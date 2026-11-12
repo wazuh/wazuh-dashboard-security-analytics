@@ -23,11 +23,12 @@ const DEFAULT_STATUS_LABELS: Record<EntityStatusValue, string> = {
   disabled: 'Disabled',
 };
 
-// Wazuh: the colors of the CTI explorer bars (an EuiProgress `primary` fill on its
-// light shade track), so every Wazuh bar chart reads alike.
+// Wazuh: enabled is the primary blue of the CTI explorer bars. Disabled is a count of
+// its own, not the empty track those bars draw in light shade, so it takes the medium
+// shade: a neutral grey that reads on a white panel (no green/red, nothing is wrong).
 const STATUS_COLORS: Record<EntityStatusValue, string> = {
   enabled: euiThemeVars.euiColorPrimary,
-  disabled: euiThemeVars.euiColorLightShade,
+  disabled: euiThemeVars.euiColorMediumShade,
 };
 
 export interface TableStatusSummaryProps {
@@ -112,11 +113,7 @@ export const TableStatusSummary: React.FC<TableStatusSummaryProps> = ({
       <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false} wrap={false}>
         <EuiFlexItem grow={false}>
           <EuiToolTip content={tooltip} position="top">
-            <div
-              className="tableStatusSummary__bar"
-              style={{ backgroundColor: euiThemeVars.euiColorLightShade }}
-              data-test-subj={`${testSubj}-bar`}
-            >
+            <div className="tableStatusSummary__bar" data-test-subj={`${testSubj}-bar`}>
               {STATUS_ORDER.filter((status) => statusCounts[status] > 0).map((status) => (
                 // Wazuh: the segments repeat the legend buttons below for the mouse, so
                 // keyboard and screen reader users get one control per status, not two.
@@ -133,8 +130,10 @@ export const TableStatusSummary: React.FC<TableStatusSummaryProps> = ({
                   ]
                     .filter(Boolean)
                     .join(' ')}
+                  // Wazuh: sized by flex-grow, not a percentage width, so the 1px gap
+                  // between the segments never pushes the bar past its width.
                   style={{
-                    width: `${(statusCounts[status] / statusTotal) * 100}%`,
+                    flexGrow: statusCounts[status],
                     backgroundColor: STATUS_COLORS[status],
                   }}
                   disabled={!onStatusClick}
