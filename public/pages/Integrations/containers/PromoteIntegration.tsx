@@ -24,7 +24,7 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { withGuardAsync } from '../utils/helpers';
+import { getPromoteChangeName, withGuardAsync } from '../utils/helpers';
 import { PromoteBySpaceModal } from '../components/PromoteModal';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
 import { SPACE_ACTIONS } from '../../../../common/constants';
@@ -40,16 +40,16 @@ const PromoteEntity: React.FC<{
   label: string;
   entity: PromoteChangeGroup;
   data: GetPromoteBySpaceResponse['response'];
-}> = ({ label, entity, data }) => {
+  space: PromoteSpaces;
+}> = ({ label, entity, data, space }) => {
   const memoizedData = useMemo(
     () =>
-      (data.promote?.changes?.[entity] ?? []).map(({ id, ...rest }) => {
-        const strippedId = id.replace(/^\w_/, '');
-        const available = data.available_promotions?.[entity];
-        const name = available?.[id] ?? available?.[strippedId] ?? id; // Prefer metadata.title from available_promotions; fallback to id
-        return { ...rest, id, name };
-      }),
-    [data.promote?.changes?.[entity], entity, data.available_promotions]
+      (data.promote?.changes?.[entity] ?? []).map(({ id, ...rest }) => ({
+        ...rest,
+        id,
+        name: getPromoteChangeName(entity, id, data.available_promotions, space as string),
+      })),
+    [data.promote?.changes?.[entity], entity, data.available_promotions, space]
   );
   return (
     <div>
@@ -131,7 +131,7 @@ const PromoteBySpace: React.FC<{ space: PromoteSpaces }> = compose(
                 const label = PROMOTE_ENTITIES_LABELS[entity];
                 return (
                   <React.Fragment key={entity}>
-                    <PromoteEntity label={label} entity={entity} data={promoteData} />
+                    <PromoteEntity label={label} entity={entity} data={promoteData} space={space} />
                     <EuiSpacer size="m" />
                   </React.Fragment>
                 );
@@ -163,10 +163,10 @@ export const PromoteIntegration: React.FC<PromoteIntegrationProps> = ({
 }) => {
   setBreadcrumbs([BREADCRUMBS.INTEGRATIONS, BREADCRUMBS.PROMOTE]);
 
-  const description =
-    'Promote the integrations, decoders and KVDBs, filters, rules and space changes to another space. Once promoted, they will be available in the another space.';
-
   const space = new URLSearchParams(location.search).get('space');
+  const nextSpace = space ? getNextSpace(space as PromoteSpaces) : null;
+  const target = nextSpace ? `the ${nextSpace} space` : 'the next space';
+  const description = `Promote the integrations, decoders, KVDBs, filters, rules and space settings to ${target}. Once promoted, they are available in ${target}.`;
 
   return (
     <EuiPanel>

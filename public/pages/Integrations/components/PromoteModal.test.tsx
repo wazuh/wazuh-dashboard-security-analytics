@@ -42,6 +42,29 @@ const confirmPromotion = async (notifications: any, history: any, space = 'draft
   });
 };
 
+describe('<PromoteBySpaceModal /> change list', () => {
+  it('names the space change after the source space, not the policy title', () => {
+    render(
+      <PromoteBySpaceModal
+        promote={
+          {
+            promote: { changes: { policy: [{ id: 'p1', operation: 'update' }] } },
+            available_promotions: { policy: { p1: 'Custom space' } },
+          } as any
+        }
+        closeModal={jest.fn()}
+        space={'draft' as any}
+        notifications={buildNotifications()}
+        history={{ push: jest.fn() } as any}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Space \(1\)/ }));
+
+    expect(screen.getByText('Draft space settings')).toBeTruthy();
+    expect(screen.queryByText('Custom space')).toBeNull();
+  });
+});
+
 describe('<PromoteBySpaceModal /> promotion toast', () => {
   beforeEach(() => {
     DataStore.integrations.promoteIntegration.mockReset();

@@ -208,6 +208,21 @@ describe('DecoderFormPage', () => {
     });
   });
 
+  it('names the decoder in the success toast, not the id the indexer returns', async () => {
+    DataStore.decoders.updateDecoder.mockResolvedValueOnce({
+      message: '14760864-c59b-4840-aff7-450164907dbd',
+    });
+    const wrapper = await renderPage('edit', { id: 'abc' });
+
+    await act(async () => {
+      subj(wrapper, 'submit-decoder').first().simulate('click');
+    });
+
+    expect(notifications.toasts.addSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Successfully updated decoder decoder/syslog/0', text: '' })
+    );
+  });
+
   it('blocks submission while the YAML does not parse', async () => {
     const wrapper = await renderPage('edit', { id: 'abc' });
     await switchTo(wrapper, 'yaml');
