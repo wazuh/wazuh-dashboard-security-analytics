@@ -6,6 +6,7 @@
 import {
   errorNotificationToast,
   getErrorMessage,
+  getIndicesForIntegration,
   getLogTypeFilterOptions,
   getLogTypeFilterOptionsFlat,
 } from './helpers';
@@ -135,5 +136,40 @@ describe('errorNotificationToast', () => {
     );
     expect(consoleError).toHaveBeenCalledWith('Failed to create integration:', error);
     consoleError.mockRestore();
+  });
+});
+
+describe('getIndicesForIntegration', () => {
+  it('fills an empty field with the data stream of the integration category', () => {
+    expect(getIndicesForIntegration([], 'system-activity', undefined)).toEqual([
+      'wazuh-events-v5-system-activity',
+    ]);
+  });
+
+  it('replaces the data stream filled in for the previous integration', () => {
+    expect(
+      getIndicesForIntegration(
+        ['wazuh-events-v5-system-activity'],
+        'applications',
+        'wazuh-events-v5-system-activity'
+      )
+    ).toEqual(['wazuh-events-v5-applications']);
+  });
+
+  it('keeps indices the user picked', () => {
+    const indices = ['wazuh-events-v5-security'];
+    expect(getIndicesForIntegration(indices, 'applications', undefined)).toBe(indices);
+    expect(
+      getIndicesForIntegration(
+        ['wazuh-events-v5-system-activity', 'wazuh-events-v5-security'],
+        'applications',
+        'wazuh-events-v5-system-activity'
+      )
+    ).toEqual(['wazuh-events-v5-system-activity', 'wazuh-events-v5-security']);
+  });
+
+  it('leaves the field as is when the integration is cleared', () => {
+    const indices = ['wazuh-events-v5-system-activity'];
+    expect(getIndicesForIntegration(indices, undefined, indices[0])).toBe(indices);
   });
 });

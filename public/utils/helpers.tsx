@@ -29,6 +29,7 @@ import {
   logTypeCategoryDescription,
   logTypesByCategories,
   scheduleUnitText,
+  WAZUH_EVENTS_DATA_STREAM_PREFIX,
 } from './constants';
 import {
   RuleItem,
@@ -425,17 +426,39 @@ export async function getLogTypeOptions() {
 
 export async function getIntegrationOptionsBySpace(
   space: string
-): Promise<{ id: string; value: string; label: string }[]> {
+): Promise<{ id: string; value: string; label: string; category: string }[]> {
   const integrations = await DataStore.integrations.getIntegrations(space);
   // [Wazuh custom] Use metadata object instead of document.title
   return integrations
-    .map(({ document: { metadata } }) => ({
+    .map(({ document: { metadata, category } }) => ({
       id: metadata?.title ?? '',
       value: metadata?.title ?? '',
       label: metadata?.title ?? '',
+      category,
     }))
     .filter((opt) => opt.label)
     .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
+}
+
+// Wazuh: an integration's events land in the data stream named after its category.
+function getIntegrationDataStream(category?: string): string | undefined {
+  return category ? `${WAZUH_EVENTS_DATA_STREAM_PREFIX}-${category}` : undefined;
+}
+
+/**
+ * Wazuh: the detector indices once an integration is picked. Its data stream fills the
+ * field when it is empty or still holds the stream filled in for the previous pick;
+ * indices the user chose are kept.
+ */
+export function getIndicesForIntegration(
+  indices: string[],
+  category: string | undefined,
+  previousDataStream: string | undefined
+): string[] {
+  const dataStream = getIntegrationDataStream(category);
+  const isUntouched =
+    indices.length === 0 || (indices.length === 1 && indices[0] === previousDataStream);
+  return dataStream && isUntouched ? [dataStream] : indices;
 }
 
 export function getLogTypeFilterOptions() {
