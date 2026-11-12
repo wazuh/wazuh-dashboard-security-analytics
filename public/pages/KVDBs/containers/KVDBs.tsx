@@ -44,7 +44,12 @@ import {
 } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { DeleteRowAction } from '../../../components/DeleteRowAction';
+import {
+  actionIsAllowedOnSpace,
+  getBlockedSpaceActionReason,
+  getPreviousSpace,
+} from '../../../../common/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import {
   DELETE_ACTION,
@@ -384,9 +389,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       icon="plusInCircle"
       href={`#${ROUTES.KVDBS_CREATE}`}
       disabled={isCreateActionDisabled}
-      toolTipContent={
-        isCreateActionDisabled ? `Cannot create KVDBs in the ${spaceFilter} space.` : undefined
-      }
+      toolTipContent={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.CREATE, 'KVDBs')}
     >
       Create
     </EuiContextMenuItem>,
@@ -399,11 +402,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       }}
       disabled={selectedItems.length === 0 || !isDeleteActionAllowed}
       toolTipContent={
-        !isDeleteActionAllowed
-          ? `Cannot delete KVDBs in the ${spaceFilter} space.`
-          : selectedItems.length === 0
-          ? 'Select KVDBs to delete'
-          : undefined
+        getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.DELETE, 'KVDBs') ??
+        (selectedItems.length === 0 ? 'Select KVDBs to delete' : undefined)
       }
     >
       Delete selected ({selectedItems.length})
@@ -472,6 +472,29 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             color: 'danger',
             onClick: (item: KVDBItem) => setItemForAction({ action: DELETE_ACTION, id: item.id }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
+          },
+          {
+            // Wazuh: where content changes only through promotion (test, custom) the Delete icon
+            // stays visible but disabled, so its tooltip says how to remove a KVDB from there.
+            // A custom action, because the default one drops its tooltip when disabled. It is
+            // never shown next to the default one, so the row keeps its actions inline.
+            name: 'Delete',
+            render: (item: KVDBItem) => (
+              <DeleteRowAction
+                name="Delete"
+                description="Delete KVDB"
+                disabledReason={getBlockedSpaceActionReason(
+                  spaceFilter,
+                  SPACE_ACTIONS.DELETE,
+                  'KVDBs'
+                )}
+                color="danger"
+                onClick={() => setItemForAction({ action: DELETE_ACTION, id: item.id })}
+              />
+            ),
+            available: () =>
+              !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE) &&
+              getPreviousSpace(spaceFilter) !== null,
           },
         ],
       },

@@ -10,7 +10,7 @@ import { SecurityAnalyticsPluginConfigType } from '../config';
 import { Get, Set } from '../../../src/plugins/opensearch_dashboards_utils/common';
 
 // Wazuh
-import { AllowedActionsBySpace, SpaceTypes, UserSpacesOrder } from './constants';
+import { AllowedActionsBySpace, SPACE_ACTIONS, SpaceTypes, UserSpacesOrder } from './constants';
 
 export function aggregateMetrics(
   metrics: PartialMetricsCounter,
@@ -128,3 +128,31 @@ export const getPreviousSpace = (space: PromoteSpaces) => {
 // the server integration-name joins, so one search text has one meaning per request.
 export const escapeWildcard = (value: string): string =>
   value.replace(/\\/g, '\\\\').replace(/\?/g, '\\?');
+
+// Wazuh: why a create/delete action is unavailable in a space, as the tooltip text of the
+// disabled control. Test and Custom receive content only through promotion, so the reason
+// names the way out (do it in Draft and promote) instead of only stating the restriction.
+// `entity` is the plural noun of the list, e.g. "rules". Returns `undefined` when the
+// action is allowed, so the result can feed `toolTipContent` directly.
+export const getBlockedSpaceActionReason = (
+  space: Space,
+  action: typeof SPACE_ACTIONS.CREATE | typeof SPACE_ACTIONS.DELETE,
+  entity: string
+): string | undefined => {
+  if (actionIsAllowedOnSpace(space, action)) {
+    return undefined;
+  }
+
+  const draftSpace = SpaceTypes.DRAFT.value;
+  if (getPreviousSpace(space as PromoteSpaces) !== null) {
+    const change =
+      action === SPACE_ACTIONS.CREATE
+        ? `To add one, create it in the ${draftSpace} space and promote it.`
+        : `To remove one, delete it in the ${draftSpace} space and promote the change.`;
+    const subject = `${entity.charAt(0).toUpperCase()}${entity.slice(1)}`;
+    return `${subject} in the ${space} space change only through promotion. ${change}`;
+  }
+
+  const verb = action === SPACE_ACTIONS.CREATE ? 'create' : 'delete';
+  return `Cannot ${verb} ${entity} in the ${space} space.`;
+};

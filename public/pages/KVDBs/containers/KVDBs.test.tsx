@@ -271,3 +271,39 @@ describe('<KVDBs /> URL resync', () => {
     expect(JSON.stringify(DataStore.kvdbs.searchKVDBs.mock.calls.at(-1)[0])).toContain('aws');
   });
 });
+
+describe('<KVDBs /> row Delete action by space', () => {
+  const mountInSpace = async (space: string) => {
+    const history = createFakeHistory('/kvdbs', `?space=${space}`);
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<KVDBs history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+    return wrapper;
+  };
+
+  it.each(['test', 'custom'])(
+    'keeps the Delete icon visible but disabled in %s, with the way to remove the KVDB',
+    async (space) => {
+      const wrapper = await mountInSpace(space);
+      const action = wrapper.find('DeleteRowAction').first();
+
+      expect(action.length).toBe(1);
+      expect(action.prop('disabledReason')).toBe(
+        `KVDBs in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change.`
+      );
+      expect(action.find('button').prop('disabled')).toBe(true);
+    }
+  );
+
+  it('keeps the regular Delete action in draft', async () => {
+    const wrapper = await mountInSpace('draft');
+    expect(wrapper.find('DeleteRowAction').length).toBe(0);
+  });
+
+  it('keeps the Delete icon hidden in standard', async () => {
+    const wrapper = await mountInSpace('standard');
+    expect(wrapper.find('DeleteRowAction').length).toBe(0);
+  });
+});

@@ -39,7 +39,12 @@ import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery, DECODERS_SEARCHABLE_FIELDS_LABEL } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { DeleteRowAction } from '../../../components/DeleteRowAction';
+import {
+  actionIsAllowedOnSpace,
+  getBlockedSpaceActionReason,
+  getPreviousSpace,
+} from '../../../../common/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import {
   DELETE_ACTION,
@@ -385,6 +390,28 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
               setItemForAction({ action: DELETE_ACTION, id: item.id }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
+          {
+            // Wazuh: where content changes only through promotion (test, custom) the Delete icon
+            // stays visible but disabled, so its tooltip says how to remove a decoder from there.
+            // A custom action, because the default one drops its tooltip when disabled. It is
+            // never shown next to the default one, so the row keeps its actions inline.
+            name: 'Delete',
+            render: (item: DecoderItem) => (
+              <DeleteRowAction
+                name="Delete"
+                description="Delete decoder"
+                disabledReason={getBlockedSpaceActionReason(
+                  spaceFilter,
+                  SPACE_ACTIONS.DELETE,
+                  'decoders'
+                )}
+                onClick={() => setItemForAction({ action: DELETE_ACTION, id: item.id })}
+              />
+            ),
+            available: () =>
+              !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE) &&
+              getPreviousSpace(spaceFilter) !== null,
+          },
         ],
       },
     ],
@@ -397,11 +424,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       icon="plusInCircle"
       href={`#${ROUTES.DECODERS_CREATE}`}
       disabled={!actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE)}
-      toolTipContent={
-        !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE)
-          ? `Cannot create decoders in the ${spaceFilter} space.`
-          : undefined
-      }
+      toolTipContent={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.CREATE, 'decoders')}
     >
       Create
     </EuiContextMenuItem>,
@@ -416,11 +439,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         selectedItems.length === 0 || !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE)
       }
       toolTipContent={
-        !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE)
-          ? `Cannot delete decoders in the ${spaceFilter} space.`
-          : selectedItems.length === 0
-          ? 'Select decoders to delete'
-          : undefined
+        getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.DELETE, 'decoders') ??
+        (selectedItems.length === 0 ? 'Select decoders to delete' : undefined)
       }
     >
       Delete selected ({selectedItems.length})
