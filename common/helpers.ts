@@ -136,7 +136,7 @@ export const escapeWildcard = (value: string): string =>
 // action is allowed, so the result can feed `toolTipContent` directly.
 export const getBlockedSpaceActionReason = (
   space: Space,
-  action: typeof SPACE_ACTIONS.CREATE | typeof SPACE_ACTIONS.DELETE,
+  action: typeof SPACE_ACTIONS.CREATE | typeof SPACE_ACTIONS.EDIT | typeof SPACE_ACTIONS.DELETE,
   entity: string
 ): string | undefined => {
   if (actionIsAllowedOnSpace(space, action)) {
@@ -145,14 +145,14 @@ export const getBlockedSpaceActionReason = (
 
   const draftSpace = SpaceTypes.DRAFT.value;
   if (getPreviousSpace(space as PromoteSpaces) !== null) {
-    const change =
-      action === SPACE_ACTIONS.CREATE
-        ? `To add one, create it in the ${draftSpace} space and promote it.`
-        : `To remove one, delete it in the ${draftSpace} space and promote the change.`;
+    const change = {
+      [SPACE_ACTIONS.CREATE]: `To add one, create it in the ${draftSpace} space and promote it.`,
+      [SPACE_ACTIONS.EDIT]: `To change one, edit it in the ${draftSpace} space and promote the change.`,
+      [SPACE_ACTIONS.DELETE]: `To remove one, delete it in the ${draftSpace} space and promote the change.`,
+    }[action];
     const subject = `${entity.charAt(0).toUpperCase()}${entity.slice(1)}`;
     return `${subject} in the ${space} space change only through promotion. ${change}`;
   }
 
-  const verb = action === SPACE_ACTIONS.CREATE ? 'create' : 'delete';
-  return `Cannot ${verb} ${entity} in the ${space} space.`;
+  return `Cannot ${action} ${entity} in the ${space} space.`;
 };

@@ -42,9 +42,18 @@ describe('getBlockedSpaceActionReason', () => {
     );
   });
 
+  it.each(['test', 'custom'] as const)('explains the edit path through draft in %s', (space) => {
+    expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.EDIT, 'decoders')).toBe(
+      `Decoders in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change.`
+    );
+  });
+
   it('keeps a plain restriction in standard, which has no promotion path', () => {
     expect(getBlockedSpaceActionReason('standard', SPACE_ACTIONS.DELETE, 'decoders')).toBe(
       'Cannot delete decoders in the standard space.'
+    );
+    expect(getBlockedSpaceActionReason('standard', SPACE_ACTIONS.EDIT, 'decoders')).toBe(
+      'Cannot edit decoders in the standard space.'
     );
     expect(getBlockedSpaceActionReason('standard', SPACE_ACTIONS.CREATE, 'decoders')).toBe(
       'Cannot create decoders in the standard space.'

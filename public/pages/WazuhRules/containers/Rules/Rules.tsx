@@ -49,7 +49,7 @@ import { getSeverityColor, getSeverityLabel } from '../../../Correlations/utils/
 import { ruleSeverity } from '../../../Rules/utils/constants';
 import { RuleViewerFlyout } from '../../components/RuleViewerFlyout/RuleViewerFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../../common/constants';
-import { DeleteRowAction } from '../../../../components/DeleteRowAction';
+import { RowAction } from '../../../../components/RowAction';
 import {
   actionIsAllowedOnSpace,
   getBlockedSpaceActionReason,
@@ -492,25 +492,40 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
           {
-            // Wazuh: where content changes only through promotion (test, custom) the Delete icon
-            // stays visible but disabled, so its tooltip says how to remove a rule from there.
-            // A custom action, because the default one drops its tooltip when disabled. It is
-            // never shown next to the default one, so the row keeps its actions inline.
-            name: 'Delete',
-            render: (item: RuleTableItem) => (
-              <DeleteRowAction
-                name="Delete"
-                description="Delete rule"
-                disabledReason={getBlockedSpaceActionReason(
-                  spaceFilter,
-                  SPACE_ACTIONS.DELETE,
-                  'rules'
-                )}
-                onClick={() => setItemForAction({ action: DELETE_ACTION, id: item.ruleId })}
-              />
+            // Wazuh: where content changes only through promotion (test, custom) the Edit and
+            // Delete icons stay visible but disabled, so their tooltips say how to change or
+            // remove a rule from there. A custom action, because the default one drops its
+            // tooltip when disabled. Both icons live in ONE action: with two more actions the row
+            // would have more than 2 and OUI would collapse them into the "All actions" popover.
+            name: 'Edit and Delete',
+            render: (_item: RuleTableItem) => (
+              <>
+                <RowAction
+                  name="Edit"
+                  iconType="pencil"
+                  description="Edit rule"
+                  disabledReason={getBlockedSpaceActionReason(
+                    spaceFilter,
+                    SPACE_ACTIONS.EDIT,
+                    'rules'
+                  )}
+                  onClick={() => {}}
+                />
+                <RowAction
+                  name="Delete"
+                  iconType="trash"
+                  description="Delete rule"
+                  disabledReason={getBlockedSpaceActionReason(
+                    spaceFilter,
+                    SPACE_ACTIONS.DELETE,
+                    'rules'
+                  )}
+                  onClick={() => {}}
+                />
+              </>
             ),
             available: () =>
-              !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE) &&
+              !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT) &&
               getPreviousSpace(spaceFilter) !== null,
           },
         ],

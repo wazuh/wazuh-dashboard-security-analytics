@@ -223,7 +223,7 @@ describe('<Decoders /> typed filter clauses', () => {
   });
 });
 
-describe('<Decoders /> row Delete action by space', () => {
+describe('<Decoders /> row Edit and Delete actions by space', () => {
   const mountInSpace = async (space: string) => {
     const history = createFakeHistory('/decoders', `?space=${space}`);
     let wrapper: any;
@@ -235,26 +235,30 @@ describe('<Decoders /> row Delete action by space', () => {
   };
 
   it.each(['test', 'custom'])(
-    'keeps the Delete icon visible but disabled in %s, with the way to remove the decoder',
+    'keeps the Edit and Delete icons visible but disabled in %s, with the way to change or remove the decoder',
     async (space) => {
       const wrapper = await mountInSpace(space);
-      const action = wrapper.find('DeleteRowAction').first();
+      const [edit, remove] = wrapper.find('RowAction').map((n: any) => n);
 
-      expect(action.length).toBe(1);
-      expect(action.prop('disabledReason')).toBe(
+      expect(wrapper.find('RowAction').length).toBe(2);
+      expect(edit.prop('disabledReason')).toBe(
+        `Decoders in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change.`
+      );
+      expect(remove.prop('disabledReason')).toBe(
         `Decoders in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change.`
       );
-      expect(action.find('button').prop('disabled')).toBe(true);
+      expect(edit.find('button').prop('disabled')).toBe(true);
+      expect(remove.find('button').prop('disabled')).toBe(true);
     }
   );
 
-  it('keeps the regular Delete action in draft', async () => {
+  it('keeps the regular Edit and Delete actions in draft', async () => {
     const wrapper = await mountInSpace('draft');
-    expect(wrapper.find('DeleteRowAction').length).toBe(0);
+    expect(wrapper.find('RowAction').length).toBe(0);
   });
 
-  it('keeps the Delete icon hidden in standard', async () => {
+  it('keeps Edit and Delete hidden in standard', async () => {
     const wrapper = await mountInSpace('standard');
-    expect(wrapper.find('DeleteRowAction').length).toBe(0);
+    expect(wrapper.find('RowAction').length).toBe(0);
   });
 });

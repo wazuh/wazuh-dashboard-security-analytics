@@ -6,13 +6,13 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { mount } from 'enzyme';
-import { DeleteRowAction } from './DeleteRowAction';
+import { RowAction } from './RowAction';
 
-describe('DeleteRowAction', () => {
+describe('RowAction', () => {
   it('is enabled and calls onClick when there is no disabled reason', () => {
     const onClick = jest.fn();
     const { getByLabelText } = render(
-      <DeleteRowAction name="Delete" description="Delete rule" onClick={onClick} />
+      <RowAction name="Delete" iconType="trash" description="Delete rule" onClick={onClick} />
     );
 
     const button = getByLabelText('Delete');
@@ -24,8 +24,9 @@ describe('DeleteRowAction', () => {
   it('is disabled and does not call onClick when a reason is given', () => {
     const onClick = jest.fn();
     const { getByLabelText } = render(
-      <DeleteRowAction
+      <RowAction
         name="Delete"
+        iconType="trash"
         description="Delete rule"
         disabledReason="Delete it in the draft space and promote the change."
         onClick={onClick}
@@ -41,8 +42,9 @@ describe('DeleteRowAction', () => {
   it('uses the disabled reason as the tooltip, and the description when enabled', () => {
     const reason = 'Delete it in the draft space and promote the change.';
     const disabled = mount(
-      <DeleteRowAction
+      <RowAction
         name="Delete"
+        iconType="trash"
         description="Delete rule"
         disabledReason={reason}
         onClick={jest.fn()}
@@ -51,7 +53,7 @@ describe('DeleteRowAction', () => {
     expect(disabled.find('EuiToolTip').prop('content')).toBe(reason);
 
     const enabled = mount(
-      <DeleteRowAction name="Delete" description="Delete rule" onClick={jest.fn()} />
+      <RowAction name="Delete" iconType="trash" description="Delete rule" onClick={jest.fn()} />
     );
     expect(enabled.find('EuiToolTip').prop('content')).toBe('Delete rule');
   });

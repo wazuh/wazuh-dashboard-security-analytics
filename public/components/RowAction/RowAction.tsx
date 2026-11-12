@@ -6,9 +6,10 @@
 import React from 'react';
 import { EuiButtonIcon, EuiToolTip } from '@elastic/eui';
 
-export interface DeleteRowActionProps {
+export interface RowActionProps {
   /** Accessible name of the button. */
   name: string;
+  iconType: 'trash' | 'pencil';
   /** Tooltip of the enabled action, e.g. "Delete rule". */
   description: string;
   /**
@@ -21,20 +22,21 @@ export interface DeleteRowActionProps {
 }
 
 // Wazuh: the default OUI table icon action drops its tooltip when disabled and only takes a
-// string description, so a disabled row Delete needs this custom action to explain itself.
-export const DeleteRowAction = ({
+// string description, so a disabled row Edit/Delete needs this custom action to explain itself.
+export const RowAction = ({
   name,
+  iconType,
   description,
   disabledReason,
   onClick,
   color = 'primary',
-}: DeleteRowActionProps) => {
+}: RowActionProps) => {
   const isDisabled = disabledReason !== undefined;
   return (
     <EuiToolTip content={isDisabled ? disabledReason : description} delay="long">
       <EuiButtonIcon
         aria-label={name}
-        iconType="trash"
+        iconType={iconType}
         color={color}
         isDisabled={isDisabled}
         onClick={onClick}
