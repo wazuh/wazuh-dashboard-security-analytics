@@ -41,6 +41,7 @@ import { ruleTypes } from "../../../../Rules/utils/constants";
 import { ThreatIntelligence } from "../components/ThreatIntelligence/ThreatIntelligence";
 import {
   addDetectionType,
+  getIndicesForIntegration,
   removeDetectionType,
 } from "../../../../../utils/helpers";
 
@@ -75,6 +76,8 @@ export default class DefineDetector extends Component<
   public static contextType?:
     | React.Context<SecurityAnalyticsContextType | null>
     | undefined = SecurityAnalyticsContext;
+  // Wazuh: the data stream last filled in from the integration, so a later pick replaces it.
+  private preselectedDataStream?: string;
   private standardLogTypes = new Set(
     ruleTypes
       .filter((ruleType) => ruleType.isStandard)
@@ -170,11 +173,27 @@ export default class DefineDetector extends Component<
     );
   };
 
-  onDetectorTypeChange = (detectorType: string) => {
+  onDetectorTypeChange = (detectorType: string, category?: string) => {
+    const { inputs } = this.state.detector;
+    const indices = inputs[0].detector_input.indices;
+    const newIndices = getIndicesForIntegration(indices, category, this.preselectedDataStream);
+    if (newIndices !== indices) {
+      this.preselectedDataStream = newIndices[0];
+    }
+
     const newDetector: Detector = {
       ...this.state.detector,
       detector_type: detectorType,
       threat_intel_enabled: false,
+      inputs: [
+        {
+          detector_input: {
+            ...inputs[0].detector_input,
+            indices: newIndices,
+          },
+        },
+        ...inputs.slice(1),
+      ],
     };
 
     this.updateDetectorCreationState(newDetector);

@@ -16,6 +16,7 @@ import { SpaceSelector } from '../../../../../../components/SpaceSelector/SpaceS
 import { SpaceTypes } from '../../../../../../../common/constants';
 import { RulesContentUpdateWarning } from '.';
 import { IntegrationComboBox } from '../../../../../../components/IntegrationComboBox';
+import { IntegrationOption } from '../../../../../../components/IntegrationComboBox/useIntegrationSelector';
 
 interface DetectorTypeProps {
   detectorType: string;
@@ -24,7 +25,7 @@ interface DetectorTypeProps {
   loadingRules?: boolean;
   // Wazuh: add selectedSpace and to props to update the space in forms
   selectedSpace?: string;
-  onDetectorTypeChange: (detectorType: string) => void;
+  onDetectorTypeChange: (detectorType: string, category?: string) => void;
   onPageChange: (page: { index: number; size: number }) => void;
   onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
   onAllRulesToggle: (enabled: boolean) => void;
@@ -35,7 +36,7 @@ interface DetectorTypeProps {
 interface DetectorTypeState {
   fieldTouched: boolean;
   selectedSpace: string;
-  detectorTypeOptions: { id: string; value: string; label: string }[];
+  detectorTypeOptions: IntegrationOption[];
 }
 
 export default class DetectorType extends Component<DetectorTypeProps, DetectorTypeState> {
@@ -71,9 +72,9 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
     await this.loadOptionsForSpace(space);
   };
 
-  onChange = (detectorType: string) => {
+  onChange = (option?: IntegrationOption) => {
     this.setState({ fieldTouched: true });
-    this.props.onDetectorTypeChange(detectorType);
+    this.props.onDetectorTypeChange(option?.value || '', option?.category);
   };
 
   isInvalid = () => {
@@ -141,7 +142,7 @@ export default class DetectorType extends Component<DetectorTypeProps, DetectorT
             options={detectorTypeOptions}
             isInvalid={this.isInvalid()}
             onChange={(e) => {
-              this.onChange(e[0]?.value || '');
+              this.onChange(e[0]);
             }}
             resourceName="detectors"
             data-test-subj="integration_dropdown"
