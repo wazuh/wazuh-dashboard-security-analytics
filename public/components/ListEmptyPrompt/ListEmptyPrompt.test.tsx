@@ -15,7 +15,7 @@ describe('ListEmptyPrompt', () => {
     );
 
     getByText('No decoders match your search or filters');
-    expect(queryByText(/shipped with Wazuh/)).toBeNull();
+    expect(queryByText(/synced from the CTI feed/)).toBeNull();
   });
 
   it('drops the word "filters" for lists that only offer free-text search', () => {
@@ -70,7 +70,7 @@ describe('ListEmptyPrompt', () => {
       />
     );
 
-    expect(queryByText(/shipped with Wazuh/)).toBeNull();
+    expect(queryByText(/synced from the CTI feed/)).toBeNull();
   });
 
   it('renders no body when the caller passes null', () => {

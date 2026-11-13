@@ -19,7 +19,12 @@ import { getNextSpace } from '../../../../common/helpers';
 import { PromoteChangeDiff } from './PromoteChangeDiff';
 import { PROMOTE_ENTITIES_LABELS, PROMOTE_ENTITIES_ORDER, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { successNotificationToast } from '../../../utils/helpers';
+import {
+  CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS,
+  PROMOTED_TO_CUSTOM_NOTICE,
+  PROMOTED_TO_TEST_NOTICE,
+} from '../utils/constants';
+import { SpaceTypes } from '../../../../common/constants';
 import { isRootDecoderRequiementError, RootDecoderRequirement } from './RootDecoderRequirement';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
@@ -80,7 +85,15 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
       changes: promote.promote.changes,
     });
     if (success) {
-      successNotificationToast(notifications, 'promoted', `[${space}] space`);
+      const nextSpace = getNextSpace(space);
+      notifications.toasts.addSuccess({
+        title: `Promoted ${space} to ${nextSpace}`,
+        text:
+          nextSpace === SpaceTypes.CUSTOM.value
+            ? PROMOTED_TO_CUSTOM_NOTICE
+            : PROMOTED_TO_TEST_NOTICE,
+        toastLifeTimeMs: CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS,
+      });
       history.push(ROUTES.INTEGRATIONS);
     } else if (isRootDecoderRequiementError(error)) {
       setRequireRootDecoderError(true);

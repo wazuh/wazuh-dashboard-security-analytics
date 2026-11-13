@@ -103,6 +103,29 @@ describe('Detectors store specs', () => {
     expect(pending.ok).toBe(false);
   });
 
+  it('replaces the in-progress toast with the result toast', async () => {
+    const showToast = jest.fn();
+    DataStore.detectors.setHandlers(jest.fn(), showToast);
+    DataStore.detectors.setState(
+      {
+        pendingRequests: [Promise.resolve({ ok: false })],
+        detectorInput: {
+          detector: { detector_type: 'test_detector_type' } as typeof DetectorMock,
+        } as CreateDetectorState,
+      },
+      browserHistoryMock
+    );
+    expect(showToast).toHaveBeenLastCalledWith([
+      expect.objectContaining({ title: 'Attempting to create the detector.' }),
+    ]);
+
+    await DataStore.detectors.resolvePendingCreationRequest();
+
+    expect(showToast).toHaveBeenLastCalledWith([
+      expect.objectContaining({ title: 'Create detector failed.' }),
+    ]);
+  });
+
   describe('countByIntegration', () => {
     afterEach(() => {
       jest.restoreAllMocks();

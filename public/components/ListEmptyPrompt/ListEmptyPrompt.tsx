@@ -99,7 +99,7 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
                   <EuiLink onClick={onGoToStandard}>
                     {SpaceTypes.STANDARD.label.toLowerCase()} space
                   </EuiLink>{' '}
-                  to see the {entity} shipped with Wazuh
+                  to see the {entity} synced from the CTI feed
                 </>
               )}
               .
