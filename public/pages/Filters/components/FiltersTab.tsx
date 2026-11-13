@@ -21,7 +21,7 @@ import { DataStore } from '../../../store/DataStore';
 import { ROUTES } from '../../../utils/constants';
 import { pluralize } from '../../../utils/helpers';
 import { FiltersAllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
-import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
+import { actionIsAllowedOnSpace, getBlockedSpaceActionReason } from '../../../../common/helpers';
 import {
   DELETE_ACTION,
   DELETE_SELECTED_ACTION,
@@ -179,14 +179,12 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
             href={`#${ROUTES.FILTERS_CREATE}`}
             onClick={() => setIsPopoverOpen(false)}
             disabled={!isCreateActionAllowed}
-            toolTipContent={
-              !isCreateActionAllowed
-                ? `Filters can only be created in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.CREATE,
-                    FiltersAllowedActionsBySpace
-                  ).join(', ')}`
-                : undefined
-            }
+            toolTipContent={getBlockedSpaceActionReason(
+              spaceFilter,
+              SPACE_ACTIONS.CREATE,
+              'filters',
+              FiltersAllowedActionsBySpace
+            )}
           >
             Create
           </EuiContextMenuItem>,
@@ -195,14 +193,12 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
             icon="trash"
             disabled={!isDeleteActionAllowed || selectedItems.length === 0}
             toolTipContent={
-              !isDeleteActionAllowed
-                ? `Filters can only be deleted in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.DELETE,
-                    FiltersAllowedActionsBySpace
-                  ).join(', ')}`
-                : selectedItems.length === 0
-                ? 'Select filters to delete'
-                : undefined
+              getBlockedSpaceActionReason(
+                spaceFilter,
+                SPACE_ACTIONS.DELETE,
+                'filters',
+                FiltersAllowedActionsBySpace
+              ) ?? (selectedItems.length === 0 ? 'Select filters to delete' : undefined)
             }
             onClick={() => {
               setItemForAction({ action: DELETE_SELECTED_ACTION });

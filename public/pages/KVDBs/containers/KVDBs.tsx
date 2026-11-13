@@ -44,7 +44,8 @@ import {
 } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { getBlockedRowActions } from '../../../components/BlockedMenuAction';
+import { actionIsAllowedOnSpace, getBlockedSpaceActionReason } from '../../../../common/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import {
   DELETE_ACTION,
@@ -384,9 +385,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       icon="plusInCircle"
       href={`#${ROUTES.KVDBS_CREATE}`}
       disabled={isCreateActionDisabled}
-      toolTipContent={
-        isCreateActionDisabled ? `Cannot create KVDBs in the ${spaceFilter} space.` : undefined
-      }
+      toolTipContent={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.CREATE, 'KVDBs')}
     >
       Create
     </EuiContextMenuItem>,
@@ -399,11 +398,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       }}
       disabled={selectedItems.length === 0 || !isDeleteActionAllowed}
       toolTipContent={
-        !isDeleteActionAllowed
-          ? `Cannot delete KVDBs in the ${spaceFilter} space.`
-          : selectedItems.length === 0
-          ? 'Select KVDBs to delete'
-          : undefined
+        getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.DELETE, 'KVDBs') ??
+        (selectedItems.length === 0 ? 'Select KVDBs to delete' : undefined)
       }
     >
       Delete selected ({selectedItems.length})
@@ -473,6 +469,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             onClick: (item: KVDBItem) => setItemForAction({ action: DELETE_ACTION, id: item.id }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
+          ...getBlockedRowActions({ entity: 'KVDBs', getSpace: () => spaceFilter }),
         ],
       },
     ],

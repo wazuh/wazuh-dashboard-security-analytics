@@ -113,12 +113,20 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     { label: 'Description', value: metadata.description },
     { label: 'Created', value: metadata.date, type: 'date' },
     { label: 'Modified', value: metadata.modified, type: 'date' },
-    { label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={supports} />, type: 'raw' },
-    { label: 'Check', value: (
-      <EuiCodeBlock language="yaml" fontSize="s" paddingSize="s" isCopyable>
-        {checkDisplayYaml}
-      </EuiCodeBlock>
-    ), type: 'raw' },
+    {
+      label: 'Supports',
+      value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={supports} />,
+      type: 'raw',
+    },
+    {
+      label: 'Check',
+      value: (
+        <EuiCodeBlock language="yaml" fontSize="s" paddingSize="s" isCopyable>
+          {checkDisplayYaml}
+        </EuiCodeBlock>
+      ),
+      type: 'raw',
+    },
     { label: 'Documentation', value: metadata.documentation },
     { label: 'SHA256', value: filter?.hash?.sha256 },
     { label: 'References', value: references, type: 'url' },
@@ -179,14 +187,18 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
         <EuiModalBody>
           <EuiFlexGroup alignItems="center">
             <EuiFlexItem>
-              <EuiButtonGroup
-                data-test-subj="change-editor-type"
-                legend="This is editor type selector"
-                options={viewOptions}
-                idSelected={selectedView}
-                onChange={(id: string) => setSelectedView(id)}
-                isDisabled={loading || !!error || !filter}
-              />
+              <EuiFlexGroup responsive={false}>
+                <EuiFlexItem grow={false}>
+                  <EuiButtonGroup
+                    data-test-subj="change-editor-type"
+                    legend="This is editor type selector"
+                    options={viewOptions}
+                    idSelected={selectedView}
+                    onChange={(id: string) => setSelectedView(id)}
+                    isDisabled={loading || !!error || !filter}
+                  />
+                </EuiFlexItem>
+              </EuiFlexGroup>
             </EuiFlexItem>
             {filter && (
               <EuiFlexItem>

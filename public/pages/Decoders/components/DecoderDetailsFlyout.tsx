@@ -180,14 +180,18 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
         <EuiModalBody>
           <EuiFlexGroup alignItems="center">
             <EuiFlexItem>
-              <EuiButtonGroup
-                data-test-subj="decoder-details-view-selector"
-                legend="Decoder view selector"
-                options={viewOptions}
-                idSelected={selectedView}
-                onChange={(id) => setSelectedView(id)}
-                isDisabled={loading || !!error || !decoder}
-              />
+              <EuiFlexGroup responsive={false}>
+                <EuiFlexItem grow={false}>
+                  <EuiButtonGroup
+                    data-test-subj="decoder-details-view-selector"
+                    legend="Decoder view selector"
+                    options={viewOptions}
+                    idSelected={selectedView}
+                    onChange={(id) => setSelectedView(id)}
+                    isDisabled={loading || !!error || !decoder}
+                  />
+                </EuiFlexItem>
+              </EuiFlexGroup>
             </EuiFlexItem>
             {decoder && (
               <EuiFlexItem>

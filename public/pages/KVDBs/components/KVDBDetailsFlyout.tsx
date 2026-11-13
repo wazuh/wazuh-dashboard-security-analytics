@@ -161,14 +161,18 @@ export const KVDBDetailsFlyout: React.FC<KVDBDetailsFlyoutProps> = ({ kvdbId, on
         <EuiModalBody>
           <EuiFlexGroup alignItems="center">
             <EuiFlexItem>
-              <EuiButtonGroup
-                data-test-subj="change-editor-type"
-                legend="This is editor type selector"
-                options={viewOptions}
-                idSelected={selectedView}
-                onChange={(id) => setSelectedView(id)}
-                isDisabled={loading || !!error || !kvdb}
-              />
+              <EuiFlexGroup responsive={false}>
+                <EuiFlexItem grow={false}>
+                  <EuiButtonGroup
+                    data-test-subj="change-editor-type"
+                    legend="This is editor type selector"
+                    options={viewOptions}
+                    idSelected={selectedView}
+                    onChange={(id) => setSelectedView(id)}
+                    isDisabled={loading || !!error || !kvdb}
+                  />
+                </EuiFlexItem>
+              </EuiFlexGroup>
             </EuiFlexItem>
             {kvdb && (
               <EuiFlexItem>

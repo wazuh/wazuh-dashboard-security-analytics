@@ -89,13 +89,17 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
     <EuiModalBody>
       <EuiFlexGroup alignItems="center">
         <EuiFlexItem>
-          <EuiButtonGroup
-            data-test-subj="change-editor-type"
-            legend="This is editor type selector"
-            options={editorTypes}
-            idSelected={selectedEditorType}
-            onChange={(id) => setSelectedEditorType(id)}
-          />
+          <EuiFlexGroup responsive={false}>
+            <EuiFlexItem grow={false}>
+              <EuiButtonGroup
+                data-test-subj="change-editor-type"
+                legend="This is editor type selector"
+                options={editorTypes}
+                idSelected={selectedEditorType}
+                onChange={(id) => setSelectedEditorType(id)}
+              />
+            </EuiFlexItem>
+          </EuiFlexGroup>
         </EuiFlexItem>
         <EuiFlexItem>
           <EnabledHealth enabled={ruleData.enabled} data-test-subj="rule_flyout_enabled" />

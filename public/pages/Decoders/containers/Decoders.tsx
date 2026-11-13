@@ -39,7 +39,8 @@ import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery, DECODERS_SEARCHABLE_FIELDS_LABEL } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { getBlockedRowActions } from '../../../components/BlockedMenuAction';
+import { actionIsAllowedOnSpace, getBlockedSpaceActionReason } from '../../../../common/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import {
   DELETE_ACTION,
@@ -385,6 +386,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
               setItemForAction({ action: DELETE_ACTION, id: item.id }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
+          ...getBlockedRowActions({ entity: 'decoders', getSpace: () => spaceFilter }),
         ],
       },
     ],
@@ -397,11 +399,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
       icon="plusInCircle"
       href={`#${ROUTES.DECODERS_CREATE}`}
       disabled={!actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE)}
-      toolTipContent={
-        !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE)
-          ? `Cannot create decoders in the ${spaceFilter} space.`
-          : undefined
-      }
+      toolTipContent={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.CREATE, 'decoders')}
     >
       Create
     </EuiContextMenuItem>,
@@ -416,11 +414,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
         selectedItems.length === 0 || !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE)
       }
       toolTipContent={
-        !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE)
-          ? `Cannot delete decoders in the ${spaceFilter} space.`
-          : selectedItems.length === 0
-          ? 'Select decoders to delete'
-          : undefined
+        getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.DELETE, 'decoders') ??
+        (selectedItems.length === 0 ? 'Select decoders to delete' : undefined)
       }
     >
       Delete selected ({selectedItems.length})

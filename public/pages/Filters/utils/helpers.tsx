@@ -6,10 +6,11 @@
 import React from 'react';
 import { EuiLink } from '@elastic/eui';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { FilterItem } from '../../../../types';
+import { FilterItem, Space } from '../../../../types';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { FiltersAllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { getBlockedRowActions } from '../../../components/BlockedMenuAction';
 import { FILTER_TYPE_OPTIONS } from './constants';
 
 export interface FilterTableItem {
@@ -102,6 +103,11 @@ export const getFiltersTableColumns = (
         available: () =>
           actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE, FiltersAllowedActionsBySpace),
       },
+      ...getBlockedRowActions({
+        entity: 'filters',
+        getSpace: () => spaceFilter as Space,
+        allowedActionsBySpace: FiltersAllowedActionsBySpace,
+      }),
     ],
   },
 ];
