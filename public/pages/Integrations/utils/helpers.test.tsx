@@ -8,6 +8,7 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import {
   buildIntegrationDetailsRoute,
   getIntegrationsTableColumns,
+  getPromoteChangeName,
   getSelectedTabFromUrl,
   IntegrationTableItem,
 } from './helpers';
@@ -180,5 +181,28 @@ describe('getSelectedTabFromUrl', () => {
     expect(getSelectedTabFromUrl('')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
     expect(getSelectedTabFromUrl('?space=draft')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
     expect(getSelectedTabFromUrl('?tab=nope')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
+  });
+});
+
+describe('getPromoteChangeName', () => {
+  const available = {
+    decoders: { d_abc: 'decoder/apache-access/0', xyz: 'decoder/syslog/0' },
+  } as any;
+
+  it('names the policy row after the source space, not the policy title', () => {
+    expect(
+      getPromoteChangeName('policy', 'p1', { policy: { p1: 'Custom space' } } as any, 'draft')
+    ).toBe('Draft space settings');
+  });
+
+  it('uses the title listed in the available promotions', () => {
+    expect(getPromoteChangeName('decoders', 'd_abc', available, 'draft')).toBe(
+      'decoder/apache-access/0'
+    );
+    expect(getPromoteChangeName('decoders', 'd_xyz', available, 'draft')).toBe('decoder/syslog/0');
+  });
+
+  it('falls back to the id when no title is listed', () => {
+    expect(getPromoteChangeName('decoders', 'missing', available, 'draft')).toBe('missing');
   });
 });

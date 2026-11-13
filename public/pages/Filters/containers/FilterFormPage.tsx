@@ -167,13 +167,13 @@ export const FilterFormPage: React.FC<FilterFormPageProps> = ({
         if (action === FILTER_ACTION.CREATE) {
           const result = await DataStore.filters.createFilter({ resourceYaml, space });
           if (result) {
-            successNotificationToast(notifications, 'created', 'filter', result.message);
+            successNotificationToast(notifications, 'created', `filter ${values.name}`);
             history.push(ROUTES.FILTERS);
           }
         } else if (filterId) {
           const result = await DataStore.filters.updateFilter(filterId, { resourceYaml, space });
           if (result) {
-            successNotificationToast(notifications, 'updated', 'filter', result.message);
+            successNotificationToast(notifications, 'updated', `filter ${values.name}`);
             history.push(ROUTES.FILTERS);
           }
         }

@@ -187,12 +187,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       });
 
       if (result) {
-        successNotificationToast(
-          notifications,
-          'created',
-          'KVDB',
-          result.message || `The KVDB "${values.title}" has been created successfully.`
-        );
+        successNotificationToast(notifications, 'created', `KVDB ${values.title}`);
         history.push(returnTo);
       }
     },
@@ -208,12 +203,7 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
       const result = await DataStore.kvdbs.updateKVDB(kvdbId, { resourceYaml });
 
       if (result) {
-        successNotificationToast(
-          notifications,
-          'updated',
-          'KVDB',
-          result.message || `The KVDB "${values.title}" has been updated successfully.`
-        );
+        successNotificationToast(notifications, 'updated', `KVDB ${values.title}`);
         history.push(returnTo);
       }
     },

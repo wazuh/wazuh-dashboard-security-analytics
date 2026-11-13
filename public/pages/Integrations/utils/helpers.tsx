@@ -17,8 +17,14 @@ import {
   KVDBS_NAV_ID,
   ROUTES,
 } from '../../../utils/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
-import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
+import { actionIsAllowedOnSpace, getSpaceTypeLabel } from '../../../../common/helpers';
+import {
+  GetPromoteBySpaceResponse,
+  PolicyIntegrationTableEntry,
+  PolicyItem,
+  PromoteChangeGroup,
+  Space,
+} from '../../../../types';
 import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
 import { buildAppUrl, buildEntityQueryRoute } from '../../../utils/routes';
 import {
@@ -516,3 +522,17 @@ export function useAsyncAction<T>(
 
   return { data, error, run, running };
 }
+
+// Wazuh: names the policy row after its space; its title defaults to "Custom space".
+export const getPromoteChangeName = (
+  entity: PromoteChangeGroup,
+  id: string,
+  availablePromotions: GetPromoteBySpaceResponse['response']['available_promotions'],
+  space: string
+): string => {
+  if (entity === 'policy') {
+    return `${getSpaceTypeLabel(space as Space)} space settings`;
+  }
+  const available = availablePromotions?.[entity];
+  return available?.[id] ?? available?.[id.replace(/^\w_/, '')] ?? id;
+};
