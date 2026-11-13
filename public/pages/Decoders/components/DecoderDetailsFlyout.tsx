@@ -40,10 +40,10 @@ export const DecoderDetailsFlyout: React.FC<DecoderDetailsFlyoutProps> = ({
   onClose,
 }) => {
   const [selectedView, setSelectedView] = useState('visual');
-  const fetchDecoder = useCallback(() => DataStore.decoders.getDecoder(decoderId, space), [
-    decoderId,
-    space,
-  ]);
+  const fetchDecoder = useCallback(
+    () => DataStore.decoders.getDecoder(decoderId, space),
+    [decoderId, space]
+  );
   const { data: decoder, loading, error } = useLazyFetch(fetchDecoder, 'Decoder not found.');
 
   const decoderJson = useMemo(() => {
