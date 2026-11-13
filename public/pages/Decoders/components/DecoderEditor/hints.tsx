@@ -102,6 +102,6 @@ export const DEFINITIONS_INFO = (
         check condition or a mapping.
       </p>
     </EuiText>
-    <Example caption="Read in a normalize mapping">{`- log.level: get_key_in($_log_level, $_tmp.severity_string)`}</Example>
+    <Example caption="Read in a normalize mapping">{`- log.level: lookup($_log_level, $_tmp.severity_string)`}</Example>
   </>
 );
