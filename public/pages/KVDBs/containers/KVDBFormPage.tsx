@@ -20,7 +20,7 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
-import { Form, Formik, FormikErrors } from 'formik';
+import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import React, { useCallback, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
@@ -96,6 +96,8 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
   const [rawKvdb, setRawKvdb] = useState<string | undefined>(undefined);
   const [yamlError, setYamlError] = useState<string | null>(null);
   const [integrationType, setIntegrationType] = useState<string>('');
+  // True once the Integration field itself lost focus.
+  const [isIntegrationTouched, setIsIntegrationTouched] = useState(false);
   const [initialValue, setInitialValue] = useState<KVDBFormModel>(kvdbFormDefaultValue);
 
   const {
@@ -310,6 +312,22 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
     return messages.length > 0 ? messages.join('. ') : undefined;
   };
 
+  // On create, hold back validation feedback until the user edits or visits a field (picking
+  // an integration does not count) or tries to submit. Typing broken YAML is an edit.
+  // Visited counts too: content typed and cleared again is no longer dirty.
+  const shouldShowValidation = (formikProps: FormikProps<KVDBFormModel>) =>
+    action !== KVDB_ACTION.CREATE ||
+    formikProps.dirty ||
+    Object.keys(formikProps.touched).length > 0 ||
+    yamlError !== null ||
+    formikProps.submitCount > 0;
+
+  // Only leaving the Integration field or trying to submit asks for one; other fields do not.
+  const getIntegrationError = (formikProps: FormikProps<KVDBFormModel>) =>
+    (isIntegrationTouched || formikProps.submitCount > 0) && !integrationType
+      ? 'Select an integration'
+      : undefined;
+
   return (
     <>
       {isLoading ? (
@@ -365,9 +383,12 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                       selectedId={integrationType}
                       isLoading={loadingIntegrations}
                       onChange={onIntegrationChange}
+                      onBlur={() => setIsIntegrationTouched(true)}
                       resourceName="KVDBs"
                       notifications={notifications}
                       onCreateSuccess={onIntegrationCreateSuccess}
+                      isInvalid={!!getIntegrationError(formikProps)}
+                      error={getIntegrationError(formikProps)}
                     />
                     <EuiSpacer size="m" />
                   </>
@@ -462,7 +483,10 @@ export const KVDBFormPage: React.FC<KVDBFormPageProps> = (props) => {
                   <YamlForm
                     type={YAML_TYPE.KVDB}
                     value={rawKvdb ?? ''}
-                    isInvalid={yamlError !== null || Object.keys(formikProps.errors).length > 0}
+                    isInvalid={
+                      shouldShowValidation(formikProps) &&
+                      (yamlError !== null || Object.keys(formikProps.errors).length > 0)
+                    }
                     errors={
                       yamlError
                         ? [yamlError]

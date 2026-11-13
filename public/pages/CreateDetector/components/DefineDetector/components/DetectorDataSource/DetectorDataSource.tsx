@@ -23,6 +23,7 @@ import { getDataSources } from '../../../../../../utils/helpers';
 import _ from 'lodash';
 import { FieldMappingService } from '../../../../../../services';
 import { DataSourceProps } from '../../../../../../../types';
+import { WAZUH_EVENTS_DATA_STREAM_PREFIX } from '../../../../../../utils/constants';
 
 interface DetectorDataSourceProps extends DataSourceProps {
   detectorIndices: string[];
@@ -89,14 +90,13 @@ export default class DetectorDataSource extends Component<
     const res = await getDataSources(this.props.indexService, this.props.notifications);
 
     if (res.ok) {
-      const WAZUH_EVENTS_PREFIX = 'wazuh-events-v5';
       const filteredDataSources = (res.dataSources as any[])
         .map((group) => ({
           ...group,
           options: (group.options || []).filter(
             (opt: { label: string; index?: string }) =>
-              opt.label?.startsWith(WAZUH_EVENTS_PREFIX) ||
-              !!opt.index?.startsWith(WAZUH_EVENTS_PREFIX)
+              opt.label?.startsWith(WAZUH_EVENTS_DATA_STREAM_PREFIX) ||
+              !!opt.index?.startsWith(WAZUH_EVENTS_DATA_STREAM_PREFIX)
           ),
         }))
         .filter((group) => group.options.length > 0);

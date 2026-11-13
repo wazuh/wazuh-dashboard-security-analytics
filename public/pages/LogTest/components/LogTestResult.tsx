@@ -28,6 +28,7 @@ import {
   LogTestValidationError,
 } from '../../../../types';
 import { buildLogTestVerdict, countNormalizedFields } from '../utils';
+import { getSeverityLabel } from '../../Correlations/utils/constants';
 
 export interface LogTestResultProps {
   result: LogTestResponse;
@@ -148,7 +149,9 @@ const DetectionMatchItem: React.FC<{
       buttonContent={
         <EuiFlexGroup alignItems="center" gutterSize="s">
           <EuiFlexItem grow={false}>
-            <EuiBadge color={getLevelBadgeColor(rule.level)}>{rule.level}</EuiBadge>
+            <EuiBadge color={getLevelBadgeColor(rule.level)}>
+              {getSeverityLabel(rule.level) || rule.level}
+            </EuiBadge>
           </EuiFlexItem>
           <EuiFlexItem>
             <EuiText size="s">

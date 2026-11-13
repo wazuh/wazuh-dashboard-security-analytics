@@ -32,6 +32,8 @@ interface IntegrationComboBoxProps {
   selectedId: string;
   isLoading: boolean;
   onChange: (options: IntegrationOption[]) => void;
+  /** Called when focus leaves the combo box, including a click outside its open list. */
+  onBlur?: () => void;
   /**
    * Wazuh: no longer read. The empty-state copy dropped "to add <resourceName> to",
    * and seven call sites still pass it. Remove the prop and those call sites together.
@@ -57,6 +59,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
   selectedId,
   isLoading,
   onChange,
+  onBlur,
   notifications,
   onCreateSuccess,
   'data-test-subj': dataTestSubj,
@@ -123,6 +126,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
                 options={options}
                 singleSelection={{ asPlainText: true }}
                 onChange={onChange}
+                onBlur={onBlur}
                 isLoading={isLoading}
                 isDisabled={isLoading || options.length === 0}
                 isInvalid={isInvalid}
@@ -157,6 +161,7 @@ export const IntegrationComboBox: React.FC<IntegrationComboBoxProps> = ({
             options={options}
             singleSelection={{ asPlainText: true }}
             onChange={onChange}
+            onBlur={onBlur}
             isLoading={isLoading}
             isDisabled={isLoading || options.length === 0}
             isInvalid={isInvalid}

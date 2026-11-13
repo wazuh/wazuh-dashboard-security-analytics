@@ -7,7 +7,8 @@ import { ruleStatus } from '../../../Rules/utils/constants';
 
 export interface RuleEditorFormModel {
   id: string;
-  log_source: { product?: string; category?: string; service?: string };
+  sigma_id?: string;
+  log_source: { product?: string; category?: string; service?: string; definition?: string };
   integration: string;
   status: string;
   tags: string[];

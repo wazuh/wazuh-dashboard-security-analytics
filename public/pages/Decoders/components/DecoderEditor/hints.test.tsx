@@ -81,7 +81,7 @@ describe('hint examples are accepted by the engine schema', () => {
   accept('definitions lookup table, and the helper that reads it', {
     ...base,
     definitions: { _log_level: { '3': 'error', '4': 'warning' } },
-    normalize: [{ map: [{ 'log.level': 'get_key_in($_log_level, $_tmp.severity_string)' }] }],
+    normalize: [{ map: [{ 'log.level': 'lookup($_log_level, $_tmp.severity_string)' }] }],
   });
 });
 

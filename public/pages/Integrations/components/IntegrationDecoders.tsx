@@ -28,6 +28,9 @@ import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
 import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import {
   MAX_GRAPH_DECODERS,
   useIntegrationDecoderGraph,
@@ -87,6 +90,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [searchText, setSearchText] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<EntityStatusValue | undefined>(undefined);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -100,6 +104,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     items: decoders,
     total,
     loading,
+    error: loadFailed,
   } = useIntegrationDecoders({
     decoderIds,
     space,
@@ -109,8 +114,23 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     sortField,
     sortDirection,
     search: appliedSearch,
+    status: statusFilter,
     reloadTrigger,
   });
+  // Wazuh: every decoder of the integration, regardless of the tab's search and filters. The graph
+  // view hides the summary, so it skips the counts.
+  const { counts: statusCounts, loading: statusCountsLoading } = useEntityStatusCounts(
+    'decoders',
+    { space, ids: decoderIds },
+    { enabled: enabled && viewId !== DECODERS_VIEW.GRAPH, reloadTrigger }
+  );
+
+  // Wazuh: the summary bar is this tab's only Status filter; selecting the active
+  // status again clears it.
+  const onStatusClick = useCallback((status: EntityStatusValue) => {
+    setStatusFilter((current) => (current === status ? undefined : status));
+    setPageIndex(0);
+  }, []);
 
   const isGraphView = viewId === DECODERS_VIEW.GRAPH;
 
@@ -205,7 +225,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     []
   );
 
-  const isEmptyState = total === 0 && !loading && !appliedSearch;
+  const isEmptyState = total === 0 && !loading && !appliedSearch && !statusFilter;
 
   return (
     <>
@@ -281,6 +301,22 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
               </EuiFlexItem>
             </EuiFlexGroup>
             <EuiSpacer size="s" />
+            {!isGraphView && (
+              <>
+                <TableStatusSummary
+                  total={total}
+                  loading={loading}
+                  error={loadFailed}
+                  entityPlural="decoders"
+                  statusCounts={statusCounts}
+                  statusLoading={statusCountsLoading}
+                  activeStatus={statusFilter}
+                  onStatusClick={onStatusClick}
+                  data-test-subj="integrationDecodersStatusSummary"
+                />
+                <EuiSpacer size="s" />
+              </>
+            )}
             {isGraphView ? (
               <DecoderGraph
                 graph={graph}
@@ -302,7 +338,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
                   ) : (
                     <ListEmptyPrompt
                       entity="decoders"
-                      hasFilters={!!appliedSearch}
+                      hasFilters={!!appliedSearch || !!statusFilter}
                       searchOnly
                       noContentTitle="This integration has no decoders"
                       emptyBody={null}
