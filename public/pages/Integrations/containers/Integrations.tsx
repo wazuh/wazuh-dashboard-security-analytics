@@ -43,6 +43,7 @@ import {
   actionIsAllowedOnSpace,
   getNextSpace,
   getBlockedSpaceActionReason,
+  getBlockedSpaceLevelReason,
   getSpacesAllowAction,
 } from '../../../../common/helpers';
 import { RearrangeIntegrations } from '../components/RearrangeIntegrations';
@@ -339,7 +340,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
       disabled={isEditSpaceDetailsDisabled}
       toolTipContent={
         isEditSpaceDetailsDisabled
-          ? getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.EDIT_POLICY, 'space policy')
+          ? getBlockedSpaceLevelReason(spaceFilter, SPACE_ACTIONS.EDIT_POLICY)
           : undefined
       }
       data-test-subj="overviewEditSpaceDetails"
@@ -354,7 +355,7 @@ export const Integrations: React.FC<IntegrationsProps> = ({
         setIsOverviewActionsOpen(false);
       }}
       disabled={isClearSpaceDisabled}
-      toolTipContent={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.CLEAR_SPACE, 'space')}
+      toolTipContent={getBlockedSpaceLevelReason(spaceFilter, SPACE_ACTIONS.CLEAR_SPACE)}
       data-test-subj="overviewClearSpace"
     >
       Clear space

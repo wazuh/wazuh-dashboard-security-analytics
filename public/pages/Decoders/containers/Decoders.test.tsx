@@ -69,6 +69,9 @@ const triggerSearchChange = async (
   wrapper.update();
 };
 
+// Custom is reached through test, so a change made in draft is promoted twice.
+const through = (space: string) => (space === 'custom' ? ' through the test space' : '');
+
 describe('<Decoders /> search bar strict schema', () => {
   it('declares ENTITY_SEARCH_SCHEMA on box.schema (EuiSearchBar has no top-level schema prop)', async () => {
     const wrapper = await mountDecoders();
@@ -224,6 +227,16 @@ describe('<Decoders /> typed filter clauses', () => {
 });
 
 describe('<Decoders /> row Edit and Delete actions by space', () => {
+  // Unmount each table so a finished test leaves nothing behind for the next one.
+  const mounted: any[] = [];
+  afterEach(async () => {
+    mounted.splice(0).forEach((w) => w.unmount());
+    // Let the unmounted table's pending work settle before the next test mounts its own.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  });
+
   const mountInSpace = async (space: string) => {
     const history = createFakeHistory('/decoders', `?space=${space}`);
     let wrapper: any;
@@ -231,6 +244,14 @@ describe('<Decoders /> row Edit and Delete actions by space', () => {
       wrapper = mount(<Decoders history={history as any} notifications={notifications} />);
     });
     wrapper.update();
+    // The rows load after the first render; wait for them so every test sees the same table.
+    for (let i = 0; i < 20 && wrapper.text().includes('Loading'); i++) {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+      wrapper.update();
+    }
+    mounted.push(wrapper);
     return wrapper;
   };
 
@@ -255,17 +276,31 @@ describe('<Decoders /> row Edit and Delete actions by space', () => {
 
       expect(wrapper.find('BlockedMenuAction').length).toBe(2);
       expect(edit.prop('reason')).toBe(
-        `Decoders in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change.`
+        `Decoders in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change${through(
+          space
+        )}.`
       );
       expect(remove.prop('reason')).toBe(
-        `Decoders in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change.`
+        `Decoders in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change${through(
+          space
+        )}.`
       );
     }
   );
 
   it('keeps the regular Edit and Delete actions in draft', async () => {
     const wrapper = await mountInSpace('draft');
+
+    // Opening the row menu throws when there is none, so the check below can fail.
+    openRowMenu(wrapper);
+
     expect(wrapper.find('BlockedMenuAction').length).toBe(0);
+    const menuItems = wrapper
+      .find('EuiContextMenuItem')
+      .map((n: any) => n.text())
+      .join(' ');
+    expect(menuItems).toContain('Edit');
+    expect(menuItems).toContain('Delete');
   });
 
   it('shows no row menu in standard', async () => {

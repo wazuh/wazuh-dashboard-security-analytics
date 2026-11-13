@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { escapeWildcard, getBlockedSpaceActionReason } from './helpers';
+import { escapeWildcard, getBlockedSpaceActionReason, getBlockedSpaceLevelReason } from './helpers';
 import { FiltersAllowedActionsBySpace, SPACE_ACTIONS } from './constants';
 
 describe('escapeWildcard', () => {
@@ -24,6 +24,9 @@ describe('escapeWildcard', () => {
   });
 });
 
+// Custom is reached through test, so a change made in draft is promoted twice.
+const through = (space: string) => (space === 'custom' ? ' through the test space' : '');
+
 describe('getBlockedSpaceActionReason', () => {
   it('returns undefined when the action is allowed', () => {
     expect(getBlockedSpaceActionReason('draft', SPACE_ACTIONS.DELETE, 'rules')).toBeUndefined();
@@ -32,19 +35,25 @@ describe('getBlockedSpaceActionReason', () => {
 
   it.each(['test', 'custom'] as const)('explains the delete path through draft in %s', (space) => {
     expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.DELETE, 'rules')).toBe(
-      `Rules in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change.`
+      `Rules in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change${through(
+        space
+      )}.`
     );
   });
 
   it.each(['test', 'custom'] as const)('explains the create path through draft in %s', (space) => {
     expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.CREATE, 'KVDBs')).toBe(
-      `KVDBs in the ${space} space change only through promotion. To add one, create it in the draft space and promote it.`
+      `KVDBs in the ${space} space change only through promotion. To add one, create it in the draft space and promote it${through(
+        space
+      )}.`
     );
   });
 
   it.each(['test', 'custom'] as const)('explains the edit path through draft in %s', (space) => {
     expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.EDIT, 'decoders')).toBe(
-      `Decoders in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change.`
+      `Decoders in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change${through(
+        space
+      )}.`
     );
   });
 
@@ -81,7 +90,9 @@ describe('getBlockedSpaceActionReason', () => {
       expect(
         getBlockedSpaceActionReason(space, SPACE_ACTIONS.REARRANGE_INTEGRATIONS, 'integrations')
       ).toBe(
-        `Integrations in the ${space} space change only through promotion. To change the order, rearrange them in the draft space and promote the change.`
+        `Integrations in the ${space} space change only through promotion. To change the order, rearrange them in the draft space and promote the change${through(
+          space
+        )}.`
       );
     }
   );
@@ -93,26 +104,24 @@ describe('getBlockedSpaceActionReason', () => {
   });
 
   it('explains the space policy edit path through draft in test and custom', () => {
-    expect(
-      getBlockedSpaceActionReason('draft', SPACE_ACTIONS.EDIT_POLICY, 'space')
-    ).toBeUndefined();
+    expect(getBlockedSpaceLevelReason('draft', SPACE_ACTIONS.EDIT_POLICY)).toBeUndefined();
     (['test', 'custom'] as const).forEach((space) => {
-      expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.EDIT_POLICY, 'space')).toBe(
-        `The space policy of the ${space} space changes only through promotion. To change it, edit the policy in the draft space and promote the change.`
+      expect(getBlockedSpaceLevelReason(space, SPACE_ACTIONS.EDIT_POLICY)).toBe(
+        `The space policy of the ${space} space changes only through promotion. To change it, edit the policy in the draft space and promote the change${through(
+          space
+        )}.`
       );
     });
   });
 
   it('says only draft can be cleared, and that test and custom change through promotion', () => {
-    expect(
-      getBlockedSpaceActionReason('draft', SPACE_ACTIONS.CLEAR_SPACE, 'space')
-    ).toBeUndefined();
+    expect(getBlockedSpaceLevelReason('draft', SPACE_ACTIONS.CLEAR_SPACE)).toBeUndefined();
     (['test', 'custom'] as const).forEach((space) => {
-      expect(getBlockedSpaceActionReason(space, SPACE_ACTIONS.CLEAR_SPACE, 'space')).toBe(
+      expect(getBlockedSpaceLevelReason(space, SPACE_ACTIONS.CLEAR_SPACE)).toBe(
         `Only the draft space can be cleared. The ${space} space changes only through promotion.`
       );
     });
-    expect(getBlockedSpaceActionReason('standard', SPACE_ACTIONS.CLEAR_SPACE, 'space')).toBe(
+    expect(getBlockedSpaceLevelReason('standard', SPACE_ACTIONS.CLEAR_SPACE)).toBe(
       'Only the draft space can be cleared.'
     );
   });

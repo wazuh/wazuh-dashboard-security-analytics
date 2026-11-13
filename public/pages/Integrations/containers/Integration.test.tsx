@@ -25,9 +25,10 @@ const { DataStore } = jest.requireMock('../../../store/DataStore');
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useParams: () => ({ integrationId: 'wazuh-core' }),
-  useLocation: () => ({ pathname: '/integrations/wazuh-core', search: '?space=draft' }),
+  useLocation: () => ({ pathname: '/integrations/wazuh-core', search: mockSearch }),
 }));
 
+let mockSearch = '?space=draft';
 const mockUseIntegrationDetails = jest.fn();
 jest.mock('../hooks/useIntegrationDetails', () => ({
   useIntegrationDetails: (...args: unknown[]) => mockUseIntegrationDetails(...args),
@@ -43,11 +44,15 @@ jest.mock('../../../components/PageHeader/PageHeader', () => ({
   PageHeader: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+const mockIntegrationDetails = jest.fn();
 jest.mock('../components/IntegrationDetails', () => ({
-  IntegrationDetails: () => null,
+  IntegrationDetails: (props: unknown) => {
+    mockIntegrationDetails(props);
+    return null;
+  },
 }));
 
-const buildIntegration = (enabled: boolean) => ({
+const buildIntegration = (enabled: boolean, space = 'draft') => ({
   id: 'os-id',
   document: {
     id: 'wazuh-core',
@@ -58,15 +63,20 @@ const buildIntegration = (enabled: boolean) => ({
     decoders: [],
     kvdbs: [],
   },
-  space: { name: 'draft' },
+  space: { name: space },
   detectionRulesCount: 0,
   decodersCount: 0,
   kvdbsCount: 0,
 });
 
-const renderIntegration = async (enabled: boolean, notifications: any) => {
+const renderIntegration = async (
+  enabled: boolean,
+  notifications: any,
+  history: any = { push: jest.fn(), replace: jest.fn() },
+  space = 'draft'
+) => {
   mockUseIntegrationDetails.mockReturnValue({
-    integration: buildIntegration(enabled),
+    integration: buildIntegration(enabled, space),
     reloadTrigger: 0,
     loading: false,
     notFound: false,
@@ -75,12 +85,7 @@ const renderIntegration = async (enabled: boolean, notifications: any) => {
   });
 
   await act(async () => {
-    render(
-      <Integration
-        {...({ history: { push: jest.fn(), replace: jest.fn() } } as any)}
-        notifications={notifications}
-      />
-    );
+    render(<Integration {...({ history } as any)} notifications={notifications} />);
   });
 };
 
@@ -141,5 +146,41 @@ describe('<Integration /> enable/disable toast', () => {
       text: '',
       toastLifeTimeMs: 5000,
     });
+  });
+});
+
+describe('<Integration /> edit deep link', () => {
+  const lastIsEditMode = () =>
+    mockIntegrationDetails.mock.calls[mockIntegrationDetails.mock.calls.length - 1][0].isEditMode;
+
+  afterEach(() => {
+    mockSearch = '?space=draft';
+    mockIntegrationDetails.mockClear();
+  });
+
+  it('opens in edit mode in draft and drops the edit param from the URL', async () => {
+    mockSearch = '?space=draft&edit=true';
+    const history = { push: jest.fn(), replace: jest.fn() };
+    await renderIntegration(false, { toasts: {} }, history, 'draft');
+
+    expect(lastIsEditMode()).toBe(true);
+    expect(history.replace).toHaveBeenCalledWith('/integrations/wazuh-core?space=draft');
+  });
+
+  it.each(['test', 'custom', 'standard'])('does not open in edit mode in %s', async (space) => {
+    mockSearch = `?space=${space}&edit=true`;
+    const history = { push: jest.fn(), replace: jest.fn() };
+    await renderIntegration(false, { toasts: {} }, history, space);
+
+    expect(lastIsEditMode()).toBe(false);
+    expect(history.replace).toHaveBeenCalledWith(`/integrations/wazuh-core?space=${space}`);
+  });
+
+  it('leaves the URL alone without the edit param', async () => {
+    const history = { push: jest.fn(), replace: jest.fn() };
+    await renderIntegration(false, { toasts: {} }, history);
+
+    expect(lastIsEditMode()).toBe(false);
+    expect(history.replace).not.toHaveBeenCalled();
   });
 });

@@ -6,15 +6,11 @@
 import React from 'react';
 import { EuiLink } from '@elastic/eui';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { FilterItem } from '../../../../types';
+import { FilterItem, Space } from '../../../../types';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { FiltersAllowedActionsBySpace, SPACE_ACTIONS } from '../../../../common/constants';
-import {
-  actionIsAllowedOnSpace,
-  getBlockedSpaceActionReason,
-  getPreviousSpace,
-} from '../../../../common/helpers';
-import { BlockedMenuAction } from '../../../components/BlockedMenuAction';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { getBlockedRowActions } from '../../../components/BlockedMenuAction';
 import { FILTER_TYPE_OPTIONS } from './constants';
 
 export interface FilterTableItem {
@@ -107,48 +103,11 @@ export const getFiltersTableColumns = (
         available: () =>
           actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE, FiltersAllowedActionsBySpace),
       },
-      // Wazuh: where content changes only through promotion (test, custom), Edit and Delete
-      // stay in the row actions menu like in draft, but disabled with the reason as a
-      // tooltip. Custom actions, because the default one shows no tooltip when disabled.
-      {
-        name: 'Edit',
-        render: () => (
-          <BlockedMenuAction
-            iconType="pencil"
-            label="Edit"
-            reason={getBlockedSpaceActionReason(
-              spaceFilter,
-              SPACE_ACTIONS.EDIT,
-              'filters',
-              FiltersAllowedActionsBySpace
-            )}
-          />
-        ),
-        available: () =>
-          !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.EDIT, FiltersAllowedActionsBySpace) &&
-          getPreviousSpace(spaceFilter) !== null,
-      },
-      {
-        name: 'Delete',
-        render: () => (
-          <BlockedMenuAction
-            iconType="trash"
-            label="Delete"
-            reason={getBlockedSpaceActionReason(
-              spaceFilter,
-              SPACE_ACTIONS.DELETE,
-              'filters',
-              FiltersAllowedActionsBySpace
-            )}
-          />
-        ),
-        available: () =>
-          !actionIsAllowedOnSpace(
-            spaceFilter,
-            SPACE_ACTIONS.DELETE,
-            FiltersAllowedActionsBySpace
-          ) && getPreviousSpace(spaceFilter) !== null,
-      },
+      ...getBlockedRowActions({
+        entity: 'filters',
+        getSpace: () => spaceFilter as Space,
+        allowedActionsBySpace: FiltersAllowedActionsBySpace,
+      }),
     ],
   },
 ];

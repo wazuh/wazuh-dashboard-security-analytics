@@ -43,6 +43,9 @@ const buildItem = (overrides: Partial<IntegrationTableItem> = {}): IntegrationTa
   ...overrides,
 });
 
+// Custom is reached through test, so a change made in draft is promoted twice.
+const through = (space: string) => (space === 'custom' ? ' through the test space' : '');
+
 describe('getIntegrationsTableColumns — entity count columns', () => {
   const renderCountColumn = (field: 'rules' | 'decoders' | 'kvdbs', item: IntegrationTableItem) => {
     const columns = getIntegrationsTableColumns({
@@ -210,11 +213,15 @@ describe('getIntegrationsTableColumns — row Edit and Delete actions by space',
       expect(blockedActions(item).length).toBe(2);
       expect(edit.label).toBe('Edit');
       expect(edit.reason).toBe(
-        `Integrations in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change.`
+        `Integrations in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change${through(
+          space
+        )}.`
       );
       expect(remove.label).toBe('Delete');
       expect(remove.reason).toBe(
-        `Integrations in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change.`
+        `Integrations in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change${through(
+          space
+        )}.`
       );
       expect(regularActions(item)).toEqual(['View']);
     }

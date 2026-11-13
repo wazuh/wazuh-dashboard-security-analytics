@@ -17,12 +17,8 @@ import {
   KVDBS_NAV_ID,
   ROUTES,
 } from '../../../utils/constants';
-import {
-  actionIsAllowedOnSpace,
-  getBlockedSpaceActionReason,
-  getPreviousSpace,
-} from '../../../../common/helpers';
-import { BlockedMenuAction } from '../../../components/BlockedMenuAction';
+import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { getBlockedRowActions } from '../../../components/BlockedMenuAction';
 import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
 import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
 import { buildAppUrl, buildEntityQueryRoute } from '../../../utils/routes';
@@ -280,6 +276,8 @@ export const getIntegrationsTableColumns = ({
         description: 'View integration details',
         type: 'icon',
         icon: 'inspect',
+        // Wazuh: stays inline next to the row menu in every space.
+        isPrimary: true,
         onClick: (item) => {
           showDetails(item.documentId);
         },
@@ -306,35 +304,10 @@ export const getIntegrationsTableColumns = ({
           setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },
       },
-      // Wazuh: where content changes only through promotion (test, custom), Edit and Delete
-      // stay in the row actions menu like in draft, but disabled with the reason as a
-      // tooltip. Custom actions, because the default one shows no tooltip when disabled.
-      {
-        name: 'Edit',
-        render: (item) => (
-          <BlockedMenuAction
-            iconType="pencil"
-            label="Edit"
-            reason={getBlockedSpaceActionReason(item.space, SPACE_ACTIONS.EDIT, 'integrations')}
-          />
-        ),
-        available: (item) =>
-          !actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.EDIT) &&
-          getPreviousSpace(item.space) !== null,
-      },
-      {
-        name: 'Delete',
-        render: (item) => (
-          <BlockedMenuAction
-            iconType="trash"
-            label="Delete"
-            reason={getBlockedSpaceActionReason(item.space, SPACE_ACTIONS.DELETE, 'integrations')}
-          />
-        ),
-        available: (item) =>
-          !actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.DELETE) &&
-          getPreviousSpace(item.space) !== null,
-      },
+      ...getBlockedRowActions<IntegrationTableItem>({
+        entity: 'integrations',
+        getSpace: (item) => item.space,
+      }),
     ],
   },
 ];

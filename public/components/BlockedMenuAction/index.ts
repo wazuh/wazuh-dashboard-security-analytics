@@ -5,3 +5,4 @@
 
 export { BlockedMenuAction } from './BlockedMenuAction';
 export type { BlockedMenuActionProps } from './BlockedMenuAction';
+export { getBlockedRowActions } from './getBlockedRowActions';
