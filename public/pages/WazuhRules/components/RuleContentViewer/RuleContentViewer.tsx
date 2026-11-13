@@ -5,24 +5,28 @@
 
 import {
   EuiBadge,
-  EuiButtonGroup,
   EuiCodeBlock,
   EuiCompressedFormRow,
-  EuiFlexGrid,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiFormLabel,
   EuiLink,
   EuiModalBody,
-  EuiSpacer,
   EuiText,
 } from '@elastic/eui';
 import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
 import React, { useState } from 'react';
-import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import { RuleItemInfoBase } from '../../../../../types';
-import { Metadata, MetadataFieldType } from '../../../../components/Utility/Metadata';
 import { BadgeGroup } from '../../../../components/Utility/BadgeGroup';
+import {
+  CopyableValue,
+  DetailsCodeBlock,
+  DetailsOverview,
+  DetailsSection,
+  DetailsToolbar,
+  LabeledBadge,
+  ReferencesSection,
+  formatDetailsDate,
+} from '../../../../components/DetailsFlyout/DetailsFlyout';
 import { getSeverityBadge } from '../../../../utils/helpers';
 import { RuleContentYamlViewer } from './RuleContentYamlViewer';
 import { MITRE_SECTIONS, parseMitreYml } from '../../utils/mitre';
@@ -41,85 +45,103 @@ export interface RuleContentViewerProps {
   rule: RuleItemInfoBase;
 }
 
-const editorTypes = [
-  { id: 'visual', label: 'Visual' },
-  { id: 'yaml', label: 'YAML' },
-  { id: 'json', label: 'JSON' },
-];
-
 export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
-  rule: { prePackaged, _source: ruleData, _id: ruleId, integration, space },
+  rule: { _source: ruleData, _id: ruleId, integration, space },
 }) => {
   if (!ruleData.id) {
     ruleData.id = ruleId;
   }
   const [selectedEditorType, setSelectedEditorType] = useState('visual');
+  const metadata = ruleData.metadata;
 
   const mitreData = parseMitreYml(ruleData.mitre);
-  const hasMitre = MITRE_SECTIONS.some((s) => mitreData[s.field].length > 0);
+  const mitreCount = MITRE_SECTIONS.reduce((n, s) => n + mitreData[s.field].length, 0);
 
   const complianceData = parseComplianceYml(ruleData.compliance);
-  const hasCompliance = COMPLIANCE_KEYS.some((k) => complianceData[k].length > 0);
+  const complianceCount = COMPLIANCE_KEYS.reduce((n, k) => n + complianceData[k].length, 0);
 
-  const metadataFields: Array<{
-    label: string;
-    value: any;
-    type?: MetadataFieldType;
-  }> = [
-    { label: 'Space', value: space },
-    { label: 'Integration', value: integration?.document?.metadata?.title },
-    { label: 'Title', value: ruleData.metadata?.title },
-    { label: 'ID', value: ruleData.id },
-    { label: 'Author', value: ruleData.metadata?.author },
-    { label: 'Description', value: ruleData.metadata?.description },
-    { label: 'Created', value: ruleData.metadata?.date, type: 'date' },
-    { label: 'Modified', value: ruleData.metadata?.modified, type: 'date' },
-    { label: 'Rule level', value: getSeverityBadge(ruleData.level), type: 'raw' },
-    { label: 'Rule status', value: ruleData.status },
-    { label: 'Documentation', value: ruleData.metadata?.documentation },
-    {
-      label: 'Supports',
-      value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={ruleData.metadata?.supports} />,
-      type: 'raw',
-    },
-    { label: 'References', value: ruleData.metadata?.references?.map((r: any) => r), type: 'url' },
-  ];
+  const tags = ruleData.tags ?? [];
+  const falsePositives = ruleData.false_positives ?? [];
 
   return (
     <EuiModalBody>
-      <EuiFlexGroup alignItems="center">
-        <EuiFlexItem>
-          <EuiButtonGroup
-            data-test-subj="change-editor-type"
-            legend="This is editor type selector"
-            options={editorTypes}
-            idSelected={selectedEditorType}
-            onChange={(id) => setSelectedEditorType(id)}
-          />
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EnabledHealth enabled={ruleData.enabled} data-test-subj="rule_flyout_enabled" />
-        </EuiFlexItem>
-      </EuiFlexGroup>
-      <EuiSpacer size="xl" />
+      <DetailsToolbar
+        status={[
+          <EnabledHealth
+            key="enabled"
+            enabled={ruleData.enabled}
+            data-test-subj="rule_flyout_enabled"
+          />,
+          <div key="level" data-test-subj="rule_flyout_rule_level">
+            {getSeverityBadge(ruleData.level)}
+          </div>,
+          <LabeledBadge
+            key="status"
+            label="Rule status"
+            value={ruleData.status}
+            testSubj="rule_flyout_rule_status"
+          />,
+          <LabeledBadge key="space" label="Space" value={space} testSubj="rule_flyout_space" />,
+        ]}
+        selectedView={selectedEditorType}
+        onChangeView={setSelectedEditorType}
+        viewSwitchTestSubj="change-editor-type"
+        viewSwitchLegend="This is editor type selector"
+      />
       {selectedEditorType === 'visual' && (
         <>
-          <EuiFlexGrid columns={2}>
-            {metadataFields.map(({ label, value, type = 'text' }) => (
-              <EuiFlexItem key={label}>
-                <Metadata label={<EuiFormLabel>{label}</EuiFormLabel>} value={value} type={type} />
-              </EuiFlexItem>
-            ))}
-          </EuiFlexGrid>
-          {hasMitre && (
-            <>
-              <EuiSpacer />
-              <EuiFormLabel>MITRE ATT&CK</EuiFormLabel>
-              <EuiSpacer size="s" />
+          <DetailsOverview
+            description={metadata?.description}
+            descriptionTestSubj="rule_flyout_rule_description"
+            testSubj="rule_flyout_rule_overview"
+            items={[
+              { title: 'Integration', description: integration?.document?.metadata?.title },
+              { title: 'Author', description: metadata?.author },
+              { title: 'Created', description: formatDetailsDate(metadata?.date) },
+              { title: 'Modified', description: formatDetailsDate(metadata?.modified) },
+              {
+                title: 'ID',
+                description: ruleData.id && (
+                  <CopyableValue
+                    value={ruleData.id}
+                    ariaLabel="Copy ID"
+                    testSubj="rule_flyout_copy_id"
+                  />
+                ),
+              },
+              { title: 'Documentation', description: metadata?.documentation },
+              {
+                title: 'Supports',
+                description: metadata?.supports?.length ? (
+                  <BadgeGroup values={metadata.supports} />
+                ) : null,
+              },
+            ]}
+          />
+          <DetailsSection
+            id="rule_flyout_section_detection"
+            testSubj="rule_flyout_section_detection"
+            title="Detection"
+            initialIsOpen
+          >
+            <DetailsCodeBlock
+              language="yaml"
+              code={ruleData.detection ?? ''}
+              testSubj="rule_flyout_rule_detection"
+            />
+          </DetailsSection>
+          {mitreCount > 0 && (
+            <DetailsSection
+              id="rule_flyout_section_mitre"
+              testSubj="rule_flyout_section_mitre"
+              title="MITRE ATT&CK"
+              count={mitreCount}
+              initialIsOpen
+            >
               <EuiFlexGroup
                 direction="column"
                 gutterSize="s"
-                data-test-subj={'rule_flyout_rule_mitre'}
+                data-test-subj="rule_flyout_rule_mitre"
               >
                 {MITRE_SECTIONS.map((section) => {
                   const entries = mitreData[section.field];
@@ -134,17 +156,19 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
                   );
                 })}
               </EuiFlexGroup>
-            </>
+            </DetailsSection>
           )}
-          {hasCompliance && (
-            <>
-              <EuiSpacer />
-              <EuiFormLabel>Compliance</EuiFormLabel>
-              <EuiSpacer size="s" />
+          {complianceCount > 0 && (
+            <DetailsSection
+              id="rule_flyout_section_compliance"
+              testSubj="rule_flyout_section_compliance"
+              title="Compliance"
+              count={complianceCount}
+            >
               <EuiFlexGroup
                 direction="column"
                 gutterSize="s"
-                data-test-subj={'rule_flyout_rule_compliance'}
+                data-test-subj="rule_flyout_rule_compliance"
               >
                 {COMPLIANCE_FRAMEWORKS.map((framework) =>
                   complianceData[framework.key].length > 0 ? (
@@ -161,61 +185,66 @@ export const RuleContentViewer: React.FC<RuleContentViewerProps> = ({
                   ) : null
                 )}
               </EuiFlexGroup>
-            </>
+            </DetailsSection>
           )}
-          <EuiSpacer />
-          <EuiFormLabel>Tags</EuiFormLabel>
-          <EuiSpacer size="s" />
-          {ruleData.tags.length > 0 ? (
-            <EuiFlexGroup
-              direction="row"
-              wrap
-              gutterSize="s"
-              data-test-subj={'rule_flyout_rule_tags'}
+          {tags.length > 0 && (
+            <DetailsSection
+              id="rule_flyout_section_tags"
+              testSubj="rule_flyout_section_tags"
+              title="Tags"
+              count={tags.length}
             >
-              {ruleData.tags.map((tag: { value: string }, i: number) => (
-                <EuiFlexItem grow={false} key={i}>
-                  <EuiBadge>
-                    {tag.value.match(/attack\.t[0-9]+/) ? (
-                      <EuiLink
-                        href={`https://attack.mitre.org/techniques/${tag.value
-                          .split('.')
-                          .slice(1)
-                          .join('/')
-                          .toUpperCase()}`}
-                        target="_blank"
-                      >
-                        {tag.value}
-                      </EuiLink>
-                    ) : (
-                      tag.value
-                    )}
-                  </EuiBadge>
-                </EuiFlexItem>
-              ))}
-            </EuiFlexGroup>
-          ) : (
-            <div>{DEFAULT_EMPTY_DATA}</div>
+              <EuiFlexGroup
+                direction="row"
+                wrap
+                gutterSize="s"
+                responsive={false}
+                data-test-subj="rule_flyout_rule_tags"
+              >
+                {tags.map((tag: { value: string }, i: number) => (
+                  <EuiFlexItem grow={false} key={i}>
+                    <EuiBadge>
+                      {tag.value.match(/attack\.t[0-9]+/) ? (
+                        <EuiLink
+                          href={`https://attack.mitre.org/techniques/${tag.value
+                            .split('.')
+                            .slice(1)
+                            .join('/')
+                            .toUpperCase()}`}
+                          target="_blank"
+                        >
+                          {tag.value}
+                        </EuiLink>
+                      ) : (
+                        tag.value
+                      )}
+                    </EuiBadge>
+                  </EuiFlexItem>
+                ))}
+              </EuiFlexGroup>
+            </DetailsSection>
           )}
-          <EuiSpacer />
-          <EuiFormLabel>False positive cases</EuiFormLabel>
-          <div data-test-subj={'rule_flyout_rule_false_positives'}>
-            {ruleData.false_positives.length > 0 ? (
-              ruleData.false_positives.map((falsepositive: any, i: number) => (
-                <EuiText size="s" key={i}>
-                  {falsepositive.value}
-                </EuiText>
-              ))
-            ) : (
-              <div>{DEFAULT_EMPTY_DATA}</div>
-            )}
-          </div>
-          <EuiSpacer />
-          <EuiCompressedFormRow label="Detection" fullWidth>
-            <EuiCodeBlock language="yaml" data-test-subj={'rule_flyout_rule_detection'}>
-              {ruleData.detection}
-            </EuiCodeBlock>
-          </EuiCompressedFormRow>
+          {falsePositives.length > 0 && (
+            <DetailsSection
+              id="rule_flyout_section_false_positives"
+              testSubj="rule_flyout_section_false_positives"
+              title="False positive cases"
+              count={falsePositives.length}
+            >
+              <EuiText size="s" data-test-subj="rule_flyout_rule_false_positives">
+                <ul>
+                  {falsePositives.map((falsePositive: { value: string }, i: number) => (
+                    <li key={i}>{falsePositive.value}</li>
+                  ))}
+                </ul>
+              </EuiText>
+            </DetailsSection>
+          )}
+          <ReferencesSection
+            idPrefix="rule_flyout"
+            urls={metadata?.references}
+            linksTestSubj="rule_flyout_rule_references"
+          />
         </>
       )}
       {selectedEditorType === 'yaml' && (

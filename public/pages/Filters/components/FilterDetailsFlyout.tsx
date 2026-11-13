@@ -5,27 +5,28 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  EuiButtonGroup,
   EuiCallOut,
   EuiCodeBlock,
-  EuiFlexGrid,
-  EuiFlexGroup,
-  EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
-  EuiFlyoutHeader,
-  EuiFormLabel,
   EuiLoadingContent,
   EuiModalBody,
-  EuiSmallButtonIcon,
-  EuiSpacer,
-  EuiText,
 } from '@elastic/eui';
-import { FilterDocument, FilterItem } from '../../../../types';
-import { Metadata } from '../../../components/Utility/Metadata';
+import { FilterDocument } from '../../../../types';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { BadgeGroup } from '../../../components/Utility/BadgeGroup';
-import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import {
+  CopyableValue,
+  DetailsCodeBlock,
+  DetailsFlyoutHeader,
+  DetailsOverview,
+  DetailsSection,
+  DetailsToolbar,
+  LabeledBadge,
+  ReferencesSection,
+  formatDetailsDate,
+} from '../../../components/DetailsFlyout/DetailsFlyout';
+import { FILTER_TYPE_OPTIONS } from '../utils/constants';
 import { mapYamlToLosslessObject } from '../../../components/YamlForm';
 import { stringify as LosslessStringify } from 'lossless-json';
 import { checkToFormString } from '../utils/mappers';
@@ -37,21 +38,6 @@ interface FilterDetailsFlyoutProps {
   onClose: () => void;
 }
 
-const viewOptions = [
-  {
-    id: 'visual',
-    label: 'Visual',
-  },
-  {
-    id: 'yaml',
-    label: 'YAML',
-  },
-  {
-    id: 'json',
-    label: 'JSON',
-  },
-];
-
 /** Resolve author display: indexer sends string; legacy may send { name } */
 const getAuthorDisplay = (author: string | { name?: string } | undefined): string => {
   if (!author) return '';
@@ -60,7 +46,7 @@ const getAuthorDisplay = (author: string | { name?: string } | undefined): strin
 };
 
 export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filterId, onClose }) => {
-  const [selectedView, setSelectedView] = useState(viewOptions[0].id);
+  const [selectedView, setSelectedView] = useState('visual');
   const fetchFilter = useCallback(() => DataStore.filters.getFilter(filterId), [filterId]);
   const { data: filter, loading, error } = useLazyFetch(fetchFilter, 'Filter not found.');
 
@@ -73,8 +59,11 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
   };
 
   const metadata = document.metadata ?? {};
-  const references = metadata.references ?? [];
   const supports = metadata.supports ?? [];
+  const id = document.id || filter?.id;
+  const sha256 = filter?.hash?.sha256;
+  const typeLabel =
+    FILTER_TYPE_OPTIONS.find((option) => option.value === document.type)?.text ?? document.type;
 
   const { filterJson, checkDisplayYaml } = useMemo(() => {
     const fallbackJson = () => JSON.stringify(filter?.document ?? {}, null, 2);
@@ -100,30 +89,6 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
     }
   }, [filter, document.check]);
 
-  const fields: Array<{
-    label: string;
-    value: any;
-    type?: 'text' | 'date' | 'url' | 'raw';
-  }> = [
-    { label: 'Name', value: document.name },
-    { label: 'Space', value: filter?.space?.name },
-    { label: 'Type', value: document.type },
-    { label: 'Author', value: getAuthorDisplay(metadata.author) },
-    { label: 'ID', value: document.id || filter?.id },
-    { label: 'Description', value: metadata.description },
-    { label: 'Created', value: metadata.date, type: 'date' },
-    { label: 'Modified', value: metadata.modified, type: 'date' },
-    { label: 'Supports', value: <BadgeGroup emptyValue={DEFAULT_EMPTY_DATA} values={supports} />, type: 'raw' },
-    { label: 'Check', value: (
-      <EuiCodeBlock language="yaml" fontSize="s" paddingSize="s" isCopyable>
-        {checkDisplayYaml}
-      </EuiCodeBlock>
-    ), type: 'raw' },
-    { label: 'Documentation', value: metadata.documentation },
-    { label: 'SHA256', value: filter?.hash?.sha256 },
-    { label: 'References', value: references, type: 'url' },
-  ];
-
   const renderContent = () => {
     if (loading) return <EuiLoadingContent lines={4} />;
     if (error) return <EuiCallOut color="danger" iconType="alert" title={error} />;
@@ -144,57 +109,104 @@ export const FilterDetailsFlyout: React.FC<FilterDetailsFlyoutProps> = ({ filter
       );
     }
     return (
-      <EuiFlexGrid columns={2}>
-        {fields.map(({ label, value, type = 'text' }) => (
-          <EuiFlexItem key={label}>
-            <Metadata label={<EuiFormLabel>{label}</EuiFormLabel>} value={value} type={type} />
-          </EuiFlexItem>
-        ))}
-      </EuiFlexGrid>
+      <>
+        <DetailsOverview
+          description={metadata.description}
+          descriptionTestSubj="filter_flyout_description"
+          testSubj="filter_flyout_overview"
+          items={[
+            { title: 'Name', description: document.name },
+            { title: 'Author', description: getAuthorDisplay(metadata.author) },
+            { title: 'Created', description: formatDetailsDate(metadata.date) },
+            { title: 'Modified', description: formatDetailsDate(metadata.modified) },
+            {
+              title: 'ID',
+              description: id && (
+                <CopyableValue value={id} ariaLabel="Copy ID" testSubj="filter_flyout_copy_id" />
+              ),
+            },
+            {
+              title: 'SHA256',
+              description: sha256 && (
+                <CopyableValue
+                  value={sha256}
+                  ariaLabel="Copy SHA256"
+                  testSubj="filter_flyout_copy_sha256"
+                />
+              ),
+            },
+            { title: 'Documentation', description: metadata.documentation },
+            {
+              title: 'Supports',
+              description: supports.length ? <BadgeGroup values={supports} /> : null,
+            },
+          ]}
+        />
+        <DetailsSection
+          id="filter_flyout_section_check"
+          testSubj="filter_flyout_section_check"
+          title="Check"
+          initialIsOpen
+        >
+          <DetailsCodeBlock
+            language="yaml"
+            code={checkDisplayYaml}
+            testSubj="filter_flyout_check"
+          />
+        </DetailsSection>
+        <ReferencesSection idPrefix="filter_flyout" urls={metadata.references} />
+      </>
     );
   };
 
   return (
-    <EuiFlyout onClose={onClose} hideCloseButton ownFocus size="m">
-      <EuiFlyoutHeader hasBorder>
-        <EuiFlexGroup alignItems="center">
-          <EuiFlexItem>
-            <EuiText size="s">
-              <h2>{document.name ? `Filter details — ${document.name}` : 'Filter details'}</h2>
-            </EuiText>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiSmallButtonIcon
-              aria-label="close"
-              iconType="cross"
-              display="empty"
-              iconSize="m"
-              onClick={onClose}
-              data-test-subj="close-filter-details-flyout"
-            />
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiFlyoutHeader>
+    <EuiFlyout
+      onClose={onClose}
+      hideCloseButton
+      ownFocus
+      size="m"
+      aria-labelledby="filter_flyout_title"
+      data-test-subj="filter-details-flyout"
+    >
+      <DetailsFlyoutHeader
+        eyebrow="Filter details"
+        title={metadata.title || document.name}
+        titleId="filter_flyout_title"
+        onClose={onClose}
+        closeButtonTestSubj="close-filter-details-flyout"
+      />
       <EuiFlyoutBody>
         <EuiModalBody>
-          <EuiFlexGroup alignItems="center">
-            <EuiFlexItem>
-              <EuiButtonGroup
-                data-test-subj="change-editor-type"
-                legend="This is editor type selector"
-                options={viewOptions}
-                idSelected={selectedView}
-                onChange={(id: string) => setSelectedView(id)}
-                isDisabled={loading || !!error || !filter}
-              />
-            </EuiFlexItem>
-            {filter && (
-              <EuiFlexItem>
-                <EnabledHealth enabled={document.enabled} data-test-subj="filter_flyout_enabled" />
-              </EuiFlexItem>
-            )}
-          </EuiFlexGroup>
-          <EuiSpacer size="xl" />
+          <DetailsToolbar
+            status={
+              filter
+                ? [
+                    <EnabledHealth
+                      key="enabled"
+                      enabled={document.enabled}
+                      data-test-subj="filter_flyout_enabled"
+                    />,
+                    <LabeledBadge
+                      key="type"
+                      label="Type"
+                      value={typeLabel}
+                      testSubj="filter_flyout_type"
+                    />,
+                    <LabeledBadge
+                      key="space"
+                      label="Space"
+                      value={filter.space?.name}
+                      testSubj="filter_flyout_space"
+                    />,
+                  ]
+                : []
+            }
+            selectedView={selectedView}
+            onChangeView={setSelectedView}
+            viewSwitchTestSubj="change-editor-type"
+            viewSwitchLegend="This is editor type selector"
+            isDisabled={loading || !!error || !filter}
+          />
           {renderContent()}
         </EuiModalBody>
       </EuiFlyoutBody>
