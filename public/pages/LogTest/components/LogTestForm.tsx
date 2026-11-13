@@ -174,7 +174,7 @@ export const LogTestForm: React.FC<LogTestFormProps> = ({
               ) : (
                 <>
                   {'Integration - '}
-                  <em>optional</em>
+                  <em>needed to run rules</em>
                 </>
               )
             }
