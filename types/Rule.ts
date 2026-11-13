@@ -12,11 +12,14 @@ export interface RuleMetadata extends CatalogResourceMetadata {}
 // Wazuh: Remove duplicated fields in metadata and root: title, description, author, references.
 export interface Rule {
   id: string;
+  // Wazuh: Sigma rule id, kept as-is so the dashboard does not drop it on save.
+  sigma_id?: string;
   category: string;
   log_source: {
     product?: string;
     category?: string;
     service?: string;
+    definition?: string;
   };
   // title: string;
   // description: string;
@@ -151,8 +154,10 @@ export interface IRulesStore {
       _source?: any;
       searchText?: string;
     },
-    space: string
-  ) => Promise<{ total: number; items: RuleItemInfoBase[] }>;
+    space: string,
+    // Wazuh: `silent` skips the error toast; a failed search returns its `error`.
+    options?: { silent?: boolean }
+  ) => Promise<{ total: number; items: RuleItemInfoBase[]; error?: string }>;
 
   // Wazuh: fetch a single rule with full data by id
   getRule: (id: string, space: string) => Promise<RuleItemInfoBase | undefined>;

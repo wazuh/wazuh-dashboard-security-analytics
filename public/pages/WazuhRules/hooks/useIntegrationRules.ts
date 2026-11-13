@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
+import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import { RuleItemInfoBase } from '../../../../types';
 import { RuleTableItem } from '../utils/helpers';
 import { buildRulesSearchQuery } from '../utils/constants';
@@ -35,6 +36,8 @@ export interface UseIntegrationRulesParams {
   sortDirection: 'asc' | 'desc';
   search: string;
   severityLevels?: string[];
+  /** The status summary bar's filter. */
+  status?: EntityStatusValue;
   reloadTrigger: number;
 }
 
@@ -48,10 +51,13 @@ export function useIntegrationRules({
   sortDirection,
   search,
   severityLevels,
+  status,
   reloadTrigger,
 }: UseIntegrationRulesParams) {
   const [items, setItems] = useState<RuleTableItem[]>([]);
   const [total, setTotal] = useState(0);
+  // Wazuh: the request failed; the status summary shows no count instead of 0.
+  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // The parent rebuilds `ruleIds` on every render, so depend on its content.
@@ -86,6 +92,7 @@ export function useIntegrationRules({
           size,
           query,
           sort,
+          status,
           _source: {
             includes: [
               'document.id',
@@ -104,12 +111,14 @@ export function useIntegrationRules({
         if (!cancelled) {
           setItems(response.items.map(toRuleTableItem));
           setTotal(response.total);
+          setError(!!response.error);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setItems([]);
           setTotal(0);
+          setError(true);
         }
       })
       .finally(() => {
@@ -132,8 +141,9 @@ export function useIntegrationRules({
     sortDirection,
     search,
     severityLevels,
+    status,
     reloadTrigger,
   ]);
 
-  return { items, total, loading };
+  return { items, total, loading, error };
 }

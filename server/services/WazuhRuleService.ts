@@ -90,13 +90,11 @@ export default class WazuhRulesService {
     const resource: Record<string, any> = {
       level: rule.level,
       status: rule.status,
-      logsource:
-        rule.log_source && Object.keys(rule.log_source).length > 0
-          ? rule.log_source
-          : { product: rule.category },
+      logsource: { ...rule.log_source, product: rule.log_source?.product || rule.category },
       detection: load(rule.detection),
       enabled: rule.enabled ?? true,
     };
+    if (rule.sigma_id) resource.sigma_id = rule.sigma_id;
     if (rule.tags?.length) resource.tags = rule.tags.map((t) => t.value);
     if (rule.false_positives?.length)
       resource.falsepositives = rule.false_positives.map((fp) => fp.value);

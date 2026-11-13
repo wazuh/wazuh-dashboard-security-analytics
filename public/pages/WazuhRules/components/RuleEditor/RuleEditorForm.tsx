@@ -4,6 +4,7 @@
  */
 
 import React, { useRef, useState } from 'react';
+import { isEqual } from 'lodash';
 import { Formik, Form, FormikErrors } from 'formik';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import {
@@ -96,6 +97,8 @@ const editorTypes = [
 
 export const TAGS_PREFIX = 'attack.';
 
+const INTEGRATION_REQUIRED_ERROR = 'Select an integration';
+
 export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
   initialValue,
   notifications,
@@ -170,7 +173,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
         }
 
         if (!values.integration) {
-          errors.integration = 'Integration is required';
+          errors.integration = INTEGRATION_REQUIRED_ERROR;
         }
 
         if (!values.detection) {
@@ -231,6 +234,28 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
           setIntegrationId(option.id);
           props.setFieldValue('integration', option.value, true);
         };
+
+        // On create, hold back validation feedback until the user edits or visits a field of
+        // the rule or tries to submit. Picking or leaving the integration only sets or touches
+        // `integration`, so it is not an edit. Visited counts too: content typed and cleared
+        // again equals the initial values.
+        const isContentEdited = !isEqual(
+          { ...props.values, integration: '' },
+          { ...props.initialValues, integration: '' }
+        );
+        const isContentTouched = Object.keys(props.touched).some((key) => key !== 'integration');
+        const showValidation =
+          mode !== 'create' || isContentEdited || isContentTouched || props.submitCount > 0;
+        // The combo box shows the selected integration, so it decides whether one is missing.
+        const integrationError = integrationId
+          ? props.errors.integration
+          : INTEGRATION_REQUIRED_ERROR;
+        // Only leaving the Integration field or trying to submit asks for one; other fields
+        // do not.
+        const isIntegrationInvalid =
+          (validateOnMount || props.touched.integration || props.submitCount > 0) &&
+          !!integrationError;
+        const onIntegrationBlur = () => props.setFieldTouched('integration', true, false);
 
         return (
           <Form>
@@ -293,11 +318,9 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                         isLoading={loadingIntegrations}
                         data-test-subj={'rule_integration_dropdown'}
                         resourceName="rules"
-                        isInvalid={
-                          (validateOnMount || props.touched.integration) &&
-                          !!props.errors?.integration
-                        }
-                        error={props.errors.integration}
+                        isInvalid={isIntegrationInvalid}
+                        error={integrationError}
+                        onBlur={onIntegrationBlur}
                         notifications={notifications}
                         onCreateSuccess={onIntegrationCreateSuccess}
                         onChange={(selected) => {
@@ -317,7 +340,7 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                   <YamlRuleEditorComponent
                     rule={mapFormToRule(props.values)}
                     flushRef={yamlFlushRef}
-                    isInvalid={Object.keys(props.errors).length > 0}
+                    isInvalid={showValidation && Object.keys(props.errors).length > 0}
                     errors={Object.values(props.errors).flatMap((v) =>
                       typeof v === 'string'
                         ? [v]
@@ -444,11 +467,9 @@ export const RuleEditorForm: React.FC<VisualRuleEditorProps> = ({
                       isLoading={loadingIntegrations}
                       data-test-subj={'rule_integration_dropdown'}
                       resourceName="rules"
-                      isInvalid={
-                        (validateOnMount || props.touched.integration) &&
-                        !!props.errors?.integration
-                      }
-                      error={props.errors.integration}
+                      isInvalid={isIntegrationInvalid}
+                      error={integrationError}
+                      onBlur={onIntegrationBlur}
                       notifications={notifications}
                       onCreateSuccess={onIntegrationCreateSuccess}
                       onChange={(selected) => {

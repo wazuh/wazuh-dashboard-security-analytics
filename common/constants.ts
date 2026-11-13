@@ -62,7 +62,7 @@ export const SpaceTypes = {
       defaultMessage:
         // Wazuh: not read-only. Its content cannot be created, edited or deleted, but
         // integrations can be disabled and their policy adjusted.
-        'Space holding the default integrations, decoders and rules shipped with Wazuh. Its content cannot be edited or deleted, though integrations can be disabled.',
+        'Space holding the default integrations, decoders and rules synced from the CTI feed. Its content cannot be edited or deleted, though integrations can be disabled.',
     }),
   },
 } as const;
