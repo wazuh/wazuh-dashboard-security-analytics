@@ -27,10 +27,8 @@ import { withReturnTo } from '../../../utils/routes';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
-import {
-  useIntegrationDecoders,
-  useIntegrationDecoderStatusCounts,
-} from '../../Decoders/hooks/useIntegrationDecoders';
+import { useIntegrationDecoders } from '../../Decoders/hooks/useIntegrationDecoders';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
 import { TableStatusSummary } from '../../../components/TableStatusSummary';
 import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import {
@@ -106,6 +104,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     items: decoders,
     total,
     loading,
+    error: loadFailed,
   } = useIntegrationDecoders({
     decoderIds,
     space,
@@ -118,12 +117,13 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
     status: statusFilter,
     reloadTrigger,
   });
-  const { counts: statusCounts, loading: statusCountsLoading } = useIntegrationDecoderStatusCounts({
-    decoderIds,
-    space,
-    enabled,
-    reloadTrigger,
-  });
+  // Wazuh: every decoder of the integration, regardless of the tab's search and filters. The graph
+  // view hides the summary, so it skips the counts.
+  const { counts: statusCounts, loading: statusCountsLoading } = useEntityStatusCounts(
+    'decoders',
+    { space, ids: decoderIds },
+    { enabled: enabled && viewId !== DECODERS_VIEW.GRAPH, reloadTrigger }
+  );
 
   // Wazuh: the summary bar is this tab's only Status filter; selecting the active
   // status again clears it.
@@ -306,6 +306,7 @@ export const IntegrationDecoders: React.FC<IntegrationDecodersProps> = ({
                 <TableStatusSummary
                   total={total}
                   loading={loading}
+                  error={loadFailed}
                   entityPlural="decoders"
                   statusCounts={statusCounts}
                   statusLoading={statusCountsLoading}

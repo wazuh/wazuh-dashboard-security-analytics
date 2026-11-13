@@ -30,11 +30,13 @@ export function useStatusCounts(
   { enabled = true, reloadTrigger }: UseStatusCountsOptions = {}
 ) {
   const [counts, setCounts] = useState<StatusCounts | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
+  // Starts loading when enabled, so the first paint shows the spinner, not nothing.
+  const [loading, setLoading] = useState(enabled);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!enabled) {
+      setLoading(false);
       return;
     }
     let cancelled = false;

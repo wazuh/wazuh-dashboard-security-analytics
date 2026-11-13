@@ -59,6 +59,20 @@ describe('useStatusCounts', () => {
 
     expect(countByStatus).not.toHaveBeenCalled();
     expect(result.current?.counts).toBeUndefined();
+    expect(result.current?.loading).toBe(false);
+  });
+
+  it('is loading from the first render, so the spinner shows before the request starts', async () => {
+    const loadingByRender: boolean[] = [];
+    const countByStatus = async () => 1;
+    const Harness = () => {
+      loadingByRender.push(useStatusCounts(countByStatus).loading);
+      return null;
+    };
+    render(<Harness />);
+    await flush();
+
+    expect(loadingByRender[0]).toBe(true);
   });
 
   it('refetches on reload() and on a new reloadTrigger', async () => {

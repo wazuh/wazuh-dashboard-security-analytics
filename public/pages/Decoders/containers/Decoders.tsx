@@ -36,7 +36,8 @@ import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { TableStatusSummary } from '../../../components/TableStatusSummary';
-import { asEntityStatus, EntityStatusValue, useStatusCounts } from '../../../hooks/useStatusCounts';
+import { asEntityStatus, EntityStatusValue } from '../../../hooks/useStatusCounts';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery, DECODERS_SEARCHABLE_FIELDS_LABEL } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
@@ -80,6 +81,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const isMountedRef = useRef(true);
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
+  // Wazuh: the list request failed; the summary shows no count instead of 0.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loading, setLoading] = useState(false);
   const urlFilters = useUrlFilterParams(
     { params: ['query', 'enabled', 'integration', 'page'] },
@@ -276,6 +279,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     }
     setDecoders(response.items);
     setTotal(response.total);
+    setLoadFailed(!!response.error);
     setLoading(false);
   }, [
     appliedQueryText,
@@ -293,22 +297,12 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   }, [loadDecoders]);
 
   // Wazuh: the status bar counts every decoder in the space, ignoring the search and
-  // filters; a size-0 search per status reuses the Status filter's own definition.
-  const countDecodersByStatus = useCallback(
-    async (status: EntityStatusValue) =>
-      (
-        await DataStore.decoders.searchDecoders(
-          { from: 0, size: 0, query: { match_all: {} }, status, _source: false },
-          spaceFilter
-        )
-      ).total,
-    [spaceFilter]
-  );
+  // filters.
   const {
     counts: statusCounts,
     loading: statusCountsLoading,
     reload: reloadStatusCounts,
-  } = useStatusCounts(countDecodersByStatus);
+  } = useEntityStatusCounts('decoders', { space: spaceFilter });
 
   const reloadAll = useCallback(async () => {
     reloadStatusCounts();
@@ -637,6 +631,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
           <TableStatusSummary
             total={total}
             loading={loading}
+            error={loadFailed}
             entityPlural="decoders"
             statusCounts={statusCounts}
             statusLoading={statusCountsLoading}

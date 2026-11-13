@@ -84,4 +84,56 @@ describe('useInMemoryTableQuery', () => {
     expect(result.current?.searchQuery.text).toBe('');
     expect(onQueryChange).not.toHaveBeenCalled();
   });
+
+  it('marks no status as active after a parse error, as the table then filters nothing', () => {
+    const { result } = renderUseInMemoryTableQuery('status=disabled');
+
+    act(() => {
+      result.current?.onSearchChange({ query: null });
+    });
+
+    expect(result.current?.activeStatus).toBeUndefined();
+  });
+
+  it('goes back to the first page on a status, a search, a reset or new items', () => {
+    let currentItems = items;
+    const result: { current: HookResult | undefined } = { current: undefined };
+    const Harness = () => {
+      result.current = useInMemoryTableQuery('', currentItems, jest.fn());
+      return null;
+    };
+    const { rerender } = render(<Harness />);
+    const goToPage = (index: number) =>
+      act(() => result.current?.onTableChange({ page: { index } }));
+
+    goToPage(2);
+    expect(result.current?.pageIndex).toBe(2);
+
+    act(() => result.current?.toggleStatus('disabled'));
+    expect(result.current?.pageIndex).toBe(0);
+
+    goToPage(1);
+    act(() => {
+      result.current?.onSearchChange({ query: EuiSearchBar.Query.parse('aws') });
+    });
+    expect(result.current?.pageIndex).toBe(0);
+
+    goToPage(1);
+    act(() => result.current?.resetQuery());
+    expect(result.current?.pageIndex).toBe(0);
+
+    goToPage(1);
+    currentItems = [...items];
+    rerender(<Harness />);
+    expect(result.current?.pageIndex).toBe(0);
+  });
+
+  it('keeps the page on a table change without page info, e.g. a sort', () => {
+    const { result } = renderUseInMemoryTableQuery('');
+
+    act(() => result.current?.onTableChange({ page: { index: 3 } }));
+    act(() => result.current?.onTableChange({}));
+
+    expect(result.current?.pageIndex).toBe(3);
+  });
 });

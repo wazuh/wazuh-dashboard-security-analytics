@@ -62,7 +62,7 @@ import {
 } from '../../../../utils/entitySearchBarFilters';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 import { InMemoryTableStatusSummary } from '../../../../components/TableStatusSummary';
-import { countStatuses, EntityStatusValue } from '../../../../hooks/useStatusCounts';
+import { countStatuses, EntityStatusValue, StatusCounts } from '../../../../hooks/useStatusCounts';
 import { countQueryMatches } from '../../../../hooks/useInMemoryTableQuery';
 
 export interface DetectorsProps extends RouteComponentProps {
@@ -84,6 +84,9 @@ interface DetectorsState {
   // search that failed to parse.
   searchQuery: SearchQuery;
   appliedQuery: SearchQuery | null;
+  // Wazuh: controlled, so picking a status in the summary bar goes back to the first
+  // page; the table only does that by itself for a typed search or new items.
+  pageIndex: number;
 }
 
 // Wazuh: a detector's status reads Active/Inactive; the summary bar works in
@@ -140,6 +143,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       isPopoverOpen: false,
       searchQuery: initialQuery,
       appliedQuery: initialQuery,
+      pageIndex: 0,
     };
   }
 
@@ -154,11 +158,12 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     }
   };
 
+  // Wazuh: a typed search also goes back to the first page (see `pageIndex`).
   private onSearchChange = ({ query }: { query: SearchQuery | null }) => {
     if (query) {
-      this.setState({ searchQuery: query, appliedQuery: query });
+      this.setState({ searchQuery: query, appliedQuery: query, pageIndex: 0 });
     } else {
-      this.setState({ appliedQuery: null });
+      this.setState({ appliedQuery: null, pageIndex: 0 });
     }
     this.writeQueryToUrl(query ?? null);
     return true;
@@ -166,9 +171,39 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
 
   private onStatusClick = (status: EntityStatusValue) => {
     const next = toggleStatusFilter(this.state.searchQuery, DETECTOR_STATUS_LABELS[status]);
-    this.setState({ searchQuery: next, appliedQuery: next });
+    this.setState({ searchQuery: next, appliedQuery: next, pageIndex: 0 });
     this.writeQueryToUrl(next);
   };
+
+  // Wazuh: keeps the controlled `pageIndex` in step with the table's own paging.
+  private onTableChange = ({ page }: { page?: { index: number } }) => {
+    if (page) {
+      this.setState({ pageIndex: page.index });
+    }
+  };
+
+  // Wazuh: the summary's counts, recomputed only when the detectors or the applied
+  // query change, not on every render (selection, modals, popovers).
+  private summaryCache?: {
+    detectorHits: DetectorHit[];
+    appliedQuery: SearchQuery | null;
+    matchCount: number;
+    statusCounts: StatusCounts;
+  };
+
+  private getSummaryCounts(detectorHits: DetectorHit[], appliedQuery: SearchQuery | null) {
+    const cache = this.summaryCache;
+    if (cache && cache.detectorHits === detectorHits && cache.appliedQuery === appliedQuery) {
+      return cache;
+    }
+    this.summaryCache = {
+      detectorHits,
+      appliedQuery,
+      matchCount: countQueryMatches(appliedQuery, detectorHits),
+      statusCounts: countStatuses(detectorHits, (hit) => !!hit._source.enabled),
+    };
+    return this.summaryCache;
+  }
 
   async componentDidMount() {
     setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS]);
@@ -220,7 +255,8 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             rawSpace: (detector._source.source || '').toLowerCase(),
           };
         });
-        this.setState({ detectorHits: detectors });
+        // Wazuh: new items go back to the first page, as the table does unless controlled.
+        this.setState({ detectorHits: detectors, pageIndex: 0 });
       } else if (!res.error.includes('no such index')) {
         errorNotificationToast(notifications, 'retrieve', 'detectors', res.error);
       }
@@ -534,7 +570,15 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       onChange: this.onSearchChange,
     };
 
-    const activeStatusValue = getActiveStatusValue(this.state.searchQuery);
+    // Wazuh: from the query the table filters with; after a parse error it shows every
+    // detector, so no status is active.
+    const activeStatusValue = this.state.appliedQuery
+      ? getActiveStatusValue(this.state.appliedQuery)
+      : undefined;
+    const { matchCount, statusCounts } = this.getSummaryCounts(
+      detectorHits,
+      this.state.appliedQuery
+    );
     const activeStatus = (Object.keys(DETECTOR_STATUS_LABELS) as EntityStatusValue[]).find(
       (status) => DETECTOR_STATUS_LABELS[status] === activeStatusValue
     );
@@ -566,22 +610,29 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               columns={columns}
               pagination={{
                 initialPageSize: DEFAULT_PAGE_SIZE,
+                // Wazuh: controlled, see `pageIndex` in the state.
+                pageIndex: this.state.pageIndex,
                 pageSizeOptions: PAGE_SIZE_OPTIONS,
               }}
               sorting={sorting}
               isSelectable={true}
               selection={{ onSelectionChange: this.onSelectionChange }}
               search={search}
+              // Wazuh: tracks the controlled page index.
+              onTableChange={this.onTableChange}
               childrenBetween={
                 <InMemoryTableStatusSummary
-                  total={countQueryMatches(this.state.appliedQuery, detectorHits)}
+                  total={matchCount}
                   loading={loadingDetectors}
                   entityPlural="detectors"
-                  statusCounts={countStatuses(detectorHits, (hit) => !!hit._source.enabled)}
+                  statusCounts={statusCounts}
                   statusLoading={loadingDetectors}
                   activeStatus={activeStatus}
                   onStatusClick={this.onStatusClick}
                   statusLabels={DETECTOR_STATUS_LABELS}
+                  // Wazuh: Detectors has no active space, only a Space filter, which
+                  // the bar ignores like every other filter.
+                  statusScopeNote="Includes the detectors of every space."
                   data-test-subj="detectorsStatusSummary"
                 />
               }

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { EuiSearchBar } from '@elastic/eui';
 import { getActiveStatusValue, toggleStatusFilter } from '../utils/entitySearchBarFilters';
 
@@ -19,6 +19,11 @@ export const countQueryMatches = <T>(query: Query | null, items: T[]): number =>
 // can apply the Status filter, and counts what the table shows. `onQueryChange` keeps
 // the page's own side effects (persisting the query in the URL); it receives null for
 // a search that failed to parse, as the table's `search.onChange` did before.
+//
+// The page index is controlled too: the table goes back to the first page when the
+// user types a search or loads new items, but not when the `query` prop changes, so a
+// status picked in the bar would leave the user on page N of the filtered result. Pass
+// `pageIndex` in the table's `pagination` and `onTableChange` as its `onTableChange`.
 export function useInMemoryTableQuery<T>(
   initialQueryText: string,
   items: T[],
@@ -30,6 +35,18 @@ export function useInMemoryTableQuery<T>(
   );
   // The query the table filters with: the last valid one, or null after a parse error.
   const [appliedQuery, setAppliedQuery] = useState<Query | null>(searchQuery);
+  const [pageIndex, setPageIndex] = useState(0);
+
+  // New items send the table back to the first page, as it does with uncontrolled paging.
+  useEffect(() => {
+    setPageIndex(0);
+  }, [items]);
+
+  const onTableChange = useCallback(({ page }: { page?: { index: number } }) => {
+    if (page) {
+      setPageIndex(page.index);
+    }
+  }, []);
 
   const onSearchChange = useCallback(
     ({ query }: { query: Query | null }) => {
@@ -37,6 +54,7 @@ export function useInMemoryTableQuery<T>(
       if (query) {
         setSearchQuery(query);
       }
+      setPageIndex(0);
       onQueryChange(query ?? null);
       return true;
     },
@@ -48,6 +66,7 @@ export function useInMemoryTableQuery<T>(
       const next = toggleStatusFilter(searchQuery, value, statusField);
       setSearchQuery(next);
       setAppliedQuery(next);
+      setPageIndex(0);
       onQueryChange(next);
     },
     [searchQuery, statusField, onQueryChange]
@@ -58,6 +77,7 @@ export function useInMemoryTableQuery<T>(
     const next = EuiSearchBar.Query.parse(text);
     setSearchQuery(next);
     setAppliedQuery(next);
+    setPageIndex(0);
   }, []);
 
   const matchCount = useMemo(() => countQueryMatches(appliedQuery, items), [appliedQuery, items]);
@@ -68,6 +88,10 @@ export function useInMemoryTableQuery<T>(
     toggleStatus,
     resetQuery,
     matchCount,
-    activeStatus: getActiveStatusValue(searchQuery, statusField),
+    // From the query the table filters with: after a parse error it shows every item,
+    // so no status is active.
+    activeStatus: appliedQuery ? getActiveStatusValue(appliedQuery, statusField) : undefined,
+    pageIndex,
+    onTableChange,
   };
 }

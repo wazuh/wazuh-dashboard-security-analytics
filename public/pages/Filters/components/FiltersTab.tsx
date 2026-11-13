@@ -68,12 +68,19 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
     },
     [history]
   );
-  const { searchQuery, onSearchChange, toggleStatus, matchCount, activeStatus } =
-    useInMemoryTableQuery(
-      buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
-      items,
-      writeQueryToUrl
-    );
+  const {
+    searchQuery,
+    onSearchChange,
+    toggleStatus,
+    matchCount,
+    activeStatus,
+    pageIndex,
+    onTableChange,
+  } = useInMemoryTableQuery(
+    buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
+    items,
+    writeQueryToUrl
+  );
   // Wazuh: every filter loaded for the space, regardless of the search.
   const statusCounts = useMemo(
     () => countStatuses(items, (item) => item.status === 'enabled'),
@@ -245,7 +252,8 @@ export const FiltersTab: React.FC<FiltersTabProps> = ({ spaceFilter, notificatio
         items={items}
         loading={loading || isDeleting}
         columns={getFiltersTableColumns(spaceFilter, onViewDetails, onEdit, onDelete)}
-        pagination={{ initialPageSize: 25 }}
+        pagination={{ initialPageSize: 25, pageIndex }}
+        onTableChange={onTableChange}
         search={{
           ...getFiltersTableSearchConfig(items, { toolsRight: [actionsButton] }),
           query: searchQuery,

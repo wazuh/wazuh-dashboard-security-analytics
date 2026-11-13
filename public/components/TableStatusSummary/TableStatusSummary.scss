@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-/* Wazuh: one compact row under a table's search bar. Colors come from euiThemeVars in
-   TableStatusSummary.tsx, so they follow the light and dark themes. */
+/* Wazuh: one compact row under a table's search bar. The colors are theme variables,
+   which OSD compiles once per theme, so they follow the light and dark themes. */
 .tableStatusSummary {
   min-height: 24px;
 }
@@ -66,4 +66,16 @@
 .tableStatusSummary__legend--active {
   font-weight: 600;
   text-decoration: underline;
+}
+
+/* Wazuh: the colors of the Status column's EuiHealth dots (`success` and `subdued`),
+   so the bar reads with the same colors the table already uses for each status. These
+   are the expressions EuiIcon applies for those colors, so they match in every theme,
+   and both keep at least a 3:1 contrast against the page (WCAG 1.4.11). */
+.tableStatusSummary__fill--enabled {
+  background-color: makeGraphicContrastColor($euiColorSuccess);
+}
+
+.tableStatusSummary__fill--disabled {
+  background-color: $euiTextSubduedColor;
 }

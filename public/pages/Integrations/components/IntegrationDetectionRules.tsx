@@ -30,10 +30,8 @@ import { withReturnTo } from '../../../utils/routes';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
-import {
-  useIntegrationRules,
-  useIntegrationRuleStatusCounts,
-} from '../../WazuhRules/hooks/useIntegrationRules';
+import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
 import { TableStatusSummary } from '../../../components/TableStatusSummary';
 import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
@@ -85,6 +83,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     items: rules,
     total,
     loading: loadingRules,
+    error: loadFailed,
   } = useIntegrationRules({
     ruleIds,
     space,
@@ -98,12 +97,12 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     severityLevels,
     status: statusFilter,
   });
-  const { counts: statusCounts, loading: statusCountsLoading } = useIntegrationRuleStatusCounts({
-    ruleIds,
-    space,
-    enabled,
-    reloadTrigger,
-  });
+  // Wazuh: every rule of the integration, regardless of the tab's search and filters.
+  const { counts: statusCounts, loading: statusCountsLoading } = useEntityStatusCounts(
+    'rules',
+    { space, ids: ruleIds },
+    { enabled, reloadTrigger }
+  );
 
   // Wazuh: the summary bar is this tab's only Status filter; selecting the active
   // status again clears it.
@@ -280,6 +279,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
             <TableStatusSummary
               total={total}
               loading={loadingRules}
+              error={loadFailed}
               entityPlural="rules"
               statusCounts={statusCounts}
               statusLoading={statusCountsLoading}

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
-import { EntityStatusValue, useStatusCounts } from '../../../hooks/useStatusCounts';
+import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import { DecoderTableItem } from '../../Integrations/components/IntegrationDecoders';
 import { buildDecodersSearchQuery } from '../utils/constants';
 
@@ -43,6 +43,8 @@ export function useIntegrationDecoders({
 }: UseIntegrationDecodersParams) {
   const [items, setItems] = useState<DecoderTableItem[]>([]);
   const [total, setTotal] = useState(0);
+  // Wazuh: the request failed; the status summary shows no count instead of 0.
+  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // The parent rebuilds `decoderIds` on every render, so depend on its content.
@@ -101,12 +103,14 @@ export function useIntegrationDecoders({
             }))
           );
           setTotal(response.total);
+          setError(!!response.error);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setItems([]);
           setTotal(0);
+          setError(true);
         }
       })
       .finally(() => {
@@ -132,35 +136,5 @@ export function useIntegrationDecoders({
     reloadTrigger,
   ]);
 
-  return { items, total, loading };
-}
-
-// Wazuh: the enabled/disabled split of every decoder of the integration, regardless of
-// the tab's search and status filter.
-export function useIntegrationDecoderStatusCounts({
-  decoderIds,
-  space,
-  enabled = true,
-  reloadTrigger,
-}: Pick<UseIntegrationDecodersParams, 'decoderIds' | 'space' | 'enabled' | 'reloadTrigger'>) {
-  const decoderIdsKey = decoderIds.join(',');
-  const countByStatus = useCallback(
-    async (status: EntityStatusValue) =>
-      (
-        await DataStore.decoders.searchDecoders(
-          {
-            from: 0,
-            size: 0,
-            query: { terms: { 'document.id': decoderIds } },
-            status,
-            _source: false,
-          },
-          space
-        )
-      ).total,
-    // The parent rebuilds `decoderIds` on every render, so depend on its content.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [decoderIdsKey, space]
-  );
-  return useStatusCounts(countByStatus, { enabled, reloadTrigger });
+  return { items, total, loading, error };
 }

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import {
   formatPercent,
   formatResults,
@@ -97,6 +97,44 @@ describe('TableStatusSummary', () => {
     expect(screen.getByTestId('tableStatusSummary-statusLoading')).toBeTruthy();
   });
 
+  it('shows no total when the table request failed, instead of a misleading 0', () => {
+    renderSummary({ total: 0, error: true });
+
+    expect(screen.queryByTestId('tableStatusSummary-total')).toBeNull();
+    expect(screen.queryByTestId('tableStatusSummary-totalLoading')).toBeNull();
+  });
+
+  it('colors the segments and swatches with theme classes, not inline colors', () => {
+    renderSummary();
+
+    const enabled = screen.getByTestId('tableStatusSummary-segment-enabled');
+    const disabled = screen.getByTestId('tableStatusSummary-segment-disabled');
+    expect(enabled.classList).toContain('tableStatusSummary__fill--enabled');
+    expect(disabled.classList).toContain('tableStatusSummary__fill--disabled');
+    expect(enabled.style.backgroundColor).toBe('');
+    expect(
+      screen
+        .getByTestId('tableStatusSummary-legend-disabled')
+        .querySelector('.tableStatusSummary__swatch.tableStatusSummary__fill--disabled')
+    ).not.toBeNull();
+  });
+
+  it('adds the scope note to the tooltip', async () => {
+    jest.useFakeTimers();
+    try {
+      renderSummary({ statusScopeNote: 'Includes the detectors of every space.' });
+
+      fireEvent.mouseOver(screen.getByTestId('tableStatusSummary-bar'));
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      expect(await screen.findByText('Includes the detectors of every space.')).toBeTruthy();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('applies a status from its legend button or its bar segment', () => {
     const onStatusClick = jest.fn();
     renderSummary({ onStatusClick });
@@ -110,7 +148,8 @@ describe('TableStatusSummary', () => {
   it('marks the active status as pressed and names the action', () => {
     renderSummary({ onStatusClick: jest.fn(), activeStatus: 'disabled' });
 
-    const disabled = screen.getByRole('button', { name: 'Show only disabled decoders' });
+    // A click on the active status clears the filter.
+    const disabled = screen.getByRole('button', { name: 'Show all decoders' });
     const enabled = screen.getByRole('button', { name: 'Show only enabled decoders' });
     expect(disabled.getAttribute('aria-pressed')).toBe('true');
     expect(enabled.getAttribute('aria-pressed')).toBe('false');

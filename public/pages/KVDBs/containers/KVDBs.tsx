@@ -37,7 +37,8 @@ import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
 import { TableStatusSummary } from '../../../components/TableStatusSummary';
-import { asEntityStatus, EntityStatusValue, useStatusCounts } from '../../../hooks/useStatusCounts';
+import { asEntityStatus, EntityStatusValue } from '../../../hooks/useStatusCounts';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import {
   buildKVDBsSearchQuery,
@@ -84,6 +85,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const isMountedRef = useRef(true);
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
+  // Wazuh: the list request failed; the summary shows no count instead of 0.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loading, setLoading] = useState(false);
   const urlFilters = useUrlFilterParams(
     { params: ['query', 'enabled', 'integration', 'page'] },
@@ -287,6 +290,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
 
       setItems(response.items);
       setTotalItemCount(response.total);
+      setLoadFailed(!!response.error);
     } finally {
       setLoading(false);
     }
@@ -306,30 +310,12 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   }, [fetchKVDBs]);
 
   // Wazuh: the status bar counts every KVDB in the space, ignoring the search and
-  // filters; a size-0 search per status reuses the Status filter's own definition.
-  const countKVDBsByStatus = useCallback(
-    async (status: EntityStatusValue) =>
-      (
-        await DataStore.kvdbs.searchKVDBs(
-          {
-            size: 0,
-            query: spaceFilter
-              ? { bool: { filter: [{ term: { 'space.name': spaceFilter } }] } }
-              : { match_all: {} },
-            status,
-            track_total_hits: true,
-            _source: false,
-          },
-          { skipIntegrationMap: true }
-        )
-      ).total,
-    [spaceFilter]
-  );
+  // filters.
   const {
     counts: statusCounts,
     loading: statusCountsLoading,
     reload: reloadStatusCounts,
-  } = useStatusCounts(countKVDBsByStatus);
+  } = useEntityStatusCounts('kvdbs', { space: spaceFilter });
 
   const reloadAll = useCallback(async () => {
     reloadStatusCounts();
@@ -619,6 +605,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
           <TableStatusSummary
             total={totalItemCount}
             loading={loading}
+            error={loadFailed}
             entityPlural="KVDBs"
             statusCounts={statusCounts}
             statusLoading={statusCountsLoading}

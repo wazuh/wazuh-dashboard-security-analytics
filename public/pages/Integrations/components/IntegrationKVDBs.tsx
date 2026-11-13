@@ -26,10 +26,8 @@ import { withReturnTo } from '../../../utils/routes';
 import { KVDBItem, Space } from '../../../../types';
 import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
-import {
-  useIntegrationKVDBs,
-  useIntegrationKVDBStatusCounts,
-} from '../../KVDBs/hooks/useIntegrationKVDBs';
+import { useIntegrationKVDBs } from '../../KVDBs/hooks/useIntegrationKVDBs';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
 import { TableStatusSummary } from '../../../components/TableStatusSummary';
 import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
@@ -79,6 +77,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
     items: kvdbs,
     total,
     loading,
+    error: loadFailed,
   } = useIntegrationKVDBs({
     kvdbIds,
     space,
@@ -91,12 +90,12 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
     status: statusFilter,
     reloadTrigger,
   });
-  const { counts: statusCounts, loading: statusCountsLoading } = useIntegrationKVDBStatusCounts({
-    kvdbIds,
-    space,
-    enabled,
-    reloadTrigger,
-  });
+  // Wazuh: every KVDB of the integration, regardless of the tab's search and filters.
+  const { counts: statusCounts, loading: statusCountsLoading } = useEntityStatusCounts(
+    'kvdbs',
+    { space, ids: kvdbIds },
+    { enabled, reloadTrigger }
+  );
 
   // Wazuh: the summary bar is this tab's only Status filter; selecting the active
   // status again clears it.
@@ -239,6 +238,7 @@ export const IntegrationKVDBs: React.FC<IntegrationKVDBsProps> = ({
             <TableStatusSummary
               total={total}
               loading={loading}
+              error={loadFailed}
               entityPlural="KVDBs"
               statusCounts={statusCounts}
               statusLoading={statusCountsLoading}

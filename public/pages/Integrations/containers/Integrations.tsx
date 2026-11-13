@@ -138,16 +138,24 @@ export const Integrations: React.FC<IntegrationsProps> = ({
     },
     [history]
   );
-  const { searchQuery, onSearchChange, toggleStatus, resetQuery, matchCount, activeStatus } =
-    useInMemoryTableQuery(
-      buildQueryTextWithStatus(
-        buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
-        urlFilters.category,
-        'category'
-      ),
-      integrations,
-      writeQueryToUrl
-    );
+  const {
+    searchQuery,
+    onSearchChange,
+    toggleStatus,
+    resetQuery,
+    matchCount,
+    activeStatus,
+    pageIndex,
+    onTableChange,
+  } = useInMemoryTableQuery(
+    buildQueryTextWithStatus(
+      buildQueryTextWithStatus(urlFilters.query, urlFilters.status),
+      urlFilters.category,
+      'category'
+    ),
+    integrations,
+    writeQueryToUrl
+  );
   // Wazuh: every integration of the space, regardless of the search.
   const statusCounts = useMemo(
     () => countStatuses(integrations, (item) => item.status === 'enabled'),
@@ -698,7 +706,9 @@ export const Integrations: React.FC<IntegrationsProps> = ({
               })}
               pagination={{
                 initialPageSize: 25,
+                pageIndex,
               }}
+              onTableChange={onTableChange}
               search={{
                 ...getIntegrationsTableSearchConfig({ toolsRight: [actionsButton] }),
                 query: searchQuery,

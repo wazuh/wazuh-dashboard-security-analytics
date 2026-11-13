@@ -301,6 +301,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       }
                     }
                     statusLoading={false}
+                    statusScopeNote="Includes the detectors of every space."
                     total={1}
                   />
                 }
@@ -568,9 +569,11 @@ exports[`<Detectors /> spec renders the component 1`] = `
                     noContentTitle="No detectors yet"
                   />
                 }
+                onTableChange={[Function]}
                 pagination={
                   Object {
                     "initialPageSize": 50,
+                    "pageIndex": 0,
                     "pageSizeOptions": Array [
                       10,
                       25,
@@ -1783,6 +1786,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                       }
                     }
                     statusLoading={false}
+                    statusScopeNote="Includes the detectors of every space."
                     total={1}
                   >
                     <div
@@ -1806,6 +1810,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                           }
                         }
                         statusLoading={false}
+                        statusScopeNote="Includes the detectors of every space."
                         total={1}
                       >
                         <EuiFlexGroup
@@ -1887,6 +1892,9 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                               <div>
                                                 Counts all detectors, regardless of the search and filters.
                                               </div>
+                                              <div>
+                                                Includes the detectors of every space.
+                                              </div>
                                             </React.Fragment>
                                           }
                                           delay="regular"
@@ -1906,14 +1914,13 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                             >
                                               <button
                                                 aria-hidden="true"
-                                                className="tableStatusSummary__segment"
+                                                className="tableStatusSummary__segment tableStatusSummary__fill--enabled"
                                                 data-test-subj="detectorsStatusSummary-segment-enabled"
                                                 disabled={false}
                                                 key="enabled"
                                                 onClick={[Function]}
                                                 style={
                                                   Object {
-                                                    "backgroundColor": "#006BB4",
                                                     "flexGrow": 1,
                                                   }
                                                 }
@@ -1972,12 +1979,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                     className="tableStatusSummary__legendContent"
                                                   >
                                                     <span
-                                                      className="tableStatusSummary__swatch"
-                                                      style={
-                                                        Object {
-                                                          "backgroundColor": "#006BB4",
-                                                        }
-                                                      }
+                                                      className="tableStatusSummary__swatch tableStatusSummary__fill--enabled"
                                                     />
                                                     1 active
                                                   </span>
@@ -2035,12 +2037,7 @@ exports[`<Detectors /> spec renders the component 1`] = `
                                                     className="tableStatusSummary__legendContent"
                                                   >
                                                     <span
-                                                      className="tableStatusSummary__swatch"
-                                                      style={
-                                                        Object {
-                                                          "backgroundColor": "#98A2B3",
-                                                        }
-                                                      }
+                                                      className="tableStatusSummary__swatch tableStatusSummary__fill--disabled"
                                                     />
                                                     0 inactive
                                                   </span>

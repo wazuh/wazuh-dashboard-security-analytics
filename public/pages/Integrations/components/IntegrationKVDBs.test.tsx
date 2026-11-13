@@ -17,11 +17,16 @@ const mockUseIntegrationKVDBs = jest.fn((_params: unknown) => ({
 
 jest.mock('../../KVDBs/hooks/useIntegrationKVDBs', () => ({
   useIntegrationKVDBs: (params: unknown) => mockUseIntegrationKVDBs(params),
-  useIntegrationKVDBStatusCounts: () => ({
-    counts: { enabled: 1, disabled: 2 },
-    loading: false,
-    reload: jest.fn(),
-  }),
+}));
+
+const mockUseEntityStatusCounts = jest.fn((..._args: unknown[]) => ({
+  counts: { enabled: 1, disabled: 2 },
+  loading: false,
+  reload: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useEntityStatusCounts', () => ({
+  useEntityStatusCounts: (...args: unknown[]) => mockUseEntityStatusCounts(...args),
 }));
 
 const buildHistory = () => ({ push: jest.fn() } as any);
@@ -115,5 +120,33 @@ describe('<IntegrationKVDBs /> status summary', () => {
     expect(mockUseIntegrationKVDBs).toHaveBeenLastCalledWith(
       expect.objectContaining({ status: undefined })
     );
+  });
+});
+
+describe('<IntegrationKVDBs /> status summary scope and errors', () => {
+  it('counts every item of the integration in its space', async () => {
+    await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+    expect(mockUseEntityStatusCounts).toHaveBeenLastCalledWith(
+      'kvdbs',
+      { space: SpaceTypes.DRAFT.value, ids: ['kvdb-1'] },
+      expect.objectContaining({ enabled: true, reloadTrigger: 0 })
+    );
+  });
+
+  it('shows no total when the list request failed', async () => {
+    const listResult = mockUseIntegrationKVDBs.getMockImplementation()!({});
+    mockUseIntegrationKVDBs.mockImplementation(
+      () => ({ ...listResult, total: 0, error: true } as any)
+    );
+    try {
+      const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+      expect(wrapper.find(`[data-test-subj="integrationKvdbsStatusSummary-total"]`).exists()).toBe(
+        false
+      );
+    } finally {
+      mockUseIntegrationKVDBs.mockImplementation(() => listResult);
+    }
   });
 });
