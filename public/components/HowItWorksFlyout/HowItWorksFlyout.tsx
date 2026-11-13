@@ -14,8 +14,14 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
+import { RedirectAppLinks } from '../../../../../src/plugins/opensearch_dashboards_react/public';
 import { SpaceTypes } from '../../../common/constants';
-import { SECURITY_ANALYTICS_DOCUMENTATION_URL } from '../../utils/constants';
+import { getApplication } from '../../services/utils/constants';
+import {
+  CTI_FEED_APP_ID,
+  LOG_DATA_COLLECTION_DOCUMENTATION_URL,
+  SECURITY_ANALYTICS_DOCUMENTATION_URL,
+} from '../../utils/constants';
 
 export const HOW_IT_WORKS_TITLE = 'How ruleset management works';
 
@@ -112,6 +118,23 @@ export const HowItWorksFlyout: React.FC = () => {
         <EuiSpacer size="l" />
 
         <EuiTitle size="xs">
+          <h3>First step: collect the log</h3>
+        </EuiTitle>
+        <EuiSpacer size="s" />
+        <EuiText size="s">
+          <p>
+            Before a log can be decoded and matched by rules, it has to be collected on the agent.
+            Collect the log on the agent first, then use the pieces below to normalize it and detect
+            on it.{' '}
+            <EuiLink href={LOG_DATA_COLLECTION_DOCUMENTATION_URL} target="_blank" external>
+              How to collect a log
+            </EuiLink>
+          </p>
+        </EuiText>
+
+        <EuiSpacer size="l" />
+
+        <EuiTitle size="xs">
           <h3>What the pieces are</h3>
         </EuiTitle>
         <EuiSpacer size="s" />
@@ -130,10 +153,14 @@ export const HowItWorksFlyout: React.FC = () => {
         </EuiTitle>
         <EuiSpacer size="s" />
         <EuiText size="s">
-          <p>
-            Three spaces are the stages of the content lifecycle: <em>draft</em>, <em>test</em> and{' '}
-            <em>custom</em>. The fourth, <em>standard</em>, holds the content shipped with Wazuh.
-          </p>
+          <RedirectAppLinks application={getApplication()}>
+            <p>
+              Three spaces are the stages of the content lifecycle: <em>draft</em>, <em>test</em>{' '}
+              and <em>custom</em>. The fourth, <em>standard</em>, holds the content synced from the
+              CTI feed. The indexer checks the feed for updates every hour by default.{' '}
+              <EuiLink href={getApplication().getUrlForApp(CTI_FEED_APP_ID)}>Open CTI feed</EuiLink>
+            </p>
+          </RedirectAppLinks>
           <p>
             User-managed content is promoted sequentially from <em>draft</em> to <em>test</em>, and
             from <em>test</em> to <em>custom</em>, after validation.

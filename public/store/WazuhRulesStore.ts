@@ -228,8 +228,10 @@ export class RulesStore implements IWazuhRulesStore {
       // Wazuh: Rules-only Severity filter (multiSelect 'or'), matches `document.level`.
       levels?: string[];
     },
-    space: string
-  ): Promise<{ total: number; items: RuleItemInfoBase[] }> {
+    space: string,
+    // Wazuh: `silent` skips the error toast; a failed search returns its `error`.
+    options: { silent?: boolean } = {}
+  ): Promise<{ total: number; items: RuleItemInfoBase[]; error?: string }> {
     const body: any = {
       from: params.from ?? 0,
       size: params.size ?? 25,
@@ -247,10 +249,13 @@ export class RulesStore implements IWazuhRulesStore {
     const response = await this.service.getRules(isStandard, body, space);
 
     if (!response?.ok) {
-      if (!response?.error?.includes('index doesnt exist')) {
+      if (response?.error?.includes('index doesnt exist')) {
+        return { total: 0, items: [] };
+      }
+      if (!options.silent) {
         errorNotificationToast(this.notifications, 'retrieve', 'rules', response?.error);
       }
-      return { total: 0, items: [] };
+      return { total: 0, items: [], error: response?.error ?? 'Unknown error' };
     }
 
     const items = response.response.hits.hits.map((hit: any) =>
@@ -296,6 +301,7 @@ export class RulesStore implements IWazuhRulesStore {
       space: this.normalizeSpace(hit._source?.space),
       _source: {
         id: hit._source?.document?.id ?? hit._id,
+        sigma_id: doc.sigma_id,
         level: doc.level ?? '',
         category: logsource.category ?? logsource.product ?? logsource.service ?? '',
         status: doc.status ?? '',

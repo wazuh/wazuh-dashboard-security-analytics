@@ -25,18 +25,20 @@ import {
 } from '@elastic/eui';
 
 import { withPolicyGuard } from './PolicyGuard';
-import { DecoderSource, PolicyDocument, Space } from '../../../../types';
+import { DecoderSource, PolicyDocument, PolicyResources, Space } from '../../../../types';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DataStore } from '../../../store/DataStore';
 import { successNotificationToast } from '../../../utils/helpers';
 import { FormFieldArray } from '../../../components/FormFieldArray';
 import { INTEGRATION_AUTHOR_REGEX, validateName } from '../../../utils/validation';
 import { buildDecodersSearchQuery } from '../../Decoders/utils/constants';
-import { SPACE_ACTIONS } from '../../../../common/constants';
+import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpaceTypeLabel } from '../../../../common/helpers';
 import { AssetIdentity, formatAssetLabel } from '../../../components/AssetIdentity';
 import { UI_DISABLED_SETTINGS_IDS, isUiSettingDisabled } from '../../../utils/helpers';
 import { ALLOWED_ENRICHMENTS, ENRICHMENT_LABELS, EnrichmentType } from '../constants/enrichments';
+import { RootDecoderRemovalModal, hasNormalizationResources } from './RootDecoderRemovalModal';
+import { POLICY_SETTING_HELP } from '../utils/constants';
 
 const DECODER_SEARCH_SIZE = 25;
 const DELAY_ON_SEARCH = 300; // ms
@@ -112,6 +114,11 @@ const EditForm: React.FC<{}> = withPolicyGuard({
 
     const [isEnrichmentPopoverOpen, setIsEnrichmentPopoverOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
+    const [rootDecoderWarning, setRootDecoderWarning] = useState<{
+      resources?: PolicyResources['normalization'];
+      error?: string;
+    } | null>(null);
 
     // Flag to determine if the space allows editing non-enrichments fields
     const canEditPolicy = actionIsAllowedOnSpace(space, SPACE_ACTIONS.EDIT_POLICY);
@@ -153,11 +160,18 @@ const EditForm: React.FC<{}> = withPolicyGuard({
       </EuiText>
     );
 
-    const renderBooleanValue = (value?: boolean) => (
+    // Same words as the policy panel on the overview.
+    const renderBooleanValue = (value: boolean | undefined, on: string, off: string) => (
       <EuiText size="s" color="subdued">
-        {value ? 'yes' : 'no'}
+        {value ? on : off}
       </EuiText>
     );
+
+    // The draft policy reaches the engine only once the space is promoted to custom.
+    const statusHelpText =
+      space === SpaceTypes.DRAFT.value
+        ? `${POLICY_SETTING_HELP.status} ${POLICY_SETTING_HELP.statusInDraft}`
+        : POLICY_SETTING_HELP.status;
 
     const updateErrors = (details: PolicyDocument) => {
       const titleInvalid = !validateName(details.metadata?.title, INTEGRATION_AUTHOR_REGEX);
@@ -216,21 +230,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
       }
     };
 
-    const onConfirmClicked = useCallback(async () => {
-      if (isSaving) {
-        return;
-      }
-      const { titleInvalid, authorInvalid } = updateErrors(policyDetails);
-
-      if (titleInvalid || authorInvalid) {
-        notifications?.toasts.addDanger({
-          title: `Failed to update`,
-          text: `Fix the marked errors.`,
-          toastLifeTimeMs: 3000,
-        });
-        return;
-      }
-
+    const savePolicy = useCallback(async () => {
       setIsSaving(true);
       try {
         const payload = sanitizatePolicy(policyDetails);
@@ -246,7 +246,78 @@ const EditForm: React.FC<{}> = withPolicyGuard({
       } catch {
         setIsSaving(false);
       }
-    }, [isSaving, notifications, onClose, onSuccess, policyDetails, space]);
+    }, [notifications, onClose, onSuccess, policyDetails, space]);
+
+    const onConfirmClicked = useCallback(async () => {
+      if (isSaving) {
+        return;
+      }
+      const { titleInvalid, authorInvalid } = updateErrors(policyDetails);
+
+      if (titleInvalid || authorInvalid) {
+        notifications?.toasts.addDanger({
+          title: `Failed to update`,
+          text: `Fix the marked errors.`,
+          toastLifeTimeMs: 3000,
+        });
+        return;
+      }
+
+      // Without a root decoder, the Engine cannot load the decoders, KVDBs and filters left in
+      // the space and promotion fails, so the user is warned before the root decoder is cleared.
+      if (policyDocumentData.root_decoder && !policyDetails.root_decoder) {
+        setIsSaving(true);
+        const result = await DataStore.policies.getPolicyResources(space);
+        if (!result.ok) {
+          setRootDecoderWarning({ error: result.error });
+          setIsSaving(false);
+          return;
+        }
+        if (hasNormalizationResources(result.resources.normalization)) {
+          setRootDecoderWarning({ resources: result.resources.normalization });
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      await savePolicy();
+    }, [isSaving, notifications, policyDetails, policyDocumentData, savePolicy, space]);
+
+    const onClearNormalization = useCallback(async () => {
+      setIsClearing(true);
+      const cleared = await DataStore.policies.clearSpaceNormalization(space);
+      if (!cleared) {
+        setIsClearing(false);
+        return;
+      }
+      successNotificationToast(notifications, 'cleared', 'normalization');
+
+      // Clearing rewrites the policy (root decoder, filters, integrations left empty), so the
+      // other edits of the form are saved on top of the cleared policy, not the one loaded here.
+      const response = await DataStore.policies.searchPolicies(space, {
+        includeIntegrationsMap: false,
+      });
+      const clearedPolicy = response.items?.[0]?.document;
+      if (clearedPolicy) {
+        const merged: PolicyDocument = {
+          ...clearedPolicy,
+          metadata: policyDetails.metadata,
+          enabled: policyDetails.enabled,
+          enrichments: policyDetails.enrichments,
+          index_unclassified_events: policyDetails.index_unclassified_events,
+          index_discarded_events: policyDetails.index_discarded_events,
+        };
+        const payload = sanitizatePolicy(merged);
+        if (JSON.stringify(payload) !== JSON.stringify(sanitizatePolicy(clearedPolicy))) {
+          // A failure is reported by the store. The flyout closes anyway: its integrations and
+          // filters are stale after the clear and must not be saved again.
+          await DataStore.policies.updatePolicy(space, payload);
+        }
+      }
+
+      if (onSuccess) onSuccess();
+      onClose();
+    }, [notifications, onClose, onSuccess, policyDetails, space]);
 
     return (
       <>
@@ -354,10 +425,11 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             <h3>Settings</h3>
           </EuiText>
           <EuiSpacer size="s" />
-          <EuiCompressedFormRow label={'Status'}>
+          <EuiCompressedFormRow label={'Status'} helpText={statusHelpText}>
             {canEditToggles ? (
               <EuiSwitch
                 compressed
+                label={policyDetails.enabled ? 'Enabled' : 'Disabled'}
                 checked={policyDetails.enabled || false}
                 onChange={(e) => {
                   const newPolicy = {
@@ -369,7 +441,7 @@ const EditForm: React.FC<{}> = withPolicyGuard({
                 }}
               />
             ) : (
-              renderBooleanValue(policyDetails.enabled)
+              renderBooleanValue(policyDetails.enabled, 'Enabled', 'Disabled')
             )}
           </EuiCompressedFormRow>
           <EuiCompressedFormRow label="Root decoder">
@@ -406,54 +478,56 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             )}
           </EuiCompressedFormRow>
           {showAnyIndexingSetting && (
-            <EuiCompressedFormRow>
-              <EuiFlexGroup>
-                {showIndexUnclassifiedEventsSetting && (
-                  <EuiFlexItem>
-                    <EuiCompressedFormRow label={'Index unclassified events'}>
-                      {canEditToggles ? (
-                        <EuiSwitch
-                          compressed
-                          checked={policyDetails.index_unclassified_events || false}
-                          onChange={(e) => {
-                            const newPolicy = {
-                              ...policyDetails,
-                              index_unclassified_events: e.target.checked,
-                            };
-                            setPolicyDetails(newPolicy);
-                            updateErrors(newPolicy);
-                          }}
-                        />
-                      ) : (
-                        renderBooleanValue(policyDetails.index_unclassified_events)
-                      )}
-                    </EuiCompressedFormRow>
-                  </EuiFlexItem>
-                )}
-                {showIndexDiscardedEventsSetting && (
-                  <EuiFlexItem>
-                    <EuiCompressedFormRow label={'Index discarded events'}>
-                      {canEditToggles ? (
-                        <EuiSwitch
-                          compressed
-                          checked={policyDetails.index_discarded_events || false}
-                          onChange={(e) => {
-                            const newPolicy = {
-                              ...policyDetails,
-                              index_discarded_events: e.target.checked,
-                            };
-                            setPolicyDetails(newPolicy);
-                            updateErrors(newPolicy);
-                          }}
-                        />
-                      ) : (
-                        renderBooleanValue(policyDetails.index_discarded_events)
-                      )}
-                    </EuiCompressedFormRow>
-                  </EuiFlexItem>
-                )}
-              </EuiFlexGroup>
-            </EuiCompressedFormRow>
+            <>
+              {showIndexUnclassifiedEventsSetting && (
+                <EuiCompressedFormRow
+                  label={'Index unclassified events'}
+                  helpText={POLICY_SETTING_HELP.indexUnclassifiedEvents}
+                >
+                  {canEditToggles ? (
+                    <EuiSwitch
+                      compressed
+                      label={policyDetails.index_unclassified_events ? 'On' : 'Off'}
+                      checked={policyDetails.index_unclassified_events || false}
+                      onChange={(e) => {
+                        const newPolicy = {
+                          ...policyDetails,
+                          index_unclassified_events: e.target.checked,
+                        };
+                        setPolicyDetails(newPolicy);
+                        updateErrors(newPolicy);
+                      }}
+                    />
+                  ) : (
+                    renderBooleanValue(policyDetails.index_unclassified_events, 'On', 'Off')
+                  )}
+                </EuiCompressedFormRow>
+              )}
+              {showIndexDiscardedEventsSetting && (
+                <EuiCompressedFormRow
+                  label={'Index discarded events'}
+                  helpText={POLICY_SETTING_HELP.indexDiscardedEvents}
+                >
+                  {canEditToggles ? (
+                    <EuiSwitch
+                      compressed
+                      label={policyDetails.index_discarded_events ? 'On' : 'Off'}
+                      checked={policyDetails.index_discarded_events || false}
+                      onChange={(e) => {
+                        const newPolicy = {
+                          ...policyDetails,
+                          index_discarded_events: e.target.checked,
+                        };
+                        setPolicyDetails(newPolicy);
+                        updateErrors(newPolicy);
+                      }}
+                    />
+                  ) : (
+                    renderBooleanValue(policyDetails.index_discarded_events, 'On', 'Off')
+                  )}
+                </EuiCompressedFormRow>
+              )}
+            </>
           )}
           <EuiCompressedFormRow
             label={
@@ -540,6 +614,17 @@ const EditForm: React.FC<{}> = withPolicyGuard({
             </EuiFlexItem>
           </EuiFlexGroup>
         </EuiFlyoutFooter>
+        {rootDecoderWarning && (
+          <RootDecoderRemovalModal
+            resources={rootDecoderWarning.resources}
+            error={rootDecoderWarning.error}
+            isClearing={isClearing}
+            isSaving={isSaving}
+            onClearNormalization={onClearNormalization}
+            onSaveAnyway={savePolicy}
+            onCancel={() => setRootDecoderWarning(null)}
+          />
+        )}
       </>
     );
   }

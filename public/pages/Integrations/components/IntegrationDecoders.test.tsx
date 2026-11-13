@@ -11,13 +11,38 @@ import { SpaceTypes } from '../../../../common/constants';
 
 let mockDecoders = [{ id: 'decoder-1', name: 'decoder/one/0', title: 'One', author: 'Wazuh' }];
 
+const mockUseIntegrationDecoders = jest.fn((_params: unknown) => ({
+  items: mockDecoders,
+  total: mockDecoders.length,
+  loading: false,
+}));
+
 jest.mock('../../Decoders/hooks/useIntegrationDecoders', () => ({
-  useIntegrationDecoders: () => ({
-    items: mockDecoders,
-    total: mockDecoders.length,
+  useIntegrationDecoders: (params: unknown) => mockUseIntegrationDecoders(params),
+}));
+
+const mockUseEntityStatusCounts = jest.fn((..._args: unknown[]) => ({
+  counts: { enabled: 1, disabled: 2 },
+  loading: false,
+  reload: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useEntityStatusCounts', () => ({
+  useEntityStatusCounts: (...args: unknown[]) => mockUseEntityStatusCounts(...args),
+}));
+
+jest.mock('../../Decoders/hooks/useIntegrationDecoderGraph', () => ({
+  ...jest.requireActual('../../Decoders/hooks/useIntegrationDecoderGraph'),
+  useIntegrationDecoderGraph: () => ({
+    graph: undefined,
     loading: false,
+    error: undefined,
+    truncated: false,
+    hierarchyTruncated: false,
   }),
 }));
+
+jest.mock('./DecoderGraph', () => ({ DecoderGraph: () => null }));
 
 const buildHistory = () => ({ push: jest.fn() } as any);
 
@@ -96,5 +121,84 @@ describe('<IntegrationDecoders /> empty state', () => {
       .first();
 
     expect(createButton.prop('href')).toBe(CREATE_HREF);
+  });
+});
+
+describe('<IntegrationDecoders /> status summary', () => {
+  it('shows the total and the status split of every decoder of the integration', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    const summary = wrapper.find(`[data-test-subj="integrationDecodersStatusSummary"]`).first();
+
+    expect(summary.text()).toContain('1 result');
+    expect(summary.text()).toContain('1 enabled');
+    expect(summary.text()).toContain('2 disabled');
+  });
+
+  it('filters the table by the clicked status, and clears it on a second click', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    const clickDisabled = async () => {
+      await act(async () => {
+        wrapper
+          .find(`button[data-test-subj="integrationDecodersStatusSummary-legend-disabled"]`)
+          .first()
+          .simulate('click');
+      });
+      wrapper.update();
+    };
+
+    await clickDisabled();
+    expect(mockUseIntegrationDecoders).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: 'disabled' })
+    );
+
+    await clickDisabled();
+    expect(mockUseIntegrationDecoders).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: undefined })
+    );
+  });
+});
+
+describe('<IntegrationDecoders /> status summary scope and errors', () => {
+  it('skips the counts in the cascade view, which hides the summary', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    await act(async () => {
+      wrapper.find('EuiButtonGroup').first().prop('onChange')('graph');
+    });
+    wrapper.update();
+
+    expect(wrapper.find(`[data-test-subj="integrationDecodersStatusSummary"]`).exists()).toBe(
+      false
+    );
+    expect(mockUseEntityStatusCounts).toHaveBeenLastCalledWith(
+      'decoders',
+      expect.anything(),
+      expect.objectContaining({ enabled: false })
+    );
+  });
+
+  it('counts every item of the integration in its space', async () => {
+    await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+    expect(mockUseEntityStatusCounts).toHaveBeenLastCalledWith(
+      'decoders',
+      { space: SpaceTypes.DRAFT.value, ids: ['decoder-1'] },
+      expect.objectContaining({ enabled: true, reloadTrigger: 0 })
+    );
+  });
+
+  it('shows no total when the list request failed', async () => {
+    const listResult = mockUseIntegrationDecoders.getMockImplementation()!({});
+    mockUseIntegrationDecoders.mockImplementation(
+      () => ({ ...listResult, total: 0, error: true } as any)
+    );
+    try {
+      const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+      expect(
+        wrapper.find(`[data-test-subj="integrationDecodersStatusSummary-total"]`).exists()
+      ).toBe(false);
+    } finally {
+      mockUseIntegrationDecoders.mockImplementation(() => listResult);
+    }
   });
 });

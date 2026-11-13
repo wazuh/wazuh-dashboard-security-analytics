@@ -9,12 +9,24 @@ import { mount } from 'enzyme';
 import { IntegrationDetectionRules } from './IntegrationDetectionRules';
 import { SpaceTypes } from '../../../../common/constants';
 
+const mockUseIntegrationRules = jest.fn((_params: unknown) => ({
+  items: [{ ruleId: 'rule-1', title: 'Rule 1', level: 'medium', description: '' }],
+  total: 1,
+  loading: false,
+}));
+
 jest.mock('../../WazuhRules/hooks/useIntegrationRules', () => ({
-  useIntegrationRules: () => ({
-    items: [{ ruleId: 'rule-1', title: 'Rule 1', level: 'medium', description: '' }],
-    total: 1,
-    loading: false,
-  }),
+  useIntegrationRules: (params: unknown) => mockUseIntegrationRules(params),
+}));
+
+const mockUseEntityStatusCounts = jest.fn((..._args: unknown[]) => ({
+  counts: { enabled: 1, disabled: 2 },
+  loading: false,
+  reload: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useEntityStatusCounts', () => ({
+  useEntityStatusCounts: (...args: unknown[]) => mockUseEntityStatusCounts(...args),
 }));
 
 const buildHistory = () => ({ push: jest.fn() } as any);
@@ -74,5 +86,67 @@ describe('<IntegrationDetectionRules /> edit action', () => {
     expect(getEditTooltip(wrapper)).toBe('Rules can only be edited in the spaces: draft');
 
     expect(history.push).not.toHaveBeenCalled();
+  });
+});
+
+describe('<IntegrationDetectionRules /> status summary', () => {
+  it('shows the total and the status split of every rule of the integration', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    const summary = wrapper.find(`[data-test-subj="integrationRulesStatusSummary"]`).first();
+
+    expect(summary.text()).toContain('1 result');
+    expect(summary.text()).toContain('1 enabled');
+    expect(summary.text()).toContain('2 disabled');
+  });
+
+  it('filters the table by the clicked status, and clears it on a second click', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    const clickDisabled = async () => {
+      await act(async () => {
+        wrapper
+          .find(`button[data-test-subj="integrationRulesStatusSummary-legend-disabled"]`)
+          .first()
+          .simulate('click');
+      });
+      wrapper.update();
+    };
+
+    await clickDisabled();
+    expect(mockUseIntegrationRules).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: 'disabled' })
+    );
+
+    await clickDisabled();
+    expect(mockUseIntegrationRules).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: undefined })
+    );
+  });
+});
+
+describe('<IntegrationDetectionRules /> status summary scope and errors', () => {
+  it('counts every item of the integration in its space', async () => {
+    await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+    expect(mockUseEntityStatusCounts).toHaveBeenLastCalledWith(
+      'rules',
+      { space: SpaceTypes.DRAFT.value, ids: ['rule-1'] },
+      expect.objectContaining({ enabled: true, reloadTrigger: 0 })
+    );
+  });
+
+  it('shows no total when the list request failed', async () => {
+    const listResult = mockUseIntegrationRules.getMockImplementation()!({});
+    mockUseIntegrationRules.mockImplementation(
+      () => ({ ...listResult, total: 0, error: true } as any)
+    );
+    try {
+      const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+      expect(wrapper.find(`[data-test-subj="integrationRulesStatusSummary-total"]`).exists()).toBe(
+        false
+      );
+    } finally {
+      mockUseIntegrationRules.mockImplementation(() => listResult);
+    }
   });
 });

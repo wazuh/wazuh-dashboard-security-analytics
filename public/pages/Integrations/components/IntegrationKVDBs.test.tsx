@@ -9,12 +9,24 @@ import { mount } from 'enzyme';
 import { IntegrationKVDBs } from './IntegrationKVDBs';
 import { SpaceTypes } from '../../../../common/constants';
 
+const mockUseIntegrationKVDBs = jest.fn((_params: unknown) => ({
+  items: [{ id: 'kvdb-1', document: { metadata: { title: 'One', author: 'Wazuh' } } }],
+  total: 1,
+  loading: false,
+}));
+
 jest.mock('../../KVDBs/hooks/useIntegrationKVDBs', () => ({
-  useIntegrationKVDBs: () => ({
-    items: [{ id: 'kvdb-1', document: { metadata: { title: 'One', author: 'Wazuh' } } }],
-    total: 1,
-    loading: false,
-  }),
+  useIntegrationKVDBs: (params: unknown) => mockUseIntegrationKVDBs(params),
+}));
+
+const mockUseEntityStatusCounts = jest.fn((..._args: unknown[]) => ({
+  counts: { enabled: 1, disabled: 2 },
+  loading: false,
+  reload: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useEntityStatusCounts', () => ({
+  useEntityStatusCounts: (...args: unknown[]) => mockUseEntityStatusCounts(...args),
 }));
 
 const buildHistory = () => ({ push: jest.fn() } as any);
@@ -74,5 +86,67 @@ describe('<IntegrationKVDBs /> edit action', () => {
     expect(getEditTooltip(wrapper)).toBe('KVDBs can only be edited in the spaces: draft');
 
     expect(history.push).not.toHaveBeenCalled();
+  });
+});
+
+describe('<IntegrationKVDBs /> status summary', () => {
+  it('shows the total and the status split of every KVDB of the integration', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    const summary = wrapper.find(`[data-test-subj="integrationKvdbsStatusSummary"]`).first();
+
+    expect(summary.text()).toContain('1 result');
+    expect(summary.text()).toContain('1 enabled');
+    expect(summary.text()).toContain('2 disabled');
+  });
+
+  it('filters the table by the clicked status, and clears it on a second click', async () => {
+    const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+    const clickDisabled = async () => {
+      await act(async () => {
+        wrapper
+          .find(`button[data-test-subj="integrationKvdbsStatusSummary-legend-disabled"]`)
+          .first()
+          .simulate('click');
+      });
+      wrapper.update();
+    };
+
+    await clickDisabled();
+    expect(mockUseIntegrationKVDBs).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: 'disabled' })
+    );
+
+    await clickDisabled();
+    expect(mockUseIntegrationKVDBs).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: undefined })
+    );
+  });
+});
+
+describe('<IntegrationKVDBs /> status summary scope and errors', () => {
+  it('counts every item of the integration in its space', async () => {
+    await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+    expect(mockUseEntityStatusCounts).toHaveBeenLastCalledWith(
+      'kvdbs',
+      { space: SpaceTypes.DRAFT.value, ids: ['kvdb-1'] },
+      expect.objectContaining({ enabled: true, reloadTrigger: 0 })
+    );
+  });
+
+  it('shows no total when the list request failed', async () => {
+    const listResult = mockUseIntegrationKVDBs.getMockImplementation()!({});
+    mockUseIntegrationKVDBs.mockImplementation(
+      () => ({ ...listResult, total: 0, error: true } as any)
+    );
+    try {
+      const wrapper = await mountTable(SpaceTypes.DRAFT.value, buildHistory());
+
+      expect(wrapper.find(`[data-test-subj="integrationKvdbsStatusSummary-total"]`).exists()).toBe(
+        false
+      );
+    } finally {
+      mockUseIntegrationKVDBs.mockImplementation(() => listResult);
+    }
   });
 });

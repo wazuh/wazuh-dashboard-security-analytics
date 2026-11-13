@@ -50,6 +50,30 @@ export const getOrSelectedValues = (query: Query, field: string): string[] => {
   );
 };
 
+// Wazuh: the status a table is narrowed to, when exactly one is selected. Two
+// selected values (`status:(enabled or disabled)`) or none narrow nothing.
+export const getActiveStatusValue = (
+  query: Query,
+  field: string = 'status'
+): string | undefined => {
+  const values = Array.from(new Set(getOrSelectedValues(query, field)));
+  return values.length === 1 ? values[0] : undefined;
+};
+
+// Wazuh: the status summary bar's click. Selecting a status replaces whatever Status
+// selection the query holds (popover, typed or negated) with that one value; selecting
+// the active one clears it. 'exact' matches the operator the Status filters use.
+export const toggleStatusFilter = (
+  query: Query,
+  value: string,
+  field: string = 'status'
+): Query => {
+  const cleared = query.removeOrFieldClauses(field).removeSimpleFieldClauses(field);
+  return getActiveStatusValue(query, field) === value
+    ? cleared
+    : cleared.addOrFieldValue(field, value, true, 'exact');
+};
+
 // Wazuh: build a Query carrying the given free text plus OR clauses for each
 // field/values pair — used to hydrate the EuiSearchBar's displayed query from the
 // URL-owned state (mount, or a same-route CTA navigation).
