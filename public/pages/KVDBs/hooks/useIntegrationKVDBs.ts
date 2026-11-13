@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
+import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import { buildKVDBsSearchQuery } from '../utils/constants';
 import { KVDBItem } from '../../../../types';
 
@@ -17,6 +18,8 @@ export interface UseIntegrationKVDBsParams {
   sortField: string;
   sortDirection: 'asc' | 'desc';
   search: string;
+  /** The status summary bar's filter. */
+  status?: EntityStatusValue;
   reloadTrigger: number;
 }
 
@@ -29,10 +32,13 @@ export function useIntegrationKVDBs({
   sortField,
   sortDirection,
   search,
+  status,
   reloadTrigger,
 }: UseIntegrationKVDBsParams) {
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [total, setTotal] = useState(0);
+  // Wazuh: the request failed; the status summary shows no count instead of 0.
+  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // The parent rebuilds `kvdbIds` on every render, so depend on its content.
@@ -74,6 +80,7 @@ export function useIntegrationKVDBs({
           size,
           query,
           sort,
+          status,
           track_total_hits: true,
           _source: {
             includes: [
@@ -90,12 +97,14 @@ export function useIntegrationKVDBs({
         if (!cancelled) {
           setItems(response.items);
           setTotal(response.total);
+          setError(!!response.error);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setItems([]);
           setTotal(0);
+          setError(true);
         }
       })
       .finally(() => {
@@ -117,8 +126,9 @@ export function useIntegrationKVDBs({
     sortField,
     sortDirection,
     search,
+    status,
     reloadTrigger,
   ]);
 
-  return { items, total, loading };
+  return { items, total, loading, error };
 }

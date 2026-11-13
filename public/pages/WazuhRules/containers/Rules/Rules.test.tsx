@@ -231,3 +231,56 @@ describe('<Rules /> typed filter clauses', () => {
     }
   });
 });
+
+describe('<Rules /> status summary', () => {
+  // Wazuh: the summary's count requests are size-0 searches that show no toast; the
+  // list's own request is the one that reports a failure.
+  const isCountCall = (call: any[]) => call[2]?.silent;
+  const listCalls = () =>
+    DataStore.rules.searchRules.mock.calls.filter((call: any[]) => !isCountCall(call));
+  const clickLegend = async (wrapper: any, status: 'enabled' | 'disabled') => {
+    await act(async () => {
+      wrapper
+        .find(`button[data-test-subj="rulesStatusSummary-legend-${status}"]`)
+        .first()
+        .simulate('click');
+    });
+    wrapper.update();
+  };
+
+  it('counts each status with a silent size-0 request', async () => {
+    DataStore.rules.searchRules.mockClear();
+    await mountRules();
+
+    const counts = DataStore.rules.searchRules.mock.calls.filter(isCountCall);
+    expect(counts.map((call: any[]) => [call[0].size, call[0].status])).toEqual([
+      [0, 'enabled'],
+      [0, 'disabled'],
+    ]);
+  });
+
+  it('applies the clicked status to the list request, and clears it on a second click', async () => {
+    const wrapper = await mountRules();
+
+    await clickLegend(wrapper, 'disabled');
+    expect(listCalls().at(-1)[0].status).toBe('disabled');
+    expect(wrapper.find('EuiSearchBar').first().prop('query').text).toContain('status');
+
+    await clickLegend(wrapper, 'disabled');
+    expect(listCalls().at(-1)[0].status).toBeUndefined();
+  });
+
+  it('shows no total and no split when the requests fail', async () => {
+    const failure = { items: [], total: 0, error: 'boom' };
+    const original = DataStore.rules.searchRules.getMockImplementation();
+    DataStore.rules.searchRules.mockResolvedValue(failure);
+    try {
+      const wrapper = await mountRules();
+
+      expect(wrapper.find(`[data-test-subj="rulesStatusSummary-total"]`).exists()).toBe(false);
+      expect(wrapper.find(`[data-test-subj="rulesStatusSummary-bar"]`).exists()).toBe(false);
+    } finally {
+      DataStore.rules.searchRules.mockImplementation(original);
+    }
+  });
+});

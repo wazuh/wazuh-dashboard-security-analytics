@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { DataStore } from '../../../store/DataStore';
+import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import { DecoderTableItem } from '../../Integrations/components/IntegrationDecoders';
 import { buildDecodersSearchQuery } from '../utils/constants';
 
@@ -23,6 +24,8 @@ export interface UseIntegrationDecodersParams {
   sortField: string;
   sortDirection: 'asc' | 'desc';
   search: string;
+  /** The status summary bar's filter. */
+  status?: EntityStatusValue;
   reloadTrigger: number;
 }
 
@@ -35,10 +38,13 @@ export function useIntegrationDecoders({
   sortField,
   sortDirection,
   search,
+  status,
   reloadTrigger,
 }: UseIntegrationDecodersParams) {
   const [items, setItems] = useState<DecoderTableItem[]>([]);
   const [total, setTotal] = useState(0);
+  // Wazuh: the request failed; the status summary shows no count instead of 0.
+  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // The parent rebuilds `decoderIds` on every render, so depend on its content.
@@ -73,6 +79,7 @@ export function useIntegrationDecoders({
           size,
           query,
           sort,
+          status,
           _source: {
             includes: [
               'document.id',
@@ -96,12 +103,14 @@ export function useIntegrationDecoders({
             }))
           );
           setTotal(response.total);
+          setError(!!response.error);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setItems([]);
           setTotal(0);
+          setError(true);
         }
       })
       .finally(() => {
@@ -123,8 +132,9 @@ export function useIntegrationDecoders({
     sortField,
     sortDirection,
     search,
+    status,
     reloadTrigger,
   ]);
 
-  return { items, total, loading };
+  return { items, total, loading, error };
 }
