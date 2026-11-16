@@ -17,6 +17,7 @@ import React, { useState, useMemo } from 'react';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
 import { getNextSpace } from '../../../../common/helpers';
 import { PromoteChangeDiff } from './PromoteChangeDiff';
+import { getPromoteChangeName } from '../utils/helpers';
 import { PROMOTE_ENTITIES_LABELS, PROMOTE_ENTITIES_ORDER, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import {
@@ -41,15 +42,16 @@ const PromoteEntity: React.FC<{
   label: string;
   entity: PromoteChangeGroup;
   data: GetPromoteBySpaceResponse['response'];
-}> = ({ label, data, entity }) => {
+  space: PromoteSpaces;
+}> = ({ label, data, entity, space }) => {
   const memoizedData = useMemo(
     () =>
       data.promote.changes[entity].map(({ id, ...rest }) => ({
         ...rest,
         id,
-        name: data.available_promotions[entity][id],
+        name: getPromoteChangeName(entity, id, data.available_promotions, space as string),
       })),
-    [data.promote.changes[entity]]
+    [data.promote.changes[entity], entity, data.available_promotions, space]
   );
 
   return (
@@ -146,7 +148,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
             if ((promote?.promote?.changes?.[entity]?.length ?? 0) > 0) {
               return (
                 <React.Fragment key={entity}>
-                  <PromoteEntity label={label} entity={entity} data={promote} />
+                  <PromoteEntity label={label} entity={entity} data={promote} space={space} />
                   <EuiSpacer size="m" />
                 </React.Fragment>
               );

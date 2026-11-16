@@ -154,8 +154,10 @@ export interface IRulesStore {
       _source?: any;
       searchText?: string;
     },
-    space: string
-  ) => Promise<{ total: number; items: RuleItemInfoBase[] }>;
+    space: string,
+    // Wazuh: `silent` skips the error toast; a failed search returns its `error`.
+    options?: { silent?: boolean }
+  ) => Promise<{ total: number; items: RuleItemInfoBase[]; error?: string }>;
 
   // Wazuh: fetch a single rule with full data by id
   getRule: (id: string, space: string) => Promise<RuleItemInfoBase | undefined>;

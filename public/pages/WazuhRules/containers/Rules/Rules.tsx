@@ -37,6 +37,9 @@ import { WazuhPageHeader } from '../../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../../components/Utility/EnabledHealth';
+import { TableStatusSummary } from '../../../../components/TableStatusSummary';
+import { asEntityStatus, EntityStatusValue } from '../../../../hooks/useStatusCounts';
+import { useEntityStatusCounts } from '../../../../hooks/useEntityStatusCounts';
 import { setBreadcrumbs } from '../../../../utils/helpers';
 import {
   buildRulesSearchQuery,
@@ -67,9 +70,11 @@ import {
   decodeMultiValue,
   encodeEnabledValues,
   encodeMultiValue,
+  getActiveStatusValue,
   getFreeText,
   getOrSelectedValues,
   hasTypedFieldClause,
+  toggleStatusFilter,
 } from '../../../../utils/entitySearchBarFilters';
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
@@ -108,6 +113,8 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
   const isMountedRef = useRef(true);
   const [allRules, setAllRules] = useState<RuleTableItem[]>([]);
   const [totalRules, setTotalRules] = useState(0);
+  // Wazuh: the list request failed; the summary shows no count instead of 0.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loading, setLoading] = useState(false);
   const urlFilters = useUrlFilterParams(
     {
@@ -324,6 +331,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
 
     setAllRules(response.items.map(toRuleTableItem));
     setTotalRules(response.total);
+    setLoadFailed(!!response.error);
     setSelectedItems([]);
     setLoading(false);
   }, [
@@ -342,6 +350,24 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     loadRules();
   }, [loadRules]);
 
+  // Wazuh: the status bar counts every rule in the space, ignoring the search and
+  // filters.
+  const {
+    counts: statusCounts,
+    loading: statusCountsLoading,
+    reload: reloadStatusCounts,
+  } = useEntityStatusCounts('rules', { space: spaceFilter });
+
+  const reloadAll = useCallback(async () => {
+    reloadStatusCounts();
+    await loadRules();
+  }, [loadRules, reloadStatusCounts]);
+
+  const onStatusClick = (status: EntityStatusValue) => {
+    setSearchError(null);
+    setSearchQuery((query) => toggleStatusFilter(query, status));
+  };
+
   const {
     itemForAction,
     setItemForAction,
@@ -353,7 +379,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
       const ok = await DataStore.rules.deleteRule(id);
       return ok ? ok : undefined;
     },
-    reload: loadRules,
+    reload: reloadAll,
     notifications,
     entityName: 'rule',
     entityNamePlural: 'rules',
@@ -377,7 +403,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
 
   const hideFlyout = (refreshRules?: boolean) => {
     clearParam();
-    if (refreshRules) loadRules();
+    if (refreshRules) reloadAll();
   };
 
   // Wazuh: EuiSearchBar only emits `query` when parsing succeeds — on a
@@ -640,12 +666,24 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
                 <EuiButtonIcon
                   iconType="refresh"
                   aria-label="Refresh rules"
-                  onClick={() => loadRules()}
+                  onClick={() => reloadAll()}
                 />
               </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size="m" />
+          <EuiSpacer size="s" />
+          <TableStatusSummary
+            total={totalRules}
+            loading={loading}
+            error={loadFailed}
+            entityPlural="rules"
+            statusCounts={statusCounts}
+            statusLoading={statusCountsLoading}
+            activeStatus={asEntityStatus(getActiveStatusValue(searchQuery))}
+            onStatusClick={onStatusClick}
+            data-test-subj="rulesStatusSummary"
+          />
+          <EuiSpacer size="s" />
           {renderError()}
           <EuiBasicTable
             items={allRules}
