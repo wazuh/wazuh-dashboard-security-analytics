@@ -218,12 +218,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         });
 
         if (result) {
-          successNotificationToast(
-            notifications,
-            'created',
-            'decoder',
-            result.message || `The decoder ${document.name} has been created successfully.`
-          );
+          successNotificationToast(notifications, 'created', `decoder ${document.name}`);
 
           history.push(returnTo);
         }
@@ -247,12 +242,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
         const result = await DataStore.decoders.updateDecoder(idDecoder, { document });
 
         if (result) {
-          successNotificationToast(
-            notifications,
-            'updated',
-            'decoder',
-            result.message || `The decoder ${document.name} has been updated successfully.`
-          );
+          successNotificationToast(notifications, 'updated', `decoder ${document.name}`);
 
           history.push(returnTo);
         }
