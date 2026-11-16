@@ -35,6 +35,9 @@ import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { asEntityStatus, EntityStatusValue } from '../../../hooks/useStatusCounts';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import { buildDecodersSearchQuery, DECODERS_SEARCHABLE_FIELDS_LABEL } from '../utils/constants';
 import { DecoderDetailsFlyout } from '../components/DecoderDetailsFlyout';
@@ -59,9 +62,11 @@ import {
   encodeMultiValue,
   ENTITY_FILTER_SELECTORS_LABEL,
   ENTITY_SEARCH_SCHEMA,
+  getActiveStatusValue,
   getFreeText,
   getOrSelectedValues,
   hasTypedFieldClause,
+  toggleStatusFilter,
 } from '../../../utils/entitySearchBarFilters';
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
@@ -77,6 +82,8 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
   const isMountedRef = useRef(true);
   const [decoders, setDecoders] = useState<DecoderItem[]>([]);
   const [total, setTotal] = useState(0);
+  // Wazuh: the list request failed; the summary shows no count instead of 0.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loading, setLoading] = useState(false);
   const urlFilters = useUrlFilterParams(
     { params: ['query', 'enabled', 'integration', 'page'] },
@@ -273,6 +280,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     }
     setDecoders(response.items);
     setTotal(response.total);
+    setLoadFailed(!!response.error);
     setLoading(false);
   }, [
     appliedQueryText,
@@ -289,6 +297,24 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     loadDecoders();
   }, [loadDecoders]);
 
+  // Wazuh: the status bar counts every decoder in the space, ignoring the search and
+  // filters.
+  const {
+    counts: statusCounts,
+    loading: statusCountsLoading,
+    reload: reloadStatusCounts,
+  } = useEntityStatusCounts('decoders', { space: spaceFilter });
+
+  const reloadAll = useCallback(async () => {
+    reloadStatusCounts();
+    await loadDecoders();
+  }, [loadDecoders, reloadStatusCounts]);
+
+  const onStatusClick = (status: EntityStatusValue) => {
+    setSearchError(null);
+    setSearchQuery((query) => toggleStatusFilter(query, status));
+  };
+
   const {
     itemForAction,
     setItemForAction,
@@ -297,7 +323,7 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
     confirmDeleteSelected,
   } = useDeleteItems({
     deleteOne: (id) => DataStore.decoders.deleteDecoder(id),
-    reload: loadDecoders,
+    reload: reloadAll,
     notifications,
     entityName: 'decoder',
     entityNamePlural: 'decoders',
@@ -591,12 +617,24 @@ export const Decoders: React.FC<DecodersProps> = ({ history, notifications }) =>
                 <EuiButtonIcon
                   iconType="refresh"
                   aria-label="Refresh decoders"
-                  onClick={() => loadDecoders()}
+                  onClick={() => reloadAll()}
                 />
               </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size="m" />
+          <EuiSpacer size="s" />
+          <TableStatusSummary
+            total={total}
+            loading={loading}
+            error={loadFailed}
+            entityPlural="decoders"
+            statusCounts={statusCounts}
+            statusLoading={statusCountsLoading}
+            activeStatus={asEntityStatus(getActiveStatusValue(searchQuery))}
+            onStatusClick={onStatusClick}
+            data-test-subj="decodersStatusSummary"
+          />
+          <EuiSpacer size="s" />
           {content}
         </EuiPanel>
       </EuiFlexItem>

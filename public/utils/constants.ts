@@ -304,6 +304,9 @@ export const ALERT_STATE = Object.freeze({
   DELETED: 'DELETED',
 });
 
+// Wazuh: prefix of the events data streams, one per integration category.
+export const WAZUH_EVENTS_DATA_STREAM_PREFIX = 'wazuh-events-v5';
+
 export const logTypesWithDashboards = new Set(['network', 'cloudtrail', 's3']);
 
 export const pendingDashboardCreations: {
