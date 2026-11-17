@@ -84,10 +84,14 @@ describe('<LogTestForm /> trace level', () => {
 });
 
 describe('<LogTestForm /> integration', () => {
-  it('marks the integration optional by default', async () => {
+  it('marks the integration optional by default and says rules need it', async () => {
     const { wrapper } = await mountLogTestForm();
 
-    expect(wrapper.find('IntegrationComboBox').prop('isOptional')).toBe(true);
+    const comboBox = wrapper.find('IntegrationComboBox');
+    expect(comboBox.prop('isOptional')).toBe(true);
+    expect(mount(<span>{comboBox.prop('label')}</span>).text()).toBe(
+      'Integration - needed to run rules'
+    );
   });
 
   it('requires the integration and shows its error when asked to', async () => {
