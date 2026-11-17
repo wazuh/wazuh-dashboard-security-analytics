@@ -17,8 +17,15 @@ import {
   KVDBS_NAV_ID,
   ROUTES,
 } from '../../../utils/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
-import { PolicyIntegrationTableEntry, PolicyItem } from '../../../../types';
+import { actionIsAllowedOnSpace, getSpaceTypeLabel } from '../../../../common/helpers';
+import { getBlockedRowActions } from '../../../components/BlockedMenuAction';
+import {
+  GetPromoteBySpaceResponse,
+  PolicyIntegrationTableEntry,
+  PolicyItem,
+  PromoteChangeGroup,
+  Space,
+} from '../../../../types';
 import { getIntegrationCategoryFilterOptions } from '../../../utils/helpers';
 import { buildAppUrl, buildEntityQueryRoute } from '../../../utils/routes';
 import {
@@ -203,6 +210,7 @@ const renderCount =
 
 export const getIntegrationsTableColumns = ({
   showDetails,
+  editDetails,
   setItemForAction,
 }: {
   /**
@@ -211,6 +219,8 @@ export const getIntegrationsTableColumns = ({
    * and the detail view looks the integration up by `document.id` and space.
    */
   showDetails: (id: string) => void;
+  /** Opens the integration details in edit mode. Takes `document.id` and the row's space. */
+  editDetails?: (id: string, space: string) => void;
   setItemForAction: (options: { item: any; action: typeof SPACE_ACTIONS.DELETE } | null) => void;
 }) => [
   {
@@ -272,8 +282,21 @@ export const getIntegrationsTableColumns = ({
         description: 'View integration details',
         type: 'icon',
         icon: 'inspect',
+        // Wazuh: stays inline next to the row menu in every space.
+        isPrimary: true,
         onClick: (item) => {
           showDetails(item.documentId);
+        },
+      },
+      {
+        name: 'Edit',
+        description: 'Edit integration',
+        type: 'icon',
+        icon: 'pencil',
+        available: (item) =>
+          Boolean(editDetails) && actionIsAllowedOnSpace(item.space, SPACE_ACTIONS.EDIT),
+        onClick: (item) => {
+          editDetails?.(item.documentId, item.space);
         },
       },
       {
@@ -287,6 +310,10 @@ export const getIntegrationsTableColumns = ({
           setItemForAction({ item, action: SPACE_ACTIONS.DELETE });
         },
       },
+      ...getBlockedRowActions<IntegrationTableItem>({
+        entity: 'integrations',
+        getSpace: (item) => item.space,
+      }),
     ],
   },
 ];
@@ -516,3 +543,17 @@ export function useAsyncAction<T>(
 
   return { data, error, run, running };
 }
+
+// Wazuh: names the policy row after its space; its title defaults to "Custom space".
+export const getPromoteChangeName = (
+  entity: PromoteChangeGroup,
+  id: string,
+  availablePromotions: GetPromoteBySpaceResponse['response']['available_promotions'],
+  space: string
+): string => {
+  if (entity === 'policy') {
+    return `${getSpaceTypeLabel(space as Space)} space settings`;
+  }
+  const available = availablePromotions?.[entity];
+  return available?.[id] ?? available?.[id.replace(/^\w_/, '')] ?? id;
+};

@@ -1,0 +1,81 @@
+/*
+ * Copyright Wazuh Inc.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/* Wazuh: one compact row under a table's search bar. The colors are theme variables,
+   which OSD compiles once per theme, so they follow the light and dark themes. */
+.tableStatusSummary {
+  min-height: 24px;
+}
+
+.tableStatusSummary__inMemoryTable {
+  /* EuiInMemoryTable's spacer under its search bar is 16px taller than the gap the
+     server-paginated lists leave, measured from the search box to the row. */
+  margin-top: -16px;
+  /* Its own formatting context, or this margin collapses with the flex group's. */
+  display: flow-root;
+}
+
+.tableStatusSummary__bar {
+  display: flex;
+  /* The panel shows through, so the segments stay apart in any theme, in grayscale
+     and for a share too small to tell from its neighbor by color alone. */
+  gap: 1px;
+  width: 120px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.tableStatusSummary__segment {
+  display: block;
+  flex-shrink: 1;
+  flex-basis: 0;
+  height: 100%;
+  min-width: 3px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  transition: opacity 150ms ease-in-out;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.8;
+  }
+}
+
+.tableStatusSummary__segment--dimmed {
+  opacity: 0.35;
+}
+
+.tableStatusSummary__legendContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tableStatusSummary__swatch {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+}
+
+.tableStatusSummary__legend--active {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Wazuh: the colors of the Status column's EuiHealth dots (`success` and `subdued`),
+   so the bar reads with the same colors the table already uses for each status. These
+   are the expressions EuiIcon applies for those colors, so they match in every theme,
+   and both keep at least a 3:1 contrast against the page (WCAG 1.4.11). */
+.tableStatusSummary__fill--enabled {
+  background-color: makeGraphicContrastColor($euiColorSuccess);
+}
+
+.tableStatusSummary__fill--disabled {
+  background-color: $euiTextSubduedColor;
+}

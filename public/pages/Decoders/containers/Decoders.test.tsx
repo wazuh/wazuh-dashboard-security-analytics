@@ -69,6 +69,9 @@ const triggerSearchChange = async (
   wrapper.update();
 };
 
+// Custom is reached through test, so a change made in draft is promoted twice.
+const through = (space: string) => (space === 'custom' ? ' through the test space' : '');
+
 describe('<Decoders /> search bar strict schema', () => {
   it('declares ENTITY_SEARCH_SCHEMA on box.schema (EuiSearchBar has no top-level schema prop)', async () => {
     const wrapper = await mountDecoders();
@@ -219,6 +222,142 @@ describe('<Decoders /> typed filter clauses', () => {
       expect(DataStore.decoders.searchDecoders.mock.calls.length).toBe(afterTyped + 1);
     } finally {
       jest.useRealTimers();
+    }
+  });
+});
+
+describe('<Decoders /> row Edit and Delete actions by space', () => {
+  // Unmount each table so a finished test leaves nothing behind for the next one.
+  const mounted: any[] = [];
+  afterEach(async () => {
+    mounted.splice(0).forEach((w) => w.unmount());
+    // Let the unmounted table's pending work settle before the next test mounts its own.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  });
+
+  const mountInSpace = async (space: string) => {
+    const history = createFakeHistory('/decoders', `?space=${space}`);
+    let wrapper: any;
+    await act(async () => {
+      wrapper = mount(<Decoders history={history as any} notifications={notifications} />);
+    });
+    wrapper.update();
+    // The rows load after the first render; wait for them so every test sees the same table.
+    for (let i = 0; i < 20 && wrapper.text().includes('Loading'); i++) {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+      wrapper.update();
+    }
+    mounted.push(wrapper);
+    return wrapper;
+  };
+
+  const openRowMenu = (wrapper: any) => {
+    wrapper
+      .find('button[data-test-subj="euiCollapsedItemActionsButton"]')
+      .first()
+      .simulate('click');
+    wrapper.update();
+  };
+
+  it.each(['test', 'custom'])(
+    'groups Edit and Delete under the row actions menu in %s, disabled and with the way to change or remove the content',
+    async (space) => {
+      const wrapper = await mountInSpace(space);
+      expect(
+        wrapper.find('[data-test-subj="euiCollapsedItemActionsButton"]').hostNodes().length
+      ).toBe(1);
+
+      openRowMenu(wrapper);
+      const [edit, remove] = wrapper.find('BlockedMenuAction').map((n: any) => n);
+
+      expect(wrapper.find('BlockedMenuAction').length).toBe(2);
+      expect(edit.prop('reason')).toBe(
+        `Decoders in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change${through(
+          space
+        )}.`
+      );
+      expect(remove.prop('reason')).toBe(
+        `Decoders in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change${through(
+          space
+        )}.`
+      );
+    }
+  );
+
+  it('keeps the regular Edit and Delete actions in draft', async () => {
+    const wrapper = await mountInSpace('draft');
+
+    // Opening the row menu throws when there is none, so the check below can fail.
+    openRowMenu(wrapper);
+
+    expect(wrapper.find('BlockedMenuAction').length).toBe(0);
+    const menuItems = wrapper
+      .find('EuiContextMenuItem')
+      .map((n: any) => n.text())
+      .join(' ');
+    expect(menuItems).toContain('Edit');
+    expect(menuItems).toContain('Delete');
+  });
+
+  it('shows no row menu in standard', async () => {
+    const wrapper = await mountInSpace('standard');
+    expect(wrapper.find('[data-test-subj="euiCollapsedItemActionsButton"]').length).toBe(0);
+  });
+});
+
+describe('<Decoders /> status summary', () => {
+  // Wazuh: the summary's count requests are size-0 searches that show no toast; the
+  // list's own request is the one that reports a failure.
+  const isCountCall = (call: any[]) => call[2]?.silent;
+  const listCalls = () =>
+    DataStore.decoders.searchDecoders.mock.calls.filter((call: any[]) => !isCountCall(call));
+  const clickLegend = async (wrapper: any, status: 'enabled' | 'disabled') => {
+    await act(async () => {
+      wrapper
+        .find(`button[data-test-subj="decodersStatusSummary-legend-${status}"]`)
+        .first()
+        .simulate('click');
+    });
+    wrapper.update();
+  };
+
+  it('counts each status with a silent size-0 request', async () => {
+    DataStore.decoders.searchDecoders.mockClear();
+    await mountDecoders();
+
+    const counts = DataStore.decoders.searchDecoders.mock.calls.filter(isCountCall);
+    expect(counts.map((call: any[]) => [call[0].size, call[0].status])).toEqual([
+      [0, 'enabled'],
+      [0, 'disabled'],
+    ]);
+  });
+
+  it('applies the clicked status to the list request, and clears it on a second click', async () => {
+    const wrapper = await mountDecoders();
+
+    await clickLegend(wrapper, 'disabled');
+    expect(listCalls().at(-1)[0].status).toBe('disabled');
+    expect(wrapper.find('EuiSearchBar').first().prop('query').text).toContain('status');
+
+    await clickLegend(wrapper, 'disabled');
+    expect(listCalls().at(-1)[0].status).toBeUndefined();
+  });
+
+  it('shows no total and no split when the requests fail', async () => {
+    const failure = { items: [], total: 0, error: 'boom' };
+    const original = DataStore.decoders.searchDecoders.getMockImplementation();
+    DataStore.decoders.searchDecoders.mockResolvedValue(failure);
+    try {
+      const wrapper = await mountDecoders();
+
+      expect(wrapper.find(`[data-test-subj="decodersStatusSummary-total"]`).exists()).toBe(false);
+      expect(wrapper.find(`[data-test-subj="decodersStatusSummary-bar"]`).exists()).toBe(false);
+    } finally {
+      DataStore.decoders.searchDecoders.mockImplementation(original);
     }
   });
 });

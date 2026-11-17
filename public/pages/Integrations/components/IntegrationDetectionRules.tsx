@@ -31,6 +31,9 @@ import { SpaceTypes, SPACE_ACTIONS } from '../../../../common/constants';
 import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
 import { Space } from '../../../../types';
 import { useIntegrationRules } from '../../WazuhRules/hooks/useIntegrationRules';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { EntityStatusValue } from '../../../hooks/useStatusCounts';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { IntegrationEditAction } from './IntegrationEditAction';
 
@@ -66,6 +69,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
   const [searchText, setSearchText] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [severityLevels, setSeverityLevels] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<EntityStatusValue | undefined>(undefined);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -79,6 +83,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     items: rules,
     total,
     loading: loadingRules,
+    error: loadFailed,
   } = useIntegrationRules({
     ruleIds,
     space,
@@ -90,7 +95,21 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
     search: appliedSearch,
     reloadTrigger,
     severityLevels,
+    status: statusFilter,
   });
+  // Wazuh: every rule of the integration, regardless of the tab's search and filters.
+  const { counts: statusCounts, loading: statusCountsLoading } = useEntityStatusCounts(
+    'rules',
+    { space, ids: ruleIds },
+    { enabled, reloadTrigger }
+  );
+
+  // Wazuh: the summary bar is this tab's only Status filter; selecting the active
+  // status again clears it.
+  const onStatusClick = useCallback((status: EntityStatusValue) => {
+    setStatusFilter((current) => (current === status ? undefined : status));
+    setPageIndex(0);
+  }, []);
 
   const closeRuleDetails = useCallback(() => {
     setSelectedRuleId(undefined);
@@ -181,7 +200,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
   }));
 
   const isEmptyState =
-    total === 0 && !loadingRules && !appliedSearch && severityLevels.length === 0;
+    total === 0 && !loadingRules && !appliedSearch && severityLevels.length === 0 && !statusFilter;
 
   return (
     <>
@@ -257,6 +276,18 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
               </EuiFlexItem>
             </EuiFlexGroup>
             <EuiSpacer size="s" />
+            <TableStatusSummary
+              total={total}
+              loading={loadingRules}
+              error={loadFailed}
+              entityPlural="rules"
+              statusCounts={statusCounts}
+              statusLoading={statusCountsLoading}
+              activeStatus={statusFilter}
+              onStatusClick={onStatusClick}
+              data-test-subj="integrationRulesStatusSummary"
+            />
+            <EuiSpacer size="s" />
             <EuiBasicTable
               items={rules}
               columns={columns}
@@ -267,7 +298,7 @@ export const IntegrationDetectionRules: React.FC<IntegrationDetectionRulesProps>
                 ) : (
                   <ListEmptyPrompt
                     entity="rules"
-                    hasFilters={!!appliedSearch}
+                    hasFilters={!!appliedSearch || !!statusFilter}
                     searchOnly
                     noContentTitle="This integration has no rules"
                     emptyBody={null}

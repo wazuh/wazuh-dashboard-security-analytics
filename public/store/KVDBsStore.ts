@@ -24,15 +24,19 @@ export class KVDBsStore {
     private notifications: NotificationsStart
   ) {}
 
+  // Wazuh: `silent` skips the error toast; a failed search returns its `error`, so the
+  // caller can tell it from an empty result.
   public async searchKVDBs(
     params: KVDBSearchRequest,
-    options?: { skipIntegrationMap?: boolean }
-  ): Promise<{ items: KVDBItem[]; total: number }> {
+    options?: { skipIntegrationMap?: boolean; silent?: boolean }
+  ): Promise<{ items: KVDBItem[]; total: number; error?: string }> {
     try {
       const response: ServerResponse<KVDBSearchResponse> = await this.service.searchKVDBs(params);
       if (!response.ok) {
-        errorNotificationToast(this.notifications, 'fetch', 'KVDBs', response.error);
-        return { items: [], total: 0 };
+        if (!options?.silent) {
+          errorNotificationToast(this.notifications, 'fetch', 'KVDBs', response.error);
+        }
+        return { items: [], total: 0, error: response.error ?? 'Unknown error' };
       }
 
       const hits = response.response.hits.hits ?? [];
@@ -64,8 +68,10 @@ export class KVDBsStore {
 
       return { items: itemsWithIntegration, total };
     } catch (error: any) {
-      errorNotificationToast(this.notifications, 'fetch', 'KVDBs', error);
-      return { items: [], total: 0 };
+      if (!options?.silent) {
+        errorNotificationToast(this.notifications, 'fetch', 'KVDBs', error);
+      }
+      return { items: [], total: 0, error: getErrorMessage(error, 'Unknown error') };
     }
   }
 

@@ -36,6 +36,9 @@ import { WazuhPageHeader } from '../../../components/WazuhPageHeader';
 import { ListEmptyPrompt } from '../../../components/ListEmptyPrompt';
 import { EntitySearchErrorCallOut } from '../../../components/EntitySearchErrorCallOut';
 import { EnabledHealth } from '../../../components/Utility/EnabledHealth';
+import { TableStatusSummary } from '../../../components/TableStatusSummary';
+import { asEntityStatus, EntityStatusValue } from '../../../hooks/useStatusCounts';
+import { useEntityStatusCounts } from '../../../hooks/useEntityStatusCounts';
 import { formatCellValue, setBreadcrumbs } from '../../../utils/helpers';
 import {
   buildKVDBsSearchQuery,
@@ -44,7 +47,8 @@ import {
 } from '../utils/constants';
 import { KVDBDetailsFlyout } from '../components/KVDBDetailsFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../common/helpers';
+import { getBlockedRowActions } from '../../../components/BlockedMenuAction';
+import { actionIsAllowedOnSpace, getBlockedSpaceActionReason } from '../../../../common/helpers';
 import { useSpaceSelector } from '../../../hooks/useSpaceSelector';
 import {
   DELETE_ACTION,
@@ -64,8 +68,10 @@ import {
   decodeMultiValue,
   encodeMultiValue,
   getFreeText,
+  getActiveStatusValue,
   getOrSelectedValues,
   hasTypedFieldClause,
+  toggleStatusFilter,
 } from '../../../utils/entitySearchBarFilters';
 
 interface KVDBsProps extends RouteComponentProps {
@@ -80,6 +86,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
   const isMountedRef = useRef(true);
   const [items, setItems] = useState<KVDBItem[]>([]);
   const [totalItemCount, setTotalItemCount] = useState(0);
+  // Wazuh: the list request failed; the summary shows no count instead of 0.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loading, setLoading] = useState(false);
   const urlFilters = useUrlFilterParams(
     { params: ['query', 'enabled', 'integration', 'page'] },
@@ -283,6 +291,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
 
       setItems(response.items);
       setTotalItemCount(response.total);
+      setLoadFailed(!!response.error);
     } finally {
       setLoading(false);
     }
@@ -301,6 +310,24 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     fetchKVDBs();
   }, [fetchKVDBs]);
 
+  // Wazuh: the status bar counts every KVDB in the space, ignoring the search and
+  // filters.
+  const {
+    counts: statusCounts,
+    loading: statusCountsLoading,
+    reload: reloadStatusCounts,
+  } = useEntityStatusCounts('kvdbs', { space: spaceFilter });
+
+  const reloadAll = useCallback(async () => {
+    reloadStatusCounts();
+    await fetchKVDBs();
+  }, [fetchKVDBs, reloadStatusCounts]);
+
+  const onStatusClick = (status: EntityStatusValue) => {
+    setSearchError(null);
+    setSearchQuery((query) => toggleStatusFilter(query, status));
+  };
+
   const {
     itemForAction,
     setItemForAction,
@@ -309,7 +336,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
     confirmDeleteSelected,
   } = useDeleteItems({
     deleteOne: (id) => DataStore.kvdbs.deleteKVDB(id),
-    reload: fetchKVDBs,
+    reload: reloadAll,
     notifications,
     entityName: 'KVDB',
     entityNamePlural: 'KVDBs',
@@ -384,9 +411,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       icon="plusInCircle"
       href={`#${ROUTES.KVDBS_CREATE}`}
       disabled={isCreateActionDisabled}
-      toolTipContent={
-        isCreateActionDisabled ? `Cannot create KVDBs in the ${spaceFilter} space.` : undefined
-      }
+      toolTipContent={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.CREATE, 'KVDBs')}
     >
       Create
     </EuiContextMenuItem>,
@@ -399,11 +424,8 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
       }}
       disabled={selectedItems.length === 0 || !isDeleteActionAllowed}
       toolTipContent={
-        !isDeleteActionAllowed
-          ? `Cannot delete KVDBs in the ${spaceFilter} space.`
-          : selectedItems.length === 0
-          ? 'Select KVDBs to delete'
-          : undefined
+        getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.DELETE, 'KVDBs') ??
+        (selectedItems.length === 0 ? 'Select KVDBs to delete' : undefined)
       }
     >
       Delete selected ({selectedItems.length})
@@ -473,6 +495,7 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
             onClick: (item: KVDBItem) => setItemForAction({ action: DELETE_ACTION, id: item.id }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
+          ...getBlockedRowActions({ entity: 'KVDBs', getSpace: () => spaceFilter }),
         ],
       },
     ],
@@ -570,12 +593,24 @@ export const KVDBs: React.FC<KVDBsProps> = ({ history, notifications }) => {
                 <EuiButtonIcon
                   iconType="refresh"
                   aria-label="Refresh KVDBs"
-                  onClick={() => fetchKVDBs()}
+                  onClick={() => reloadAll()}
                 />
               </EuiToolTip>
             </EuiFlexItem>
           </EuiFlexGroup>
-          <EuiSpacer size="m" />
+          <EuiSpacer size="s" />
+          <TableStatusSummary
+            total={totalItemCount}
+            loading={loading}
+            error={loadFailed}
+            entityPlural="KVDBs"
+            statusCounts={statusCounts}
+            statusLoading={statusCountsLoading}
+            activeStatus={asEntityStatus(getActiveStatusValue(searchQuery))}
+            onStatusClick={onStatusClick}
+            data-test-subj="kvdbsStatusSummary"
+          />
+          <EuiSpacer size="s" />
           {renderError()}
           <EuiBasicTable
             items={items}
