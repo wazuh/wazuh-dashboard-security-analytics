@@ -7,8 +7,9 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { PromoteBySpaceModal } from './PromoteModal';
 import {
-  CHANGES_APPLY_DELAY_NOTICE,
   CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS,
+  PROMOTED_TO_CUSTOM_NOTICE,
+  PROMOTED_TO_TEST_NOTICE,
 } from '../utils/constants';
 import { ROUTES } from '../../../utils/constants';
 
@@ -24,12 +25,12 @@ const PROMOTE_RESPONSE = { promote: { changes: {} }, available_promotions: {} } 
 
 const buildNotifications = () => ({ toasts: { addSuccess: jest.fn() } } as any);
 
-const confirmPromotion = async (notifications: any, history: any) => {
+const confirmPromotion = async (notifications: any, history: any, space = 'draft') => {
   render(
     <PromoteBySpaceModal
       promote={PROMOTE_RESPONSE}
       closeModal={jest.fn()}
-      space={'draft' as any}
+      space={space as any}
       notifications={notifications}
       history={history}
     />
@@ -41,21 +42,47 @@ const confirmPromotion = async (notifications: any, history: any) => {
   });
 };
 
+describe('<PromoteBySpaceModal /> change list', () => {
+  it('names the space change after the source space, not the policy title', () => {
+    render(
+      <PromoteBySpaceModal
+        promote={
+          {
+            promote: { changes: { policy: [{ id: 'p1', operation: 'update' }] } },
+            available_promotions: { policy: { p1: 'Custom space' } },
+          } as any
+        }
+        closeModal={jest.fn()}
+        space={'draft' as any}
+        notifications={buildNotifications()}
+        history={{ push: jest.fn() } as any}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Space \(1\)/ }));
+
+    expect(screen.getByText('Draft space settings')).toBeTruthy();
+    expect(screen.queryByText('Custom space')).toBeNull();
+  });
+});
+
 describe('<PromoteBySpaceModal /> promotion toast', () => {
   beforeEach(() => {
     DataStore.integrations.promoteIntegration.mockReset();
   });
 
-  it('tells the user that the changes can take a few minutes to apply once the promotion succeeds', async () => {
+  it.each([
+    ['draft', 'Promoted draft to test', PROMOTED_TO_TEST_NOTICE],
+    ['test', 'Promoted test to custom', PROMOTED_TO_CUSTOM_NOTICE],
+  ])('names both spaces and what happens next once %s is promoted', async (space, title, text) => {
     DataStore.integrations.promoteIntegration.mockResolvedValue([true, undefined]);
     const notifications = buildNotifications();
     const history = { push: jest.fn() };
 
-    await confirmPromotion(notifications, history);
+    await confirmPromotion(notifications, history, space);
 
     expect(notifications.toasts.addSuccess).toHaveBeenCalledWith({
-      title: 'Successfully promoted [draft] space',
-      text: CHANGES_APPLY_DELAY_NOTICE,
+      title,
+      text,
       toastLifeTimeMs: CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS,
     });
     expect(history.push).toHaveBeenCalledWith(ROUTES.INTEGRATIONS);

@@ -18,7 +18,7 @@ describe('ListEmptyPrompt', () => {
     getByText(
       `Clear them to see everything in the ${SpaceTypes.CUSTOM.label.toLowerCase()} space.`
     );
-    expect(queryByText(/shipped with Wazuh/)).toBeNull();
+    expect(queryByText(/synced from the CTI feed/)).toBeNull();
   });
 
   it('offers to repeat an empty search in the Standard space', () => {
@@ -33,7 +33,7 @@ describe('ListEmptyPrompt', () => {
     );
 
     expect(container.querySelector('p')?.textContent).toBe(
-      `Clear them to see everything in the ${SpaceTypes.TEST.label.toLowerCase()} space, or search the ${SpaceTypes.STANDARD.label.toLowerCase()} space for the integrations shipped with Wazuh.`
+      `Clear them to see everything in the ${SpaceTypes.TEST.label.toLowerCase()} space, or search the ${SpaceTypes.STANDARD.label.toLowerCase()} space for the integrations synced from the CTI feed.`
     );
     fireEvent.click(
       getByRole('button', { name: `${SpaceTypes.STANDARD.label.toLowerCase()} space` })
@@ -54,7 +54,7 @@ describe('ListEmptyPrompt', () => {
     getByText(
       `Clear them to see everything in the ${SpaceTypes.STANDARD.label.toLowerCase()} space.`
     );
-    expect(queryByText(/shipped with Wazuh/)).toBeNull();
+    expect(queryByText(/synced from the CTI feed/)).toBeNull();
   });
 
   it('drops the word "filters" for lists that only offer free-text search', () => {
@@ -109,7 +109,7 @@ describe('ListEmptyPrompt', () => {
       />
     );
 
-    expect(queryByText(/shipped with Wazuh/)).toBeNull();
+    expect(queryByText(/synced from the CTI feed/)).toBeNull();
   });
 
   it('renders no body when the caller passes null', () => {

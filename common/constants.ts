@@ -62,7 +62,7 @@ export const SpaceTypes = {
       defaultMessage:
         // Wazuh: not read-only. Its content cannot be created, edited or deleted, but
         // integrations can be disabled and their policy adjusted.
-        'Space holding the default integrations, decoders and rules shipped with Wazuh. Its content cannot be edited or deleted, though integrations can be disabled.',
+        'Space holding the default integrations, decoders and rules synced from the CTI feed. Its content cannot be edited or deleted, though integrations can be disabled.',
     }),
   },
 } as const;
@@ -74,6 +74,11 @@ export const DRAFT_UNAVAILABLE_IN_LOG_TEST = i18n.translate(
     defaultMessage: 'The draft space cannot be tested. Promote it to test to evaluate it here.',
   }
 );
+
+// Wazuh: names the form field, unlike the indexer's "'integration' field not provided".
+export const LOG_TEST_NO_INTEGRATION = i18n.translate('securityAnalytics.logTest.noIntegration', {
+  defaultMessage: 'Select an integration to run its rules.',
+});
 
 export const SPACE_SELECTOR_LABEL = i18n.translate('securityAnalytics.spaceSelector.label', {
   defaultMessage: 'Space:',

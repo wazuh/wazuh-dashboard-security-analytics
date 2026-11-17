@@ -22,7 +22,11 @@ import { SpaceSelector } from '../../../components/SpaceSelector/SpaceSelector';
 import { errorNotificationToast, setBreadcrumbs } from '../../../utils/helpers';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { DRAFT_UNAVAILABLE_IN_LOG_TEST, SpaceTypes } from '../../../../common/constants';
+import {
+  DRAFT_UNAVAILABLE_IN_LOG_TEST,
+  LOG_TEST_NO_INTEGRATION,
+  SpaceTypes,
+} from '../../../../common/constants';
 import { LogTestResponse } from '../../../../types';
 import { LogTestForm, LogTestFormData, LogTestFormErrors } from '../components/LogTestForm';
 import { LogTestResult } from '../components/LogTestResult';
@@ -191,7 +195,7 @@ export const LogTest: React.FC<LogTestProps> = ({ notifications, history }) => {
     }
 
     if (normalizationSpace && !formData.integration) {
-      newErrors.integration = 'Select an integration to run its rules.';
+      newErrors.integration = LOG_TEST_NO_INTEGRATION;
     }
 
     setErrors(newErrors);

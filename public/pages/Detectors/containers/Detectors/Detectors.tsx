@@ -55,8 +55,15 @@ import {
   splitStatusFromQueryText,
   writeInMemoryUrlFilterValues,
 } from '../../../../utils/inMemoryUrlFilterAdapter';
-import { buildStatusIntegrationFilters } from '../../../../utils/entitySearchBarFilters';
+import {
+  buildStatusIntegrationFilters,
+  getActiveStatusValue,
+  toggleStatusFilter,
+} from '../../../../utils/entitySearchBarFilters';
 import { ListEmptyPrompt } from '../../../../components/ListEmptyPrompt';
+import { InMemoryTableStatusSummary } from '../../../../components/TableStatusSummary';
+import { countStatuses, EntityStatusValue, StatusCounts } from '../../../../hooks/useStatusCounts';
+import { countQueryMatches } from '../../../../hooks/useInMemoryTableQuery';
 
 export interface DetectorsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -64,13 +71,30 @@ export interface DetectorsProps extends RouteComponentProps {
   dataSource: DataSourceOption;
 }
 
+type SearchQuery = ReturnType<typeof EuiSearchBar.Query.parse>;
+
 interface DetectorsState {
   detectorHits: DetectorHit[];
   loadingDetectors: boolean;
   selectedItems: DetectorHit[];
   isDeleteModalVisible: boolean;
   isPopoverOpen: boolean;
+  // Wazuh: the table's search query is controlled, so the status summary bar can apply
+  // the Status filter. `appliedQuery` is what the table filters with: null after a
+  // search that failed to parse.
+  searchQuery: SearchQuery;
+  appliedQuery: SearchQuery | null;
+  // Wazuh: controlled, so picking a status in the summary bar goes back to the first
+  // page; the table only does that by itself for a typed search or new items.
+  pageIndex: number;
 }
+
+// Wazuh: a detector's status reads Active/Inactive; the summary bar works in
+// enabled/disabled, the detector's own `enabled` field.
+const DETECTOR_STATUS_LABELS: Record<EntityStatusValue, string> = {
+  enabled: 'Active',
+  disabled: 'Inactive',
+};
 
 // Wazuh: also rendered as a child; appDescriptionControls needs home:useNewHomePage.
 const PAGE_DESCRIPTION =
@@ -80,13 +104,6 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
   constructor(props: DetectorsProps) {
     super(props);
 
-    this.state = {
-      detectorHits: [],
-      loadingDetectors: false,
-      selectedItems: [],
-      isDeleteModalVisible: false,
-      isPopoverOpen: false,
-    };
     // Wazuh: query/status/space persisted in the URL (no 'page' — Detectors is an
     // in-memory table, per the no-goal boundary). Guarded: `history` is optional
     // in some existing test mocks that don't pass RouteComponentProps.
@@ -110,19 +127,83 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         query: [this.urlFilters.query, token].filter(Boolean).join(' ').trim(),
       };
     }
+
+    const initialQuery = EuiSearchBar.Query.parse(
+      buildQueryTextWithStatus(
+        buildQueryTextWithStatus(this.urlFilters.query, this.urlFilters.status, 'status'),
+        this.urlFilters.space,
+        'space'
+      )
+    );
+    this.state = {
+      detectorHits: [],
+      loadingDetectors: false,
+      selectedItems: [],
+      isDeleteModalVisible: false,
+      isPopoverOpen: false,
+      searchQuery: initialQuery,
+      appliedQuery: initialQuery,
+      pageIndex: 0,
+    };
   }
 
   private urlFilters: { query: string; status: string; space: string };
   private pendingIntegrationParam: string | undefined;
 
-  private onSearchChange = ({ query }: { query: any }) => {
+  private writeQueryToUrl = (query: { text: string } | null) => {
     const { query: withoutStatus, status } = splitStatusFromQueryText(query?.text ?? '', 'status');
     const { query: freeText, status: space } = splitStatusFromQueryText(withoutStatus, 'space');
     if (this.props.history) {
       writeInMemoryUrlFilterValues(this.props.history, { query: freeText, status, space });
     }
+  };
+
+  // Wazuh: a typed search also goes back to the first page (see `pageIndex`).
+  private onSearchChange = ({ query }: { query: SearchQuery | null }) => {
+    if (query) {
+      this.setState({ searchQuery: query, appliedQuery: query, pageIndex: 0 });
+    } else {
+      this.setState({ appliedQuery: null, pageIndex: 0 });
+    }
+    this.writeQueryToUrl(query ?? null);
     return true;
   };
+
+  private onStatusClick = (status: EntityStatusValue) => {
+    const next = toggleStatusFilter(this.state.searchQuery, DETECTOR_STATUS_LABELS[status]);
+    this.setState({ searchQuery: next, appliedQuery: next, pageIndex: 0 });
+    this.writeQueryToUrl(next);
+  };
+
+  // Wazuh: keeps the controlled `pageIndex` in step with the table's own paging.
+  private onTableChange = ({ page }: { page?: { index: number } }) => {
+    if (page) {
+      this.setState({ pageIndex: page.index });
+    }
+  };
+
+  // Wazuh: the summary's counts, recomputed only when the detectors or the applied
+  // query change, not on every render (selection, modals, popovers).
+  private summaryCache?: {
+    detectorHits: DetectorHit[];
+    appliedQuery: SearchQuery | null;
+    matchCount: number;
+    statusCounts: StatusCounts;
+  };
+
+  private getSummaryCounts(detectorHits: DetectorHit[], appliedQuery: SearchQuery | null) {
+    const cache = this.summaryCache;
+    if (cache && cache.detectorHits === detectorHits && cache.appliedQuery === appliedQuery) {
+      return cache;
+    }
+    this.summaryCache = {
+      detectorHits,
+      appliedQuery,
+      matchCount: countQueryMatches(appliedQuery, detectorHits),
+      statusCounts: countStatuses(detectorHits, (hit) => !!hit._source.enabled),
+    };
+    return this.summaryCache;
+  }
 
   async componentDidMount() {
     setBreadcrumbs([BREADCRUMBS.DETECTION, BREADCRUMBS.DETECTORS]);
@@ -174,7 +255,8 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             rawSpace: (detector._source.source || '').toLowerCase(),
           };
         });
-        this.setState({ detectorHits: detectors });
+        // Wazuh: new items go back to the first page, as the table does unless controlled.
+        this.setState({ detectorHits: detectors, pageIndex: 0 });
       } else if (!res.error.includes('no such index')) {
         errorNotificationToast(notifications, 'retrieve', 'detectors', res.error);
       }
@@ -484,15 +566,22 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         // End Wazuh
       ],
       // Wazuh: persist query/status/space in the URL (see this.urlFilters / onSearchChange).
-      defaultQuery: EuiSearchBar.Query.parse(
-        buildQueryTextWithStatus(
-          buildQueryTextWithStatus(this.urlFilters.query, this.urlFilters.status, 'status'),
-          this.urlFilters.space,
-          'space'
-        )
-      ),
+      query: this.state.searchQuery,
       onChange: this.onSearchChange,
     };
+
+    // Wazuh: from the query the table filters with; after a parse error it shows every
+    // detector, so no status is active.
+    const activeStatusValue = this.state.appliedQuery
+      ? getActiveStatusValue(this.state.appliedQuery)
+      : undefined;
+    const { matchCount, statusCounts } = this.getSummaryCounts(
+      detectorHits,
+      this.state.appliedQuery
+    );
+    const activeStatus = (Object.keys(DETECTOR_STATUS_LABELS) as EntityStatusValue[]).find(
+      (status) => DETECTOR_STATUS_LABELS[status] === activeStatusValue
+    );
 
     const sorting: { sort: { field: string; direction: Direction } } = {
       sort: {
@@ -521,12 +610,32 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
               columns={columns}
               pagination={{
                 initialPageSize: DEFAULT_PAGE_SIZE,
+                // Wazuh: controlled, see `pageIndex` in the state.
+                pageIndex: this.state.pageIndex,
                 pageSizeOptions: PAGE_SIZE_OPTIONS,
               }}
               sorting={sorting}
               isSelectable={true}
               selection={{ onSelectionChange: this.onSelectionChange }}
               search={search}
+              // Wazuh: tracks the controlled page index.
+              onTableChange={this.onTableChange}
+              childrenBetween={
+                <InMemoryTableStatusSummary
+                  total={matchCount}
+                  loading={loadingDetectors}
+                  entityPlural="detectors"
+                  statusCounts={statusCounts}
+                  statusLoading={loadingDetectors}
+                  activeStatus={activeStatus}
+                  onStatusClick={this.onStatusClick}
+                  statusLabels={DETECTOR_STATUS_LABELS}
+                  // Wazuh: Detectors has no active space, only a Space filter, which
+                  // the bar ignores like every other filter.
+                  statusScopeNote="Includes the detectors of every space."
+                  data-test-subj="detectorsStatusSummary"
+                />
+              }
               loading={loadingDetectors}
               message={
                 loadingDetectors ? undefined : (

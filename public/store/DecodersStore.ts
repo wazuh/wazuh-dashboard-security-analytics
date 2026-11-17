@@ -7,6 +7,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { CUDDecoderResponse, DecoderItem, SearchDecodersResponse } from '../../types';
 import DecodersService from '../services/DecodersService';
 import { errorNotificationToast } from '../utils/helpers';
+import { decoderWriteErrorToast } from '../pages/Decoders/utils/decoderErrorToast';
 
 export interface DecodersSearchParams {
   from?: number;
@@ -25,10 +26,15 @@ export interface DecodersSearchParams {
 export class DecodersStore {
   constructor(private service: DecodersService, private notifications: NotificationsStart) {}
 
+  // Wazuh: `silent` skips the error toast, for a request whose failure the caller
+  // reports another way (e.g. the status summary bar's counts, which the list's own
+  // request already reports). A failed search returns its `error`, so the caller can
+  // tell it from an empty result.
   public async searchDecoders(
     params: DecodersSearchParams,
-    space?: string
-  ): Promise<SearchDecodersResponse> {
+    space?: string,
+    options: { silent?: boolean } = {}
+  ): Promise<SearchDecodersResponse & { error?: string }> {
     const response = await this.service.searchDecoders(params, space);
     if (!response.ok) {
       if (
@@ -37,8 +43,10 @@ export class DecodersStore {
       ) {
         return { total: 0, items: [] };
       }
-      errorNotificationToast(this.notifications, 'retrieve', 'decoders', response.error);
-      return { total: 0, items: [] };
+      if (!options.silent) {
+        errorNotificationToast(this.notifications, 'retrieve', 'decoders', response.error);
+      }
+      return { total: 0, items: [], error: response.error ?? 'Unknown error' };
     }
 
     const items: DecoderItem[] = response.response.items.map((item) => ({
@@ -83,7 +91,7 @@ export class DecodersStore {
   }): Promise<CUDDecoderResponse | undefined> {
     const responseRequest = await this.service.createDecoder(body);
     if (!responseRequest.ok) {
-      errorNotificationToast(this.notifications, 'create', 'decoder', responseRequest.error);
+      decoderWriteErrorToast(this.notifications, 'create', responseRequest.error, body.document);
       return undefined;
     }
     return responseRequest.response;
@@ -95,7 +103,7 @@ export class DecodersStore {
   ): Promise<CUDDecoderResponse | undefined> {
     const responseRequest = await this.service.updateDecoder(decoderId, body);
     if (!responseRequest.ok) {
-      errorNotificationToast(this.notifications, 'update', 'decoder', responseRequest.error);
+      decoderWriteErrorToast(this.notifications, 'update', responseRequest.error, body.document);
       return undefined;
     }
     return responseRequest.response;

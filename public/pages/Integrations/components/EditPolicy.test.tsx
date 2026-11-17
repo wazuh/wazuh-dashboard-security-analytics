@@ -10,6 +10,7 @@ import { EditPolicy } from './EditPolicy';
 import { DataStore } from '../../../store/DataStore';
 import { setupCoreStart } from '../../../../test/utils/helpers';
 import { setCapabilities } from '../../../services/utils/constants';
+import { POLICY_SETTING_HELP } from '../utils/constants';
 
 beforeAll(() => {
   setupCoreStart();
@@ -304,5 +305,47 @@ describe('<EditPolicy /> root decoder removal', () => {
       'draft',
       expect.objectContaining({ root_decoder: '' })
     );
+  });
+});
+
+describe('<EditPolicy /> settings switches', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    policies.searchPolicies.mockResolvedValue({
+      total: 1,
+      items: [{ id: 'policy-1', document: policyDocument }],
+    } as any);
+    decoders.getDecoder.mockResolvedValue(rootDecoder as any);
+    decoders.searchDecoders.mockResolvedValue({ items: [rootDecoder], total: 1 } as any);
+  });
+
+  const formRow = (wrapper: any, label: string) =>
+    wrapper.find('EuiCompressedFormRow').filterWhere((row: any) => row.prop('label') === label);
+
+  it('labels each switch with its state, in the words of the policy panel', async () => {
+    const { wrapper } = await mountEditPolicy();
+
+    expect(formRow(wrapper, 'Status').find('EuiSwitch').prop('label')).toBe('Enabled');
+    expect(formRow(wrapper, 'Index discarded events').find('EuiSwitch').prop('label')).toBe('Off');
+  });
+
+  it('explains each switch, and that a draft status applies once promoted to custom', async () => {
+    const { wrapper } = await mountEditPolicy();
+
+    expect(formRow(wrapper, 'Status').prop('helpText')).toBe(
+      `${POLICY_SETTING_HELP.status} ${POLICY_SETTING_HELP.statusInDraft}`
+    );
+    expect(formRow(wrapper, 'Index discarded events').prop('helpText')).toBe(
+      POLICY_SETTING_HELP.indexDiscardedEvents
+    );
+    expect(formRow(wrapper, 'Index unclassified events').prop('helpText')).toBe(
+      POLICY_SETTING_HELP.indexUnclassifiedEvents
+    );
+  });
+
+  it('leaves out the promotion note outside the draft space', async () => {
+    const { wrapper } = await mountEditPolicy({ space: 'standard' as any });
+
+    expect(formRow(wrapper, 'Status').prop('helpText')).toBe(POLICY_SETTING_HELP.status);
   });
 });

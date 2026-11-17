@@ -17,13 +17,15 @@ import React, { useState, useMemo } from 'react';
 import { GetPromoteBySpaceResponse, PromoteChangeGroup, PromoteSpaces } from '../../../../types';
 import { getNextSpace } from '../../../../common/helpers';
 import { PromoteChangeDiff } from './PromoteChangeDiff';
+import { getPromoteChangeName } from '../utils/helpers';
 import { PROMOTE_ENTITIES_LABELS, PROMOTE_ENTITIES_ORDER, ROUTES } from '../../../utils/constants';
 import { DataStore } from '../../../store/DataStore';
-import { successNotificationToast } from '../../../utils/helpers';
 import {
-  CHANGES_APPLY_DELAY_NOTICE,
   CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS,
+  PROMOTED_TO_CUSTOM_NOTICE,
+  PROMOTED_TO_TEST_NOTICE,
 } from '../utils/constants';
+import { SpaceTypes } from '../../../../common/constants';
 import { isRootDecoderRequiementError, RootDecoderRequirement } from './RootDecoderRequirement';
 import { NotificationsStart } from 'opensearch-dashboards/public';
 import { RouteComponentProps } from 'react-router-dom';
@@ -40,15 +42,16 @@ const PromoteEntity: React.FC<{
   label: string;
   entity: PromoteChangeGroup;
   data: GetPromoteBySpaceResponse['response'];
-}> = ({ label, data, entity }) => {
+  space: PromoteSpaces;
+}> = ({ label, data, entity, space }) => {
   const memoizedData = useMemo(
     () =>
       data.promote.changes[entity].map(({ id, ...rest }) => ({
         ...rest,
         id,
-        name: data.available_promotions[entity][id],
+        name: getPromoteChangeName(entity, id, data.available_promotions, space as string),
       })),
-    [data.promote.changes[entity]]
+    [data.promote.changes[entity], entity, data.available_promotions, space]
   );
 
   return (
@@ -84,13 +87,15 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
       changes: promote.promote.changes,
     });
     if (success) {
-      successNotificationToast(
-        notifications,
-        'promoted',
-        `[${space}] space`,
-        CHANGES_APPLY_DELAY_NOTICE,
-        CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS
-      );
+      const nextSpace = getNextSpace(space);
+      notifications.toasts.addSuccess({
+        title: `Promoted ${space} to ${nextSpace}`,
+        text:
+          nextSpace === SpaceTypes.CUSTOM.value
+            ? PROMOTED_TO_CUSTOM_NOTICE
+            : PROMOTED_TO_TEST_NOTICE,
+        toastLifeTimeMs: CHANGES_APPLY_DELAY_TOAST_LIFE_TIME_MS,
+      });
       history.push(ROUTES.INTEGRATIONS);
     } else if (isRootDecoderRequiementError(error)) {
       setRequireRootDecoderError(true);
@@ -143,7 +148,7 @@ export const PromoteBySpaceModal: React.FC<PromoteBySpaceModalProps> = ({
             if ((promote?.promote?.changes?.[entity]?.length ?? 0) > 0) {
               return (
                 <React.Fragment key={entity}>
-                  <PromoteEntity label={label} entity={entity} data={promote} />
+                  <PromoteEntity label={label} entity={entity} data={promote} space={space} />
                   <EuiSpacer size="m" />
                 </React.Fragment>
               );

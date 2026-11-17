@@ -66,6 +66,23 @@ const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({
   </EuiText>
 );
 
+type RequiredField = 'title' | 'category' | 'author';
+
+const untouchedFields: Record<RequiredField, boolean> = {
+  title: false,
+  category: false,
+  author: false,
+};
+
+const getValidationErrors = (details: IntegrationItem): Record<RequiredField, string> => {
+  const metadata = details.document.metadata;
+  return {
+    title: validateName(metadata?.title, LOG_TYPE_NAME_REGEX, false) ? '' : 'Invalid title',
+    category: details.document.category ? '' : 'Select category to assign',
+    author: validateName(metadata?.author, INTEGRATION_AUTHOR_REGEX, false) ? '' : 'Invalid author',
+  };
+};
+
 export interface IntegrationFormHandle {
   submit: () => void;
 }
@@ -103,12 +120,13 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
     });
 
     const showEnabledField = isEditMode && !integrationDetails.id;
-    const [titleError, setTitleError] = useState('');
-    const [categoryError, setCategoryError] = useState('');
-    const [authorError, setAuthorError] = useState('');
     const [editingIntegration, setEditingIntegration] =
       useState<IntegrationItem>(integrationDetails);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    // Wazuh: a field is marked invalid only once the user leaves it or tries to submit, so
+    // typing the title does not flag Category and Author before the user reaches them.
+    const [touchedFields, setTouchedFields] = useState(untouchedFields);
+    const [isSubmitAttempted, setIsSubmitAttempted] = useState(false);
 
     useEffect(() => {
       if (isEditMode) {
@@ -125,17 +143,18 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
       onDirtyChangeRef.current?.(isDirty);
     }, [editingIntegration]);
 
-    const updateErrors = (details: IntegrationItem) => {
-      const metadata = details.document.metadata;
-      const titleInvalid = !validateName(metadata?.title, LOG_TYPE_NAME_REGEX, false);
-      const authorInvalid = !validateName(metadata?.author, INTEGRATION_AUTHOR_REGEX, false);
-      const categoryInvalid = !details.document.category;
-      setTitleError(titleInvalid ? 'Invalid title' : '');
-      setCategoryError(categoryInvalid ? 'Select category to assign' : '');
-      setAuthorError(authorInvalid ? 'Invalid author' : '');
+    const validationErrors = useMemo(
+      () => getValidationErrors(editingIntegration),
+      [editingIntegration]
+    );
+    const getVisibleError = (field: RequiredField) =>
+      touchedFields[field] || isSubmitAttempted ? validationErrors[field] : '';
+    const titleError = getVisibleError('title');
+    const categoryError = getVisibleError('category');
+    const authorError = getVisibleError('author');
 
-      return { titleInvalid, categoryInvalid, authorInvalid };
-    };
+    const markTouched = (field: RequiredField) =>
+      setTouchedFields((touched) => (touched[field] ? touched : { ...touched, [field]: true }));
     const categoryOptions = useMemo(() => getIntegrationCategoryOptions(), []);
     const categoryOptionsWithDisabled = useMemo(
       () =>
@@ -159,9 +178,9 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
       if (isSubmitting) {
         return;
       }
-      const { titleInvalid, categoryInvalid, authorInvalid } = updateErrors(editingIntegration);
+      setIsSubmitAttempted(true);
 
-      if (titleInvalid || categoryInvalid || authorInvalid) {
+      if (Object.values(getValidationErrors(editingIntegration)).some(Boolean)) {
         // Wazuh: `isEditMode` means "the fields are editable", and the create flows
         // (CreateIntegration, CreateIntegrationFlyout) pass it as true, so it cannot tell which
         // action is being attempted. An integration that has no id yet is being created.
@@ -183,9 +202,8 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
 
     const onCancelClicked = useCallback(() => {
       setEditingIntegration(integrationDetails);
-      setTitleError('');
-      setCategoryError('');
-      setAuthorError('');
+      setTouchedFields(untouchedFields);
+      setIsSubmitAttempted(false);
       onCancel();
     }, [integrationDetails, onCancel]);
 
@@ -224,9 +242,10 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                     },
                   };
                   setEditingIntegration(newIntegration);
-                  updateErrors(newIntegration);
                 }}
+                onBlur={() => markTouched('title')}
                 disabled={!!integrationDetails.detectionRulesCount}
+                data-test-subj="integration_title_field"
               />
             ) : (
               <ReadOnlyField value={integrationDetails?.document.metadata?.title} />
@@ -247,9 +266,17 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                     },
                   };
                   setEditingIntegration(newIntegration);
-                  updateErrors(newIntegration);
+                }}
+                onBlur={(event: React.FocusEvent<HTMLButtonElement>) => {
+                  // Focus moving into the open option list is not leaving the field: marking it
+                  // there would flash the error while an option is being clicked.
+                  const nextFocus = event.relatedTarget as HTMLElement | null;
+                  if (!nextFocus?.closest?.('[role="listbox"]')) {
+                    markTouched('category');
+                  }
                 }}
                 disabled={!!integrationDetails.detectionRulesCount}
+                data-test-subj="integration_category_select"
               />
             ) : (
               <ReadOnlyField value={getCategoryLabel(integrationDetails?.document.category)} />
@@ -276,9 +303,10 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                     },
                   };
                   setEditingIntegration(newIntegration);
-                  updateErrors(newIntegration);
                 }}
+                onBlur={() => markTouched('author')}
                 disabled={!!integrationDetails.detectionRulesCount}
+                data-test-subj="integration_author_field"
               />
             ) : (
               <ReadOnlyField value={integrationDetails?.document.metadata?.author} />
@@ -300,7 +328,6 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                       },
                     };
                     setEditingIntegration(newIntegration);
-                    updateErrors(newIntegration);
                   }}
                   data-test-subj="integration_enabled_toggle"
                 />
@@ -342,7 +369,6 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                     },
                   };
                   setEditingIntegration(newIntegration);
-                  updateErrors(newIntegration);
                 }}
                 placeholder="Description of the integration"
               />
@@ -383,7 +409,6 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                     },
                   };
                   setEditingIntegration(newIntegration);
-                  updateErrors(newIntegration);
                 }}
                 disabled={!!integrationDetails.detectionRulesCount}
                 placeholder="Documentation of the integration"
@@ -420,7 +445,6 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                   },
                 };
                 setEditingIntegration(newIntegration);
-                updateErrors(newIntegration);
               }}
             />
           ) : (
@@ -464,7 +488,6 @@ export const IntegrationForm = forwardRef<IntegrationFormHandle, IntegrationForm
                   },
                 };
                 setEditingIntegration(newIntegration);
-                updateErrors(newIntegration);
               }}
             />
           ) : (

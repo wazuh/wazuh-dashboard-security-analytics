@@ -50,7 +50,7 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
   );
 
   if (hasFilters) {
-    // Wazuh: name the space that was searched. Shipped content lives in Standard, so a
+    // Wazuh: name the space that was searched. CTI feed content lives in Standard, so a
     // search for it from another space comes back empty; offer to repeat it there.
     const spaceLabel = space && getSpaceTypeLabel(space as Space).toLowerCase();
     return (
@@ -75,7 +75,7 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
                 <>
                   {standardSpaceLink && (
                     <>
-                      , or search the {standardSpaceLink} for the {entity} shipped with Wazuh
+                      , or search the {standardSpaceLink} for the {entity} synced from the CTI feed
                     </>
                   )}
                   .
@@ -117,7 +117,7 @@ export const ListEmptyPrompt: React.FC<ListEmptyPromptProps> = ({
               {showStandardHint && (
                 <>
                   {howToFill ? ', or switch' : 'Switch'} to the {standardSpaceLink} to see the{' '}
-                  {entity} shipped with Wazuh
+                  {entity} synced from the CTI feed
                 </>
               )}
               .

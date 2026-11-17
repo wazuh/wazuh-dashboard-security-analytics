@@ -12,6 +12,8 @@ export interface IntegrationOption {
   value: string;
   label: string;
   id: string;
+  /** Wazuh: the integration's category, when the option was built from the integration. */
+  category?: string;
 }
 
 interface UseIntegrationSelectorParams {
