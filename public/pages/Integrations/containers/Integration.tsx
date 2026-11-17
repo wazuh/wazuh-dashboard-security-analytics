@@ -17,7 +17,6 @@ import {
   EuiDescriptionList,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiHealth,
   EuiLink,
   EuiLoadingSpinner,
   EuiPanel,
@@ -54,6 +53,7 @@ import { IntegrationDetectionRules } from '../components/IntegrationDetectionRul
 import { IntegrationDecoders } from '../components/IntegrationDecoders';
 import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
+import { IntegrationStatus } from '../components/IntegrationStatus';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { buildEntityQueryRoute } from '../../../utils/routes';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
@@ -461,9 +461,12 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         appBadgeControls={[
           {
             renderComponent: (
-              <EuiHealth color={integrationEnabled ? 'success' : 'subdued'}>
-                {integrationEnabled ? 'Enabled' : 'Disabled'}
-              </EuiHealth>
+              <IntegrationStatus
+                enabled={integrationEnabled}
+                space={spaceName}
+                mode={integrationDetails.document.mode}
+                data-test-subj="integration_detail_status"
+              />
             ),
           },
         ]}
@@ -479,9 +482,12 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiHealth color={integrationEnabled ? 'success' : 'subdued'}>
-                  {integrationEnabled ? 'Enabled' : 'Disabled'}
-                </EuiHealth>
+                <IntegrationStatus
+                  enabled={integrationEnabled}
+                  space={spaceName}
+                  mode={integrationDetails.document.mode}
+                  data-test-subj="integration_detail_status"
+                />
               </EuiFlexItem>
             </EuiFlexGroup>
             <EuiText size="s" color="subdued">

@@ -23,6 +23,7 @@
 | [#530](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/530) | Added a warning when the root decoder is cleared while the space still has decoders, KVDBs or filters, listing them and offering to clear the normalization resources |
 | [#555](https://github.com/wazuh/wazuh-dashboard-security-analytics/issues/555) | Added the total results and an enabled/disabled bar under the search bar of every ruleset management table; the bar counts the whole table regardless of the search and filters, and selecting a status filters the table by it |
 | [wazuh-dashboard-plugins#9438](https://github.com/wazuh/wazuh-dashboard-plugins/issues/9438) | Added a "First step: collect the log" section, with a documentation link, to the "How ruleset management works" panel |
+| [wazuh-dashboard-plugins#9441](https://github.com/wazuh/wazuh-dashboard-plugins/issues/9441) | Added a help icon next to a disabled integration's status that says what disabled means and how to enable it, and an empty search now names the space it searched and offers to search the standard space |
 
 ### Changed
 
