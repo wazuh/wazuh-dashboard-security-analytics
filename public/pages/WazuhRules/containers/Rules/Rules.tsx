@@ -52,7 +52,8 @@ import { getSeverityColor, getSeverityLabel } from '../../../Correlations/utils/
 import { ruleSeverity } from '../../../Rules/utils/constants';
 import { RuleViewerFlyout } from '../../components/RuleViewerFlyout/RuleViewerFlyout';
 import { SPACE_ACTIONS, SpaceTypes } from '../../../../../common/constants';
-import { actionIsAllowedOnSpace } from '../../../../../common/helpers';
+import { getBlockedRowActions } from '../../../../components/BlockedMenuAction';
+import { actionIsAllowedOnSpace, getBlockedSpaceActionReason } from '../../../../../common/helpers';
 import { useSpaceSelector } from '../../../../hooks/useSpaceSelector';
 import {
   DELETE_ACTION,
@@ -512,6 +513,7 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
               setItemForAction({ action: DELETE_ACTION, id: item.ruleId }),
             available: () => actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE),
           },
+          ...getBlockedRowActions({ entity: 'rules', getSpace: () => spaceFilter }),
         ],
       },
     ],
@@ -524,17 +526,13 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
     appliedIntegrationNames.length > 0 ||
     appliedLevels.length > 0;
 
-  const isDraftSpace = spaceFilter === SpaceTypes.DRAFT.value;
-
   const panels = [
     <EuiContextMenuItem
       key="create"
       icon="plusInCircle"
       href={`#${ROUTES.RULES_CREATE}`}
-      disabled={!isDraftSpace}
-      toolTipContent={
-        !isDraftSpace ? `Cannot create rules in the ${spaceFilter} space.` : undefined
-      }
+      disabled={!actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.CREATE)}
+      toolTipContent={getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.CREATE, 'rules')}
     >
       Create
     </EuiContextMenuItem>,
@@ -545,13 +543,12 @@ export const Rules: React.FC<RulesProps> = ({ history, notifications }) => {
         setItemForAction({ action: DELETE_SELECTED_ACTION });
         setIsPopoverOpen(false);
       }}
-      disabled={selectedItems.length === 0 || !isDraftSpace}
+      disabled={
+        selectedItems.length === 0 || !actionIsAllowedOnSpace(spaceFilter, SPACE_ACTIONS.DELETE)
+      }
       toolTipContent={
-        !isDraftSpace
-          ? `Cannot delete rules in the ${spaceFilter} space.`
-          : selectedItems.length === 0
-          ? 'Select rules to delete'
-          : undefined
+        getBlockedSpaceActionReason(spaceFilter, SPACE_ACTIONS.DELETE, 'rules') ??
+        (selectedItems.length === 0 ? 'Select rules to delete' : undefined)
       }
     >
       Delete selected ({selectedItems.length})
