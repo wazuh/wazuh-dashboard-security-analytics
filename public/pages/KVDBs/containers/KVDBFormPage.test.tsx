@@ -186,6 +186,21 @@ describe('KVDBFormPage content validation', () => {
 
     expect(submitButton(wrapper).prop('disabled')).toBe(false);
   });
+
+  it('names the KVDB in the success toast, not the id the indexer returns', async () => {
+    DataStore.kvdbs.updateKVDB.mockResolvedValueOnce({
+      message: 'c0525cfb-714c-4f67-bf6a-4e68919011dd',
+    });
+    const wrapper = await renderEditPage();
+
+    await act(async () => {
+      submitButton(wrapper).simulate('click');
+    });
+
+    expect(notifications.toasts.addSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Successfully updated KVDB ip-reputation', text: '' })
+    );
+  });
 });
 
 describe('KVDBFormPage on create', () => {

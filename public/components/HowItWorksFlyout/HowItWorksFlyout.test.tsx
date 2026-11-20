@@ -49,6 +49,18 @@ describe('HowItWorksFlyout', () => {
     );
   });
 
+  it('says what a disabled integration means', () => {
+    render(<HowItWorksFlyout />);
+
+    act(() => {
+      openHowItWorksFlyout();
+    });
+
+    expect(screen.getByText(/While an integration is disabled/).textContent).toContain(
+      'While an integration is disabled, its decoders and rules are not applied to incoming events.'
+    );
+  });
+
   it('says the standard space is synced from the CTI feed and opens the CTI feed app', () => {
     const application = mockApplication();
     (getApplication as jest.Mock).mockReturnValue(application);
