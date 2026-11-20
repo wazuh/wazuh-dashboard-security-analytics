@@ -7,13 +7,16 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { RouteComponentProps, useLocation, useParams } from 'react-router-dom';
 import { IntegrationItem, Space } from '../../../../types';
 import { SPACE_ACTIONS } from '../../../../common/constants';
-import { actionIsAllowedOnSpace, getSpacesAllowAction } from '../../../../common/helpers';
+import {
+  actionIsAllowedOnSpace,
+  getBlockedSpaceActionReason,
+  getSpacesAllowAction,
+} from '../../../../common/helpers';
 import {
   EuiSmallButton,
   EuiDescriptionList,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiHealth,
   EuiLink,
   EuiLoadingSpinner,
   EuiPanel,
@@ -49,6 +52,7 @@ import { IntegrationDetectionRules } from '../components/IntegrationDetectionRul
 import { IntegrationDecoders } from '../components/IntegrationDecoders';
 import { IntegrationKVDBs } from '../components/IntegrationKVDBs';
 import { DeleteIntegrationModal } from '../components/DeleteIntegrationModal';
+import { IntegrationStatus } from '../components/IntegrationStatus';
 import { setBreadcrumbs, successNotificationToast } from '../../../utils/helpers';
 import { buildEntityQueryRoute } from '../../../utils/routes';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
@@ -78,7 +82,14 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  // Wazuh: the list's row Edit action links here with `edit=true` to open the details in edit
+  // mode, only where editing is allowed.
+  const [isEditMode, setIsEditMode] = useState(
+    () =>
+      new URLSearchParams(location.search).get('edit') === 'true' &&
+      Boolean(spaceParam) &&
+      actionIsAllowedOnSpace(spaceParam as string, SPACE_ACTIONS.EDIT)
+  );
   const [togglingEnabled, setTogglingEnabled] = useState(false);
 
   // Wazuh: the integration document is the page's single source of truth — the
@@ -127,6 +138,17 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
     },
     [history, integrationId, spaceParam]
   );
+
+  // Wazuh: `edit=true` only opens the edit mode on arrival. Dropping it from the URL keeps
+  // a reload after Cancel or Save from reopening the edit mode.
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('edit') !== null) {
+      history.replace(
+        buildIntegrationDetailsRoute(integrationId, { space: spaceParam, tab: selectedTabId })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const returnTo = useMemo(
     () => buildIntegrationDetailsRoute(integrationId, { space: spaceParam, tab: selectedTabId }),
@@ -390,9 +412,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             data-test-subj={'editIntegrationButton'}
             toolTipContent={
               isEditDisabled
-                ? `Integrations can only be edited in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.EDIT
-                  ).join(', ')}`
+                ? getBlockedSpaceActionReason(spaceName, SPACE_ACTIONS.EDIT, 'integrations')
                 : undefined
             }
           >
@@ -408,9 +428,7 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
             disabled={isDeleteDisabled}
             toolTipContent={
               isDeleteDisabled
-                ? `Integrations can only be deleted in the spaces: ${getSpacesAllowAction(
-                    SPACE_ACTIONS.DELETE
-                  ).join(', ')}`
+                ? getBlockedSpaceActionReason(spaceName, SPACE_ACTIONS.DELETE, 'integrations')
                 : undefined
             }
           >
@@ -442,9 +460,12 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
         appBadgeControls={[
           {
             renderComponent: (
-              <EuiHealth color={integrationEnabled ? 'success' : 'subdued'}>
-                {integrationEnabled ? 'Enabled' : 'Disabled'}
-              </EuiHealth>
+              <IntegrationStatus
+                enabled={integrationEnabled}
+                space={spaceName}
+                mode={integrationDetails.document.mode}
+                data-test-subj="integration_detail_status"
+              />
             ),
           },
         ]}
@@ -460,9 +481,12 @@ export const Integration: React.FC<IntegrationProps> = ({ notifications, history
                 </EuiText>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiHealth color={integrationEnabled ? 'success' : 'subdued'}>
-                  {integrationEnabled ? 'Enabled' : 'Disabled'}
-                </EuiHealth>
+                <IntegrationStatus
+                  enabled={integrationEnabled}
+                  space={spaceName}
+                  mode={integrationDetails.document.mode}
+                  data-test-subj="integration_detail_status"
+                />
               </EuiFlexItem>
             </EuiFlexGroup>
             <EuiText size="s" color="subdued">

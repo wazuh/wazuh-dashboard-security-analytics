@@ -8,6 +8,7 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import {
   buildIntegrationDetailsRoute,
   getIntegrationsTableColumns,
+  getPromoteChangeName,
   getSelectedTabFromUrl,
   IntegrationTableItem,
 } from './helpers';
@@ -42,6 +43,9 @@ const buildItem = (overrides: Partial<IntegrationTableItem> = {}): IntegrationTa
   status: 'enabled',
   ...overrides,
 });
+
+// Custom is reached through test, so a change made in draft is promoted twice.
+const through = (space: string) => (space === 'custom' ? ' through the test space' : '');
 
 describe('getIntegrationsTableColumns — entity count columns', () => {
   const renderCountColumn = (field: 'rules' | 'decoders' | 'kvdbs', item: IntegrationTableItem) => {
@@ -180,5 +184,91 @@ describe('getSelectedTabFromUrl', () => {
     expect(getSelectedTabFromUrl('')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
     expect(getSelectedTabFromUrl('?space=draft')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
     expect(getSelectedTabFromUrl('?tab=nope')).toBe(INTEGRATION_DETAILS_TAB.DETAILS);
+  });
+});
+
+describe('getIntegrationsTableColumns — row Edit and Delete actions by space', () => {
+  const getActions = (editDetails?: jest.Mock) => {
+    const column: any = getIntegrationsTableColumns({
+      showDetails: jest.fn(),
+      editDetails,
+      setItemForAction: jest.fn(),
+    }).find((c: any) => c.name === 'Actions');
+    return column.actions as any[];
+  };
+
+  const blockedActions = (item: IntegrationTableItem) =>
+    getActions(jest.fn()).filter((a) => a.render && a.available(item));
+
+  const regularActions = (item: IntegrationTableItem) =>
+    getActions(jest.fn())
+      .filter((a) => a.onClick && a.available?.(item) !== false)
+      .map((a) => a.name);
+
+  it.each(['test', 'custom'])(
+    'adds a disabled Edit and Delete with the promotion reason in %s',
+    (space) => {
+      const item = buildItem({ space });
+      const [edit, remove] = blockedActions(item).map((a) => a.render(item).props);
+
+      expect(blockedActions(item).length).toBe(2);
+      expect(edit.label).toBe('Edit');
+      expect(edit.reason).toBe(
+        `Integrations in the ${space} space change only through promotion. To change one, edit it in the draft space and promote the change${through(
+          space
+        )}.`
+      );
+      expect(remove.label).toBe('Delete');
+      expect(remove.reason).toBe(
+        `Integrations in the ${space} space change only through promotion. To remove one, delete it in the draft space and promote the change${through(
+          space
+        )}.`
+      );
+      expect(regularActions(item)).toEqual(['View']);
+    }
+  );
+
+  it('keeps the regular Edit and Delete in draft, with no disabled actions', () => {
+    const item = buildItem({ space: 'draft' });
+    expect(blockedActions(item).length).toBe(0);
+    expect(regularActions(item)).toEqual(['View', 'Edit', 'Delete']);
+  });
+
+  it('shows no Edit or Delete in standard, which has no promotion path', () => {
+    const item = buildItem({ space: 'standard' });
+    expect(blockedActions(item).length).toBe(0);
+    expect(regularActions(item)).toEqual(['View']);
+  });
+
+  it('opens the details in edit mode from the draft Edit action', () => {
+    const editDetails = jest.fn();
+    const item = buildItem({ space: 'draft', documentId: 'doc-9' });
+    getActions(editDetails)
+      .find((a) => a.name === 'Edit' && a.onClick)
+      .onClick(item);
+    expect(editDetails).toHaveBeenCalledWith('doc-9', 'draft');
+  });
+});
+
+describe('getPromoteChangeName', () => {
+  const available = {
+    decoders: { d_abc: 'decoder/apache-access/0', xyz: 'decoder/syslog/0' },
+  } as any;
+
+  it('names the policy row after the source space, not the policy title', () => {
+    expect(
+      getPromoteChangeName('policy', 'p1', { policy: { p1: 'Custom space' } } as any, 'draft')
+    ).toBe('Draft space settings');
+  });
+
+  it('uses the title listed in the available promotions', () => {
+    expect(getPromoteChangeName('decoders', 'd_abc', available, 'draft')).toBe(
+      'decoder/apache-access/0'
+    );
+    expect(getPromoteChangeName('decoders', 'd_xyz', available, 'draft')).toBe('decoder/syslog/0');
+  });
+
+  it('falls back to the id when no title is listed', () => {
+    expect(getPromoteChangeName('decoders', 'missing', available, 'draft')).toBe('missing');
   });
 });
