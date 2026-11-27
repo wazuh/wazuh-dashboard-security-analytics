@@ -139,7 +139,7 @@ describe('humanizeMessage', () => {
   it('leaves quoted text that is not a path alone', () => {
     const message = "'check' must match one of the valid formats: (1) 'a', (2) 'b'";
     expect(humanizeMessage(message)).toBe(
-      "Check must match one of the valid formats: (1) 'a', (2) 'b'"
+      "Decoder check must match one of the valid formats: (1) 'a', (2) 'b'"
     );
   });
 

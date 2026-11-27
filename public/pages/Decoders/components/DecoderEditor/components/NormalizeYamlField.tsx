@@ -122,8 +122,9 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
             ariaLabel="Normalize information"
           >
             <InfoItem term="check">
-              Optional condition. An event that fails it skips this entry and continues to the next
-              one.
+              Optional conditions, as a list or as one expression such as{' '}
+              <code>$event.code == &apos;4624&apos;</code>. An event that fails it skips this entry
+              and continues to the next one.
             </InfoItem>
             <InfoItem term="parse|&lt;field&gt;">
               Reads one field and captures parts of it into other fields.
@@ -135,7 +136,8 @@ export const NormalizeYamlField: React.FC<NormalizeYamlFieldProps> = ({
                 least one parser or mapping.
               </p>
             </EuiText>
-            <Example>{`- check: $event.code == '4624'
+            <Example>{`- check:
+    - event.code: '4624'
   parse|event.original:
     - <_tmp.date/date/%y%m%d %T> <_tmp.message>
   map:

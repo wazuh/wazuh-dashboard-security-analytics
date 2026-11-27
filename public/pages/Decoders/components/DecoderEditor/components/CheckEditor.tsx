@@ -9,6 +9,7 @@ import {
   EuiCompressedFieldText,
   EuiCompressedFormRow,
   EuiCompressedSuperSelect,
+  EuiFormHelpText,
   EuiSpacer,
   EuiText,
 } from '@elastic/eui';
@@ -80,6 +81,8 @@ export interface CheckEditorProps {
   model: CheckModel;
   onChange: (model: CheckModel) => void;
   errors?: Record<string, string>;
+  /** Shown under the label, before the format, the way the Parsers help is. */
+  helpText?: React.ReactNode;
 }
 
 const checkToYamlText = (model: CheckModel): string => {
@@ -98,6 +101,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
   onChange,
   errors = {},
   onBlurPath,
+  helpText,
 }) => {
   const onYamlChange = useCallback(
     (text: string) => {
@@ -123,7 +127,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
   return (
     <YamlSlot
       slotId={path}
-      label="Check"
+      label="Decoder check"
       yamlValue={checkToYamlText(model)}
       onYamlChange={onYamlChange}
       error={errors[path]}
@@ -134,6 +138,12 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
       }
     >
       <>
+        {helpText && (
+          <>
+            <EuiFormHelpText>{helpText}</EuiFormHelpText>
+            <EuiSpacer size="s" />
+          </>
+        )}
         <EuiCompressedFormRow label={fieldLabel('Format')} fullWidth={true}>
           <EuiCompressedSuperSelect
             options={CHECK_MODE_OPTIONS}
