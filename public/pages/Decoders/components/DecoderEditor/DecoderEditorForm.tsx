@@ -11,12 +11,13 @@ import {
   EuiCompressedSwitch,
   EuiSpacer,
 } from '@elastic/eui';
-import { FormFieldArray } from '../../../../components/FormFieldArray';
 import { DecoderFormModel } from './DecoderEditorFormModel';
 import { fieldLabel } from './labels';
 import {
   NAME_HELP,
+  PARENTS_HELP,
   PARENTS_INFO,
+  DECODER_CHECK_HELP,
   PARSE_HELP,
   PARSE_INFO,
   DEFINITIONS_HELP,
@@ -29,6 +30,7 @@ import { CheckEditor } from './components/CheckEditor';
 import { MapRows } from './components/MapRows';
 import { NormalizeYamlField } from './components/NormalizeYamlField';
 import { ParseRows } from './components/ParseRows';
+import { ParentsComboBox } from './components/ParentsComboBox';
 import { LabelWithInfo } from './components/LabelWithInfo';
 
 export interface DecoderEditorFormProps {
@@ -40,6 +42,8 @@ export interface DecoderEditorFormProps {
   documentErrors?: string[];
   /** True once submission has been attempted; every error shows from then on. */
   submitAttempted?: boolean;
+  /** Space whose decoders the Parents picker offers. */
+  space?: string;
 }
 
 /**
@@ -57,6 +61,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
   fieldErrors = {},
   documentErrors = [],
   submitAttempted = false,
+  space,
 }) => {
   // Schema errors are not Formik's, so the touched gate is applied by hand.
   const [touched, setTouched] = useState<TouchedState>(emptyTouched);
@@ -152,7 +157,7 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
         }
       />
 
-      <FormFieldArray
+      <ParentsComboBox
         label={
           <LabelWithInfo
             label={fieldLabel('Parents', true)}
@@ -163,12 +168,18 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
           </LabelWithInfo>
         }
         values={values.parents}
-        placeholder="decoder/core-wazuh-message/0"
-        addButtonLabel="Add parent"
         onChange={(parents) => set('parents', parents)}
+        space={space}
+        ownName={values.name}
+        helpText={PARENTS_HELP}
       />
+      <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow label={fieldLabel('Check', true)} fullWidth={true}>
+      <EuiCompressedFormRow
+        label={fieldLabel('Decoder check', true)}
+        helpText={DECODER_CHECK_HELP}
+        fullWidth={true}
+      >
         <CheckEditor
           path="check"
           model={values.check}

@@ -117,14 +117,13 @@ export const ParseRows: React.FC<ParseRowsProps> = ({
               <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
                 <EuiFlexItem grow={true}>
                   <EuiCompressedFormRow
-                    label={fieldLabel('Field')}
+                    label={fieldLabel('Parse field')}
                     helpText={PARSE_FIELD_HELP}
                     fullWidth={true}
                     isInvalid={missingField}
                     error={missingField ? 'A parser needs the field it reads' : undefined}
                   >
                     <EuiCompressedFieldText
-                      prepend="parse|"
                       placeholder="event.original"
                       value={row.field}
                       onChange={(e) => update(index, { field: e.target.value })}

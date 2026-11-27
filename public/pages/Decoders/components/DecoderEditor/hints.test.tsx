@@ -50,6 +50,10 @@ describe('hint examples are accepted by the engine schema', () => {
     ...base,
     check: "exists($_tmp_json.ts) AND $event.code == '4624'",
   });
+  accept('the expression shown in the Normalize check description', {
+    ...base,
+    normalize: [{ check: "$event.code == '4624'", map: [{ 'event.kind': 'event' }] }],
+  });
   accept('check inside a normalize entry', {
     ...base,
     normalize: [{ check: 'exists($_tmp.session_id)', map: [{ 'event.kind': 'event' }] }],
@@ -72,7 +76,7 @@ describe('hint examples are accepted by the engine schema', () => {
     ...base,
     normalize: [
       {
-        check: "$event.code == '4624'",
+        check: [{ 'event.code': '4624' }],
         'parse|event.original': ['<_tmp.date/date/%y%m%d %T> <_tmp.message>'],
         map: [{ 'user.name': '$_tmp.user' }],
       },

@@ -43,6 +43,7 @@ import { DataStore } from '../../../store/DataStore';
 import { RouteComponentProps } from 'react-router-dom';
 import { validateWithJsonSchemaAsync } from '../../../utils/jsonSchemaValidation';
 import decoderSchema from '../../../../common/schemas/wazuh-decoders.schema.json';
+import { SpaceTypes } from '../../../../common/constants';
 import {
   DecoderEditorForm,
   DecoderFormModel,
@@ -305,6 +306,7 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
           {(formikProps) => (
             <DecoderFormBody
               action={action}
+              space={action === 'create' ? SpaceTypes.DRAFT.value : spaceDecoder}
               formikProps={formikProps}
               pageDescription={pageDescription}
               returnTo={returnTo}
@@ -333,6 +335,8 @@ export const DecoderFormPage: React.FC<DecoderFormPageProps> = (props) => {
 
 interface DecoderFormBodyProps {
   action: 'create' | 'edit';
+  /** Space the decoder is saved to, whose decoders the Parents picker offers. */
+  space: string;
   formikProps: any;
   pageDescription: string;
   returnTo: string;
@@ -355,6 +359,7 @@ interface DecoderFormBodyProps {
 
 const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
   action,
+  space,
   formikProps,
   pageDescription,
   returnTo,
@@ -510,6 +515,7 @@ const DecoderFormBody: React.FC<DecoderFormBodyProps> = ({
               onChange={onVisualChange}
               fieldErrors={{ ...schemaWarnings.fields, ...structuralErrors }}
               documentErrors={schemaWarnings.document}
+              space={space}
             />
           </div>
         )}

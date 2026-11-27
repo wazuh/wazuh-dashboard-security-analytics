@@ -123,7 +123,7 @@ export const CheckEditor: React.FC<CheckEditorProps> = ({
   return (
     <YamlSlot
       slotId={path}
-      label="Check"
+      label="Decoder check"
       yamlValue={checkToYamlText(model)}
       onYamlChange={onYamlChange}
       error={errors[path]}

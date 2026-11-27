@@ -29,7 +29,7 @@ export const FIELD_LABELS: Record<string, string> = {
   enabled: 'Enabled',
   parents: 'Parents',
   definitions: 'Definitions',
-  check: 'Check',
+  check: 'Decoder check',
   'metadata.title': 'Title',
   'metadata.author': 'Author',
   'metadata.description': 'Description',

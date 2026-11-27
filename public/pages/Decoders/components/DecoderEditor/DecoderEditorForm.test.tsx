@@ -62,7 +62,7 @@ describe('DecoderEditorForm', () => {
       'Supports',
       'Compatibility',
       'Parents',
-      'Check',
+      'Decoder check',
       'Parsers',
       'Normalize',
       'Definitions',
@@ -86,6 +86,18 @@ describe('DecoderEditorForm', () => {
       .map((input) => input.prop('fullWidth'));
 
     expect(widths.every((value) => !value)).toBe(true);
+  });
+
+  it('names the decoder-level check apart from the check of a normalize entry', () => {
+    const text = render(mapDecoderToForm(document)).text();
+    expect(text).toContain('Decoder check');
+    expect(text).toContain('An event that fails it is rejected');
+  });
+
+  it('labels the field a parser reads without the parse| key prefix', () => {
+    const wrapper = render(mapDecoderToForm({ ...document, 'parse|message': ['<~>'] }));
+    expect(wrapper.text()).toContain('Parse field');
+    expect(subj(wrapper, 'parsers[0].field').prop('prepend')).toBeUndefined();
   });
 
   it('shows id read-only on edit and not at all on create', () => {
@@ -292,7 +304,7 @@ describe('DecoderEditorForm', () => {
       // this form lives behind the label's info button.
       const wrapper = render(mapDecoderToForm(document));
       expect(editor(wrapper).prop('placeholder')).toBeUndefined();
-      expect(wrapper.text()).not.toContain("- check: $event.code == '4624'");
+      expect(wrapper.text()).not.toContain("- event.code: '4624'");
     });
 
     it('surfaces schema errors from inside the array, which have no field of their own', () => {

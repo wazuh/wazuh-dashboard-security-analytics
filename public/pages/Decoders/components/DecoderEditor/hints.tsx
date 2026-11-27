@@ -24,6 +24,11 @@ export const PARENTS_INFO = (
   </EuiText>
 );
 
+export const PARENTS_HELP = 'Pick decoders of the space, or type the name of one.';
+
+export const DECODER_CHECK_HELP =
+  'An event that fails it is rejected, and the next sibling decoder is tried.';
+
 export const CHECK_EXPRESSION_HELP =
   'Needs a field reference and an operator, or a helper call on its own.';
 
