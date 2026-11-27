@@ -4,9 +4,13 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { EuiComboBoxOptionOption, EuiCompressedComboBox, EuiCompressedFormRow } from '@elastic/eui';
+import {
+  EuiComboBoxOptionOption,
+  EuiCompressedComboBox,
+  EuiCompressedFormRow,
+  EuiTextColor,
+} from '@elastic/eui';
 import { DataStore } from '../../../../../store/DataStore';
-import { formatAssetLabel } from '../../../../../components/AssetIdentity';
 import { buildDecodersSearchQuery } from '../../../utils/constants';
 
 const SEARCH_DELAY_MS = 300;
@@ -14,6 +18,17 @@ const SEARCH_SIZE = 25;
 
 /** The option label is the decoder name, which is what `parents` stores. */
 type ParentOption = EuiComboBoxOptionOption<string> & { title?: string };
+
+/**
+ * The name goes first: the list is as narrow as the field, and the name is what
+ * the decoder stores. The title follows to help recognise it.
+ */
+const renderParentOption = (option: ParentOption) => (
+  <span>
+    {option.label}
+    {option.title && <EuiTextColor color="subdued">{` ${option.title}`}</EuiTextColor>}
+  </span>
+);
 
 export interface ParentsComboBoxProps {
   label: React.ReactNode;
@@ -97,7 +112,7 @@ export const ParentsComboBox: React.FC<ParentsComboBoxProps> = ({
         onSearchChange={setSearch}
         onFocus={onFocus}
         isLoading={isLoading}
-        renderOption={(option: ParentOption) => formatAssetLabel(option.title, option.label)}
+        renderOption={renderParentOption}
         data-test-subj="parents"
       />
     </EuiCompressedFormRow>

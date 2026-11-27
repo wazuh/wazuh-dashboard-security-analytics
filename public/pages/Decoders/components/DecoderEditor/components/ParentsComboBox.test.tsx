@@ -84,14 +84,18 @@ describe('ParentsComboBox', () => {
     expect(options.map((option) => option.label)).toEqual(['decoder/core-wazuh-message/0']);
   });
 
-  it('shows the title next to the name in the list', async () => {
+  it('lists the name first and the title after it', async () => {
     const wrapper = render();
     await focusAndSearch(wrapper);
 
-    const renderOption = comboBox(wrapper).prop('renderOption') as (option: object) => string;
-    expect(
+    const renderOption = comboBox(wrapper).prop('renderOption') as (
+      option: object
+    ) => React.ReactElement;
+    const option = mount(
       renderOption({ label: 'decoder/core-wazuh-message/0', title: 'Wazuh message decoder' })
-    ).toBe('Wazuh message decoder (decoder/core-wazuh-message/0)');
+    );
+    expect(option.text()).toBe('decoder/core-wazuh-message/0 Wazuh message decoder');
+    expect(option.find('EuiTextColor').prop('color')).toBe('subdued');
   });
 
   it('stores the names of the picked decoders', async () => {

@@ -175,17 +175,14 @@ export const DecoderEditorForm: React.FC<DecoderEditorFormProps> = ({
       />
       <EuiSpacer size="m" />
 
-      <EuiCompressedFormRow
-        label={fieldLabel('Decoder check', true)}
-        helpText={DECODER_CHECK_HELP}
-        fullWidth={true}
-      >
+      <EuiCompressedFormRow label={fieldLabel('Decoder check', true)} fullWidth={true}>
         <CheckEditor
           path="check"
           model={values.check}
           onChange={(check) => set('check', check)}
           errors={shownErrors}
           onBlurPath={onBlurPath}
+          helpText={DECODER_CHECK_HELP}
         />
       </EuiCompressedFormRow>
       <EuiSpacer size="m" />
